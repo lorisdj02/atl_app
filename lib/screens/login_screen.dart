@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import '../widgets/atl_button.dart';
+import '../widgets/atl_textfield.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
+import '../models/user_info.dart';
+import 'forgot_password_screen.dart';
+import 'register_screen.dart';
+import 'home_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   bool _obscurePassword = true;
+  UserRole _selectedRole = UserRole.player; // DEBUG: Role selector
 
   @override
   void initState() {
@@ -27,6 +33,65 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _handleLogin() {
+    final usernameOrEmail = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Controllo campi vuoti
+    if (usernameOrEmail.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).fillAllFields),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // TODO: Implement login logic with server
+    // Se tutto è valido, procedi con il login
+    // Per ora navighiamo direttamente alla home (temporaneo)
+    // PLACEHOLDER: Crea un utente di test con il ruolo selezionato
+    final userInfo = UserInfo(
+      username: 'Test${_selectedRole.toString().split('.').last}',
+      role: _selectedRole,
+      email: usernameOrEmail,
+    );
+    
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => HomeRouter.getHomeScreen(userInfo),
+      ),
+    );
+  }
+
+  // DEBUG: Helper methods for role selector
+  IconData _getRoleIcon(UserRole role) {
+    switch (role) {
+      case UserRole.player:
+        return Icons.person;
+      case UserRole.coordinator:
+        return Icons.admin_panel_settings;
+      case UserRole.referee:
+        return Icons.sports_soccer;
+      case UserRole.organization:
+        return Icons.business;
+    }
+  }
+
+  String _getRoleName(UserRole role) {
+    switch (role) {
+      case UserRole.player:
+        return 'Player';
+      case UserRole.coordinator:
+        return 'Coordinator';
+      case UserRole.referee:
+        return 'Referee';
+      case UserRole.organization:
+        return 'Organization';
+    }
   }
 
   @override
@@ -84,70 +149,78 @@ class _LoginScreenState extends State<LoginScreen> {
                     
                     const SizedBox(height: 30),
                     
-                    // Email TextField
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: TextField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context).email,
-                          hintStyle: const TextStyle(
-                            color: Color(0xFFB0B0B0),
-                            fontSize: 16,
-                          ),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 18,
-                          ),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
+                    // Username or Email TextField
+                    ATLTextField(
+                      controller: _emailController,
+                      hintText: 'Username or Email',
+                      keyboardType: TextInputType.text,
                     ),
                     
                     const SizedBox(height: 16),
                     
                     // Password TextField
+                    ATLTextField(
+                      controller: _passwordController,
+                      hintText: AppLocalizations.of(context).password,
+                      obscureText: _obscurePassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: ATLColors.darkBlue,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // DEBUG: Role selector
                     Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: ATLColors.darkBlue, width: 2),
                       ),
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          hintText: AppLocalizations.of(context).password,
-                          hintStyle: const TextStyle(
-                            color: Color(0xFFB0B0B0),
-                            fontSize: 16,
-                          ),
-                          border: const OutlineInputBorder(
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 18,
-                          ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: ATLColors.darkBlue,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
+                      child: DropdownButton<UserRole>(
+                        value: _selectedRole,
+                        isExpanded: true,
+                        underline: const SizedBox(),
+                        icon: const Icon(Icons.arrow_drop_down, color: ATLColors.darkBlue),
+                        style: const TextStyle(
+                          color: ATLColors.darkBlue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
+                        items: UserRole.values.map((UserRole role) {
+                          return DropdownMenuItem<UserRole>(
+                            value: role,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _getRoleIcon(role),
+                                  color: ATLColors.darkBlue,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text('DEBUG: ${_getRoleName(role)}'),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (UserRole? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedRole = newValue;
+                            });
+                          }
+                        },
                       ),
                     ),
                     
@@ -156,7 +229,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Forgot password link
                     TextButton(
                       onPressed: () {
-                        // TODO: Implement forgot password
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ForgotPasswordScreen(),
+                          ),
+                        );
                       },
                       child: Text(
                         AppLocalizations.of(context).forgotPassword,
@@ -176,9 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       size: ATLButtonSize.large,
                       isFilled: true,
                       color: ATLColors.darkBlue,
-                      onPressed: () {
-                        // TODO: Implement login logic
-                      },
+                      onPressed: _handleLogin,
                     ),
                     
                     const SizedBox(height: 16),
@@ -190,7 +265,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       isFilled: false,
                       color: ATLColors.darkBlue,
                       onPressed: () {
-                        // TODO: Implement register navigation
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
                       },
                     ),
                     

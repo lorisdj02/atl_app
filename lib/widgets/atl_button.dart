@@ -12,6 +12,7 @@ class ATLButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isFilled;
   final Color color;
+  final Color? textColor;
   final ATLButtonSize size;
 
   const ATLButton({
@@ -20,6 +21,7 @@ class ATLButton extends StatelessWidget {
     required this.onPressed,
     this.isFilled = true,
     this.color = ATLColors.darkBlue,
+    this.textColor,
     this.size = ATLButtonSize.large,
   });
 
@@ -58,6 +60,10 @@ class ATLButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determina il colore del testo
+    final Color effectiveTextColor = textColor ?? 
+        (isFilled ? Colors.white : color);
+    
     return SizedBox(
       width: _buttonWidth,
       height: _buttonHeight,
@@ -65,7 +71,7 @@ class ATLButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: isFilled ? color : Colors.transparent,
-          foregroundColor: isFilled ? Colors.white : color,
+          foregroundColor: effectiveTextColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
             side: isFilled
@@ -79,6 +85,7 @@ class ATLButton extends StatelessWidget {
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
+              color: effectiveTextColor,
               fontSize: _fontSize,
               fontWeight: FontWeight.w600,
             ),
