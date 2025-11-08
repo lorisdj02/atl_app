@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../models/user_info.dart';
+import '../../models/referee.dart';
 import '../../utils/atl_colors.dart';
+import 'package:atl_app/models/sport_category.dart';
 
 class RefereeHomeScreen extends StatefulWidget {
-  final UserInfo userInfo;
+  final Referee user;
+  final SportCategory currentSport;
 
   const RefereeHomeScreen({
     super.key,
-    required this.userInfo,
+    required this.user,
+    required this.currentSport,
   });
 
   @override
@@ -92,7 +95,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.userInfo.username,
+                        widget.user.username,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 18,
@@ -101,7 +104,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.userInfo.roleDisplayName,
+                        widget.user.roleDisplayName,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 14,

@@ -109,4 +109,83 @@ class AppLocalizationsIt extends AppLocalizations {
   
   @override
   String get messageSentSuccess => 'Messaggio inviato correttamente, risponderemo il prima possibile';
+  
+  // Tournaments screen
+  @override
+  String get tournaments => 'Tornei';
+  
+  @override
+  String get search => 'Cerca';
+  
+  @override
+  String get myTournaments => 'I miei\ntornei';
+  
+  @override
+  String get nameOrCode => 'Nome/Codice';
+  
+  @override
+  String get filters => 'Filtri';
+  
+  @override
+  String get selectCity => 'Seleziona città';
+  
+  @override
+  String get all => 'Tutti';
+  
+  @override
+  String get numberOfTeams => 'Numero di Squadre';
+  
+  @override
+  String get selectTeamCount => 'Seleziona numero squadre';
+  
+  @override
+  String get prizeRange => 'Range Premio';
+  
+  @override
+  String get feeRange => 'Range Quota';
+  
+  @override
+  String get reset => 'RESET';
+  
+  @override
+  String get apply => 'APPLICA';
+  
+  @override
+  String get noTournamentsFavorite => 'Nessun torneo preferito';
+  
+  @override
+  String get noTournamentsRunning => 'Nessun torneo è in corso.';
+  
+  @override
+  String get addToFavorites => 'Aggiungi tornei ai preferiti!';
+  
+  @override
+  String get comeBackLater => 'Torna più tardi!';
+  
+  @override
+  String get noTournamentsFound => 'Nessun torneo trovato!';
+  
+  @override
+  String get tryChangingFilters => 'Prova a cambiare i filtri';
+  
+  @override
+  String get favoriteFeatureComingSoon => 'Funzione preferiti in arrivo!';
+  
+  @override
+  String get tournamentDetails => 'Dettagli torneo';
+  
+  @override
+  String get comingSoon => 'In arrivo';
+  
+  @override
+  String get darkMode => 'Modalità scura';
+  
+  @override
+  String get darkModeComingSoon => 'Modalità scura - In arrivo';
+  
+  @override
+  String teamsCount(int paid, int total) => '$paid/$total';
+  
+  @override
+  String teamsTotal(int count) => '$count squadre';
 }

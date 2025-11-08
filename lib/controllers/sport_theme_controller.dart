@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../models/sport_type.dart';
+import '../models/sport_category.dart';
 
 /// Controller per gestire lo sport attivo e il tema dell'app
 class SportThemeController extends ChangeNotifier {
-  SportType _currentSport = SportType.football;
+  SportCategory _currentSport = SportCategory.football;
 
-  SportType get currentSport => _currentSport;
+  SportCategory get currentSport => _currentSport;
 
   Color get primaryColor => _currentSport.primaryColor;
   Color get secondaryColor => _currentSport.secondaryColor;
   Color get tertiaryColor => _currentSport.tertiaryColor;
 
-  void changeSport(SportType sport) {
+  void changeSport(SportCategory sport) {
     _currentSport = sport;
     notifyListeners();
   }

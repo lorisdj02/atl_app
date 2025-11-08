@@ -3,10 +3,16 @@ import '../widgets/atl_button.dart';
 import '../widgets/atl_textfield.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
-import '../models/user_info.dart';
+import '../models/user.dart';
+import '../models/player.dart';
+import '../models/coordinator.dart';
+import '../models/referee.dart';
+import '../models/organization.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import 'home_router.dart';
+import 'guest/guest_home_screen.dart';
+import 'package:atl_app/models/sport_category.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -51,18 +57,75 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     // TODO: Implement login logic with server
-    // Se tutto è valido, procedi con il login
-    // Per ora navighiamo direttamente alla home (temporaneo)
-    // PLACEHOLDER: Crea un utente di test con il ruolo selezionato
-    final userInfo = UserInfo(
-      username: 'Test${_selectedRole.toString().split('.').last}',
-      role: _selectedRole,
-      email: usernameOrEmail,
-    );
+    // PLACEHOLDER: Crea un mock user basato sul ruolo selezionato
+    final User mockUser;
+    
+    switch (_selectedRole) {
+      case UserRole.player:
+        mockUser = Player(
+          id: 1,
+          username: 'TestPlayer',
+          email: usernameOrEmail,
+          firebaseUid: 'mock_firebase_uid',
+          createdAt: DateTime.now(),
+          balance: 0.0,
+          phone: '1234567890',
+          playerId: 1,
+          name: 'Test',
+          surname: 'Player',
+          birthdate: DateTime(2000, 1, 1),
+        );
+        break;
+      case UserRole.coordinator:
+        mockUser = Coordinator(
+          id: 1,
+          username: 'TestCoordinator',
+          email: usernameOrEmail,
+          firebaseUid: 'mock_firebase_uid',
+          createdAt: DateTime.now(),
+          balance: 0.0,
+          phone: '1234567890',
+          coordinatorId: 1,
+          name: 'Test',
+          surname: 'Coordinator',
+          level: 1,
+        );
+        break;
+      case UserRole.referee:
+        mockUser = Referee(
+          id: 1,
+          username: 'TestReferee',
+          email: usernameOrEmail,
+          firebaseUid: 'mock_firebase_uid',
+          createdAt: DateTime.now(),
+          balance: 0.0,
+          phone: '1234567890',
+          refereeId: 1,
+          name: 'Test',
+          surname: 'Referee',
+          level: 1,
+        );
+        break;
+      case UserRole.organization:
+        mockUser = Organization(
+          id: 1,
+          username: 'TestOrganization',
+          email: usernameOrEmail,
+          firebaseUid: 'mock_firebase_uid',
+          createdAt: DateTime.now(),
+          balance: 0.0,
+          phone: '1234567890',
+          organizationId: 1,
+          orgName: 'Test Organization',
+          name: 'Test',
+          surname: 'Admin',
+        );
+        break;
+    }
     
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => HomeRouter.getHomeScreen(userInfo),
+        builder: (context) => HomeRouter.getHomeScreen(mockUser),
       ),
     );
   }
@@ -224,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 2),
                     
                     // Forgot password link
                     TextButton(
@@ -245,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     
                     // Log in button
                     ATLButton(
@@ -256,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _handleLogin,
                     ),
                     
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
                     
                     // Register button
                     ATLButton(
@@ -273,16 +336,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
                     
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 56),
                     
-                    // Continue as guest button
+                    // Continue as guest button - BIANCO e SMALL
                     ATLButton(
                       text: AppLocalizations.of(context).continueAsGuest,
                       size: ATLButtonSize.small,
                       isFilled: false,
                       color: ATLColors.darkBlue,
+                      backgroundColor: Colors.white,
                       onPressed: () {
-                        // TODO: Implement guest navigation
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const GuestHomeScreen(currentSport: SportCategory.football),
+                          ),
+                        );
                       },
                     ),
                     

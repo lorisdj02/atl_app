@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
-import '../models/sport_type.dart';
-import '../models/user_info.dart';
+import '../models/sport_category.dart';
+import '../models/user.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
+import 'login_screen.dart';
 
 class ShopScreen extends StatelessWidget {
-  final SportType currentSport;
-  final UserInfo userInfo;
+  final SportCategory currentSport;
+  final User? user; // null se guest
 
   const ShopScreen({
     super.key,
     required this.currentSport,
-    required this.userInfo,
+    required this.user,
   });
+
+  bool get _isGuest => user == null;
 
   @override
   Widget build(BuildContext context) {
@@ -34,34 +37,89 @@ class ShopScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.shopping_cart,
-              color: currentSport.primaryColor,
-              size: 80,
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.shopping_cart,
+                  color: currentSport.primaryColor,
+                  size: 80,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Shop',
+                  style: TextStyle(
+                    color: ATLColors.darkBlue,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Coming soon',
+                  style: TextStyle(
+                    color: ATLColors.subtext,
+                    fontSize: 16,
+                  ),
+                ),
+                if (_isGuest) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Login to purchase items',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Shop',
-              style: TextStyle(
-                color: ATLColors.darkBlue,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+          ),
+          
+          // Banner guest mode
+          if (_isGuest)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Guest mode: Login required to purchase',
+                        style: TextStyle(
+                          color: Colors.orange.shade900,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        );
+                      },
+                      child: const Text('LOGIN'),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Coming soon',
-              style: TextStyle(
-                color: ATLColors.subtext,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
       bottomNavigationBar: PlayerCoordinatorBottomBar(
         currentIndex: 0,
@@ -70,7 +128,7 @@ class ShopScreen extends StatelessWidget {
             context: context,
             index: index,
             currentSport: currentSport,
-            userInfo: userInfo,
+            user: user, // Può essere null
             currentIndex: 0,
           );
         },

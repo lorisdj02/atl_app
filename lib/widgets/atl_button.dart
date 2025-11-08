@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/atl_colors.dart';
 
 enum ATLButtonSize {
   small,
@@ -9,89 +8,109 @@ enum ATLButtonSize {
 
 class ATLButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final ATLButtonSize size;
   final bool isFilled;
   final Color color;
+  final Color? backgroundColor;
   final Color? textColor;
-  final ATLButtonSize size;
+  final VoidCallback onPressed;
+  final bool fullWidth;
 
   const ATLButton({
     super.key,
     required this.text,
-    required this.onPressed,
-    this.isFilled = true,
-    this.color = ATLColors.darkBlue,
+    required this.size,
+    required this.isFilled,
+    required this.color,
+    this.backgroundColor,
     this.textColor,
-    this.size = ATLButtonSize.large,
+    required this.onPressed,
+    this.fullWidth = false,
   });
 
-  double get _buttonWidth {
-    switch (size) {
-      case ATLButtonSize.small:
-        return 180;
-      case ATLButtonSize.medium:
-        return 220;
-      case ATLButtonSize.large:
-        return 260;
-    }
+  @override
+  Widget build(BuildContext context) {
+    final bgColor = isFilled 
+        ? (backgroundColor ?? color) 
+        : (backgroundColor ?? Colors.transparent);
+    
+    final fgColor = textColor ?? (isFilled ? Colors.white : color);
+
+    final button = ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: bgColor,
+        foregroundColor: fgColor,
+        side: isFilled ? null : BorderSide(color: color, width: 2),
+        padding: EdgeInsets.symmetric(
+          vertical: _getVerticalPadding,
+          horizontal: _getHorizontalPadding,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: isFilled ? 2 : 0,
+        minimumSize: Size(_getMinWidth, 0), // Larghezza minima in base alla size
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: _getFontSize,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+
+    return fullWidth 
+        ? SizedBox(width: double.infinity, child: button)
+        : Align(alignment: Alignment.center, child: button);
   }
 
-  double get _buttonHeight {
+  double get _getVerticalPadding {
     switch (size) {
       case ATLButtonSize.small:
-        return 48;
+        return 10;
       case ATLButtonSize.medium:
-        return 52;
-      case ATLButtonSize.large:
-        return 56;
-    }
-  }
-
-  double get _fontSize {
-    switch (size) {
-      case ATLButtonSize.small:
         return 14;
-      case ATLButtonSize.medium:
-        return 16;
       case ATLButtonSize.large:
         return 18;
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Determina il colore del testo
-    final Color effectiveTextColor = textColor ?? 
-        (isFilled ? Colors.white : color);
+  double get _getHorizontalPadding {
+    switch (size) {
+      case ATLButtonSize.small:
+        return 24;
+      case ATLButtonSize.medium:
+        return 32;
+      case ATLButtonSize.large:
+        return 40;
+    }
+  }
+
+  double get _getFontSize {
+    switch (size) {
+      case ATLButtonSize.small:
+        return 12;
+      case ATLButtonSize.medium:
+        return 14;
+      case ATLButtonSize.large:
+        return 16;
+    }
+  }
+
+  /// Larghezza minima del bottone in base alla size
+  double get _getMinWidth {
+    if (fullWidth) return double.infinity;
     
-    return SizedBox(
-      width: _buttonWidth,
-      height: _buttonHeight,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isFilled ? color : Colors.transparent,
-          foregroundColor: effectiveTextColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: isFilled
-                ? BorderSide.none
-                : BorderSide(color: color, width: 2),
-          ),
-          elevation: 0,
-        ),
-        child: Center(
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: effectiveTextColor,
-              fontSize: _fontSize,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
-    );
+    switch (size) {
+      case ATLButtonSize.small:
+        return 120; // Bottone piccolo
+      case ATLButtonSize.medium:
+        return 160; // Bottone medio
+      case ATLButtonSize.large:
+        return 200; // Bottone grande
+    }
   }
 }

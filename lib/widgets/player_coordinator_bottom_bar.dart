@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../models/sport_type.dart';
+import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 
 /// Bottom Navigation Bar per Player e Coordinator
 class PlayerCoordinatorBottomBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final SportType currentSport;
+  final SportCategory currentSport;
   final bool isHome; // true se siamo nella home
 
   const PlayerCoordinatorBottomBar({
@@ -25,7 +25,7 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
         color: ATLColors.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

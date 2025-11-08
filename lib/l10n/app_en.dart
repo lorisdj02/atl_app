@@ -109,4 +109,83 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String get messageSentSuccess => 'Message sent successfully, we will respond as soon as possible';
+  
+  // Tournaments screen
+  @override
+  String get tournaments => 'Tournaments';
+  
+  @override
+  String get search => 'Search';
+  
+  @override
+  String get myTournaments => 'My\ntournaments';
+  
+  @override
+  String get nameOrCode => 'Name/Code';
+  
+  @override
+  String get filters => 'Filters';
+  
+  @override
+  String get selectCity => 'Select city';
+  
+  @override
+  String get all => 'All';
+  
+  @override
+  String get numberOfTeams => 'Number of Teams';
+  
+  @override
+  String get selectTeamCount => 'Select team count';
+  
+  @override
+  String get prizeRange => 'Prize Range';
+  
+  @override
+  String get feeRange => 'Fee Range';
+  
+  @override
+  String get reset => 'RESET';
+  
+  @override
+  String get apply => 'APPLY';
+  
+  @override
+  String get noTournamentsFavorite => 'No favorite tournaments';
+  
+  @override
+  String get noTournamentsRunning => 'No tournaments running.';
+  
+  @override
+  String get addToFavorites => 'Add tournaments to favorites!';
+  
+  @override
+  String get comeBackLater => 'Come back later!';
+  
+  @override
+  String get noTournamentsFound => 'No tournaments found!';
+  
+  @override
+  String get tryChangingFilters => 'Try changing the filters';
+  
+  @override
+  String get favoriteFeatureComingSoon => 'Favorite feature coming soon!';
+  
+  @override
+  String get tournamentDetails => 'Tournament details';
+  
+  @override
+  String get comingSoon => 'Coming soon';
+  
+  @override
+  String get darkMode => 'Dark mode';
+  
+  @override
+  String get darkModeComingSoon => 'Dark mode - Coming soon';
+  
+  @override
+  String teamsCount(int paid, int total) => '$paid/$total';
+  
+  @override
+  String teamsTotal(int count) => '$count teams';
 }

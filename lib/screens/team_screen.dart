@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
-import '../models/sport_type.dart';
-import '../models/user_info.dart';
+import '../models/sport_category.dart';
+import '../models/user.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 
 class TeamScreen extends StatelessWidget {
-  final SportType currentSport;
-  final UserInfo userInfo;
+  final SportCategory currentSport;
+  final User? user; // null se guest
 
   const TeamScreen({
     super.key,
     required this.currentSport,
-    required this.userInfo,
+    required this.user,
   });
+
+  bool get _isGuest => user == null;
 
   @override
   Widget build(BuildContext context) {
@@ -34,34 +36,70 @@ class TeamScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.group,
-              color: currentSport.primaryColor,
-              size: 80,
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.group,
+                  color: currentSport.primaryColor,
+                  size: 80,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Team',
+                  style: TextStyle(
+                    color: ATLColors.darkBlue,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Coming soon',
+                  style: TextStyle(
+                    color: ATLColors.subtext,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Team',
-              style: TextStyle(
-                color: ATLColors.darkBlue,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+          ),
+          
+          // Guest mode banner
+          if (_isGuest)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Guest mode: Login to create/join teams',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Coming soon',
-              style: TextStyle(
-                color: ATLColors.subtext,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
       bottomNavigationBar: PlayerCoordinatorBottomBar(
         currentIndex: 2,
@@ -70,7 +108,7 @@ class TeamScreen extends StatelessWidget {
             context: context,
             index: index,
             currentSport: currentSport,
-            userInfo: userInfo,
+            user: user, // Può essere null
             currentIndex: 2,
           );
         },

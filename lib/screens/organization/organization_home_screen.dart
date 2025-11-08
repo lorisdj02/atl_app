@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../models/user_info.dart';
 import '../../utils/atl_colors.dart';
+import 'package:atl_app/models/organization.dart';
+import 'package:atl_app/models/sport_category.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
-  final UserInfo userInfo;
+  final Organization user;
+  final SportCategory currentSport;
 
   const OrganizationHomeScreen({
     super.key,
-    required this.userInfo,
+    required this.user,
+    required this.currentSport,
   });
 
   @override
@@ -92,7 +95,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.userInfo.username,
+                        widget.user.orgName,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 18,
@@ -101,7 +104,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.userInfo.roleDisplayName,
+                        widget.user.roleDisplayName,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 14,

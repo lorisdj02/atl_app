@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
-import '../models/sport_type.dart';
-import '../models/user_info.dart';
+import '../models/sport_category.dart';
+import '../models/user.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  final SportType currentSport;
-  final UserInfo userInfo;
+  final SportCategory currentSport;
+  final User user;
 
   const ProfileScreen({
     super.key,
     required this.currentSport,
-    required this.userInfo,
+    required this.user,
   });
 
   @override
@@ -51,7 +51,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              userInfo.username,
+              user.username,
               style: const TextStyle(
                 color: ATLColors.darkBlue,
                 fontSize: 24,
@@ -66,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                userInfo.roleDisplayName,
+                user.roleDisplayName,
                 style: TextStyle(
                   color: currentSport.primaryColor,
                   fontSize: 14,
@@ -76,37 +76,36 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             // Info aggiuntive
-            if (userInfo.email != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.email,
-                      color: currentSport.primaryColor,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      userInfo.email!,
-                      style: const TextStyle(
-                        color: ATLColors.subtext,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.email,
+                    color: currentSport.primaryColor,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    user.email,
+                    style: const TextStyle(
+                      color: ATLColors.subtext,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 32),
             // Logout button (temporary)
             SizedBox(
@@ -155,7 +154,7 @@ class ProfileScreen extends StatelessWidget {
             context: context,
             index: index,
             currentSport: currentSport,
-            userInfo: userInfo,
+            user: user,
             currentIndex: 3,
           );
         },

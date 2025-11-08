@@ -39,7 +39,33 @@ abstract class AppLocalizations {
   String get registerButton;
   String get undo;
   
+  // Tournaments screen
+  String get tournaments;
+  String get search;
+  String get myTournaments;
+  String get nameOrCode;
+  String get filters;
+  String get selectCity;
+  String get all;
+  String get numberOfTeams;
+  String get selectTeamCount;
+  String get prizeRange;
+  String get feeRange;
+  String get reset;
+  String get apply;
+  String get noTournamentsFavorite;
+  String get noTournamentsRunning;
+  String get addToFavorites;
+  String get comeBackLater;
+  String get noTournamentsFound;
+  String get tryChangingFilters;
+  String get favoriteFeatureComingSoon;
+  String get tournamentDetails;
+  
   // Common
+  String get comingSoon;
+  String get darkMode;
+  String get darkModeComingSoon;
   String get appTitle;
   String get selectImageSource;
   String get gallery;
@@ -51,4 +77,8 @@ abstract class AppLocalizations {
   String get invalidEmail;
   String get invalidPhone;
   String get messageSentSuccess;
+  
+  // Teams count (methods with parameters)
+  String teamsCount(int paid, int total);
+  String teamsTotal(int count);
 }

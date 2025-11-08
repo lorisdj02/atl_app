@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
-import '../../models/sport_type.dart';
-import '../../models/user_info.dart';
+import '../../models/sport_category.dart';
+import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
 import '../shop_screen.dart';
 import '../tournaments_screen.dart';
@@ -9,11 +9,13 @@ import '../team_screen.dart';
 import '../profile_screen.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
-  final UserInfo userInfo;
+  final Player user;
+  final SportCategory currentSport;
 
   const PlayerHomeScreen({
     super.key,
-    required this.userInfo,
+    required this.user,
+    required this.currentSport,
   });
 
   @override
@@ -21,7 +23,7 @@ class PlayerHomeScreen extends StatefulWidget {
 }
 
 class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
-  SportType _currentSport = SportType.football;
+  SportCategory _currentSport = SportCategory.football;
 
   void _onNavTap(int index) {
     if (index == 4) {
@@ -34,44 +36,58 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         case 0:
           screen = ShopScreen(
             currentSport: _currentSport,
-            userInfo: widget.userInfo,
+            user: widget.user,
           );
           break;
         case 1:
           screen = TournamentsScreen(
             currentSport: _currentSport,
-            userInfo: widget.userInfo,
+            user: widget.user,
           );
           break;
         case 2:
           screen = TeamScreen(
             currentSport: _currentSport,
-            userInfo: widget.userInfo,
+            user: widget.user,
           );
           break;
         case 3:
           screen = ProfileScreen(
             currentSport: _currentSport,
-            userInfo: widget.userInfo,
+            user: widget.user,
           );
           break;
         default:
           return;
       }
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => screen),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => screen,
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       );
     }
   }
 
   void _showSportSelector() {
+    // TODO: Riabilitare quando ci saranno più sport
+    // Per ora mostra solo un messaggio
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Other sports coming soon! Football only for now.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+    
+    /* TODO: Riabilitare questo codice quando ci saranno più sport
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Sport'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: SportType.values.map((sport) {
+          children: SportCategory.values.map((sport) {
             return ListTile(
               leading: Icon(
                 sport.icon,
@@ -92,6 +108,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         ),
       ),
     );
+    */
   }
 
   @override
@@ -211,7 +228,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.userInfo.username,
+                        widget.user.username,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 18,
@@ -220,7 +237,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.userInfo.roleDisplayName,
+                        widget.user.roleDisplayName,
                         style: TextStyle(
                           color: _currentSport.primaryColor,
                           fontSize: 14,
