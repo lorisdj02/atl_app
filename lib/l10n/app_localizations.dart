@@ -81,4 +81,25 @@ abstract class AppLocalizations {
   // Teams count (methods with parameters)
   String teamsCount(int paid, int total);
   String teamsTotal(int count);
+  
+  // Tournament Status
+  String get statusCreated;
+  String get statusScheduled;
+  String get statusFinished;
+  String get statusCanceled;
+  
+  // Tournament Phase
+  String get phaseGroupStage;
+  String get phaseRoundOf32;
+  String get phaseRoundOf16;
+  String get phaseRoundOf8;
+  String get phaseQuarterFinals;
+  String get phaseSemiFinals;
+  String get phaseFinal;
+  
+  // Tournament Format
+  String get formatSingleMatchOnly;
+  String get formatHomeAndAwayGroupStage;
+  String get formatHomeAndAwayKnockoutStage;
+  String get formatFullHomeAndAway;
 }

@@ -62,7 +62,7 @@ class TournamentCard extends StatelessWidget {
                       const Icon(Icons.person, size: 16, color: ATLColors.darkBlue),
                       const SizedBox(width: 4),
                       Text(
-                        'Coordinator${tournament.coordinatorId}', // TODO: Nome coordinatore reale
+                        '${tournament.coordinator.username}', // TODO: Nome coordinatore reale
                         style: const TextStyle(
                           fontSize: 12,
                           color: ATLColors.darkBlue,
@@ -148,7 +148,7 @@ class TournamentCard extends StatelessWidget {
                 const Icon(Icons.location_on, size: 16, color: ATLColors.subtext),
                 const SizedBox(width: 4),
                 Text(
-                  'Field, ${tournament.cityName}', // TODO: Nome campo reale
+                  '${tournament.field.name}, ${tournament.city}', // TODO: Nome campo reale
                   style: const TextStyle(
                     fontSize: 12,
                     color: ATLColors.subtext,

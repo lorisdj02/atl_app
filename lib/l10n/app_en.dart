@@ -188,4 +188,52 @@ class AppLocalizationsEn extends AppLocalizations {
   
   @override
   String teamsTotal(int count) => '$count teams';
+  
+  // Tournament Status
+  @override
+  String get statusCreated => 'Created';
+  
+  @override
+  String get statusScheduled => 'Scheduled';
+  
+  @override
+  String get statusFinished => 'Finished';
+  
+  @override
+  String get statusCanceled => 'Canceled';
+  
+  // Tournament Phase
+  @override
+  String get phaseGroupStage => 'Group Stage';
+  
+  @override
+  String get phaseRoundOf32 => 'Round of 32';
+  
+  @override
+  String get phaseRoundOf16 => 'Round of 16';
+  
+  @override
+  String get phaseRoundOf8 => 'Round of 8';
+  
+  @override
+  String get phaseQuarterFinals => 'Quarter Finals';
+  
+  @override
+  String get phaseSemiFinals => 'Semi Finals';
+  
+  @override
+  String get phaseFinal => 'Final';
+  
+  // Tournament Format
+  @override
+  String get formatSingleMatchOnly => 'Single match only';
+  
+  @override
+  String get formatHomeAndAwayGroupStage => 'Home and away (Group Stage only)';
+  
+  @override
+  String get formatHomeAndAwayKnockoutStage => 'Home and away (Knockout Stage only)';
+  
+  @override
+  String get formatFullHomeAndAway => 'Full home and away';
 }

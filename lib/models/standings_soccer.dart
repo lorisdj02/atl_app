@@ -1,7 +1,7 @@
 /// Modello per le classifiche dei tornei di calcio
 class StandingsSoccer {
-  final int tournamentId;
   final int teamId;
+  final String teamName;
   final String group;
   final int points;
   final int wins;
@@ -9,8 +9,8 @@ class StandingsSoccer {
   final int loss;
 
   StandingsSoccer({
-    required this.tournamentId,
     required this.teamId,
+    required this.teamName,
     this.group = 'A',
     this.points = 0,
     this.wins = 0,
@@ -20,19 +20,18 @@ class StandingsSoccer {
 
   factory StandingsSoccer.fromJson(Map<String, dynamic> json) {
     return StandingsSoccer(
-      tournamentId: json['tournament_id'],
       teamId: json['team_id'],
       group: json['group'] ?? 'A',
       points: json['points'] ?? 0,
       wins: json['wins'] ?? 0,
       draw: json['draw'] ?? 0,
       loss: json['loss'] ?? 0,
+      teamName: json['team_name'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tournament_id': tournamentId,
       'team_id': teamId,
       'group': group,
       'points': points,

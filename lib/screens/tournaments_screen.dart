@@ -300,7 +300,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
   List<Tournament> _applyFilters(List<Tournament> tournaments) {
     return tournaments.where((t) {
       // Filtro città
-      if (_selectedCity != null && t.cityName != _selectedCity) {
+      if (_selectedCity != null && t.city != _selectedCity) {
         return false;
       }
       

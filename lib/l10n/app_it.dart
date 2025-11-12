@@ -188,4 +188,52 @@ class AppLocalizationsIt extends AppLocalizations {
   
   @override
   String teamsTotal(int count) => '$count squadre';
+  
+  // Tournament Status
+  @override
+  String get statusCreated => 'Creato';
+  
+  @override
+  String get statusScheduled => 'Programmato';
+  
+  @override
+  String get statusFinished => 'Terminato';
+  
+  @override
+  String get statusCanceled => 'Cancellato';
+  
+  // Tournament Phase
+  @override
+  String get phaseGroupStage => 'Fase a Gironi';
+  
+  @override
+  String get phaseRoundOf32 => 'Sedicesimi di Finale';
+  
+  @override
+  String get phaseRoundOf16 => 'Ottavi di Finale';
+  
+  @override
+  String get phaseRoundOf8 => 'Quarti di Finale';
+  
+  @override
+  String get phaseQuarterFinals => 'Quarti di Finale';
+  
+  @override
+  String get phaseSemiFinals => 'Semifinali';
+  
+  @override
+  String get phaseFinal => 'Finale';
+  
+  // Tournament Format
+  @override
+  String get formatSingleMatchOnly => 'Solo partite secche';
+  
+  @override
+  String get formatHomeAndAwayGroupStage => 'Andata e ritorno (Solo Gironi)';
+  
+  @override
+  String get formatHomeAndAwayKnockoutStage => 'Andata e ritorno (Solo Fasi Finali)';
+  
+  @override
+  String get formatFullHomeAndAway => 'Andata e ritorno (Completo)';
 }

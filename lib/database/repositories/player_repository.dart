@@ -38,9 +38,7 @@ class PlayerRepository extends BaseRepository<Player> {
       name: 'Jane',
       surname: 'Smith',
       birthdate: DateTime(1998, 8, 22),
-      vip: true,
-      vipStart: DateTime.now().subtract(const Duration(days: 5)),
-      vipEnd: DateTime.now().add(const Duration(days: 25)),
+      isVip: true,
     ),
   ];
 }
