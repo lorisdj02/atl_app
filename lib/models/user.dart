@@ -3,13 +3,15 @@ import 'player.dart';
 import 'coordinator.dart';
 import 'referee.dart';
 import 'organization.dart';
+import 'team.dart';
 
 /// Enum per i ruoli utente
 enum UserRole {
   player,
   coordinator,
   referee,
-  organization;
+  organization,
+  guest;
 
   String get displayName {
     switch (this) {
@@ -21,12 +23,14 @@ enum UserRole {
         return 'Referee';
       case UserRole.organization:
         return 'Organization';
+      case UserRole.guest:
+        return 'Guest';
     }
   }
 }
 
 /// Modello astratto User dal database
-abstract class User {
+class User {
   final int id;
   final String username;
   final String email;
@@ -36,11 +40,11 @@ abstract class User {
   final DateTime? lastWithdraw;
   final String? stripeId;
   final UserRole role;
-  final bool vip;
-  final DateTime? vipStart;
-  final DateTime? vipEnd;
-  final DateTime? lastLogin;
+  final bool isVip;
   final String phone;
+  final String? passwordMD5;
+  final String? profilePicture;
+  final Team? team;
 
   User({
     required this.id,
@@ -52,11 +56,11 @@ abstract class User {
     this.lastWithdraw,
     this.stripeId,
     required this.role,
-    this.vip = false,
-    this.vipStart,
-    this.vipEnd,
-    this.lastLogin,
+    this.isVip = false,
     required this.phone,
+    this.passwordMD5,
+    this.profilePicture,
+    this.team,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
@@ -72,6 +76,8 @@ abstract class User {
         return Referee.fromJson(json);
       case UserRole.organization:
         return Organization.fromJson(json);
+      case UserRole.guest:
+        return throw Exception('Guest role cannot be instantiated from JSON');
     }
   }
 
@@ -86,24 +92,9 @@ abstract class User {
       'last_withdraw': lastWithdraw?.toIso8601String(),
       'stripe_id': stripeId,
       'role': role.name.toUpperCase(),
-      'vip': vip,
-      'vip_start': vipStart?.toIso8601String(),
-      'vip_end': vipEnd?.toIso8601String(),
-      'last_login': lastLogin?.toIso8601String(),
+      'vip': isVip,
       'phone': phone,
     };
-  }
-
-  /// Verifica se l'utente ha VIP attivo
-  bool get isVipActive {
-    if (!vip || vipEnd == null) return false;
-    return DateTime.now().isBefore(vipEnd!);
-  }
-
-  /// Giorni rimanenti VIP
-  int? get vipDaysRemaining {
-    if (!isVipActive || vipEnd == null) return null;
-    return vipEnd!.difference(DateTime.now()).inDays;
   }
 
   /// Formatta il balance come stringa con valuta

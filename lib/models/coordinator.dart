@@ -16,15 +16,13 @@ class Coordinator extends User {
     required super.balance,
     super.lastWithdraw,
     super.stripeId,
-    super.vip = false,
-    super.vipStart,
-    super.vipEnd,
-    super.lastLogin,
+    super.isVip = false,
     required super.phone,
     required this.coordinatorId,
     required this.name,
     required this.surname,
     required this.level,
+    super.passwordMD5,
   }) : super(role: UserRole.coordinator);
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
@@ -39,16 +37,7 @@ class Coordinator extends User {
           ? DateTime.parse(json['last_withdraw'])
           : null,
       stripeId: json['stripe_id'],
-      vip: json['vip'] ?? false,
-      vipStart: json['vip_start'] != null
-          ? DateTime.parse(json['vip_start'])
-          : null,
-      vipEnd: json['vip_end'] != null
-          ? DateTime.parse(json['vip_end'])
-          : null,
-      lastLogin: json['last_login'] != null
-          ? DateTime.parse(json['last_login'])
-          : null,
+      isVip: json['isVip'] ?? false,
       phone: json['phone'],
       coordinatorId: json['coordinator_id'],
       name: json['name'],

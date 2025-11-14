@@ -1,3 +1,5 @@
+import 'package:atl_app/models/sport_category.dart';
+
 /// Modello Field dal database
 class Field {
   final int id;
@@ -8,6 +10,7 @@ class Field {
   final double costTournament;
   final double costPrivate;
   final String city;
+  final SportCategory? sportCategory;
 
   Field({
     required this.id,
@@ -18,6 +21,7 @@ class Field {
     required this.costTournament,
     required this.costPrivate,
     required this.city,
+    required this.sportCategory,
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {
@@ -30,6 +34,7 @@ class Field {
       costTournament: double.parse(json['cost_tournament'].toString()),
       costPrivate: double.parse(json['cost_private'].toString()),
       city: json['city'] ?? '',
+      sportCategory: json['sport_category'] != null ? SportCategory.values.firstWhere((e) => e.toJSON() == json['sport_category']) : null,
     );
   }
 

@@ -1,3 +1,5 @@
+import 'package:atl_app/models/team.dart';
+
 import 'user.dart';
 
 /// Modello Player dal database
@@ -6,6 +8,7 @@ class Player extends User {
   final String name;
   final String surname;
   final DateTime? birthdate;
+  final Team? team;
 
   Player({
     required super.id,
@@ -16,15 +19,14 @@ class Player extends User {
     required super.balance,
     super.lastWithdraw,
     super.stripeId,
-    super.vip = false,
-    super.vipStart,
-    super.vipEnd,
-    super.lastLogin,
+    super.isVip = false,
     required super.phone,
     required this.playerId,
     required this.name,
     required this.surname,
     this.birthdate,
+    super.passwordMD5,
+    this.team,
   }) : super(role: UserRole.player);
 
   factory Player.fromJson(Map<String, dynamic> json) {
@@ -39,16 +41,7 @@ class Player extends User {
           ? DateTime.parse(json['last_withdraw'])
           : null,
       stripeId: json['stripe_id'],
-      vip: json['vip'] ?? false,
-      vipStart: json['vip_start'] != null
-          ? DateTime.parse(json['vip_start'])
-          : null,
-      vipEnd: json['vip_end'] != null
-          ? DateTime.parse(json['vip_end'])
-          : null,
-      lastLogin: json['last_login'] != null
-          ? DateTime.parse(json['last_login'])
-          : null,
+      isVip: json['isVip'] ?? false,
       phone: json['phone'],
       playerId: json['player_id'],
       name: json['name'],
@@ -56,6 +49,7 @@ class Player extends User {
       birthdate: json['birthdate'] != null
           ? DateTime.parse(json['birthdate'])
           : null,
+      team: json['team'] != null ? Team.fromJson(json['team']) : null,
     );
   }
 

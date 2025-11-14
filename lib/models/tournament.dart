@@ -110,6 +110,7 @@ class Tournament {
   final double prize2;
   final bool atlEvent;
   final TournamentPhase phase;
+  final String? photoURL;
 
   Tournament({
     required this.id,
@@ -132,6 +133,7 @@ class Tournament {
     this.atlEvent = false,
     this.phase = TournamentPhase.group,
     required this.name,
+    this.photoURL,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {

@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/user_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../models/sport_category.dart';
-import '../models/user.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import 'login_screen.dart';
+import '../models/user.dart';
 
 class ShopScreen extends StatelessWidget {
   final SportCategory currentSport;
-  final User? user; // null se guest
 
   const ShopScreen({
     super.key,
     required this.currentSport,
-    required this.user,
   });
-
-  bool get _isGuest => user == null;
-
+  
   @override
   Widget build(BuildContext context) {
+
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -65,7 +67,7 @@ class ShopScreen extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                if (_isGuest) ...[
+                if (userProvider.isGuest) ...[
                   const SizedBox(height: 24),
                   const Text(
                     'Login to purchase items',
@@ -81,7 +83,7 @@ class ShopScreen extends StatelessWidget {
           ),
           
           // Banner guest mode
-          if (_isGuest)
+          if (userProvider.isGuest)
             Positioned(
               top: 16,
               left: 16,
@@ -128,7 +130,6 @@ class ShopScreen extends StatelessWidget {
             context: context,
             index: index,
             currentSport: currentSport,
-            user: user, // Può essere null
             currentIndex: 0,
           );
         },

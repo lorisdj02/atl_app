@@ -116,7 +116,6 @@ class GuestProfileScreen extends StatelessWidget {
             context: context,
             index: index,
             currentSport: SportCategory.football,
-            user: null, // Guest
             currentIndex: 3,
           );
         },

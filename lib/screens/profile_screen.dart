@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../models/sport_category.dart';
-import '../models/user.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final SportCategory currentSport;
-  final User user;
 
   const ProfileScreen({
     super.key,
     required this.currentSport,
-    required this.user,
   });
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).activeUser!;
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -113,6 +114,7 @@ class ProfileScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   // TODO: Implement proper logout logic
+                  
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const LoginScreen()),
                     (route) => false,
@@ -154,7 +156,6 @@ class ProfileScreen extends StatelessWidget {
             context: context,
             index: index,
             currentSport: currentSport,
-            user: user,
             currentIndex: 3,
           );
         },

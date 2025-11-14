@@ -1,5 +1,6 @@
 import '../../models/field.dart';
 import 'base_repository.dart';
+import '../../models/sport_category.dart';
 
 /// Repository per la gestione dei campi sportivi
 class FieldRepository extends BaseRepository<Field> {
@@ -23,6 +24,7 @@ class FieldRepository extends BaseRepository<Field> {
           costTournament: 150.00,
           costPrivate: 80.00,
           city: 'Milano',
+          sportCategory: SportCategory.football,
         ),
         Field(
           id: 2,
@@ -33,6 +35,7 @@ class FieldRepository extends BaseRepository<Field> {
           costTournament: 120.00,
           costPrivate: 60.00,
           city: 'Milano',
+          sportCategory: SportCategory.football,
         ),
         Field(
           id: 3,
@@ -43,6 +46,7 @@ class FieldRepository extends BaseRepository<Field> {
           costTournament: 200.00,
           costPrivate: 100.00,
           city: 'Roma',
+          sportCategory: SportCategory.football,
         ),
         Field(
           id: 4,
@@ -53,6 +57,7 @@ class FieldRepository extends BaseRepository<Field> {
           costTournament: 130.00,
           costPrivate: 70.00,
           city: 'Roma',
+          sportCategory: SportCategory.football,
         ),
       ];
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../widgets/atl_button.dart';
 import '../widgets/atl_textfield.dart';
 import '../widgets/atl_step_indicator.dart';
@@ -8,6 +9,7 @@ import '../widgets/atl_role_selector.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
 import 'organization_contact_screen.dart';
+import '../providers/user_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -205,6 +207,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       return;
     }
+    
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
     
     // TODO: Implement registration logic
     print('Registrazione: ruolo=$_selectedRole');

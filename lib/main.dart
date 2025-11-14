@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'atl_controller.dart';
 import 'database/db_controller.dart';
+import 'providers/user_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -8,5 +10,12 @@ void main() async {
   // Inizializza il database
   await DB.initialize();
   
-  runApp(const AtlController());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: const AtlController(),
+    ),
+  );
 }

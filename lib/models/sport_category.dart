@@ -85,4 +85,6 @@ extension SportCategoryExtension on SportCategory {
       //   return Icons.sports_tennis;
     }
   }
+
+  String toJSON() => name;
 }

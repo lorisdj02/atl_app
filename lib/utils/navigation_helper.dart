@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
-import '../models/user.dart';
 import '../screens/shop_screen.dart';
 import '../screens/tournaments_screen.dart';
 import '../screens/team_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/guest/guest_profile_screen.dart';
 import '../screens/guest/guest_home_screen.dart';
-/*
-import '../screens/coordinator/coordinator_home_screen.dart';
-import '../screens/organization/organization_home_screen.dart';
-import '../screens/player/player_home_screen.dart';
-import '../screens/referee/referee_home_screen.dart';
-import '../models/coordinator.dart';
-import '../models/player.dart';
-import '../models/referee.dart';
-import '../models/organization.dart';
-*/
 import '../screens/home_router.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
+
+  
 
 
 class NavigationHelper {
@@ -26,7 +19,6 @@ class NavigationHelper {
     required BuildContext context,
     required int index,
     required SportCategory currentSport,
-    required User? user,
     required int currentIndex,
   }) {
     // Se clicco sulla sezione corrente, non fare nulla
@@ -34,69 +26,40 @@ class NavigationHelper {
       return;
     }
 
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
     Widget targetScreen;
 
     switch (index) {
       case 0: // Shop
         targetScreen = ShopScreen(
           currentSport: currentSport,
-          user: user,
         );
         break;
       case 1: // Tournaments
         targetScreen = TournamentsScreen(
           currentSport: currentSport,
-          user: user,
         );
         break;
       case 2: // Team
         targetScreen = TeamScreen(
           currentSport: currentSport,
-          user: user,
         );
         break;
       case 3: // Profile
-        if (user == null) {
+        if (userProvider.isGuest) {
           targetScreen = GuestProfileScreen(currentSport: currentSport);
         } else {
           targetScreen = ProfileScreen(
             currentSport: currentSport,
-            user: user,
           );
         }
         break;
       case 4: // Home
         // Naviga alla home corretta in base al ruolo
-        if (user == null) {
+        if (userProvider.isGuest) {
           targetScreen = GuestHomeScreen(currentSport: currentSport);
-        } else {/*
-          switch (user.role) {
-            case UserRole.coordinator:
-              targetScreen = CoordinatorHomeScreen(
-                currentSport: currentSport,
-                user: user as Coordinator,
-              );
-              break;
-            case UserRole.player:
-              targetScreen = PlayerHomeScreen(
-                currentSport: currentSport,
-                user: user as Player,
-              );
-              break;
-            case UserRole.referee:
-              targetScreen = RefereeHomeScreen(
-                currentSport: currentSport,
-                user: user as Referee,
-              );
-              break;
-            case UserRole.organization:
-              targetScreen = OrganizationHomeScreen(
-                currentSport: currentSport,
-                user: user as Organization,
-              );
-              break;
-          }*/
-          targetScreen = HomeRouter.getHomeScreen(user);
+        } else {
+          targetScreen = HomeRouter.getHomeScreen(userProvider.activeUser!);
         }
 
         // Rimuovi tutte le schermate e vai alla home

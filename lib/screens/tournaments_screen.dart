@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../widgets/tournament_card.dart';
 import '../widgets/loading_atl.dart';
@@ -13,17 +15,16 @@ import '../l10n/app_localizations.dart';
 
 class TournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;
-  final User? user; // null se guest
 
   const TournamentsScreen({
     super.key,
     required this.currentSport,
-    required this.user,
   });
 
   @override
   State<TournamentsScreen> createState() => _TournamentsScreenState();
 }
+
 
 class _TournamentsScreenState extends State<TournamentsScreen> with SingleTickerProviderStateMixin {
   List<Tournament>? _tournaments;
@@ -54,14 +55,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
            _feeRange != const RangeValues(0, 50);
   }
 
-  bool get _isGuest => widget.user == null;
 
   @override
   void initState() {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
     super.initState();
     // Se guest, solo 1 tab (Search), altrimenti 2 tabs
-    _tabController = TabController(length: _isGuest ? 1 : 2, vsync: this);
-    if (!_isGuest) {
+    _tabController = TabController(length: userProvider.isGuest ? 1 : 2, vsync: this);
+    if (!userProvider.isGuest) {
       _tabController.addListener(() {
         setState(() {
           _showMyTournaments = _tabController.index == 1;
@@ -109,7 +110,10 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
   }
 
   void _toggleFavorite(Tournament tournament) {
-    if (_isGuest) {
+
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    
+    if (userProvider.isGuest) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Login required to add favorites'),
@@ -325,6 +329,9 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -352,11 +359,11 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(_isGuest ? 50 : 100),
+          preferredSize: Size.fromHeight(userProvider.isGuest ? 50 : 100),
           child: Column(
             children: [
               // Tabs: Search / My tournaments - SOLO se non guest
-              if (!_isGuest)
+              if (!userProvider.isGuest)
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   height: 50,
@@ -422,7 +429,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
       body: Stack(
         children: [
           // Guest mode banner
-          if (_isGuest)
+          if (userProvider.isGuest)
             Positioned(
               top: 0,
               left: 0,
@@ -451,7 +458,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
           
           // Lista tornei
           Positioned.fill(
-            top: _isGuest ? 44 : 0,
+            top: userProvider.isGuest ? 44 : 0,
             child: _isLoading
                 ? const LoadingATL()
                 : _tournaments == null || _tournaments!.isEmpty
@@ -547,7 +554,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                           ),
           ),
           // Floating Action Button "New" - SOLO per coordinatori in My Tournaments
-          if (!_isGuest && widget.user != null && widget.user!.role == UserRole.coordinator && _showMyTournaments)
+          if (!Provider.of<UserProvider>(context).isGuest && Provider.of<UserProvider>(context).activeUser != null && Provider.of<UserProvider>(context).activeUser!.role == UserRole.coordinator && _showMyTournaments)
             Positioned(
               right: 16,
               bottom: 16,
@@ -572,7 +579,6 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
             context: context,
             index: index,
             currentSport: widget.currentSport,
-            user: widget.user,
             currentIndex: 1,
           );
         },

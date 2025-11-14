@@ -13,6 +13,7 @@ abstract class AppLocalizations {
   String get logIn;
   String get register;
   String get continueAsGuest;
+  String get invalidCredentials;
   
   // Forgot Password Screen
   String get forgotPasswordTitle;

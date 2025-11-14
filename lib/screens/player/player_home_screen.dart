@@ -36,25 +36,21 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         case 0:
           screen = ShopScreen(
             currentSport: _currentSport,
-            user: widget.user,
           );
           break;
         case 1:
           screen = TournamentsScreen(
             currentSport: _currentSport,
-            user: widget.user,
           );
           break;
         case 2:
           screen = TeamScreen(
             currentSport: _currentSport,
-            user: widget.user,
           );
           break;
         case 3:
           screen = ProfileScreen(
             currentSport: _currentSport,
-            user: widget.user,
           );
           break;
         default:

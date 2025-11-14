@@ -29,21 +29,18 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
           // Shop - può visualizzare ma non acquistare
           screen = ShopScreen(
             currentSport: _currentSport,
-            user: null, // null indica modalità guest
           );
           break;
         case 1:
           // Tournaments - può visualizzare
           screen = TournamentsScreen(
             currentSport: _currentSport,
-            user: null, // null indica modalità guest
           );
           break;
         case 2:
           // Team - può visualizzare
           screen = TeamScreen(
             currentSport: _currentSport,
-            user: null, // null indica modalità guest
           );
           break;
         case 3:

@@ -4,6 +4,7 @@ import 'repositories/tournament_repository.dart';
 import 'repositories/player_repository.dart';
 import 'repositories/coordinator_repository.dart';
 import 'repositories/field_repository.dart';
+import 'repositories/team_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -24,6 +25,7 @@ class DB {
   static late final PlayerRepository Players;
   static late final CoordinatorRepository Coordinators;
   static late final FieldRepository Fields;
+  static late final TeamRepository Teams;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -31,6 +33,8 @@ class DB {
     Tournaments = TournamentRepository();
     Players = PlayerRepository();
     Coordinators = CoordinatorRepository();
+    Fields = FieldRepository();
+    Teams = TeamRepository();
     // TODO: Inizializza altri repository
   }
 

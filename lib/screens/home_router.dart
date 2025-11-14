@@ -1,3 +1,4 @@
+import 'package:atl_app/screens/guest/guest_home_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../models/player.dart';
@@ -22,6 +23,8 @@ class HomeRouter {
         return RefereeHomeScreen(user: user as Referee, currentSport: SportCategory.football);
       case UserRole.organization:
         return OrganizationHomeScreen(user: user as Organization, currentSport: SportCategory.football);
+      default:
+        return GuestHomeScreen(currentSport: SportCategory.football);
     }
   }
 }

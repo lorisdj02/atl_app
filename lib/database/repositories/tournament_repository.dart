@@ -1,7 +1,7 @@
 import '../db_controller.dart';
 import '../../models/tournament.dart';
 import 'base_repository.dart';
-
+import '../../models/field.dart';
 class TournamentRepository extends BaseRepository<Tournament> {
   @override
   String get endpoint => 'tournaments';
@@ -35,6 +35,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       status: TournamentStatus.scheduled,
     ),
     // Torneo pieno/schedulato (grigio)
+    
     Tournament(
       name: 'City Cup Milano',
       field: DB.Fields.mockData[1],
@@ -126,6 +127,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize2: 500.00,
       status: TournamentStatus.created,
     ),
+    
   ];
 
   /// Metodo custom: ottieni tornei per coordinatore
