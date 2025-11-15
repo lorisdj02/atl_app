@@ -16,4 +16,11 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
   List<Coordinator> get mockData => [
     ...DB.Users.mockData.whereType<Coordinator>(),
   ];
+
+  Future<Coordinator> getByCoordinatorId(int coordinatorId) async {
+    final allCoordinators = await getAll();
+    return allCoordinators.firstWhere(
+      (coordinator) => coordinator.coordinatorId == coordinatorId,
+    );
+  }
 }

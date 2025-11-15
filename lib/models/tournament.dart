@@ -92,8 +92,8 @@ enum TournamentPhase {
 class Tournament {
   final int id;
   final String name;
-  final Coordinator coordinator;
-  final Field field;
+  final int coordinatorId;
+  final int fieldId;
   final String city;
   final DateTime? startDate;
   final String sportName;
@@ -111,19 +111,21 @@ class Tournament {
   final bool atlEvent;
   final TournamentPhase phase;
   final String? photoURL;
+  bool? isFavorite;
+  bool? isParticipating;
 
   Tournament({
     required this.id,
-    required this.coordinator,
-    required this.field,
+    required this.coordinatorId,
+    required this.fieldId,
     required this.city,
     this.startDate,
     required this.sportName,
-    this.numTeams = 8,
-    this.paidTeams = 0,
-    this.numGroups = 2,
-    this.round2 = 0,
-    this.qualified = 4,
+    required this.numTeams,
+    required this.paidTeams,
+    required this.numGroups,
+    required this.round2,
+    required this.qualified,
     required this.description,
     required this.payCoordinator,
     this.status = TournamentStatus.created,
@@ -134,13 +136,19 @@ class Tournament {
     this.phase = TournamentPhase.group,
     required this.name,
     this.photoURL,
+    this.isFavorite = false,
+    this.isParticipating = false,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
     return Tournament(
       id: json['id'],
-      coordinator: Coordinator.fromJson(json['coordinator']),
-      field: Field.fromJson(json['field']),
+      coordinatorId: json['coordinator'] is int 
+          ? json['coordinator'] 
+          : json['coordinator']['id'],
+      fieldId: json['field'] is int 
+          ? json['field'] 
+          : json['field']['id'],
       city: json['city'] ?? '',
       startDate: json['start_date'] != null
           ? DateTime.parse(json['start_date'])
@@ -166,8 +174,8 @@ class Tournament {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'coordinator': coordinator.toJson(),
-      'field': field.toJson(),
+      'coordinator': coordinatorId,
+      'field': fieldId,
       'city': city,
       'start_date': startDate?.toIso8601String(),
       'sport_name': sportName,
@@ -184,6 +192,7 @@ class Tournament {
       'prize2': prize2,
       'atl_event': atlEvent,
       'phase': phase.name.toUpperCase(),
+      'name': name,
     };
   }
 

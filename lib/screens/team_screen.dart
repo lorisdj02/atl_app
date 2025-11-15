@@ -12,6 +12,8 @@ import '../widgets/loading_atl.dart';
 import '../widgets/atl_floating_button.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../screens/my_team_screen.dart';
+import '../screens/create_team_screen.dart';
+import '../models/user.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -29,6 +31,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   List<Team>? _teams;
   bool _isLoading = true;
   late TabController _tabController;
+  int _previousTabIndex = 0; // Indice del tab precedente
   
   // Filtri
   final TextEditingController _searchController = TextEditingController();
@@ -54,7 +57,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    final isPlayer = userProvider.activeUser?.role == 'player';
+    final isPlayer = userProvider.activeUser?.role == UserRole.player;
     
     // Guest: 2 tabs (Search + Ranks)
     // Coordinator: 2 tabs (Search + Ranks)
@@ -68,23 +71,34 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
       _tabController.addListener(() {
         // Naviga a My Team screen quando il tab 1 è selezionato
         if (_tabController.index == 1 && _tabController.indexIsChanging) {
-          // Resetta subito al tab 0 per evitare l'animazione
+          // Resetta subito al tab precedente per evitare l'animazione
           Future.microtask(() {
             if (mounted) {
-              _tabController.index = 0;
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => MyTeamScreen(currentSport: widget.currentSport),
                 ),
-              );
+              ).then((_) {
+                // Torna al tab precedente (Search o Ranks)
+                if (mounted) {
+                  _tabController.index = _previousTabIndex;
+                  _loadTeams(); // Ricarica i dati
+                }
+              });
+              // Resetta immediatamente al tab precedente
+              _tabController.index = _previousTabIndex;
             }
           });
         } else if (_tabController.index != 1) {
+          // Salva l'indice corrente come precedente solo se non è My team
+          _previousTabIndex = _tabController.index;
           _loadTeams();
         }
       });
     } else {
       _tabController.addListener(() {
+        // Salva l'indice corrente come precedente
+        _previousTabIndex = _tabController.index;
         _loadTeams();
       });
     }
@@ -103,7 +117,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
     setState(() => _isLoading = true);
     try {
       final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-      final isPlayer = userProvider.activeUser?.role == 'player';
+      final isPlayer = userProvider.activeUser?.role == UserRole.player;
       List<Team> teams = await DB.Teams.getAll();
       
       // Calcola l'indice di Ranks in base alla presenza di My team tab
@@ -302,10 +316,13 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final UserProvider userProvider = Provider.of<UserProvider>(context);
-    final isPlayer = userProvider.activeUser?.role == 'player';
+    final isPlayer = userProvider.activeUser?.role == UserRole.player;
     final isGuest = userProvider.isGuest;
     final currentTab = _tabController.index;
     final showMyTeamTab = !isGuest && isPlayer;
+
+    // Debug: verifica lo stato
+    print('DEBUG TeamScreen - isGuest: $isGuest, isPlayer: $isPlayer, showMyTeamTab: $showMyTeamTab, role: ${userProvider.activeUser?.role}');
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -521,10 +538,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                               final showRankPts = currentTab == ranksTabIndex;
                               
                               return TeamWidget(
-                                name: team.name,
-                                captainName: team.captain.name,
-                                playersCount: team.players,
-                                isVip: team.vip,
+                                team: team,
                                 imageUrl: team.imageUrl,
                                 rankPts: showRankPts ? (team.rankPts ?? 0) : null,
                               );
@@ -533,16 +547,20 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
           ),
           
           // Floating Action Button "Crea" - SOLO per player (non guest) in Search tab senza team
-          if (!isGuest && isPlayer && currentTab == 0 && userProvider.activeUser?.team == null)
+          if (!isGuest && isPlayer && currentTab == 0 && userProvider.activeUser?.teamId == null)
             Positioned(
               right: 16,
               bottom: 16,
               child: ATLFloatingButton(
-                onPressed: () {
-                  // TODO: Navigare a schermata creazione team
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Creazione team coming soon')),
+                onPressed: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CreateTeamScreen(currentSport: widget.currentSport),
+                    ),
                   );
+                  
+                  // Ricarica sempre i team quando si torna
+                  _loadTeams();
                 },
                 backgroundColor: widget.currentSport.primaryColor,
                 icon: Icons.add,

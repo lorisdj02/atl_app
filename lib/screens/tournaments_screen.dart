@@ -12,6 +12,7 @@ import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import '../database/db_controller.dart';
 import '../l10n/app_localizations.dart';
+import 'dart:async';
 
 class TournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -52,7 +53,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
     return _selectedCity != null ||
            _selectedNumTeams != null ||
            _prizeRange != const RangeValues(0, 2000) ||
-           _feeRange != const RangeValues(0, 50);
+           _feeRange != const RangeValues(0, 50) ||
+           _searchController.text.isNotEmpty;  // Aggiungi questo
   }
 
 
@@ -84,15 +86,16 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
     setState(() => _isLoading = true);
     
     try {
-      List<Tournament> tournaments = await DB.Tournaments.getActive();
+      List<Tournament> tournaments;
       
       // In "My tournaments" mostra solo quelli con cuore (favorite o participating)
       if (_showMyTournaments) {
-        tournaments = tournaments.where((t) {
-          final status = _getUserStatus(t);
-          return status == TournamentUserStatus.favorite ||
-                 status == TournamentUserStatus.participating;
-        }).toList();
+        tournaments = await DB.Tournaments.getMyTournamentsByPlayerId(Provider.of<UserProvider>(context, listen: false).activeUser!.id);
+        print('🔧 [DEBUG] Loaded ${tournaments.length} favorite tournaments for user ${Provider.of<UserProvider>(context, listen: false).activeUser!.id}');
+      }
+      else {
+        tournaments = await DB.Tournaments.getActive();
+        print('🔧 [DEBUG] Loaded ${tournaments.length} active tournaments');
       }
       
       setState(() {
@@ -107,28 +110,6 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
         );
       }
     }
-  }
-
-  void _toggleFavorite(Tournament tournament) {
-
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    
-    if (userProvider.isGuest) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login required to add favorites'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context).favoriteFeatureComingSoon),
-        duration: const Duration(seconds: 1),
-      ),
-    );
   }
 
   void _showFilterDialog() {
@@ -289,6 +270,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                   _feeRange = _tempFeeRange;
                 });
                 Navigator.pop(context);
+                // Aggiungi questa riga:
+                _loadTournaments();
               },
               style: TextButton.styleFrom(
                 foregroundColor: ATLColors.darkBlue,
@@ -313,13 +296,15 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
         return false;
       }
       
-      // Filtro premio
-      if (t.prize1 < _prizeRange.start || t.prize1 > _prizeRange.end) {
+      // Filtro premio - APPLICA SOLO SE MODIFICATO
+      if (_prizeRange != const RangeValues(0, 2000) && 
+          (t.prize1 < _prizeRange.start || t.prize1 > _prizeRange.end)) {
         return false;
       }
       
-      // Filtro fee
-      if (t.fee < _feeRange.start || t.fee > _feeRange.end) {
+      // Filtro fee - APPLICA SOLO SE MODIFICATO
+      if (_feeRange != const RangeValues(0, 50) && 
+          (t.fee < _feeRange.start || t.fee > _feeRange.end)) {
         return false;
       }
       
@@ -330,6 +315,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
   @override
   Widget build(BuildContext context) {
     
+    Timer? _debounce;
     final UserProvider userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
@@ -403,7 +389,28 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                           ),
                         ),
                         onChanged: (value) {
-                          // TODO: Implementare ricerca
+                          if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+                          _debounce = Timer(const Duration(milliseconds: 300), () {
+                            setState(() {
+                              _isLoading = true;
+                            });
+                            
+                            // Filtra i tornei in base al testo di ricerca
+                            if(value.isEmpty) {
+                              // Se campo vuoto, ricarica tutti
+                              _loadTournaments();
+                            } else {
+                              Future.microtask(() async {
+                                final results = await DB.Tournaments.filterByNameOrId(value);
+                                setState(() {
+                                  _tournaments = results;
+                                  _isLoading = false;
+                                });
+                              });
+                            }
+                          });
+                          
                         },
                       ),
                     ),
@@ -461,7 +468,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
             top: userProvider.isGuest ? 44 : 0,
             child: _isLoading
                 ? const LoadingATL()
-                : _tournaments == null || _tournaments!.isEmpty
+                : _tournaments == null || (_tournaments!.isEmpty && !_hasActiveFilters)
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -497,7 +504,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                           ],
                         ),
                       )
-                    : _applyFilters(_tournaments!).isEmpty
+                    : (_tournaments!.isEmpty || _applyFilters(_tournaments!).isEmpty)
                         ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -519,9 +526,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  _hasActiveFilters
-                                      ? AppLocalizations.of(context).tryChangingFilters
-                                      : AppLocalizations.of(context).comeBackLater,
+                                  AppLocalizations.of(context).tryChangingFilters,
                                   style: const TextStyle(
                                     color: ATLColors.subtext,
                                     fontSize: 16,
@@ -535,20 +540,13 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                             padding: const EdgeInsets.all(16),
                             itemCount: _applyFilters(_tournaments!).length,
                             itemBuilder: (context, index) {
-                              final filteredTournaments = _applyFilters(_tournaments!);
-                              final tournament = filteredTournaments[index];
+                              final tournament = _applyFilters(_tournaments!)[index];
                               return TournamentCard(
                                 tournament: tournament,
                                 currentSport: widget.currentSport,
-                                userStatus: _getUserStatus(tournament),
                                 onTap: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('${AppLocalizations.of(context).tournamentDetails} - ${tournament.description}'),
-                                    ),
-                                  );
+                                  // TODO: Navigate to detail
                                 },
-                                onFavoriteToggle: () => _toggleFavorite(tournament),
                               );
                             },
                           ),
@@ -613,11 +611,4 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
     );
   }
 
-  TournamentUserStatus _getUserStatus(Tournament tournament) {
-    // TODO: Implementare logica reale per verificare stato utente
-    // Per ora mock data:
-    if (tournament.id == 1) return TournamentUserStatus.favorite;
-    if (tournament.id == 2) return TournamentUserStatus.participating;
-    return TournamentUserStatus.none;
-  }
 }

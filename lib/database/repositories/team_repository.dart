@@ -1,3 +1,5 @@
+import 'package:atl_app/config/app_config.dart';
+
 import '../../models/team.dart';
 import 'base_repository.dart';
 import '../db_controller.dart';
@@ -13,32 +15,65 @@ class TeamRepository extends BaseRepository<Team> {
   @override
   Map<String, dynamic> toJson(Team item) => item.toJson();
 
-  @override
-  List<Team> get mockData => [
+  List<Team> _mockData = [
         Team(
           id: 1,
           cityId: '1',
           name: 'Team A',
-          alias: 'TA',
+          alias: 'TAL',
           description: 'Descrizione del Team A',
-          captain: DB.Players.mockData[0],
-          catId: '1',
+          captainId: 1,
+          catId: 'FOOTBALL',
           vip: true,
           players: 15,
-          imageUrl: null, // TODO: Replace with actual image URL
+          rankPts: 250,
+          standingPts: 45,
+          imageUrl: null,
         ),
         Team(
           id: 2,
           cityId: '2',
           name: 'Team B',
-          alias: 'TB',
+          alias: 'TBA',
           description: 'Descrizione del Team B',
-          captain: DB.Players.mockData[1],
-          catId: '1',
+          captainId: 3,
+          catId: 'FOOTBALL',
           vip: false,
           players: 12,
+          rankPts: 180,
+          standingPts: 38,
         ),
-      ];
+        Team(
+          id: 3,
+          cityId: '1',
+          name: 'Team C',
+          alias: 'TCC',
+          description: 'Descrizione del Team C',
+          captainId: 4,
+          catId: 'FOOTBALL',
+          vip: true,
+          players: 18,
+          rankPts: 220,
+          standingPts: 42,
+        ),
+        Team(
+          id: 4,
+          cityId: '3',
+          name: 'Team D',
+          alias: 'TDD',
+          description: 'Descrizione del Team D',
+          captainId: 5,
+          catId: 'FOOTBALL',
+          vip: false,
+          players: 14,
+          rankPts: 195,
+          standingPts: 40,
+        ),
+  ];
+
+  @override
+  List<Team> get mockData => _mockData;
+
 
   /// Ottieni team per categoria
   Future<List<Team>> getByCategory(String categoryId) async {
@@ -71,6 +106,17 @@ class TeamRepository extends BaseRepository<Team> {
     } catch (e) {
       return null;
     }
+  }
+
+  @override
+  Future<Team> create(Team team) async {
+    if(AppConfig.isDebug){
+      _mockData.add(team);
+      print('🔧 [DEBUG] Created team: ${team.name}');
+      return team;
+    }
+    
+    return super.create(team);
   }
 
 }

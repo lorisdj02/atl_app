@@ -1,9 +1,8 @@
-import 'package:atl_app/models/organization.dart';
-
 import '../../models/user.dart';
 import '../../models/player.dart';
 import 'base_repository.dart';
 import '../../models/coordinator.dart';
+import '../db_controller.dart';
 
 class UserRepository extends BaseRepository<User> {
   @override
@@ -15,8 +14,7 @@ class UserRepository extends BaseRepository<User> {
   @override
   Map<String, dynamic> toJson(User item) => item.toJson();
 
-  @override
-  List<User> get mockData => [
+  List<User> _mockData = [
     Player(
       id: 1,
       username: 'loris',
@@ -30,11 +28,12 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Doe',
       birthdate: DateTime(1995, 5, 15),
       passwordMD5: 'a',
+      teamId: 1,
     ),
     Player(
       id: 2,
-      username: 'jane_player',
-      email: 'jane@example.com',
+      username: 'lorisNO',
+      email: 'loris2@example.com',
       firebaseUid: 'firebase_uid_2',
       createdAt: DateTime.now().subtract(const Duration(days: 20)),
       balance: 200.00,
@@ -45,8 +44,9 @@ class UserRepository extends BaseRepository<User> {
       birthdate: DateTime(1998, 8, 22),
       isVip: true,
       passwordMD5: 'a',
+      //teamId: DB.Teams.mockData[0].id,
     ),
-        Coordinator(
+    Coordinator(
       id: 3,
       username: 'giuseppe',
       email: 'giuseppe@example.com',
@@ -88,7 +88,55 @@ class UserRepository extends BaseRepository<User> {
       level: 1,
       passwordMD5: 'a',
     ),
+    Player(
+      id: 6,
+      username: 'player_mike',
+      email: 'mike@example.com',
+      firebaseUid: 'firebase_uid_player_1',
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+      balance: 75.00,
+      phone: '5556667777',
+      playerId: 3,
+      name: 'Mike',
+      surname: 'Taylor',
+      birthdate: DateTime(1992, 3, 10),
+      passwordMD5: 'a',
+      teamId: 1,
+    ),
+    Player(
+      id: 7,
+      username: 'player_sara',
+      email: 'sara@example.com',
+      firebaseUid: 'firebase_uid_player_2',
+      createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      balance: 80.00,
+      phone: '6667778888',
+      playerId: 4,
+      name: 'Sara',
+      surname: 'Connor',
+      birthdate: DateTime(1994, 7, 20),
+      passwordMD5: 'a',
+      teamId: 2,
+    ),
+    Player(
+      id: 8,
+      username: 'player_david',
+      email: 'david@example.com',
+      firebaseUid: 'firebase_uid_player_3',
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+      balance: 90.00,
+      phone: '7778889999',
+      playerId: 5,
+      name: 'David',
+      surname: 'Wilson',
+      birthdate: DateTime(1990, 12, 5),
+      passwordMD5: 'a',
+      teamId: 2,
+    )
   ];
+
+  @override
+  List<User> get mockData => _mockData;
 
   /// Metodo custom: ottieni user per username
   Future<User?> getByUsername(String username) async {

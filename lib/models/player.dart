@@ -8,7 +8,6 @@ class Player extends User {
   final String name;
   final String surname;
   final DateTime? birthdate;
-  final Team? team;
 
   Player({
     required super.id,
@@ -26,7 +25,7 @@ class Player extends User {
     required this.surname,
     this.birthdate,
     super.passwordMD5,
-    this.team,
+    super.teamId,
   }) : super(role: UserRole.player);
 
   factory Player.fromJson(Map<String, dynamic> json) {
@@ -49,7 +48,7 @@ class Player extends User {
       birthdate: json['birthdate'] != null
           ? DateTime.parse(json['birthdate'])
           : null,
-      team: json['team'] != null ? Team.fromJson(json['team']) : null,
+      teamId: json['team_id'],
     );
   }
 
@@ -61,6 +60,7 @@ class Player extends User {
       'name': name,
       'surname': surname,
       'birthdate': birthdate?.toIso8601String(),
+      'team_id': teamId,
     };
   }
 

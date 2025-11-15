@@ -7,7 +7,6 @@ import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import 'login_screen.dart';
-import '../models/user.dart';
 
 class ShopScreen extends StatelessWidget {
   final SportCategory currentSport;

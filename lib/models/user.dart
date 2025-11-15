@@ -36,15 +36,15 @@ class User {
   final String email;
   final String firebaseUid;
   final DateTime createdAt;
-  final double balance;
-  final DateTime? lastWithdraw;
+  double balance;
+  DateTime? lastWithdraw;
   final String? stripeId;
   final UserRole role;
-  final bool isVip;
-  final String phone;
-  final String? passwordMD5;
-  final String? profilePicture;
-  final Team? team;
+  bool isVip;
+  String phone;
+  String? passwordMD5;
+  String? imageUrl;
+  int? teamId;
 
   User({
     required this.id,
@@ -59,8 +59,8 @@ class User {
     this.isVip = false,
     required this.phone,
     this.passwordMD5,
-    this.profilePicture,
-    this.team,
+    this.imageUrl,
+    this.teamId,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo

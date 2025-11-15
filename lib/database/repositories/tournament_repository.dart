@@ -1,7 +1,11 @@
+import 'package:atl_app/config/app_config.dart';
+
 import '../db_controller.dart';
 import '../../models/tournament.dart';
 import 'base_repository.dart';
 import '../../models/field.dart';
+import '../../models/coordinator.dart';
+
 class TournamentRepository extends BaseRepository<Tournament> {
   @override
   String get endpoint => 'tournaments';
@@ -13,127 +17,142 @@ class TournamentRepository extends BaseRepository<Tournament> {
   Map<String, dynamic> toJson(Tournament item) => item.toJson();
 
   @override
-  List<Tournament> get mockData => [
-    // Torneo ATL
+  List<Tournament> get mockData => _mockData;
+
+  List<Tournament> _mockData = [
+    // Tornei terminati (per palmares)
     Tournament(
-      name: 'ATL Summer Championship',
-      field: DB.Fields.mockData[0],
-      coordinator: DB.Coordinators.mockData[0],
       id: 1,
-      city: 'Taranto',
-      startDate: DateTime.now().add(const Duration(days: 7)),
-      sportName: 'football',
-      numTeams: 12,
-      paidTeams: 11,
-      numGroups: 3,
-      description: 'Summer Championship 2024',
-      payCoordinator: 50,
-      fee: 25.00,
-      prize1: 500.00,
-      prize2: 200.00,
+      name: 'Tournament ATL',
+      description: 'First edition of ATL Tournament',
+      coordinatorId: 1,
+      fieldId: 1,
+      city: 'Milano',
+      sportName: 'FOOTBALL',
+      startDate: DateTime(2024, 1, 15),
+      numTeams: 16,
+      paidTeams: 16,
+      numGroups: 4,
+      qualified: 8,
+      payCoordinator: 100,
+      status: TournamentStatus.finished,
+      fee: 50.0,
+      prize1: 1000.0,
+      prize2: 500.0,
       atlEvent: true,
-      status: TournamentStatus.scheduled,
+      round2: 1,
     ),
-    // Torneo pieno/schedulato (grigio)
-    
     Tournament(
-      name: 'City Cup Milano',
-      field: DB.Fields.mockData[1],
-      coordinator: DB.Coordinators.mockData[1],
       id: 2,
-      city: 'Milano',
-      startDate: DateTime.now().add(const Duration(days: 14)),
-      sportName: 'football',
-      numTeams: 8,
-      paidTeams: 8,
-      numGroups: 2,
-      description: 'City Cup Milano',
-      payCoordinator: 75,
-      fee: 30.00,
-      prize1: 1000.00,
-      prize2: 400.00,
-      status: TournamentStatus.scheduled,
-    ),
-    // Tornei bianchi
-    Tournament(
-      name: 'Torino Spring Tournament',
-      field: DB.Fields.mockData[2],
-      coordinator: DB.Coordinators.mockData[0],
-      id: 3,
-      city: 'Torino',
-      startDate: DateTime.now().add(const Duration(days: 21)),
-      sportName: 'football',
-      numTeams: 16,
-      paidTeams: 5,
-      numGroups: 4,
-      description: 'Torino Spring Tournament',
-      payCoordinator: 60,
-      fee: 20.00,
-      prize1: 800.00,
-      prize2: 300.00,
-      status: TournamentStatus.created,
-    ),
-    Tournament(
-      field: DB.Fields.mockData[0],
-      name: 'Roma Open League',
-      coordinator: DB.Coordinators.mockData[2],
-      id: 4,
+      name: 'Tournament 1',
+      description: 'Summer championship',
+      coordinatorId: 2,
+      fieldId: 2,
       city: 'Roma',
-      startDate: DateTime.now().add(const Duration(days: 10)),
-      sportName: 'football',
-      numTeams: 8,
-      paidTeams: 3,
-      numGroups: 2,
-      description: 'Roma Open League',
-      payCoordinator: 40,
-      fee: 15.00,
-      prize1: 400.00,
-      prize2: 150.00,
-      status: TournamentStatus.created,
-    ),
-    Tournament(
-      name: 'Taranto Champions Cup',
-      field: DB.Fields.mockData[3],
-      coordinator: DB.Coordinators.mockData[1],
-      id: 5,
-      city: 'Taranto',
-      startDate: DateTime.now().add(const Duration(days: 28)),
-      sportName: 'football',
-      numTeams: 12,
-      paidTeams: 7,
-      numGroups: 3,
-      description: 'Taranto Champions Cup',
-      payCoordinator: 55,
-      fee: 22.00,
-      prize1: 600.00,
-      prize2: 250.00,
-      status: TournamentStatus.created,
-    ),
-    Tournament(
-      name: 'Milano Elite Tournament',
-      field: DB.Fields.mockData[1],
-      coordinator: DB.Coordinators.mockData[0],
-      id: 6,
-      city: 'Milano',
-      startDate: DateTime.now().add(const Duration(days: 35)),
-      sportName: 'football',
+      sportName: 'FOOTBALL',
+      startDate: DateTime(2024, 3, 1),
       numTeams: 16,
-      paidTeams: 4,
+      paidTeams: 16,
       numGroups: 4,
-      description: 'Milano Elite Tournament',
-      payCoordinator: 80,
-      fee: 35.00,
-      prize1: 1200.00,
-      prize2: 500.00,
-      status: TournamentStatus.created,
+      qualified: 8,
+      payCoordinator: 100,
+      status: TournamentStatus.finished,
+      fee: 50.0,
+      prize1: 1000.0,
+      prize2: 500.0,
+      round2: 1,
     ),
-    
+    Tournament(
+      id: 3,
+      name: 'Tournament 1',
+      description: 'Winter championship',
+      coordinatorId: 1,
+      fieldId: 1,
+      city: 'Milano',
+      sportName: 'FOOTBALL',
+      startDate: DateTime(2024, 6, 1),
+      numTeams: 32,
+      paidTeams: 32,
+      numGroups: 8,
+      qualified: 16,
+      payCoordinator: 150,
+      status: TournamentStatus.finished,
+      fee: 60.0,
+      prize1: 2000.0,
+      prize2: 1000.0,
+      round2: 1,
+    ),
+    // Torneo attivo esistente
+    Tournament(
+      id: 4,
+      name: 'Active Summer League',
+      description: 'Current ongoing tournament',
+      coordinatorId: 1,
+      fieldId: 1,
+      city: 'Milano',
+      sportName: 'FOOTBALL',
+      startDate: DateTime.now().subtract(const Duration(days: 10)),
+      numTeams: 16,
+      paidTeams: 12,
+      numGroups: 4,
+      qualified: 8,
+      payCoordinator: 100,
+      status: TournamentStatus.scheduled,
+      fee: 55.0,
+      prize1: 1500.0,
+      prize2: 750.0,
+      phase: TournamentPhase.group,
+      round2: 0,
+      isParticipating: true,
+    ),
+    Tournament(
+      id: 5,
+      name: 'Upcoming Autumn Cup',
+      description: 'Register now for the Autumn Cup',
+      coordinatorId: 2,
+      fieldId: 2,
+      city: 'Roma',
+      sportName: 'FOOTBALL',
+      startDate: DateTime.now().add(const Duration(days: 20)),
+      numTeams: 24,
+      paidTeams: 24,
+      numGroups: 6,
+      qualified: 12,
+      payCoordinator: 120,
+      status: TournamentStatus.created,
+      fee: 65.0,
+      prize1: 2500.0,
+      prize2: 1200.0,
+      round2: 1,
+      isFavorite: true,
+    ),
+    Tournament(
+      id: 6,
+      name: 'Spring Championship',
+      description: 'Join the Spring Championship now!',
+      coordinatorId: 1,
+      fieldId: 1,
+      city: 'Milano',
+      sportName: 'FOOTBALL',
+      startDate: DateTime.now().add(const Duration(days: 30)),
+      numTeams: 20,
+      paidTeams: 15,
+      numGroups: 5,
+      qualified: 10,
+      payCoordinator: 110,
+      status: TournamentStatus.created,
+      fee: 70.0,
+      prize1: 1800.0,
+      prize2: 900.0,
+      round2: 1,
+      atlEvent: true,
+    )
   ];
 
   /// Metodo custom: ottieni tornei per coordinatore
   Future<List<Tournament>> getByCoordinator(int coordinatorId) async {
     final tournaments = await getAll();
-    return tournaments.where((t) => t.coordinator.id == coordinatorId).toList();
+    return tournaments.where((t) => t.coordinatorId == coordinatorId).toList();
   }
 
   /// Metodo custom: ottieni tornei attivi
@@ -149,5 +168,48 @@ class TournamentRepository extends BaseRepository<Tournament> {
   Future<List<Tournament>> getBySport(String sportName) async {
     final tournaments = await getAll();
     return tournaments.where((t) => t.sportName == sportName).toList();
+  }
+
+  @override
+  Future<Tournament> create(Tournament item) async {
+    if (AppConfig.isDebug) {
+      _mockData.add(item);
+      print('🔧 [DEBUG] Created tournament: ${item.name}');
+      return item;
+    } else {
+      return super.create(item);
+    }
+  }
+
+  Future<List<Tournament>> getMyTournamentsByPlayerId(int playerId) async {
+    if (AppConfig.isDebug) {
+      // In modalità debug, restituisci tutti i tornei come preferiti
+      return (await getActive()).where((t) => t.isFavorite == true || t.isParticipating == true).toList();
+    } else {
+      return super.getAll();
+    }
+  }
+
+  Future<void> toggleFavoriteStatus(int tournamentId, bool isFavorite) async {
+    if (AppConfig.isDebug) {
+      final tournament = _mockData.firstWhere((t) => t.id == tournamentId);
+      tournament.isFavorite = isFavorite;
+      print('🔧 [DEBUG] Toggled favorite status for tournament ${tournament.name} to $isFavorite');
+    } else {
+      // Implementa la logica per aggiornare lo stato nel database reale
+    }
+  }
+
+  Future<List<Tournament>> filterByNameOrId(String query) async {
+    if (AppConfig.isDebug) {
+      final results = _mockData.where((t) => 
+        t.name.toLowerCase().contains(query.toLowerCase()) || t.id.toString() == query
+      ).toList();
+      print('🔧 [DEBUG] Search results for "$query": ${results.map((t) => t.name).join(', ')}');
+      return results;
+    } else {
+      return List<Tournament>.empty();
+      // Implementa la logica di ricerca nel database reale
+    }
   }
 }

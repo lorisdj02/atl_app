@@ -9,7 +9,7 @@ class TeamCreateButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final isPlayer = userProvider.activeUser?.role == 'player';
-    final isInTeam = userProvider.activeUser?.team != null;
+    final isInTeam = userProvider.activeUser?.teamId != null;
 
     if (!isPlayer) return const SizedBox.shrink();
 

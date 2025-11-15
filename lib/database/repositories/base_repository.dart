@@ -18,6 +18,7 @@ abstract class BaseRepository<T> {
   /// Mock data per debug (override nelle sottoclassi)
   List<T> get mockData => [];
 
+
   /// GET - Ottieni tutti gli elementi
   Future<List<T>> getAll() async {
     if (AppConfig.isDebug) {

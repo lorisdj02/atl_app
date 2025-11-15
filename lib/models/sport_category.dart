@@ -26,6 +26,12 @@ extension SportCategoryExtension on SportCategory {
     }
   }
 
+  String get id {
+    switch (this) {
+      case SportCategory.football:
+        return 'FOOTBALL';
+    }
+  }
   /// Colore secondario (più chiaro)
   Color get secondaryColor {
     switch (this) {

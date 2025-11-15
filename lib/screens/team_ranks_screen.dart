@@ -23,10 +23,8 @@ class TeamRanksScreen extends StatelessWidget {
             final points = team.rankPts ?? 0;
 
             return TeamWidget(
-              name: team.name,
-              captainName: team.captain.name,
-              playersCount: team.players,
-              isVip: team.vip,
+              team: team,
+              rankPts: points,
               color: index < 2 ? Colors.green.shade100 : Colors.white,
               imageUrl: team.imageUrl, // TODO: Replace with actual image URL
             );

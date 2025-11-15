@@ -1,20 +1,19 @@
-import 'package:atl_app/models/player.dart';
-
 class Team {
   final int id;
   final String? cityId;
   final String name;
   final String? alias;
   final String? description;
-  final Player captain;
-  final Player? vice1;
-  final Player? vice2;
+  final int captainId;
+  final int? vice1Id;
+  final int? vice2Id;
   final String catId;
   final String? imageUrl;
   final bool vip;
   final int? rankPts;
   final int? standingPts;
   final int players;
+  final bool visibility;
 
   Team({
     required this.id,
@@ -22,15 +21,16 @@ class Team {
     required this.name,
     this.alias,
     this.description,
-    required this.captain,
-    this.vice1,
-    this.vice2,
+    required this.captainId,
+    this.vice1Id,
+    this.vice2Id,
     required this.catId,
     this.imageUrl,
     this.vip = false,
     this.rankPts,
     this.standingPts,
     required this.players,
+    this.visibility = true,
   });
 
   factory Team.fromJson(Map<String, dynamic> json) {
@@ -40,15 +40,16 @@ class Team {
       name: json['name'],
       alias: json['alias'],
       description: json['description'],
-      captain: Player.fromJson(json['captain']),
-      vice1: json['vice1'] != null ? Player.fromJson(json['vice1']) : null,
-      vice2: json['vice2'] != null ? Player.fromJson(json['vice2']) : null,
+      captainId: json['captain_id'],
+      vice1Id: json['vice1_id'],
+      vice2Id: json['vice2_id'],
       catId: json['cat_id'],
       imageUrl: json['image_url'],
       vip: json['vip'] ?? false,
       rankPts: json['rank_pts'],
       standingPts: json['standing_pts'],
       players: json['players'] ?? 0,
+      visibility: json['visibility'] ?? true,
     );
   }
 
@@ -59,12 +60,15 @@ class Team {
       'name': name,
       'alias': alias,
       'description': description,
-      'captain': captain,
-      'vice1': vice1,
-      'vice2': vice2,
+      'captain_id': captainId,
+      'vice1_id': vice1Id,
+      'vice2_id': vice2Id,
       'cat_id': catId,
       'image_url': imageUrl,
       'vip': vip,
+      'rank_pts': rankPts,
+      'players': players,
+      'visibility': visibility,
     };
   }
 }
