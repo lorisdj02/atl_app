@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import '../../utils/atl_colors.dart';
 import 'package:atl_app/models/organization.dart';
 import 'package:atl_app/models/sport_category.dart';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
+import '../../database/db_controller.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
-  final Organization user;
   final SportCategory currentSport;
 
   const OrganizationHomeScreen({
     super.key,
-    required this.user,
     required this.currentSport,
   });
 
@@ -20,6 +21,9 @@ class OrganizationHomeScreen extends StatefulWidget {
 class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.activeUser!;
+    
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -59,6 +63,8 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   }
 
   Widget _buildOrganizationHomeContent() {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.activeUser!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -95,7 +101,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.user.orgName,
+                        user.username,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 18,
@@ -104,7 +110,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.user.roleDisplayName,
+                        user.roleDisplayName,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 14,

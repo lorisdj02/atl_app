@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
-import '../../models/coordinator.dart';
+import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../shop_screen.dart';
 import '../tournaments_screen.dart';
@@ -9,12 +10,10 @@ import '../team_screen.dart';
 import '../profile_screen.dart';
 
 class CoordinatorHomeScreen extends StatefulWidget {
-  final Coordinator user;
   final SportCategory currentSport;
 
   const CoordinatorHomeScreen({
     super.key,
-    required this.user,
     required this.currentSport,
   });
 
@@ -107,6 +106,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.activeUser!;
+    
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -184,6 +186,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   }
 
   Widget _buildCoordinatorHomeContent() {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.activeUser!;
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -220,7 +225,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.user.username,
+                        user.username,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 18,
@@ -229,7 +234,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.user.roleDisplayName,
+                        user.roleDisplayName,
                         style: TextStyle(
                           color: _currentSport.primaryColor,
                           fontSize: 14,

@@ -3,7 +3,6 @@ import 'player.dart';
 import 'coordinator.dart';
 import 'referee.dart';
 import 'organization.dart';
-import 'team.dart';
 
 /// Enum per i ruoli utente
 enum UserRole {
@@ -44,7 +43,6 @@ class User {
   String phone;
   String? passwordMD5;
   String? imageUrl;
-  int? teamId;
 
   User({
     required this.id,
@@ -60,7 +58,6 @@ class User {
     required this.phone,
     this.passwordMD5,
     this.imageUrl,
-    this.teamId,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
@@ -116,5 +113,38 @@ class User {
       default:
         throw Exception('Unknown role: $role');
     }
+  }
+
+  User copyWith({
+    int? id,
+    String? username,
+    String? email,
+    String? firebaseUid,
+    DateTime? createdAt,
+    double? balance,
+    DateTime? lastWithdraw,
+    String? stripeId,
+    UserRole? role,
+    bool? isVip,
+    String? phone,
+    String? passwordMD5,
+    String? imageUrl,
+    int? teamId,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      firebaseUid: firebaseUid ?? this.firebaseUid,
+      createdAt: createdAt ?? this.createdAt,
+      balance: balance ?? this.balance,
+      lastWithdraw: lastWithdraw ?? this.lastWithdraw,
+      stripeId: stripeId ?? this.stripeId,
+      role: role ?? this.role,
+      isVip: isVip ?? this.isVip,
+      phone: phone ?? this.phone,
+      passwordMD5: passwordMD5 ?? this.passwordMD5,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
   }
 }

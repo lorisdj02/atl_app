@@ -108,15 +108,19 @@ class TeamRepository extends BaseRepository<Team> {
     }
   }
 
+  /// POST - Crea un nuovo team e inizializza le statistiche del capitano
   @override
   Future<Team> create(Team team) async {
-    if(AppConfig.isDebug){
+
+    if (AppConfig.isDebug) {
       _mockData.add(team);
       print('🔧 [DEBUG] Created team: ${team.name}');
       return team;
     }
-    
-    return super.create(team);
+    else{
+      return super.create(team);
+    }
+
   }
 
 }

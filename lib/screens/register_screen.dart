@@ -208,9 +208,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
     
     // TODO: Implement registration logic
+
+    
     print('Registrazione: ruolo=$_selectedRole');
     Navigator.of(context).pop();
   }

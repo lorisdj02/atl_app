@@ -16,13 +16,13 @@ class HomeRouter {
     // Il cast è sicuro perché User.fromJson() ritorna già il tipo corretto
     switch (user.role) {
       case UserRole.player:
-        return PlayerHomeScreen(user: user as Player, currentSport: SportCategory.football);
+        return PlayerHomeScreen(currentSport: SportCategory.football);
       case UserRole.coordinator:
-        return CoordinatorHomeScreen(user: user as Coordinator, currentSport: SportCategory.football);
+        return CoordinatorHomeScreen(currentSport: SportCategory.football);
       case UserRole.referee:
-        return RefereeHomeScreen(user: user as Referee, currentSport: SportCategory.football);
+        return RefereeHomeScreen(currentSport: SportCategory.football);
       case UserRole.organization:
-        return OrganizationHomeScreen(user: user as Organization, currentSport: SportCategory.football);
+        return OrganizationHomeScreen(currentSport: SportCategory.football);
       default:
         return GuestHomeScreen(currentSport: SportCategory.football);
     }

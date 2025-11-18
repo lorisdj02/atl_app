@@ -3,12 +3,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 
-import '../models/team.dart';
-import '../models/sport_category.dart';
-import '../database/db_controller.dart';
-import '../providers/user_provider.dart';
-import '../utils/atl_colors.dart';
-import '../utils/text_formatters.dart';
+import '../../models/team.dart';
+import '../../models/sport_category.dart';
+import '../../database/db_controller.dart';
+import '../../providers/user_provider.dart';
+import '../../utils/atl_colors.dart';
+import '../../utils/text_formatters.dart';
 
 class CreateTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -72,13 +72,6 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       return;
     }
 
-    if (_selectedCity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleziona una città')),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
@@ -103,6 +96,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         imageUrl = null; // Placeholder
       }
 
+      int captainId = (await DB.Players.getById(currentUser.id)).playerId;
+
       // Crea il team
       final newTeam = Team(
         id: DateTime.now().millisecondsSinceEpoch, // Temporary ID
@@ -110,7 +105,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         name: _nameController.text.trim(),
         alias: _aliasController.text.trim().isEmpty ? null : _aliasController.text.trim(),
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
-        captainId: (await DB.Players.getById(currentUser.id)).playerId, // Usa playerId dell'utente corrente
+        captainId: captainId, // Usa playerId dell'utente corrente
         catId: widget.currentSport.id,
         imageUrl: imageUrl,
         vip: _isVip,
@@ -118,10 +113,23 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         visibility: _visibility,
       );
 
-      await DB.Teams.create(newTeam);
+      final createdTeam = await DB.Teams.create(newTeam);
 
-      // Aggiorna il teamId del player
-      await DB.Players.joinTeam((await DB.Players.getById(currentUser.id)).playerId, newTeam.id);
+      // Crea le statistiche iniziali per il capitano
+      await DB.TeamStats.createStats(
+        playerId: captainId,
+        teamId: createdTeam.id,
+        motm: 0,
+        goals: 0,
+      );
+
+      await DB.Players.joinTeam(captainId, createdTeam.id);
+
+
+      // Aggiorna l'utente con il teamId
+      final updatedUser = currentUser.copyWith(teamId: createdTeam.id);
+      await userProvider.updateUser(updatedUser);
+      userProvider.setCurrentTeamId(createdTeam.id);
 
       if (mounted) {
         print('🔧 [DEBUG] Team created successfully: ${newTeam.name}');
@@ -131,7 +139,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop(true); // Ritorna true per indicare successo
+        //Navigator.of(context).pop(true); // Ritorna true per indicare successo
+        Navigator.of(context).pop(); // Ritorna alla schermata precedente
       }
     } catch (e) {
       if (mounted) {
@@ -278,6 +287,12 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         ),
                         contentPadding: const EdgeInsets.all(16),
                       ),
+                      validator: (value) {
+                        if (value != null && value.trim().isNotEmpty && value.trim().length < 3) {
+                          return 'L\'alias deve essere di almeno 3 caratteri';
+                        }
+                        return null;
+                      },
                       maxLength: 3,
                       textCapitalization: TextCapitalization.characters,
                     ),

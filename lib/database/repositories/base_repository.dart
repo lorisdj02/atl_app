@@ -6,6 +6,9 @@ import '../api_client.dart';
 abstract class BaseRepository<T> {
   final Dio _dio = ApiClient.instance;
 
+  /// Espone Dio per query custom nei repository figli
+  Dio get dio => _dio;
+
   /// Nome dell'endpoint API (es: 'users', 'tournaments')
   String get endpoint;
 
@@ -71,13 +74,13 @@ abstract class BaseRepository<T> {
   }
 
   /// DELETE - Elimina elemento
-  Future<bool> delete(int id) async {
+  Future<bool> delete(T item) async {
     if (AppConfig.isDebug) {
       await Future.delayed(const Duration(milliseconds: 300));
-      print('🔧 [DEBUG] Deleted $endpoint #$id');
+      //print('🔧 [DEBUG] Deleted $endpoint #$id');
       return true;
     } else {
-      return _apiDelete(id);
+      return _apiDelete(toJson(item)['id'] as int);
     }
   }
 

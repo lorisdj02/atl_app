@@ -11,9 +11,10 @@ import '../widgets/team_widget.dart';
 import '../widgets/loading_atl.dart';
 import '../widgets/atl_floating_button.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
-import '../screens/my_team_screen.dart';
-import '../screens/create_team_screen.dart';
+import 'player/my_team_screen.dart';
+import 'player/create_team_screen.dart';
 import '../models/user.dart';
+import '../models/player.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -30,8 +31,13 @@ class TeamScreen extends StatefulWidget {
 class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateMixin {
   List<Team>? _teams;
   bool _isLoading = true;
-  late TabController _tabController;
-  int _previousTabIndex = 0; // Indice del tab precedente
+  TabController? _tabController;
+  int _previousTabIndex = 0;
+  int? _currentPlayerTeamId;
+  Key _scaffoldKey = UniqueKey(); // Chiave per forzare rebuild
+  
+  // Cache unificata: associa teamId -> team e captainName
+  final Map<int, Map<String, dynamic>> _teamCache = {};
   
   // Filtri
   final TextEditingController _searchController = TextEditingController();
@@ -56,60 +62,77 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    final isPlayer = userProvider.activeUser?.role == UserRole.player;
+    _refreshState();
+  }
+
+  void _refreshState(){
+    // Dispose del vecchio controller PRIMA del setState
+    _tabController?.removeListener(() {});
+    _tabController?.dispose();
     
-    // Guest: 2 tabs (Search + Ranks)
-    // Coordinator: 2 tabs (Search + Ranks)
-    // Player: 3 tabs (Search + My team + Ranks)
-    _tabController = TabController(
-      length: (!userProvider.isGuest && isPlayer) ? 3 : 2,
-      vsync: this,
-    );
+    setState(() {
+      final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+      final isPlayer = userProvider.isPlayer;
+      int? teamId = userProvider.currentTeamId;
+      final showMyTeamTab = !userProvider.isGuest && isPlayer && teamId != null && teamId != -1;
     
-    if (!userProvider.isGuest && isPlayer) {
-      _tabController.addListener(() {
-        // Naviga a My Team screen quando il tab 1 è selezionato
-        if (_tabController.index == 1 && _tabController.indexIsChanging) {
-          // Resetta subito al tab precedente per evitare l'animazione
-          Future.microtask(() {
-            if (mounted) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => MyTeamScreen(currentSport: widget.currentSport),
-                ),
-              ).then((_) {
-                // Torna al tab precedente (Search o Ranks)
-                if (mounted) {
-                  _tabController.index = _previousTabIndex;
-                  _loadTeams(); // Ricarica i dati
-                }
-              });
-              // Resetta immediatamente al tab precedente
-              _tabController.index = _previousTabIndex;
-            }
-          });
-        } else if (_tabController.index != 1) {
-          // Salva l'indice corrente come precedente solo se non è My team
-          _previousTabIndex = _tabController.index;
+      // Forza rebuild completo
+      _scaffoldKey = UniqueKey();
+      
+      // Guest: 2 tabs (Search + Ranks)
+      // Coordinator: 2 tabs (Search + Ranks)
+      // Player con team: 3 tabs (Search + My team + Ranks)
+      _tabController = TabController(
+        length: showMyTeamTab ? 3 : 2,
+        vsync: this,
+      );
+      print('Inizialized TabController with length: ${_tabController!.length}');
+      
+      if (showMyTeamTab) {
+        _tabController!.addListener(() {
+          // Naviga a My Team screen quando il tab 1 è selezionato (solo se showMyTeamTab è true)
+          if (_tabController!.index == 1 && _tabController!.indexIsChanging) {
+            // Resetta subito al tab precedente per evitare l'animazione
+            _tabController!.index = _previousTabIndex;
+            
+            Future.microtask(() {
+              if (mounted) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => MyTeamScreen(currentSport: widget.currentSport),
+                  ),
+                ).then((_) {
+                  // Ricarica i dati quando si torna da My Team
+                  if (mounted) {
+                    _loadTeams();
+                  }
+                });
+              }
+            });
+          } else if (_tabController!.index != 1) {
+            // Salva l'indice corrente come precedente solo se non è My team
+            _previousTabIndex = _tabController!.index;
+            _loadTeams();
+          }
+        });
+      } else {
+        _tabController!.addListener(() {
+          // Senza My team tab, tutti gli indici sono validi
+          _previousTabIndex = _tabController!.index;
           _loadTeams();
-        }
-      });
-    } else {
-      _tabController.addListener(() {
-        // Salva l'indice corrente come precedente
-        _previousTabIndex = _tabController.index;
-        _loadTeams();
-      });
-    }
+        });
+      }
+    });
     
     _loadTeams();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _tabController?.dispose();
     _searchController.dispose();
+    // Svuota la cache solo quando si esce dalla sezione team
+    _teamCache.clear();
     super.dispose();
   }
 
@@ -120,11 +143,28 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
       final isPlayer = userProvider.activeUser?.role == UserRole.player;
       List<Team> teams = await DB.Teams.getAll();
       
+      // Pre-carica i team e i capitani nella cache unificata
+      for (var team in teams) {
+        if (!_teamCache.containsKey(team.id)) {
+          final captain = await DB.Players.getByPlayerId(team.captainId);
+          _teamCache[team.id] = {
+            'team': team,
+            'captainName': captain?.username ?? 'Unknown',
+          };
+        } else {
+          // Aggiorna solo il team se già in cache, mantieni il captainName
+          _teamCache[team.id] = {
+            'team': team,
+            'captainName': _teamCache[team.id]!['captainName'],
+          };
+        }
+      }
+      
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
       
-      // In "Ranks" ordina per rankPts
-      if (_tabController.index == ranksTabIndex) {
+      // In "Ranks" ordina per rankPts - con controllo null-safe
+      if (_tabController != null && _tabController!.index == ranksTabIndex) {
         teams.sort((a, b) => (b.rankPts ?? 0).compareTo(a.rankPts ?? 0));
       }
       
@@ -318,19 +358,49 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
     final UserProvider userProvider = Provider.of<UserProvider>(context);
     final isPlayer = userProvider.activeUser?.role == UserRole.player;
     final isGuest = userProvider.isGuest;
-    final currentTab = _tabController.index;
-    final showMyTeamTab = !isGuest && isPlayer;
+    final currentTab = _tabController?.index ?? 0;
+    final int? teamId = userProvider.currentTeamId;
+    final showMyTeamTab = !isGuest && isPlayer && teamId != null && teamId != -1;
 
     // Debug: verifica lo stato
     print('DEBUG TeamScreen - isGuest: $isGuest, isPlayer: $isPlayer, showMyTeamTab: $showMyTeamTab, role: ${userProvider.activeUser?.role}');
 
     return Scaffold(
+      key: _scaffoldKey, // Aggiungi chiave per forzare rebuild
       backgroundColor: ATLColors.background,
       appBar: AppBar(
         backgroundColor: ATLColors.background,
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
+        // Info icon - SOLO nel tab Ranks, in alto a sinistra
+        leading: currentTab == (showMyTeamTab ? 2 : 1)
+            ? IconButton(
+                icon: const Icon(Icons.info_outline, color: ATLColors.darkBlue),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: ATLColors.background,
+                      title: const Text('Ranks Info'),
+                      content: const Text(
+                        'I team sono ordinati per punti ranking (Rank Pts). '
+                        'Più alto è il punteggio, migliore è la posizione in classifica.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: TextButton.styleFrom(
+                            foregroundColor: ATLColors.darkBlue,
+                          ),
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              )
+            : null,
         title: const Text(
           'TEAM',
           style: TextStyle(
@@ -351,13 +421,13 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(showMyTeamTab ? (currentTab == 0 ? 100 : 50) : (currentTab == 0 ? 100 : 50)),
+          preferredSize: const Size.fromHeight(106),
           child: Column(
             children: [
               // Tabs: Search / My team / Ranks
               Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                height: 50,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                height: 44,
                 child: Row(
                   children: [
                     Expanded(
@@ -379,12 +449,16 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
               ),
 
               // Search bar - SOLO in Search tab (index 0)
-              if (currentTab == 0)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      Expanded(
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Visibility(
+                        visible: currentTab == 0,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
                         child: TextField(
                           controller: _searchController,
                           decoration: InputDecoration(
@@ -398,7 +472,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
-                              vertical: 12,
+                              vertical: 10,
                             ),
                           ),
                           onChanged: (value) {
@@ -406,9 +480,15 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      // Filter button
-                      Container(
+                    ),
+                    const SizedBox(width: 12),
+                    // Filter button
+                    Visibility(
+                      visible: currentTab == 0,
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
@@ -418,9 +498,10 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                           onPressed: _showFilterDialog,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
             ],
           ),
         ),
@@ -532,6 +613,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                             itemBuilder: (context, index) {
                               final filteredTeams = _applyFilters(_teams!);
                               final team = filteredTeams[index];
+                              final cachedData = _teamCache[team.id];
                               
                               // Calcola l'indice corretto per Ranks in base alla presenza di My team
                               final ranksTabIndex = showMyTeamTab ? 2 : 1;
@@ -541,26 +623,33 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                                 team: team,
                                 imageUrl: team.imageUrl,
                                 rankPts: showRankPts ? (team.rankPts ?? 0) : null,
+                                captainName: cachedData?['captainName'] as String?,
                               );
                             },
                           ),
           ),
           
           // Floating Action Button "Crea" - SOLO per player (non guest) in Search tab senza team
-          if (!isGuest && isPlayer && currentTab == 0 && userProvider.activeUser?.teamId == null)
+          if (!isGuest && isPlayer && currentTab == 0 && (teamId == null || teamId == -1))
             Positioned(
               right: 16,
               bottom: 16,
               child: ATLFloatingButton(
                 onPressed: () async {
-                  await Navigator.of(context).push(
+                  final result = await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => CreateTeamScreen(currentSport: widget.currentSport),
                     ),
                   );
                   
-                  // Ricarica sempre i team quando si torna
-                  _loadTeams();
+                  // Se il team è stato creato, ricarica completamente lo screen
+                  if (mounted) {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(
+                        builder: (context) => TeamScreen(currentSport: widget.currentSport),
+                      ),
+                    );
+                  }
                 },
                 backgroundColor: widget.currentSport.primaryColor,
                 icon: Icons.add,
@@ -586,9 +675,9 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildTabButton(String text, int index) {
-    final isSelected = _tabController.index == index;
+    final isSelected = _tabController?.index == index;
     return GestureDetector(
-      onTap: () => _tabController.animateTo(index),
+      onTap: () => _tabController?.animateTo(index),
       child: Container(
         decoration: BoxDecoration(
           color: isSelected ? ATLColors.darkBlue : Colors.white,

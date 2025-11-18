@@ -28,7 +28,6 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Doe',
       birthdate: DateTime(1995, 5, 15),
       passwordMD5: 'a',
-      teamId: 1,
     ),
     Player(
       id: 2,
@@ -101,12 +100,12 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Taylor',
       birthdate: DateTime(1992, 3, 10),
       passwordMD5: 'a',
-      teamId: 1,
+      //teamId: 1,
     ),
     Player(
       id: 7,
-      username: 'player_sara',
-      email: 'sara@example.com',
+      username: 'asia',
+      email: 'asia@example.com',
       firebaseUid: 'firebase_uid_player_2',
       createdAt: DateTime.now().subtract(const Duration(days: 5)),
       balance: 80.00,
@@ -116,7 +115,6 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Connor',
       birthdate: DateTime(1994, 7, 20),
       passwordMD5: 'a',
-      teamId: 2,
     ),
     Player(
       id: 8,
@@ -131,7 +129,6 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Wilson',
       birthdate: DateTime(1990, 12, 5),
       passwordMD5: 'a',
-      teamId: 2,
     )
   ];
 

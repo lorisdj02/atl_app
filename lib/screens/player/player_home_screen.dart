@@ -1,3 +1,4 @@
+import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
@@ -7,14 +8,14 @@ import '../shop_screen.dart';
 import '../tournaments_screen.dart';
 import '../team_screen.dart';
 import '../profile_screen.dart';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
-  final Player user;
-  final SportCategory currentSport;
+    final SportCategory currentSport;
 
   const PlayerHomeScreen({
     super.key,
-    required this.user,
     required this.currentSport,
   });
 
@@ -24,6 +25,8 @@ class PlayerHomeScreen extends StatefulWidget {
 
 class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   SportCategory _currentSport = SportCategory.football;
+  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final User user = userProvider.activeUser!;
 
   void _onNavTap(int index) {
     if (index == 4) {
@@ -224,7 +227,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.user.username,
+                        user.username,
                         style: const TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 18,
@@ -233,7 +236,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.user.roleDisplayName,
+                        user.roleDisplayName,
                         style: TextStyle(
                           color: _currentSport.primaryColor,
                           fontSize: 14,

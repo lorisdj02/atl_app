@@ -67,6 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     userProvider.setActiveUser(user);
+    try {
+      userProvider.setCurrentTeamId(await DB.PlaysAt.getTeamIdByPlayerId(user.id));
+      } catch (e) {
+      userProvider.setCurrentTeamId(-1);
+    }
+    print('Logged in as: ${user.username}, Team ID: ${userProvider.currentTeamId}');
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => HomeRouter.getHomeScreen(user),
