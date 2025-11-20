@@ -35,6 +35,11 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void logout() {
+    clearCurrentTeamId();
+    clearActiveUser();
+  }
+
   bool get isGuest => _activeUser?.role == UserRole.guest;
 
   bool get isPlayer => _activeUser?.role == UserRole.player;

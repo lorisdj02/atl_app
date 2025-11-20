@@ -100,7 +100,7 @@ class Tournament {
   final int numTeams;
   final int paidTeams; // Numero team iscritti (deve essere <= numTeams)
   final int numGroups;
-  final int round2;
+  final int round2; // 0 se solo andata, 1 se andata e ritorno solo nei gironi, 2 se andata e ritorno solo nelle fasi finali, 3 se andata e ritorno totale
   final int qualified;
   final String description;
   final int payCoordinator;
@@ -108,11 +108,15 @@ class Tournament {
   final double fee;
   final double prize1;
   final double prize2;
-  final bool atlEvent;
+  final bool isATL;
   final TournamentPhase phase;
+  final int minPlayers;
+  final int maxPlayers;
   final String? photoURL;
+  final String? date;
   bool? isFavorite;
   bool? isParticipating;
+  String? coordinatorName;
 
   Tournament({
     required this.id,
@@ -132,12 +136,16 @@ class Tournament {
     required this.fee,
     required this.prize1,
     this.prize2 = 0,
-    this.atlEvent = false,
+    this.isATL = false,
     this.phase = TournamentPhase.group,
     required this.name,
     this.photoURL,
     this.isFavorite = false,
     this.isParticipating = false,
+    this.date,
+    this.coordinatorName,
+    required this.minPlayers,
+    required this.maxPlayers,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -165,9 +173,15 @@ class Tournament {
       fee: double.parse(json['fee'].toString()),
       prize1: double.parse(json['prize1'].toString()),
       prize2: double.parse((json['prize2'] ?? 0).toString()),
-      atlEvent: json['atl_event'] ?? false,
+      isATL: json['is_atl'] ?? false,
       phase: _phaseFromString(json['phase'] ?? 'GROUP'),
       name: json['name'] ?? '',
+      minPlayers: json['min_players'] ?? 5,
+      maxPlayers: json['max_players'] ?? 10,
+      photoURL: json['photo_url'],
+      coordinatorName: json['coordinator'] is Map 
+          ? json['coordinator']['username'] 
+          : null,
     );
   }
 
@@ -190,7 +204,7 @@ class Tournament {
       'fee': fee,
       'prize1': prize1,
       'prize2': prize2,
-      'atl_event': atlEvent,
+      'is_atl': isATL,
       'phase': phase.name.toUpperCase(),
       'name': name,
     };

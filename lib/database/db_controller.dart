@@ -9,6 +9,7 @@ import 'repositories/palmares_repository.dart';
 import 'repositories/team_request_repository.dart';
 import 'repositories/team_stats_repository.dart';
 import 'repositories/plays_at_repository.dart';
+import 'repositories/tournament_partecipation_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -34,6 +35,7 @@ class DB {
   static late final TeamRequestRepository TeamRequests;
   static late final TeamStatsRepository TeamStats;
   static late final PlaysAtRepository PlaysAt;
+  static late final TournamentPartecipationRepository TournamentPartecipations;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -47,6 +49,7 @@ class DB {
     TeamRequests = TeamRequestRepository();
     TeamStats = TeamStatsRepository();
     PlaysAt = PlaysAtRepository();
+    TournamentPartecipations = TournamentPartecipationRepository();
     // TODO: Inizializza altri repository
   }
 

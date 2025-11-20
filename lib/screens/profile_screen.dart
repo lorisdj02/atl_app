@@ -17,7 +17,19 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).activeUser!;
+    final user = Provider.of<UserProvider>(context).activeUser;
+
+    // Add null check
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: ATLColors.background,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: currentSport.primaryColor,
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -114,7 +126,7 @@ class ProfileScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   // TODO: Implement proper logout logic
-                  
+                  Provider.of<UserProvider>(context, listen: false).logout();
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const LoginScreen()),
                     (route) => false,

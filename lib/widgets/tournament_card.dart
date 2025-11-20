@@ -3,6 +3,7 @@ import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_controller.dart';
+import '../screens/tournament_detail_screen.dart';
 
 /// Widget per visualizzare una card torneo
 
@@ -65,7 +66,17 @@ class _TournamentCardStatus extends State<TournamentCard>{
         final data = snapshot.data!;
         
         return GestureDetector(
-          onTap: widget.onTap,
+          onTap: () {
+            // Naviga alla schermata di dettaglio del torneo
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => TournamentDetailScreen(
+                  tournament: widget.tournament,
+                  currentSport: widget.currentSport,
+                ),
+              ),
+            );
+          },
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
@@ -232,7 +243,7 @@ class _TournamentCardStatus extends State<TournamentCard>{
 
   /// Background color basato sullo stato del torneo
   Color _getBackgroundColor() {
-    if (widget.tournament.atlEvent) {
+    if (widget.tournament.isATL) {
       return const Color(0xFF9FE2BF); // Verde ATL
     } else if (widget.tournament.paidTeams >= widget.tournament.numTeams) {
       return const Color(0xFFC5C5C5); // Grigio se torneo pieno
@@ -243,7 +254,7 @@ class _TournamentCardStatus extends State<TournamentCard>{
 
   /// Leading indicator: Logo ATL o color indicator
   Widget _buildLeadingIndicator() {
-    if (widget.tournament.atlEvent) {
+    if (widget.tournament.isATL) {
       // Logo ATL
       return Container(
         width: 40,
