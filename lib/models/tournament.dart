@@ -267,4 +267,39 @@ class Tournament {
         throw Exception('Unknown tournament phase: $phase');
     }
   }
+
+  Tournament copyWith({
+    bool? isFavorite,
+    bool? isParticipating,
+  }) {
+    return Tournament(
+      id: id,
+      coordinatorId: coordinatorId,
+      fieldId: fieldId,
+      city: city,
+      startDate: startDate,
+      sportName: sportName,
+      numTeams: numTeams,
+      paidTeams: paidTeams,
+      numGroups: numGroups,
+      round2: round2,
+      qualified: qualified,
+      description: description,
+      payCoordinator: payCoordinator,
+      status: status,
+      fee: fee,
+      prize1: prize1,
+      prize2: prize2,
+      isATL: isATL,
+      phase: phase,
+      name: name,
+      minPlayers: minPlayers,
+      maxPlayers: maxPlayers,
+      photoURL: photoURL,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isParticipating: isParticipating ?? this.isParticipating,
+      date: date,
+      coordinatorName: coordinatorName,
+    );
+  }
 }

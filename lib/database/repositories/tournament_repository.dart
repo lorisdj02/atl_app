@@ -5,6 +5,7 @@ import '../../models/tournament.dart';
 import 'base_repository.dart';
 import '../../models/field.dart';
 import '../../models/coordinator.dart';
+import '../../models/favorite_tournaments.dart';
 
 class TournamentRepository extends BaseRepository<Tournament> {
   @override
@@ -109,7 +110,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize2: 750.0,
       phase: TournamentPhase.group,
       round2: 0,
-      isParticipating: true,
       minPlayers: 6,
       maxPlayers: 12,
     ),
@@ -132,7 +132,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize1: 2500.0,
       prize2: 1200.0,
       round2: 1,
-      isFavorite: true,
       minPlayers: 8,
       maxPlayers: 16,
     ),
@@ -157,7 +156,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       round2: 1,
       isATL: true,
       minPlayers: 5,
-      maxPlayers: 10,
+      maxPlayers: 5,
     ),
     Tournament(
       id: 7,
@@ -215,22 +214,44 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
-  Future<List<Tournament>> getMyTournamentsByPlayerId(int playerId) async {
+  Future<List<Tournament>> getParticipatingTournamentByPlayerAndTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug) {
       // In modalità debug, restituisci tutti i tornei come preferiti
-      return (await getActive()).where((t) => t.isFavorite == true || t.isParticipating == true).toList();
+      //TODO: implementare logica per la partecipazione effettiva del giocatore
+      List<int> callupsTournamentsIds = (await DB.CallUps.getByPlayerAndTeam(playerId, teamId))
+          .map((c) => c.tournamentId).toList();
+      List<Tournament> participatingTournaments = _mockData.where((t) => callupsTournamentsIds.contains(t.id)).map((t) => t.copyWith(isParticipating: true)).toList();
+      return participatingTournaments;
+      //return (await getActive()).where((t) => t.isFavorite == true || t.isParticipating == true).toList();
     } else {
       return super.getAll();
     }
   }
 
-  Future<void> toggleFavoriteStatus(int tournamentId, bool isFavorite) async {
+  Future<List<Tournament>> getFavoriteTournamentByUser(int userId) async {
     if (AppConfig.isDebug) {
-      final tournament = _mockData.firstWhere((t) => t.id == tournamentId);
-      tournament.isFavorite = isFavorite;
-      print('🔧 [DEBUG] Toggled favorite status for tournament ${tournament.name} to $isFavorite');
-    } else {
-      // Implementa la logica per aggiornare lo stato nel database reale
+      List<int> favoriteTournamentsIds = (await DB.FavoriteTournaments.getByUserId(userId))
+          .map((f) => f.tournamentId).toList();
+      List<Tournament> favoriteTournaments = _mockData.where((t) => favoriteTournamentsIds.contains(t.id)).map((t) => t.copyWith(isFavorite: true)).toList();
+      return favoriteTournaments;
+    }
+    else{
+      return super.getAll();
+    }
+  }
+
+  Future<void> toggleFavoriteStatus(int tournamentId, int userId) async {
+    if (AppConfig.isDebug) {
+        if(await DB.FavoriteTournaments.isFavorite(userId, tournamentId)){
+          await DB.FavoriteTournaments.removeFavorite(userId, tournamentId);
+        }
+        else{
+          await DB.FavoriteTournaments.addFavorite(userId, tournamentId);
+        }
+        return Future.value();
+      }
+    else {
+      throw UnimplementedError();
     }
   }
 

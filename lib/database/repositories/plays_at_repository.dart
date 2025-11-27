@@ -26,6 +26,31 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
           playerId: 1,
           joined: DateTime(2024, 1, 15),
         ),
+        PlaysAt(
+          teamId: 1,
+          playerId: 7,
+          joined: DateTime(2024, 1, 20),
+        ),
+        PlaysAt(
+          teamId: 1,
+          playerId: 8,
+          joined: DateTime(2024, 2, 10),
+        ),
+        PlaysAt(
+          teamId: 1,
+          playerId: 9,
+          joined: DateTime(2024, 3, 5),
+        ),
+        PlaysAt(
+          teamId: 1,
+          playerId: 10,
+          joined: DateTime(2024, 3, 15),
+        ),
+        PlaysAt(
+          teamId: 1,
+          playerId: 6,
+          joined: DateTime(2024, 4, 1),
+        ),
       ];
 
   @override

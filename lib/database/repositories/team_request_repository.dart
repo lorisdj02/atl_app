@@ -20,6 +20,10 @@ class TeamRequestRepository extends BaseRepository<TeamRequest> {
       teamId: 1,
       playerId: 4,
     ),
+    TeamRequest(
+      teamId: 1,
+      playerId: 11,
+    ),
   ];
 
   @override

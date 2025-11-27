@@ -83,18 +83,37 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
   }
 
   Future<void> _loadTournaments() async {
-    setState(() => _isLoading = true);
-    
+    UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    setState(() {
+      _isLoading = true;
+    });
+        
     try {
-      List<Tournament> tournaments;
+      List<Tournament> tournaments = [];
+      List<Tournament> participatingTournaments = [];
+      List<Tournament> favoriteTournaments = [];
+
+      if (!userProvider.isGuest) {
+        if (userProvider.isPlayer) {
+          participatingTournaments = await DB.Tournaments.getParticipatingTournamentByPlayerAndTeam((await DB.Players.getById(userProvider.activeUser!.id)).playerId, userProvider.currentTeamId!);
+        }
+
+        favoriteTournaments = await DB.Tournaments.getFavoriteTournamentByUser(userProvider.activeUser!.id);
+      }
       
       // In "My tournaments" mostra solo quelli con cuore (favorite o participating)
       if (_showMyTournaments) {
-        tournaments = await DB.Tournaments.getMyTournamentsByPlayerId(Provider.of<UserProvider>(context, listen: false).activeUser!.id);
-        print('🔧 [DEBUG] Loaded ${tournaments.length} favorite tournaments for user ${Provider.of<UserProvider>(context, listen: false).activeUser!.id}');
+        tournaments = favoriteTournaments + participatingTournaments;
+        print('🔧 [DEBUG] Loaded ${tournaments.length} favorite tournaments for user ${userProvider.activeUser!.id}');
       }
       else {
         tournaments = await DB.Tournaments.getActive();
+        if (!userProvider.isGuest){
+          // Rimuovi da tutti i tornei quelli già in favorite o participating
+          tournaments.removeWhere((t) => favoriteTournaments.any((f) => f.id == t.id) || participatingTournaments.any((p) => p.id == t.id));
+          tournaments = favoriteTournaments + participatingTournaments + tournaments;
+        }
+      
         print('🔧 [DEBUG] Loaded ${tournaments.length} active tournaments');
       }
       

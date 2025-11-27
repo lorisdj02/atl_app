@@ -13,6 +13,7 @@ import '../providers/user_provider.dart';
 import '../models/user.dart';
 import '../models/player.dart';
 import '../models/coordinator.dart';
+import 'callups_screen.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
   final Tournament tournament;
@@ -36,6 +37,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Player? _currentPlayer;
   Team? _playerTeam;
   Coordinator? _tournamentCoordinator;
+  bool _isTeamPartecipating = false;
 
   @override
   void initState() {
@@ -52,6 +54,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       _loadCoordinatorData(),
     ]);
     
+    await _checkPartecipation();
     setState(() => _isLoading = false);
     
     // Carica i team partecipanti dopo, se necessario
@@ -68,6 +71,23 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       });
     } catch (e) {
       print('Error loading coordinator data: $e');
+    }
+  }
+
+  Future<void> _checkPartecipation() async {
+    print("Checking partecipation for team: ${_playerTeam?.name}");
+    if( _playerTeam == null ) return;
+    try {
+      final partecipation = await DB.TournamentPartecipations.getByTournamentAndTeam(
+        widget.tournament.id,
+        _playerTeam?.id ?? -1,
+      );
+      setState(() {
+        _isTeamPartecipating = partecipation != null;
+      });
+      print("Is team participating: $_isTeamPartecipating");
+    } catch (e) {
+      print('Error checking partecipation: $e');
     }
   }
 
@@ -112,12 +132,12 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       await Future.delayed(const Duration(milliseconds: 500));
       
       // Carica le partecipazioni del torneo
-      final partecipations = await DB.TournamentPartecipations.getByTournamentId(widget.tournament.id.toString());
+      final partecipations = await DB.TournamentPartecipations.getByTournamentId(widget.tournament.id);
       
       // Carica i team corrispondenti
       final teams = <Team>[];
       for (var partecipation in partecipations) {
-        final team = await DB.Teams.getById(int.parse(partecipation.teamId));
+        final team = await DB.Teams.getById(partecipation.teamId);
         if (team != null) {
           teams.add(team);
         }
@@ -610,6 +630,35 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   }
 
   Widget _buildCallUpsSection() {
+    // Controlla se il torneo è pieno
+    if (widget.tournament.paidTeams >= widget.tournament.numTeams) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.block, color: Colors.red.shade700, size: 28),
+              const SizedBox(width: 16),
+              Text(
+                'Tournament Full',
+                style: TextStyle(
+                  color: Colors.red.shade900,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
     if (_playerTeam == null) {
       // Giocatore senza team
       return Container(
@@ -628,6 +677,32 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                 'Join a team to manage call-ups',
                 style: TextStyle(
                   color: Colors.orange.shade900,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (_isTeamPartecipating) {
+      // Team già partecipante
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.shade200),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: 28),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Your team is already participating in this tournament',
+                style: TextStyle(
+                  color: Colors.green.shade900,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
@@ -663,14 +738,19 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         ),
       );
     } else {
-      // Giocatore con permessi - mostra pulsante
+      // Giocatore con permessi e team non partecipante - mostra pulsante
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: () {
-            // TODO: Navigate to call-ups screen
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Call-ups screen - Coming soon')),
+            // Naviga alla schermata di gestione call-ups
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder:  (context) => CallupsScreen(
+                tournament: widget.tournament,
+                teamId: _playerTeam!.id,
+                sportCategory: widget.currentSport,
+              )),
             );
           },
           icon: const Icon(Icons.people, color: Colors.white),

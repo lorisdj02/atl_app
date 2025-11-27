@@ -4,6 +4,8 @@ import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_controller.dart';
 import '../screens/tournament_detail_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 /// Widget per visualizzare una card torneo
 
@@ -24,6 +26,14 @@ class TournamentCard extends StatefulWidget{
 }
 class _TournamentCardStatus extends State<TournamentCard>{
   
+  late bool isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavorite = widget.tournament.isFavorite ?? false;
+  }
+
 
   Future<Map<String, String>> _loadCardData() async {
     final coordinator = await DB.Coordinators.getByCoordinatorId(widget.tournament.coordinatorId);
@@ -150,13 +160,15 @@ class _TournamentCardStatus extends State<TournamentCard>{
                                 ));
                                 return;
                               }
-                              widget.tournament.isFavorite = !(widget.tournament.isFavorite!);
                               Future.microtask(() async {
-                              DB.Tournaments.toggleFavoriteStatus(
+                              await DB.Tournaments.toggleFavoriteStatus(
                                 widget.tournament.id,
-                                widget.tournament.isFavorite!,
+                                Provider.of<UserProvider>(context, listen: false).activeUser!.id,
                               );});
-                              print('Tournament ${widget.tournament.id} favorite status: ${widget.tournament.isFavorite}');
+
+                              isFavorite = !isFavorite;
+
+                              print('Tournament ${widget.tournament.id} favorite status: $isFavorite');
                           });
                         },
                         child: Icon(
@@ -296,7 +308,7 @@ class _TournamentCardStatus extends State<TournamentCard>{
 
   /// Icona del cuore (pieno o vuoto)
   IconData _getFavoriteIcon() {
-    return (widget.tournament.isParticipating! || widget.tournament.isFavorite!)
+    return (widget.tournament.isParticipating! || isFavorite)
         ? Icons.favorite
         : Icons.favorite_border;
   }
@@ -305,7 +317,7 @@ class _TournamentCardStatus extends State<TournamentCard>{
   Color _getFavoriteColor() {
     if (widget.tournament.isParticipating!) {
       return Colors.green; // Verde se partecipo (precedenza)
-    } else if (widget.tournament.isFavorite!) {
+    } else if (isFavorite) {
       return ATLColors.darkBlue; // Blu ATL se preferito
     } else {
       return ATLColors.darkBlue; // Blu ATL per outline

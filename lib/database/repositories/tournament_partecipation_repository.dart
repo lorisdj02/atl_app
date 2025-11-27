@@ -19,19 +19,23 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
 
   List<TournamentPartecipation> _mockdata = [
     TournamentPartecipation(
-      tournamentId: '7',
-      teamId: '2',
+      tournamentId: 7,
+      teamId: 2,
     ),
     TournamentPartecipation(
-      tournamentId: '7',
-      teamId: '3',
+      tournamentId: 7,
+      teamId: 3,
+    ),
+    TournamentPartecipation(
+      tournamentId: 4,
+      teamId: 1,
     ),
   ];
 
   @override
   List<TournamentPartecipation> get mockData => _mockdata;
 
-  Future<List<TournamentPartecipation>> getByTournamentId(String tournamentId) {
+  Future<List<TournamentPartecipation>> getByTournamentId(int tournamentId) {
     if(AppConfig.isDebug){
       return Future.value(_mockdata.where((partecipation) => partecipation.tournamentId == tournamentId).toList());
     }
@@ -40,9 +44,36 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
-  Future<List<TournamentPartecipation>> getByTeamId(String teamId) {
+  Future<List<TournamentPartecipation>> getByTeamId(int teamId) {
     if(AppConfig.isDebug){
       return Future.value(_mockdata.where((partecipation) => partecipation.teamId == teamId).toList());
+    }
+    else{
+      throw UnimplementedError();
+    }
+  }
+
+  Future<TournamentPartecipation?> getByTournamentAndTeam(int tournamentId, int teamId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final partecipation = _mockdata.firstWhere(
+          (partecipation) =>
+              partecipation.tournamentId == tournamentId &&
+              partecipation.teamId == teamId,
+        );
+        return Future.value(partecipation);
+      } catch (e) {
+        return Future.value(null);
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<void> addPartecipation(TournamentPartecipation partecipation) {
+    if(AppConfig.isDebug){
+      _mockdata.add(partecipation);
+      return Future.value();
     }
     else{
       throw UnimplementedError();
