@@ -13,35 +13,33 @@ import '../utils/navigation_helper.dart';
 import '../database/db_controller.dart';
 import '../l10n/app_localizations.dart';
 import 'dart:async';
+import 'tournament_detail_screen.dart';
 
 class TournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const TournamentsScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const TournamentsScreen({super.key, required this.currentSport});
 
   @override
   State<TournamentsScreen> createState() => _TournamentsScreenState();
 }
 
-
-class _TournamentsScreenState extends State<TournamentsScreen> with SingleTickerProviderStateMixin {
+class _TournamentsScreenState extends State<TournamentsScreen>
+    with SingleTickerProviderStateMixin {
   List<Tournament>? _tournaments;
   bool _isLoading = true;
   late TabController _tabController;
-  
+
   // Filtri
   final TextEditingController _searchController = TextEditingController();
   bool _showMyTournaments = false;
-  
+
   // Filtri avanzati
   String? _selectedCity;
   int? _selectedNumTeams;
   RangeValues _prizeRange = const RangeValues(0, 2000);
   RangeValues _feeRange = const RangeValues(0, 50);
-  
+
   // Filtri temporanei per il dialog
   String? _tempSelectedCity;
   int? _tempSelectedNumTeams;
@@ -51,19 +49,24 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
   /// Verifica se ci sono filtri attivi
   bool get _hasActiveFilters {
     return _selectedCity != null ||
-           _selectedNumTeams != null ||
-           _prizeRange != const RangeValues(0, 2000) ||
-           _feeRange != const RangeValues(0, 50) ||
-           _searchController.text.isNotEmpty;  // Aggiungi questo
+        _selectedNumTeams != null ||
+        _prizeRange != const RangeValues(0, 2000) ||
+        _feeRange != const RangeValues(0, 50) ||
+        _searchController.text.isNotEmpty; // Aggiungi questo
   }
-
 
   @override
   void initState() {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     super.initState();
     // Se guest, solo 1 tab (Search), altrimenti 2 tabs
-    _tabController = TabController(length: userProvider.isGuest ? 1 : 2, vsync: this);
+    _tabController = TabController(
+      length: userProvider.isGuest ? 1 : 2,
+      vsync: this,
+    );
     if (!userProvider.isGuest) {
       _tabController.addListener(() {
         setState(() {
@@ -83,11 +86,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
   }
 
   Future<void> _loadTournaments() async {
-    UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     setState(() {
       _isLoading = true;
     });
-        
+
     try {
       List<Tournament> tournaments = [];
       List<Tournament> participatingTournaments = [];
@@ -95,28 +101,42 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
 
       if (!userProvider.isGuest) {
         if (userProvider.isPlayer) {
-          participatingTournaments = await DB.Tournaments.getParticipatingTournamentByPlayerAndTeam((await DB.Players.getById(userProvider.activeUser!.id)).playerId, userProvider.currentTeamId!);
+          participatingTournaments =
+              await DB.Tournaments.getParticipatingTournamentByPlayerAndTeam(
+                (await DB.Players.getById(
+                  userProvider.activeUser!.id,
+                )).playerId,
+                userProvider.currentTeamId!,
+              );
         }
 
-        favoriteTournaments = await DB.Tournaments.getFavoriteTournamentByUser(userProvider.activeUser!.id);
+        favoriteTournaments = await DB.Tournaments.getFavoriteTournamentByUser(
+          userProvider.activeUser!.id,
+        );
       }
-      
+
       // In "My tournaments" mostra solo quelli con cuore (favorite o participating)
       if (_showMyTournaments) {
-        tournaments = favoriteTournaments + participatingTournaments;
-        print('🔧 [DEBUG] Loaded ${tournaments.length} favorite tournaments for user ${userProvider.activeUser!.id}');
-      }
-      else {
+        tournaments = participatingTournaments + favoriteTournaments;
+        print(
+          '🔧 [DEBUG] Loaded ${tournaments.length} favorite tournaments for user ${userProvider.activeUser!.id}',
+        );
+      } else {
         tournaments = await DB.Tournaments.getActive();
-        if (!userProvider.isGuest){
+        if (!userProvider.isGuest) {
           // Rimuovi da tutti i tornei quelli già in favorite o participating
-          tournaments.removeWhere((t) => favoriteTournaments.any((f) => f.id == t.id) || participatingTournaments.any((p) => p.id == t.id));
-          tournaments = favoriteTournaments + participatingTournaments + tournaments;
+          tournaments.removeWhere(
+            (t) =>
+                favoriteTournaments.any((f) => f.id == t.id) ||
+                participatingTournaments.any((p) => p.id == t.id),
+          );
+          tournaments =
+              participatingTournaments + favoriteTournaments + tournaments;
         }
-      
+
         print('🔧 [DEBUG] Loaded ${tournaments.length} active tournaments');
       }
-      
+
       setState(() {
         _tournaments = tournaments;
         _isLoading = false;
@@ -137,7 +157,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
     _tempSelectedNumTeams = _selectedNumTeams;
     _tempPrizeRange = _prizeRange;
     _tempFeeRange = _feeRange;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -150,7 +170,10 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Filtro Città
-                Text(AppLocalizations.of(context).city, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  AppLocalizations.of(context).city,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -165,7 +188,10 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                     underline: const SizedBox(),
                     hint: Text(AppLocalizations.of(context).selectCity),
                     items: [
-                      DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context).all)),
+                      DropdownMenuItem(
+                        value: null,
+                        child: Text(AppLocalizations.of(context).all),
+                      ),
                       ...['Taranto', 'Milano', 'Torino', 'Roma'].map((city) {
                         return DropdownMenuItem(value: city, child: Text(city));
                       }),
@@ -177,11 +203,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Filtro Numero Squadre
-                Text(AppLocalizations.of(context).numberOfTeams, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  AppLocalizations.of(context).numberOfTeams,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -196,9 +225,17 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                     underline: const SizedBox(),
                     hint: Text(AppLocalizations.of(context).selectTeamCount),
                     items: [
-                      DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context).all)),
+                      DropdownMenuItem(
+                        value: null,
+                        child: Text(AppLocalizations.of(context).all),
+                      ),
                       ...[8, 12, 16].map((num) {
-                        return DropdownMenuItem(value: num, child: Text(AppLocalizations.of(context).teamsTotal(num)));
+                        return DropdownMenuItem(
+                          value: num,
+                          child: Text(
+                            AppLocalizations.of(context).teamsTotal(num),
+                          ),
+                        );
                       }),
                     ],
                     onChanged: (value) {
@@ -208,11 +245,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Filtro Premio
-                Text(AppLocalizations.of(context).prizeRange, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  AppLocalizations.of(context).prizeRange,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 RangeSlider(
                   values: _tempPrizeRange,
@@ -234,11 +274,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                   '€${_tempPrizeRange.start.round()} - €${_tempPrizeRange.end.round()}',
                   style: const TextStyle(fontSize: 12),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Filtro Fee
-                Text(AppLocalizations.of(context).feeRange, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  AppLocalizations.of(context).feeRange,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 RangeSlider(
                   values: _tempFeeRange,
@@ -275,9 +318,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                 Navigator.pop(context);
                 _loadTournaments();
               },
-              style: TextButton.styleFrom(
-                foregroundColor: ATLColors.darkBlue,
-              ),
+              style: TextButton.styleFrom(foregroundColor: ATLColors.darkBlue),
               child: Text(AppLocalizations.of(context).reset),
             ),
             TextButton(
@@ -292,9 +333,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                 // Aggiungi questa riga:
                 _loadTournaments();
               },
-              style: TextButton.styleFrom(
-                foregroundColor: ATLColors.darkBlue,
-              ),
+              style: TextButton.styleFrom(foregroundColor: ATLColors.darkBlue),
               child: Text(AppLocalizations.of(context).apply),
             ),
           ],
@@ -309,31 +348,30 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
       if (_selectedCity != null && t.city != _selectedCity) {
         return false;
       }
-      
+
       // Filtro numero squadre
       if (_selectedNumTeams != null && t.numTeams != _selectedNumTeams) {
         return false;
       }
-      
+
       // Filtro premio - APPLICA SOLO SE MODIFICATO
-      if (_prizeRange != const RangeValues(0, 2000) && 
+      if (_prizeRange != const RangeValues(0, 2000) &&
           (t.prize1 < _prizeRange.start || t.prize1 > _prizeRange.end)) {
         return false;
       }
-      
+
       // Filtro fee - APPLICA SOLO SE MODIFICATO
-      if (_feeRange != const RangeValues(0, 50) && 
+      if (_feeRange != const RangeValues(0, 50) &&
           (t.fee < _feeRange.start || t.fee > _feeRange.end)) {
         return false;
       }
-      
+
       return true;
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    
     Timer? _debounce;
     final UserProvider userProvider = Provider.of<UserProvider>(context);
 
@@ -358,7 +396,11 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
             icon: const Icon(Icons.dark_mode, color: ATLColors.darkBlue),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(AppLocalizations.of(context).darkModeComingSoon)),
+                SnackBar(
+                  content: Text(
+                    AppLocalizations.of(context).darkModeComingSoon,
+                  ),
+                ),
               );
             },
           ),
@@ -370,21 +412,30 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
               // Tabs: Search / My tournaments - SOLO se non guest
               if (!userProvider.isGuest)
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   height: 50,
                   child: Row(
                     children: [
                       Expanded(
-                        child: _buildTabButton(AppLocalizations.of(context).search, 0),
+                        child: _buildTabButton(
+                          AppLocalizations.of(context).search,
+                          0,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildTabButton(AppLocalizations.of(context).myTournaments, 1),
+                        child: _buildTabButton(
+                          AppLocalizations.of(context).myTournaments,
+                          1,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              
+
               // Search bar
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -410,26 +461,29 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                         onChanged: (value) {
                           if (_debounce?.isActive ?? false) _debounce!.cancel();
 
-                          _debounce = Timer(const Duration(milliseconds: 300), () {
-                            setState(() {
-                              _isLoading = true;
-                            });
-                            
-                            // Filtra i tornei in base al testo di ricerca
-                            if(value.isEmpty) {
-                              // Se campo vuoto, ricarica tutti
-                              _loadTournaments();
-                            } else {
-                              Future.microtask(() async {
-                                final results = await DB.Tournaments.filterByNameOrId(value);
-                                setState(() {
-                                  _tournaments = results;
-                                  _isLoading = false;
-                                });
+                          _debounce = Timer(
+                            const Duration(milliseconds: 300),
+                            () {
+                              setState(() {
+                                _isLoading = true;
                               });
-                            }
-                          });
-                          
+
+                              // Filtra i tornei in base al testo di ricerca
+                              if (value.isEmpty) {
+                                // Se campo vuoto, ricarica tutti
+                                _loadTournaments();
+                              } else {
+                                Future.microtask(() async {
+                                  final results = await DB
+                                      .Tournaments.filterByNameOrId(value);
+                                  setState(() {
+                                    _tournaments = results;
+                                    _isLoading = false;
+                                  });
+                                });
+                              }
+                            },
+                          );
                         },
                       ),
                     ),
@@ -465,7 +519,11 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                 color: Colors.orange.shade100,
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.orange.shade700,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -481,97 +539,119 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                 ),
               ),
             ),
-          
+
           // Lista tornei
           Positioned.fill(
             top: userProvider.isGuest ? 44 : 0,
             child: _isLoading
                 ? const LoadingATL()
-                : _tournaments == null || (_tournaments!.isEmpty && !_hasActiveFilters)
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.emoji_events,
-                              color: widget.currentSport.primaryColor,
-                              size: 80,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _showMyTournaments
-                                  ? AppLocalizations.of(context).noTournamentsFavorite
-                                  : AppLocalizations.of(context).noTournamentsRunning,
-                              style: const TextStyle(
-                                color: ATLColors.darkBlue,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _showMyTournaments
-                                  ? AppLocalizations.of(context).addToFavorites
-                                  : AppLocalizations.of(context).comeBackLater,
-                              style: const TextStyle(
-                                color: ATLColors.subtext,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                : _tournaments == null ||
+                      (_tournaments!.isEmpty && !_hasActiveFilters)
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.emoji_events,
+                          color: widget.currentSport.primaryColor,
+                          size: 80,
                         ),
-                      )
-                    : (_tournaments!.isEmpty || _applyFilters(_tournaments!).isEmpty)
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  color: widget.currentSport.primaryColor,
-                                  size: 80,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  AppLocalizations.of(context).noTournamentsFound,
-                                  style: const TextStyle(
-                                    color: ATLColors.darkBlue,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  AppLocalizations.of(context).tryChangingFilters,
-                                  style: const TextStyle(
-                                    color: ATLColors.subtext,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: _applyFilters(_tournaments!).length,
-                            itemBuilder: (context, index) {
-                              final tournament = _applyFilters(_tournaments!)[index];
-                              return TournamentCard(
+                        const SizedBox(height: 16),
+                        Text(
+                          _showMyTournaments
+                              ? AppLocalizations.of(
+                                  context,
+                                ).noTournamentsFavorite
+                              : AppLocalizations.of(
+                                  context,
+                                ).noTournamentsRunning,
+                          style: const TextStyle(
+                            color: ATLColors.darkBlue,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _showMyTournaments
+                              ? AppLocalizations.of(context).addToFavorites
+                              : AppLocalizations.of(context).comeBackLater,
+                          style: const TextStyle(
+                            color: ATLColors.subtext,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : (_tournaments!.isEmpty ||
+                      _applyFilters(_tournaments!).isEmpty)
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          color: widget.currentSport.primaryColor,
+                          size: 80,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          AppLocalizations.of(context).noTournamentsFound,
+                          style: const TextStyle(
+                            color: ATLColors.darkBlue,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context).tryChangingFilters,
+                          style: const TextStyle(
+                            color: ATLColors.subtext,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _applyFilters(_tournaments!).length,
+                    itemBuilder: (context, index) {
+                      final tournament = _applyFilters(_tournaments!)[index];
+                      return TournamentCard(
+                        tournament: tournament,
+                        currentSport: widget.currentSport,
+                        onTap: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => TournamentDetailScreen(
                                 tournament: tournament,
                                 currentSport: widget.currentSport,
-                                onTap: () {
-                                  // TODO: Navigate to detail
-                                },
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                          );
+                          setState(() {
+                            _isLoading = true;
+                            _loadTournaments();
+                            _isLoading = false;
+                          });
+                        },
+                      );
+                    },
+                  ),
           ),
           // Floating Action Button "New" - SOLO per coordinatori in My Tournaments
-          if (!Provider.of<UserProvider>(context).isGuest && Provider.of<UserProvider>(context).activeUser != null && Provider.of<UserProvider>(context).activeUser!.role == UserRole.coordinator && _showMyTournaments)
+          if (!Provider.of<UserProvider>(context).isGuest &&
+              Provider.of<UserProvider>(context).activeUser != null &&
+              Provider.of<UserProvider>(context).activeUser!.role ==
+                  UserRole.coordinator &&
+              _showMyTournaments)
             Positioned(
               right: 16,
               bottom: 16,
@@ -579,7 +659,9 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
                 onPressed: () {
                   // TODO: Navigare a schermata creazione torneo
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).comingSoon)),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).comingSoon),
+                    ),
                   );
                 },
                 backgroundColor: widget.currentSport.primaryColor,
@@ -629,5 +711,4 @@ class _TournamentsScreenState extends State<TournamentsScreen> with SingleTicker
       ),
     );
   }
-
 }

@@ -78,14 +78,9 @@ class _TournamentCardStatus extends State<TournamentCard>{
         return GestureDetector(
           onTap: () {
             // Naviga alla schermata di dettaglio del torneo
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => TournamentDetailScreen(
-                  tournament: widget.tournament,
-                  currentSport: widget.currentSport,
-                ),
-              ),
-            );
+            if (widget.onTap != null) {
+              widget.onTap!();
+            }
           },
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),

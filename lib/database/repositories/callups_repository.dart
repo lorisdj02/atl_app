@@ -99,4 +99,15 @@ class CallUpsRepository extends BaseRepository<CallUps> {
       throw UnimplementedError();
     }
   }
+
+  Future<void> deleteByTournamentAndTeam(int tournamentId, int teamId) async {
+    if (AppConfig.isDebug) {
+      _mockData.removeWhere((c) =>
+          c.tournamentId == tournamentId && c.teamId == teamId);
+      print('🔧 [DEBUG] Deleted callups for Tournament $tournamentId, Team $teamId');
+      return Future.value();
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

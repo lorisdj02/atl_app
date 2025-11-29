@@ -3,17 +3,17 @@ import 'package:provider/provider.dart';
 import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
-import '../models/tournament_partecipation.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_controller.dart';
 import '../widgets/loading_atl.dart';
 import '../widgets/square_team_widget.dart';
 import '../models/field.dart';
 import '../providers/user_provider.dart';
-import '../models/user.dart';
 import '../models/player.dart';
 import '../models/coordinator.dart';
-import 'callups_screen.dart';
+import '../models/tournament_partecipation.dart';
+import 'player/callups_screen.dart';
+import 'player/view_callups_screen.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
   final Tournament tournament;
@@ -38,6 +38,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Team? _playerTeam;
   Coordinator? _tournamentCoordinator;
   bool _isTeamPartecipating = false;
+  TournamentPartecipation? _teamPartecipation;
 
   @override
   void initState() {
@@ -47,16 +48,16 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   Future<void> _loadAllData() async {
     setState(() => _isLoading = true);
-    
+
     await Future.wait([
       _loadTournamentDetails(),
       _loadPlayerData(),
       _loadCoordinatorData(),
     ]);
-    
+
     await _checkPartecipation();
     setState(() => _isLoading = false);
-    
+
     // Carica i team partecipanti dopo, se necessario
     if (!widget.tournament.isATL) {
       _loadParticipatingTeams();
@@ -65,7 +66,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   Future<void> _loadCoordinatorData() async {
     try {
-      final coordinator = await DB.Coordinators.getByCoordinatorId(widget.tournament.coordinatorId);
+      final coordinator = await DB.Coordinators.getByCoordinatorId(
+        widget.tournament.coordinatorId,
+      );
       setState(() {
         _tournamentCoordinator = coordinator;
       });
@@ -76,14 +79,16 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   Future<void> _checkPartecipation() async {
     print("Checking partecipation for team: ${_playerTeam?.name}");
-    if( _playerTeam == null ) return;
+    if (_playerTeam == null) return;
     try {
-      final partecipation = await DB.TournamentPartecipations.getByTournamentAndTeam(
-        widget.tournament.id,
-        _playerTeam?.id ?? -1,
-      );
+      final partecipation =
+          await DB.TournamentPartecipations.getByTournamentAndTeam(
+            widget.tournament.id,
+            _playerTeam?.id ?? -1,
+          );
       setState(() {
         _isTeamPartecipating = partecipation != null;
+        _teamPartecipation = partecipation;
       });
       print("Is team participating: $_isTeamPartecipating");
     } catch (e) {
@@ -93,12 +98,16 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   Future<void> _loadPlayerData() async {
     try {
-      final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+      final UserProvider userProvider = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      );
       if (userProvider.isPlayer && !userProvider.isGuest) {
         final userId = userProvider.activeUser!.id;
         final player = await DB.Players.getById(userId);
-        
-        if (userProvider.currentTeamId != null && userProvider.currentTeamId != -1) {
+
+        if (userProvider.currentTeamId != null &&
+            userProvider.currentTeamId != -1) {
           final team = await DB.Teams.getById(userProvider.currentTeamId!);
           setState(() {
             _currentPlayer = player;
@@ -117,23 +126,24 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   bool _canManageCallUps() {
     if (_currentPlayer == null || _playerTeam == null) return false;
-    
+
     // Può gestire call-ups se è capitano, vice1 o vice2
     return _currentPlayer!.id == _playerTeam!.captainId ||
-           _currentPlayer!.id == _playerTeam!.vice1Id ||
-           _currentPlayer!.id == _playerTeam!.vice2Id;
+        _currentPlayer!.id == _playerTeam!.vice1Id ||
+        _currentPlayer!.id == _playerTeam!.vice2Id;
   }
 
   Future<void> _loadParticipatingTeams() async {
     setState(() => _isLoadingTeams = true);
-    
+
     try {
       // Simula un delay per mostrare il loading (rimuovi in produzione se non necessario)
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Carica le partecipazioni del torneo
-      final partecipations = await DB.TournamentPartecipations.getByTournamentId(widget.tournament.id);
-      
+      final partecipations = await DB
+          .TournamentPartecipations.getByTournamentId(widget.tournament.id);
+
       // Carica i team corrispondenti
       final teams = <Team>[];
       for (var partecipation in partecipations) {
@@ -142,7 +152,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
           teams.add(team);
         }
       }
-      
+
       setState(() {
         _participatingTeams = teams;
         _isLoadingTeams = false;
@@ -150,9 +160,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     } catch (e) {
       setState(() => _isLoadingTeams = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading teams: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading teams: $e')));
       }
     }
   }
@@ -221,7 +231,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   // Coordinator Info with Profile
                   if (_tournamentCoordinator != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 20,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         boxShadow: [
@@ -247,7 +260,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                               ),
                               image: _tournamentCoordinator!.imageUrl != null
                                   ? DecorationImage(
-                                      image: NetworkImage(_tournamentCoordinator!.imageUrl!),
+                                      image: NetworkImage(
+                                        _tournamentCoordinator!.imageUrl!,
+                                      ),
                                       fit: BoxFit.cover,
                                     )
                                   : null,
@@ -288,7 +303,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: widget.currentSport.primaryColor,
                                       borderRadius: BorderRadius.circular(10),
@@ -309,13 +327,13 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                         ],
                       ),
                     ),
-                  
+
                   // Header Image o Team Logos
                   if (widget.tournament.isATL)
                     _buildATLHeader()
                   else
                     _buildNonATLHeader(),
-                  
+
                   // Tournament Details
                   Padding(
                     padding: const EdgeInsets.all(24),
@@ -330,7 +348,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             gradient: LinearGradient(
                               colors: [
                                 widget.currentSport.primaryColor,
-                                widget.currentSport.primaryColor.withOpacity(0.8),
+                                widget.currentSport.primaryColor.withOpacity(
+                                  0.8,
+                                ),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -338,7 +358,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: widget.currentSport.primaryColor.withOpacity(0.3),
+                                color: widget.currentSport.primaryColor
+                                    .withOpacity(0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
                               ),
@@ -387,7 +408,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                           Text(
                                             '1st Place',
                                             style: TextStyle(
-                                              color: Colors.white.withOpacity(0.9),
+                                              color: Colors.white.withOpacity(
+                                                0.9,
+                                              ),
                                               fontSize: 12,
                                               fontWeight: FontWeight.w500,
                                             ),
@@ -412,7 +435,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                         padding: const EdgeInsets.all(16),
                                         decoration: BoxDecoration(
                                           color: Colors.white.withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: Column(
                                           children: [
@@ -425,7 +450,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                             Text(
                                               '2nd Place',
                                               style: TextStyle(
-                                                color: Colors.white.withOpacity(0.9),
+                                                color: Colors.white.withOpacity(
+                                                  0.9,
+                                                ),
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
                                               ),
@@ -449,9 +476,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Tournament Info Card
                         Container(
                           padding: const EdgeInsets.all(20),
@@ -469,21 +496,33 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildInfoRow(Icons.calendar_today, 'Date', widget.tournament.date ?? 'TBA'),
-                              const SizedBox(height: 12),
-                              _buildInfoRow(Icons.location_on, 'Location', '${_tournamentField?.name ?? 'TBA'} - ${widget.tournament.city}'),
+                              _buildInfoRow(
+                                Icons.calendar_today,
+                                'Date',
+                                widget.tournament.date ?? 'TBA',
+                              ),
                               const SizedBox(height: 12),
                               _buildInfoRow(
-                                widget.tournament.isATL ? Icons.verified : Icons.public,
+                                Icons.location_on,
+                                'Location',
+                                '${_tournamentField?.name ?? 'TBA'} - ${widget.tournament.city}',
+                              ),
+                              const SizedBox(height: 12),
+                              _buildInfoRow(
+                                widget.tournament.isATL
+                                    ? Icons.verified
+                                    : Icons.public,
                                 'Type',
-                                widget.tournament.isATL ? 'ATL Event' : 'Tournament',
+                                widget.tournament.isATL
+                                    ? 'ATL Event'
+                                    : 'Tournament',
                               ),
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Description Section
                         if (widget.tournament.description.isNotEmpty) ...[
                           Container(
@@ -535,7 +574,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                           ),
                           const SizedBox(height: 24),
                         ],
-                        
+
                         // Tournament Fee
                         Container(
                           width: double.infinity,
@@ -544,7 +583,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: widget.currentSport.primaryColor.withOpacity(0.3),
+                              color: widget.currentSport.primaryColor
+                                  .withOpacity(0.3),
                               width: 2,
                             ),
                             boxShadow: [
@@ -587,21 +627,24 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Call-ups Button o messaggi informativi
                         if (isPlayer && !isGuest)
                           _buildCallUpsSection()
                         else if (isGuest)
                           _buildGuestMessage(),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Tournament ID at the bottom
                         Center(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(20),
@@ -618,7 +661,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 16),
                       ],
                     ),
@@ -658,7 +701,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         ),
       );
     }
-    
+
     if (_playerTeam == null) {
       // Giocatore senza team
       return Container(
@@ -685,34 +728,50 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
           ],
         ),
       );
-    } else if (_isTeamPartecipating) {
-      // Team già partecipante
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.green.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.green.shade200),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.check_circle_outline, color: Colors.green.shade700, size: 28),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                'Your team is already participating in this tournament',
-                style: TextStyle(
-                  color: Colors.green.shade900,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+    }
+
+    final bool isFullyPaid = (_teamPartecipation?.toPay ?? 0) == 0;
+    final bool canManage = _canManageCallUps();
+
+    if (_isTeamPartecipating && !canManage) {
+      // Giocatore normale in team partecipante - può solo visualizzare
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ViewCallupsScreen(
+                  tournament: widget.tournament,
+                  teamId: _playerTeam!.id,
+                  sportCategory: widget.currentSport,
                 ),
               ),
+            );
+          },
+          icon: const Icon(Icons.people, color: Colors.white),
+          label: const Text(
+            'VIEW CALL-UPS',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
             ),
-          ],
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.currentSport.primaryColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
+          ),
         ),
       );
-    } else if (!_canManageCallUps()) {
-      // Giocatore con team ma senza permessi
+    } else if (!canManage) {
+      // Giocatore con team ma senza permessi e team non partecipante
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -738,41 +797,200 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         ),
       );
     } else {
-      // Giocatore con permessi e team non partecipante - mostra pulsante
-      return SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            // Naviga alla schermata di gestione call-ups
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder:  (context) => CallupsScreen(
-                tournament: widget.tournament,
-                teamId: _playerTeam!.id,
-                sportCategory: widget.currentSport,
-              )),
-            );
-          },
-          icon: const Icon(Icons.people, color: Colors.white),
-          label: const Text(
-            'VIEW CALL-UPS',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1,
+      // Capitano o vicecapitano
+      if (!_isTeamPartecipating) {
+        // Team non partecipante - mostra pulsante per selezionare call-ups
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CallupsScreen(
+                    tournament: widget.tournament,
+                    teamId: _playerTeam!.id,
+                    sportCategory: widget.currentSport,
+                  ),
+                ),
+              );
+              if (mounted) {
+                if (result == true) {
+                  await _checkPartecipation();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Call-ups updated successfully'),
+                    ),
+                  );
+                }
+              }
+            },
+            icon: const Icon(Icons.people, color: Colors.white),
+            label: const Text(
+              'SELECT CALL-UPS',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: widget.currentSport.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
             ),
           ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: widget.currentSport.primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        );
+      } else if (isFullyPaid) {
+        // Team partecipante con pagamento completato - solo visualizzazione
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ViewCallupsScreen(
+                    tournament: widget.tournament,
+                    teamId: _playerTeam!.id,
+                    sportCategory: widget.currentSport,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.people, color: Colors.white),
+            label: const Text(
+              'VIEW CALL-UPS',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
             ),
-            elevation: 2,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: widget.currentSport.primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        // Team partecipante con pagamento pendente - può modificare ed eliminare
+        return Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CallupsScreen(
+                        tournament: widget.tournament,
+                        teamId: _playerTeam!.id,
+                        sportCategory: widget.currentSport,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.people, color: Colors.white),
+                label: const Text(
+                  'MODIFY CALL-UPS',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.currentSport.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Call-ups'),
+                      content: const Text(
+                        'Are you sure you want to delete all call-ups for this tournament?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text(
+                            'Delete',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed == true) {
+                    await DB.CallUps.deleteByTournamentAndTeam(
+                      widget.tournament.id,
+                      _playerTeam!.id,
+                    );
+                    await DB.TournamentPartecipations.deletePartecipation(
+                      widget.tournament.id,
+                      _playerTeam!.id,
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Call-ups deleted successfully'),
+                        ),
+                      );
+                      await _checkPartecipation();
+                    }
+                  }
+                },
+                icon: const Icon(Icons.delete, color: Colors.white),
+                label: const Text(
+                  'DELETE CALL-UPS',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
     }
   }
 
@@ -814,7 +1032,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                 fit: BoxFit.cover,
               )
             : null,
-        color: widget.tournament.photoURL == null ? widget.currentSport.primaryColor : null,
+        color: widget.tournament.photoURL == null
+            ? widget.currentSport.primaryColor
+            : null,
       ),
       child: widget.tournament.photoURL == null
           ? Center(
@@ -861,9 +1081,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         ),
       );
     }
-    
+
     // Mostra "No participating teams" solo se il caricamento è terminato
-    if (!_isLoadingTeams && (_participatingTeams == null || _participatingTeams!.isEmpty)) {
+    if (!_isLoadingTeams &&
+        (_participatingTeams == null || _participatingTeams!.isEmpty)) {
       return Container(
         height: 200,
         width: double.infinity,
@@ -872,18 +1093,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.groups,
-                size: 60,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.groups, size: 60, color: Colors.grey[400]),
               const SizedBox(height: 12),
               Text(
                 'No participating teams',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 16),
               ),
             ],
           ),
@@ -893,9 +1107,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: ATLColors.background,
-      ),
+      decoration: BoxDecoration(color: ATLColors.background),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -923,7 +1135,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   onTap: () {
                     // TODO: Navigate to team detail screen
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Team ${team.name} - Coming soon')),
+                      SnackBar(
+                        content: Text('Team ${team.name} - Coming soon'),
+                      ),
                     );
                   },
                 );
@@ -938,11 +1152,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(
-          icon,
-          color: widget.currentSport.primaryColor,
-          size: 20,
-        ),
+        Icon(icon, color: widget.currentSport.primaryColor, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

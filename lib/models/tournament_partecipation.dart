@@ -3,7 +3,7 @@
 class TournamentPartecipation {
   final int tournamentId;
   final int teamId;
-  int? toPay;
+  double? toPay;
 
   TournamentPartecipation({
     required this.tournamentId,

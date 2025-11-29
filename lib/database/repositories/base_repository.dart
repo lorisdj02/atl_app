@@ -26,7 +26,7 @@ abstract class BaseRepository<T> {
   Future<List<T>> getAll() async {
     if (AppConfig.isDebug) {
       // Simula delay di rete
-      await Future.delayed(const Duration(milliseconds: 500));
+      //await Future.delayed(const Duration(milliseconds: 500));
       return mockData;
     } else {
       return _apiGetAll();
@@ -36,7 +36,7 @@ abstract class BaseRepository<T> {
   /// GET - Ottieni elemento per ID
   Future<T?> getById(int id) async {
     if (AppConfig.isDebug) {
-      await Future.delayed(const Duration(milliseconds: 300));
+      //await Future.delayed(const Duration(milliseconds: 300));
       try {
         return mockData.firstWhere((item) {
           final json = toJson(item);
@@ -53,7 +53,7 @@ abstract class BaseRepository<T> {
   /// POST - Crea nuovo elemento
   Future<T> create(T item) async {
     if (AppConfig.isDebug) {
-      await Future.delayed(const Duration(milliseconds: 400));
+      //await Future.delayed(const Duration(milliseconds: 400));
       // In mock, ritorna l'elemento stesso
       print('🔧 [DEBUG] Created $endpoint: ${toJson(item)}');
       return item;
@@ -65,7 +65,7 @@ abstract class BaseRepository<T> {
   /// PUT - Aggiorna elemento esistente
   Future<T> update(int id, T item) async {
     if (AppConfig.isDebug) {
-      await Future.delayed(const Duration(milliseconds: 400));
+      //await Future.delayed(const Duration(milliseconds: 400));
       print('🔧 [DEBUG] Updated $endpoint #$id: ${toJson(item)}');
       return item;
     } else {
@@ -76,7 +76,7 @@ abstract class BaseRepository<T> {
   /// DELETE - Elimina elemento
   Future<bool> delete(T item) async {
     if (AppConfig.isDebug) {
-      await Future.delayed(const Duration(milliseconds: 300));
+      //await Future.delayed(const Duration(milliseconds: 300));
       //print('🔧 [DEBUG] Deleted $endpoint #$id');
       return true;
     } else {

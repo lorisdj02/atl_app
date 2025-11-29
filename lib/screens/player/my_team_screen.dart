@@ -17,6 +17,7 @@ import '../../widgets/palmares_widget.dart';
 import '../../widgets/players_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import 'player_requests_screen.dart';
+import 'pay_participation_screen.dart';
 
 class MyTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -36,6 +37,7 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
   List<Player>? _players;
   List<Palmares>? _palmares;
   List<Tournament>? _tournaments;
+  int _pendingPaymentsCount = 0;
   
   // Cache per palmares
   final Map<int, Coordinator?> _coordinatorCache = {};
@@ -55,6 +57,7 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
     _tabController.addListener(_onTabChanged);
     // Load initial tab data
     _loadTabData(0);
+    _loadPendingPaymentsCount();
   }
 
   @override
@@ -218,6 +221,44 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
     }
   }
 
+  Future<void> _loadPendingPaymentsCount() async {
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final int? teamId = userProvider.currentTeamId;
+      
+      if (teamId == null) return;
+      
+      final participations = await DB.TournamentPartecipations.getByTeamId(teamId);
+      final pendingCount = participations.where((p) => (p.toPay ?? 0) > 0).length;
+      
+      if (mounted) {
+        setState(() {
+          _pendingPaymentsCount = pendingCount;
+        });
+      }
+    } catch (e) {
+      // Silently fail
+    }
+  }
+
+  Future<void> _showPaymentScreen() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final int? teamId = userProvider.currentTeamId;
+    
+    if (teamId == null) return;
+    
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PayParticipationScreen(
+          teamId: teamId,
+          sportCategory: widget.currentSport,
+        ),
+      ),
+    ).then((_) {
+      _loadPendingPaymentsCount();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -322,10 +363,40 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
       return const LoadingATL();
     }
 
-    return PlayersWidget(
-      players: _players ?? [],
-      team: _myTeam,
-      sportCategory: widget.currentSport,
+    return Column(
+      children: [
+        if (_pendingPaymentsCount > 0)
+          Container(
+            margin: const EdgeInsets.all(16),
+            child: ElevatedButton.icon(
+              onPressed: _showPaymentScreen,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 3,
+              ),
+              icon: const Icon(Icons.payment, size: 24),
+              label: Text(
+                'Pending Payments ($_pendingPaymentsCount)',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        Expanded(
+          child: PlayersWidget(
+            players: _players ?? [],
+            team: _myTeam,
+            sportCategory: widget.currentSport,
+          ),
+        ),
+      ],
     );
   }
 

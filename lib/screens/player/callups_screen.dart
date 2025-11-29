@@ -1,13 +1,14 @@
 import 'package:atl_app/models/tournament_partecipation.dart';
+import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
-import '../models/tournament.dart';
-import '../models/player.dart';
-import '../models/sport_category.dart';
-import '../database/repositories/plays_at_repository.dart';
-import '../database/repositories/player_repository.dart';
-import '../database/repositories/callups_repository.dart';
-import '../models/callups.dart';
-import '../database/db_controller.dart';
+import '../../models/tournament.dart';
+import '../../models/player.dart';
+import '../../models/sport_category.dart';
+import '../../database/repositories/plays_at_repository.dart';
+import '../../database/repositories/player_repository.dart';
+import '../../database/repositories/callups_repository.dart';
+import '../../models/callups.dart';
+import '../../database/db_controller.dart';
 
 class CallupsScreen extends StatefulWidget {
   final Tournament tournament;
@@ -26,19 +27,27 @@ class CallupsScreen extends StatefulWidget {
 }
 
 class _CallupsScreenState extends State<CallupsScreen> {
-  final PlaysAtRepository _playsAtRepository = PlaysAtRepository();
-  final PlayerRepository _playerRepository = PlayerRepository();
   
   List<Player> _teamPlayers = [];
   Set<int> _selectedPlayerIds = {};
   bool _isLoading = true;
   bool _isNewCallUps = true;
 
+
   @override
   void initState() {
     super.initState();
     _loadTeamPlayers();
     _checkCallUps();
+  }
+
+  Future<double> get _TournamentFee async {
+    try {
+      return await DB.Tournaments.getTournamentFee(widget.tournament.id);
+    } catch (e) {
+      print('❌ Error loading tournament fee: $e');
+      return 0.0;
+    }
   }
 
   Future<void> _confirmCallUps() async {
@@ -203,7 +212,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
                         itemCount: _teamPlayers.length,
                         itemBuilder: (context, index) {
                           final player = _teamPlayers[index];
-                          final isSelected = _selectedPlayerIds.contains(player.id);
+                          final isSelected = _selectedPlayerIds.contains(player.playerId);
                           
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -254,7 +263,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
                                       ),
                                     )
                                   : null,
-                              onTap: () => _togglePlayerSelection(player.id),
+                              onTap: () => _togglePlayerSelection(player.playerId),
                             ),
                           );
                         },
@@ -268,19 +277,19 @@ class _CallupsScreenState extends State<CallupsScreen> {
                   ? () async {
                       // Handle confirmation
                       await _confirmCallUps();
-                      TournamentPartecipation partecipation = TournamentPartecipation(
-                          tournamentId: widget.tournament.id,
-                          teamId: widget.teamId,
-                        );
-                      await DB.TournamentPartecipations.addPartecipation(partecipation);
+                      await DB.TournamentPartecipations.addPartecipation(
+                        widget.tournament.id,
+                        widget.teamId,
+                        await _TournamentFee,
+                      );
                       if(mounted){
                         
-                        Navigator.pop(context);
+                        Navigator.pop(context, true);
                       }
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: ATLColors.soccerGreen,
                 disabledBackgroundColor: Colors.grey,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

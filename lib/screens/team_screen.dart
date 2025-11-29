@@ -14,7 +14,6 @@ import '../widgets/player_coordinator_bottom_bar.dart';
 import 'player/my_team_screen.dart';
 import 'player/create_team_screen.dart';
 import '../models/user.dart';
-import '../models/player.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -33,7 +32,6 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   bool _isLoading = true;
   TabController? _tabController;
   int _previousTabIndex = 0;
-  int? _currentPlayerTeamId;
   Key _scaffoldKey = UniqueKey(); // Chiave per forzare rebuild
   
   // Cache unificata: associa teamId -> team e captainName
@@ -149,7 +147,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
           final captain = await DB.Players.getByPlayerId(team.captainId);
           _teamCache[team.id] = {
             'team': team,
-            'captainName': captain?.username ?? 'Unknown',
+            'captainName': captain.username,
           };
         } else {
           // Aggiorna solo il team se già in cache, mantieni il captainName

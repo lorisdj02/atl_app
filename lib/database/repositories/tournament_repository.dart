@@ -267,4 +267,13 @@ class TournamentRepository extends BaseRepository<Tournament> {
       // Implementa la logica di ricerca nel database reale
     }
   }
+
+  Future<double> getTournamentFee(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final tournament = _mockData.firstWhere((t) => t.id == tournamentId, orElse: () => throw Exception('Tournament not found'));
+      return tournament.fee;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

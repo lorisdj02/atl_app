@@ -21,14 +21,17 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     TournamentPartecipation(
       tournamentId: 7,
       teamId: 2,
+      toPay: 200.0,
     ),
     TournamentPartecipation(
       tournamentId: 7,
       teamId: 3,
+      toPay: 150.0,
     ),
     TournamentPartecipation(
       tournamentId: 4,
       teamId: 1,
+      toPay: 0.0,
     ),
   ];
 
@@ -70,12 +73,43 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
-  Future<void> addPartecipation(TournamentPartecipation partecipation) {
+  Future<void> addPartecipation(int tournamentId, int teamId, double toPay) async {
+    TournamentPartecipation newPartecipation = TournamentPartecipation(
+      tournamentId: tournamentId,
+      teamId: teamId,
+      toPay: toPay,
+    );
     if(AppConfig.isDebug){
-      _mockdata.add(partecipation);
+      _mockdata.add(newPartecipation);
       return Future.value();
     }
     else{
+      throw UnimplementedError();
+    }
+  }
+
+  Future<void> deletePartecipation(int tournamentId, int teamId) async {
+    if (AppConfig.isDebug) {
+      _mockdata.removeWhere((partecipation) =>
+          partecipation.tournamentId == tournamentId &&
+          partecipation.teamId == teamId);
+      return Future.value();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<void> updatePayment(int tournamentId, int teamId, double toPay) async {
+    if (AppConfig.isDebug) {
+      for (var partecipation in _mockdata) {
+        if (partecipation.tournamentId == tournamentId &&
+            partecipation.teamId == teamId) {
+          partecipation.toPay = toPay;
+          break;
+        }
+      }
+      return Future.value();
+    } else {
       throw UnimplementedError();
     }
   }

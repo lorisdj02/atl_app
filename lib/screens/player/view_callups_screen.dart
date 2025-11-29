@@ -1,0 +1,163 @@
+import 'package:flutter/material.dart';
+import '../../models/tournament.dart';
+import '../../models/player.dart';
+import '../../models/sport_category.dart';
+import '../../database/db_controller.dart';
+import '../../models/callups.dart';
+
+class ViewCallupsScreen extends StatefulWidget {
+  final Tournament tournament;
+  final int teamId;
+  final SportCategory sportCategory;
+
+  const ViewCallupsScreen({
+    Key? key,
+    required this.tournament,
+    required this.teamId,
+    required this.sportCategory,
+  }) : super(key: key);
+
+  @override
+  State<ViewCallupsScreen> createState() => _ViewCallupsScreenState();
+}
+
+class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
+  List<Player> _calledUpPlayers = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCallUps();
+  }
+
+  Future<void> _loadCallUps() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final List<CallUps> callUps = await DB.CallUps.getByTournamentAndTeam(
+        widget.tournament.id,
+        widget.teamId,
+      );
+
+      print('ℹ️ Loaded ${callUps.length} call-ups for Tournament ${widget.tournament.id}, Team ${widget.teamId}');
+      
+      final List<Player> players = [];
+      for (final callUp in callUps) {
+        print('ℹ️ Loading player with ID ${callUp.playerId}');
+        final Player player = await DB.Players.getByPlayerId(callUp.playerId);
+        players.add(player);
+      }
+
+      print('ℹ️ Loaded ${players.length} players for call-ups');
+      
+      if (mounted) {
+        setState(() {
+          _calledUpPlayers = players;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading call-ups: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading call-ups: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        backgroundColor: widget.sportCategory.primaryColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Call-ups',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.dark_mode, color: Colors.white),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Dark mode coming soon')),
+              );
+            },
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _calledUpPlayers.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.people_outline, size: 80, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text(
+                        'No call-ups found',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _calledUpPlayers.length,
+                  itemBuilder: (context, index) {
+                    final player = _calledUpPlayers[index];
+                    
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        leading: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.grey[300],
+                          child: Icon(
+                            Icons.person,
+                            size: 35,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        title: Text(
+                          player.username,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}
