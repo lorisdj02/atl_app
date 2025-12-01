@@ -3,7 +3,7 @@ import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../shop_screen.dart';
-import '../tournaments_screen.dart';
+import '../tournaments/all_tournaments_screen.dart';
 import '../team_screen.dart';
 import '../guest/guest_profile_screen.dart';
 
@@ -33,7 +33,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
           break;
         case 1:
           // Tournaments - può visualizzare
-          screen = TournamentsScreen(
+          screen = AllTournamentsScreen(
             currentSport: _currentSport,
           );
           break;

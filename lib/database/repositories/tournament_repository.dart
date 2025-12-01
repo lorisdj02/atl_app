@@ -180,6 +180,28 @@ class TournamentRepository extends BaseRepository<Tournament> {
       minPlayers: 6,
       maxPlayers: 12,
     ),
+    Tournament(
+      id: 8,
+      name: 'Torneo in corso',
+      description: 'Prova del torneo in corso',
+      coordinatorId: 2,
+      fieldId: 1,
+      city: 'Milano',
+      sportName: 'FOOTBALL',
+      startDate: DateTime.now().add(const Duration(days: 40)),
+      numTeams: 8,
+      paidTeams: 8,
+      numGroups: 2,
+      qualified: 4,
+      payCoordinator: 130,
+      status: TournamentStatus.scheduled,
+      fee: 75.0,
+      prize1: 2200.0,
+      prize2: 1100.0,
+      round2: 1,
+      minPlayers: 5,
+      maxPlayers: 10,
+    ),
   ];
 
   /// Metodo custom: ottieni tornei per coordinatore

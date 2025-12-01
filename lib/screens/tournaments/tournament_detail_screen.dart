@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/tournament.dart';
-import '../models/sport_category.dart';
-import '../models/team.dart';
-import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
-import '../widgets/loading_atl.dart';
-import '../widgets/square_team_widget.dart';
-import '../models/field.dart';
-import '../providers/user_provider.dart';
-import '../models/player.dart';
-import '../models/coordinator.dart';
-import '../models/tournament_partecipation.dart';
-import 'player/callups_screen.dart';
-import 'player/view_callups_screen.dart';
+import '../../models/tournament.dart';
+import '../../models/sport_category.dart';
+import '../../models/team.dart';
+import '../../utils/atl_colors.dart';
+import '../../database/db_controller.dart';
+import '../../widgets/loading_atl.dart';
+import '../../widgets/square_team_widget.dart';
+import '../../models/field.dart';
+import '../../providers/user_provider.dart';
+import '../../models/player.dart';
+import '../../models/coordinator.dart';
+import '../../models/tournament_partecipation.dart';
+import '../player/callups_screen.dart';
+import '../player/view_callups_screen.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
   final Tournament tournament;

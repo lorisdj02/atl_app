@@ -12,6 +12,8 @@ import 'repositories/plays_at_repository.dart';
 import 'repositories/tournament_partecipation_repository.dart';
 import 'repositories/callups_repository.dart';
 import 'repositories/favorite_tournaments_repository.dart';
+import 'repositories/soccer_match_repository.dart';
+import 'repositories/soccer_standings_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -40,6 +42,8 @@ class DB {
   static late final TournamentPartecipationRepository TournamentPartecipations;
   static late final CallUpsRepository CallUps;
   static late final FavoriteTournamentsRepository FavoriteTournaments;
+  static late final SoccerMatchRepository SoccerMatches;
+  static late final SoccerStandingsRepository SoccerStandings;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -56,6 +60,8 @@ class DB {
     TournamentPartecipations = TournamentPartecipationRepository();
     CallUps = CallUpsRepository();
     FavoriteTournaments = FavoriteTournamentsRepository();
+    SoccerMatches = SoccerMatchRepository();
+    SoccerStandings = SoccerStandingsRepository();
     // TODO: Inizializza altri repository
   }
 

@@ -11,7 +11,6 @@ class Team {
   final String? imageUrl;
   final bool vip;
   final int? rankPts;
-  final int? standingPts;
   final int players;
   final bool visibility;
 
@@ -28,7 +27,6 @@ class Team {
     this.imageUrl,
     this.vip = false,
     this.rankPts,
-    this.standingPts,
     required this.players,
     this.visibility = true,
   });
@@ -47,7 +45,6 @@ class Team {
       imageUrl: json['image_url'],
       vip: json['vip'] ?? false,
       rankPts: json['rank_pts'],
-      standingPts: json['standing_pts'],
       players: json['players'] ?? 0,
       visibility: json['visibility'] ?? true,
     );

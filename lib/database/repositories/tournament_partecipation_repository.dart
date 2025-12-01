@@ -29,9 +29,44 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
       toPay: 150.0,
     ),
     TournamentPartecipation(
-      tournamentId: 4,
+      tournamentId: 8,
       teamId: 1,
-      toPay: 0.0,
+      toPay: 0,
+    ),
+    TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 5,
+      toPay: 0,
+    ),
+    TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 6,
+      toPay: 0,
+    ),
+    TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 7,
+      toPay: 0,
+    ),
+     TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 8,
+      toPay: 0,
+    ),
+     TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 9,
+      toPay: 0,
+    ),
+     TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 10,
+      toPay: 0,
+    ),
+     TournamentPartecipation(
+      tournamentId: 8,
+      teamId: 11,
+      toPay: 0,
     ),
   ];
 

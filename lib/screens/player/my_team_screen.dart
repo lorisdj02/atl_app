@@ -76,9 +76,10 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
   }
 
   void _onTabChanged() {
-    if (_tabController.indexIsChanging) {
+    if (!mounted) return;
+    setState(() {
       _loadTabData(_tabController.index);
-    }
+    });
   }
 
   Future<void> _loadTabData(int tabIndex) async {
@@ -307,6 +308,7 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
       ),
       body: TabBarView(
         controller: _tabController,
+        physics: const AlwaysScrollableScrollPhysics(),
         children: [
           _buildPlayersTab(),
           _buildPalmaresTab(),
@@ -334,9 +336,7 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
     final isSelected = _tabController.index == index;
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _tabController.animateTo(index);
-        });
+        _tabController.animateTo(index);
       },
       child: Container(
         decoration: BoxDecoration(

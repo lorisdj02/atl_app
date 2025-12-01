@@ -5,7 +5,7 @@ import '../../models/sport_category.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../shop_screen.dart';
-import '../tournaments_screen.dart';
+import '../tournaments/all_tournaments_screen.dart';
 import '../team_screen.dart';
 import '../profile_screen.dart';
 
@@ -36,7 +36,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
           );
           break;
         case 1:
-          screen = TournamentsScreen(
+          screen = AllTournamentsScreen(
             currentSport: _currentSport,
           );
           break;

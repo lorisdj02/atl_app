@@ -18,7 +18,7 @@ class CallUpsRepository extends BaseRepository<CallUps> {
   Map<String, dynamic> toJson(CallUps item) => item.toJson();
 
   final List<CallUps> _mockData = [
-    CallUps(tournamentId: 7, playerId: 1, teamId: 1),
+    CallUps(tournamentId: 8, playerId: 1, teamId: 1),
   ];
 
   @override

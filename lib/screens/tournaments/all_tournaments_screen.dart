@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
-import '../widgets/player_coordinator_bottom_bar.dart';
-import '../widgets/tournament_card.dart';
-import '../widgets/loading_atl.dart';
-import '../widgets/atl_floating_button.dart';
-import '../models/sport_category.dart';
-import '../models/user.dart';
-import '../models/tournament.dart';
-import '../utils/atl_colors.dart';
-import '../utils/navigation_helper.dart';
-import '../database/db_controller.dart';
-import '../l10n/app_localizations.dart';
+import '../../providers/user_provider.dart';
+import '../../widgets/player_coordinator_bottom_bar.dart';
+import '../../widgets/tournament_card.dart';
+import '../../widgets/loading_atl.dart';
+import '../../widgets/atl_floating_button.dart';
+import '../../models/sport_category.dart';
+import '../../models/user.dart';
+import '../../models/tournament.dart';
+import '../../utils/atl_colors.dart';
+import '../../utils/navigation_helper.dart';
+import '../../database/db_controller.dart';
+import '../../l10n/app_localizations.dart';
 import 'dart:async';
 import 'tournament_detail_screen.dart';
+import 'tournament_screen.dart';
 
-class TournamentsScreen extends StatefulWidget {
+class AllTournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const TournamentsScreen({super.key, required this.currentSport});
+  const AllTournamentsScreen({super.key, required this.currentSport});
 
   @override
-  State<TournamentsScreen> createState() => _TournamentsScreenState();
+  State<AllTournamentsScreen> createState() => _AllTournamentsScreenState();
 }
 
-class _TournamentsScreenState extends State<TournamentsScreen>
+class _AllTournamentsScreenState extends State<AllTournamentsScreen>
     with SingleTickerProviderStateMixin {
   List<Tournament>? _tournaments;
   bool _isLoading = true;
@@ -628,14 +629,30 @@ class _TournamentsScreenState extends State<TournamentsScreen>
                         tournament: tournament,
                         currentSport: widget.currentSport,
                         onTap: () async {
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => TournamentDetailScreen(
-                                tournament: tournament,
-                                currentSport: widget.currentSport,
+                          if (tournament.status == TournamentStatus.created) {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => TournamentDetailScreen(
+                                  tournament: tournament,
+                                  currentSport: widget.currentSport,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
+                          else if (tournament.status == TournamentStatus.scheduled){
+                            //TODO: Navigare alla schermata del torneo in corso
+                            if(tournament.sportName == 'FOOTBALL'){
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => TournamentScreen(
+                                    tournament: tournament,
+                                    sportCategory: widget.currentSport,
+                                  ),
+                                ),
+                              );
+                              
+                            }
+                          }
                           setState(() {
                             _isLoading = true;
                             _loadTournaments();

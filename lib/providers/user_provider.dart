@@ -45,4 +45,6 @@ class UserProvider with ChangeNotifier {
   bool get isPlayer => _activeUser?.role == UserRole.player;
 
   bool get isCoordinator => _activeUser?.role == UserRole.coordinator;
+
+  //TODO: Aggiungi gli id dei ruoli, così da velocizzare le query sugli ID
 }

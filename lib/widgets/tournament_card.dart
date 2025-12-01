@@ -3,7 +3,7 @@ import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_controller.dart';
-import '../screens/tournament_detail_screen.dart';
+import '../screens/tournaments/tournament_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 

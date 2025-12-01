@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import '../screens/shop_screen.dart';
-import '../screens/tournaments_screen.dart';
+import '../screens/tournaments/all_tournaments_screen.dart';
 import '../screens/team_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/guest/guest_profile_screen.dart';
@@ -36,7 +36,7 @@ class NavigationHelper {
         );
         break;
       case 1: // Tournaments
-        targetScreen = TournamentsScreen(
+        targetScreen = AllTournamentsScreen(
           currentSport: currentSport,
         );
         break;
