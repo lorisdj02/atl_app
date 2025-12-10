@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import '../database/db_controller.dart';
-import '../widgets/team_widget.dart';
+import '../widgets/ranks_team_widget.dart';
+import '../models/sport_category.dart';
+import '../utils/atl_colors.dart';
 
 class TeamRanksScreen extends StatelessWidget {
-  const TeamRanksScreen({super.key});
+  final SportCategory sportCategory;
+
+  const TeamRanksScreen({super.key, required this.sportCategory});
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +26,13 @@ class TeamRanksScreen extends StatelessWidget {
             final team = teams[index];
             final points = team.rankPts ?? 0;
 
-            return TeamWidget(
+            return RanksTeamWidget(
               team: team,
               rankPts: points,
-              color: index < 2 ? Colors.green.shade100 : Colors.white,
+              color: index == 0 ? ATLColors.getPrimaryColor(sportCategory)
+                     : index == 1 ? ATLColors.getSecondaryColor(sportCategory)
+                     : Colors.white,
+              sportCategory: sportCategory,
               imageUrl: team.imageUrl, // TODO: Replace with actual image URL
             );
           },

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../database/db_controller.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
 import '../providers/user_provider.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
-import '../widgets/team_widget.dart';
 import '../widgets/loading_atl.dart';
 import '../widgets/atl_floating_button.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import 'player/my_team_screen.dart';
 import 'player/create_team_screen.dart';
 import '../models/user.dart';
+import '../widgets/search_team_widget.dart';
+import '../widgets/ranks_team_widget.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -617,12 +617,22 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                               final ranksTabIndex = showMyTeamTab ? 2 : 1;
                               final showRankPts = currentTab == ranksTabIndex;
                               
-                              return TeamWidget(
+                              if(showRankPts){
+                              return RanksTeamWidget(
                                 team: team,
                                 imageUrl: team.imageUrl,
                                 rankPts: showRankPts ? (team.rankPts ?? 0) : null,
+                                sportCategory: widget.currentSport,
                                 captainName: cachedData?['captainName'] as String?,
                               );
+                              } else {
+                                return SearchTeamWidget(
+                                  team: team,
+                                  sportCategory: widget.currentSport,
+                                  imageUrl: team.imageUrl,
+                                  captainName: cachedData?['captainName'] as String?,
+                                );
+                              }
                             },
                           ),
           ),

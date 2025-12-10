@@ -7,11 +7,9 @@ import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
-  final SportCategory currentSport;
 
   const OrganizationHomeScreen({
     super.key,
-    required this.currentSport,
   });
 
   @override
@@ -19,10 +17,11 @@ class OrganizationHomeScreen extends StatefulWidget {
 }
 
 class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
+  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final SportCategory? sportCategory = userProvider.selectedSportCategory;
+
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser!;
     
     return Scaffold(
       backgroundColor: ATLColors.background,

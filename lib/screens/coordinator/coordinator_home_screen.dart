@@ -1,3 +1,4 @@
+import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
@@ -10,11 +11,8 @@ import '../team_screen.dart';
 import '../profile_screen.dart';
 
 class CoordinatorHomeScreen extends StatefulWidget {
-  final SportCategory currentSport;
-
   const CoordinatorHomeScreen({
     super.key,
-    required this.currentSport,
   });
 
   @override
@@ -22,7 +20,8 @@ class CoordinatorHomeScreen extends StatefulWidget {
 }
 
 class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
-  SportCategory _currentSport = SportCategory.football;
+  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
 
   void _onNavTap(int index) {
     if (index == 4) {

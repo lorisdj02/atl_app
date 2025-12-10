@@ -66,12 +66,31 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    userProvider.setActiveUser(user);
-    try {
-      userProvider.setCurrentTeamId(await DB.PlaysAt.getTeamIdByPlayerId(user.id));
-      } catch (e) {
-      userProvider.setCurrentTeamId(-1);
+    switch (user.role) {
+      case UserRole.coordinator:
+        // Fetch and set coordinator-specific data if needed
+        userProvider.setActiveUser(user, roleId: await DB.Coordinators.getById(user.id).then((c) => c!.coordinatorId));
+        break;
+      case UserRole.organization:
+        // Fetch and set organization-specific data if needed
+        //TODO: implementare repository Organization
+        //userProvider.setActiveUser(user, roleId: await DB.Organizations.getById(user.id).then((o) => o!.organizationId));
+        break;
+      case UserRole.player:
+        try {
+          userProvider.setCurrentTeamId(await DB.PlaysAt.getTeamIdByPlayerId(user.id));
+        } catch (e) {
+          userProvider.setCurrentTeamId(-1);
+        }
+        userProvider.setActiveUser(user, roleId: await DB.Players.getById(user.id).then((p) => p!.playerId));
+        break;
+      case UserRole.guest:
+        userProvider.setActiveUser(user);
+        break;
+      default:
+        break;
     }
+
     print('Logged in as: ${user.username}, Team ID: ${userProvider.currentTeamId}');
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(

@@ -106,7 +106,8 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
               await DB.Tournaments.getParticipatingTournamentByPlayerAndTeam(
                 (await DB.Players.getById(
                   userProvider.activeUser!.id,
-                )).playerId,
+                ))!.playerId,
+                //TODO: HAI IL PLAYER ID IN PROVIDER
                 userProvider.currentTeamId!,
               );
         }

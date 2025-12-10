@@ -9,7 +9,6 @@ import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
 import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
-import '../../widgets/team_widget.dart';
 import '../../widgets/soccer_match_widget.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
@@ -17,13 +16,12 @@ import '../team_screen.dart';
 import '../profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
+import '../../widgets/home_team_widget.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
-  final SportCategory currentSport;
 
   const PlayerHomeScreen({
     super.key,
-    required this.currentSport,
   });
 
   @override
@@ -31,10 +29,10 @@ class PlayerHomeScreen extends StatefulWidget {
 }
 
 class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
-  SportCategory _currentSport = SportCategory.football;
   late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
   late final User user = userProvider.activeUser!;
   late final int teamId = userProvider.currentTeamId!;
+  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
   
   List<Tournament>? _activeTournaments;
   Map<int, List<SoccerMatch>> _tournamentMatches = {};
@@ -51,9 +49,13 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   }
 
   Future<void> _loadPlayerData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       // Load user's team using teamId from user
-      if (teamId != null) {
+      if (teamId != null && teamId != -1) {
         _userTeam = await DB.Teams.getById(teamId);
       }
       
@@ -441,12 +443,12 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: TeamWidget(
+              child: HomeTeamWidget(
                 team: team,
-                color: isUserTeam ? ATLColors.soccerGreen : Colors.white,
-                isHomeView: true,
+                color: isUserTeam ? ATLColors.getPrimaryColor(_currentSport) : Colors.white,
                 rank: rank,
                 standingRecord: '${standing.points} pts',
+                sportCategory: _currentSport,
               ),
             );
           }).toList(),

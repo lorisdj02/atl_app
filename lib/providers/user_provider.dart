@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
-
+import '../models/sport_category.dart';
 class UserProvider with ChangeNotifier {
   User? _activeUser;
   int? _currentTeamId;
+  int? _roleId;
+  SportCategory? _selectedSportCategory = SportCategory.football;
 
   User? get activeUser => _activeUser;
   int? get currentTeamId => _currentTeamId;
+  int? get activeRoleId => _roleId;
+  SportCategory? get selectedSportCategory => _selectedSportCategory;
 
-  void setActiveUser(User user) {
+  void setActiveUser(User user, {int? roleId}) {
     _activeUser = user;
+    _roleId = roleId;
     notifyListeners();
   }
 
   void clearActiveUser() {
     _activeUser = null;
+    _roleId = null;
+    _currentTeamId = null;
     notifyListeners();
   }
 
@@ -46,5 +53,6 @@ class UserProvider with ChangeNotifier {
 
   bool get isCoordinator => _activeUser?.role == UserRole.coordinator;
 
-  //TODO: Aggiungi gli id dei ruoli, così da velocizzare le query sugli ID
+  bool get isOrganization => _activeUser?.role == UserRole.organization;
+
 }

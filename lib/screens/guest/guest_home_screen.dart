@@ -6,18 +6,20 @@ import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../team_screen.dart';
 import '../guest/guest_profile_screen.dart';
+import '../../providers/user_provider.dart';
+import 'package:provider/provider.dart';
 
 class GuestHomeScreen extends StatefulWidget {
-  const GuestHomeScreen({super.key, required this.currentSport});
+  const GuestHomeScreen({super.key});
 
-  final SportCategory currentSport;
 
   @override
   State<GuestHomeScreen> createState() => _GuestHomeScreenState();
 }
 
 class _GuestHomeScreenState extends State<GuestHomeScreen> {
-  SportCategory _currentSport = SportCategory.football;
+  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
 
   void _onNavTap(int index) {
     if (index == 4) {

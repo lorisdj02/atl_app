@@ -96,7 +96,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         imageUrl = null; // Placeholder
       }
 
-      int captainId = (await DB.Players.getById(currentUser.id)).playerId;
+      int captainId = (await DB.Players.getById(currentUser.id))!.playerId;
 
       // Crea il team
       final newTeam = Team(

@@ -5,11 +5,10 @@ import '../../models/sport_category.dart';
 import '../../models/soccer_match.dart';
 import '../../models/soccer_standing.dart';
 import '../../models/team.dart';
-import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/small_soccer_match_widget.dart';
-import '../../widgets/team_widget.dart';
+import '../../widgets/standings_team_widget.dart';
 
 class TournamentScreen extends StatefulWidget {
   final Tournament tournament;
@@ -453,16 +452,14 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
 
               Color bgColor = Colors.white;
               if (rank == 1) {
-                bgColor = ATLColors.soccerGreen;
+                bgColor = ATLColors.getPrimaryColor(widget.sportCategory);
               } else if (rank == 2) {
-                bgColor = ATLColors.soccerMediumGreen;
+                bgColor = ATLColors.getPrimaryColor(widget.sportCategory);
               }
 
-              return TeamWidget(
+              return StandingsTeamWidget(
                 team: team,
                 color: bgColor,
-                captainName: _captainNamesCache[team.id],
-                isStandingsView: true,
                 rank: rank,
                 standingRecord: '${standing.points} - ${standing.won} - ${standing.drawn} - ${standing.lost}',
               );

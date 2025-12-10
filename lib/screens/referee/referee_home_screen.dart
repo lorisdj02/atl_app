@@ -6,11 +6,9 @@ import '../../providers/user_provider.dart';
 import '../../models/user.dart';
 
 class RefereeHomeScreen extends StatefulWidget {
-  final SportCategory currentSport;
 
   const RefereeHomeScreen({
     super.key,
-    required this.currentSport,
   });
 
   @override
@@ -20,6 +18,7 @@ class RefereeHomeScreen extends StatefulWidget {
 class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
   late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
   late final User user = userProvider.activeUser!;
+  late final SportCategory? sportCategory = userProvider.selectedSportCategory;
 
   @override
   Widget build(BuildContext context) {

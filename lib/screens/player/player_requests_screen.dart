@@ -242,7 +242,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
                               child: ElevatedButton(
                                 onPressed: _acceptAll,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
+                                  backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),

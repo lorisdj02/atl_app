@@ -810,7 +810,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   builder: (context) => CallupsScreen(
                     tournament: widget.tournament,
                     teamId: _playerTeam!.id,
-                    sportCategory: widget.currentSport,
+                    currentSport: widget.currentSport,
                   ),
                 ),
               );
@@ -896,7 +896,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                       builder: (context) => CallupsScreen(
                         tournament: widget.tournament,
                         teamId: _playerTeam!.id,
-                        sportCategory: widget.currentSport,
+                        currentSport: widget.currentSport,
                       ),
                     ),
                   );

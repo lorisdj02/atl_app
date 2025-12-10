@@ -57,7 +57,7 @@ class NavigationHelper {
       case 4: // Home
         // Naviga alla home corretta in base al ruolo
         if (userProvider.isGuest) {
-          targetScreen = GuestHomeScreen(currentSport: currentSport);
+          targetScreen = GuestHomeScreen();
         } else {
           targetScreen = HomeRouter.getHomeScreen(userProvider.activeUser!);
         }

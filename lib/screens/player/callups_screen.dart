@@ -13,13 +13,13 @@ import '../../database/db_controller.dart';
 class CallupsScreen extends StatefulWidget {
   final Tournament tournament;
   final int teamId;
-  final SportCategory sportCategory;
+  final SportCategory currentSport;
 
   const CallupsScreen({
     Key? key,
     required this.tournament,
     required this.teamId,
-    required this.sportCategory,
+    required this.currentSport,
   }) : super(key: key);
 
   @override
@@ -32,7 +32,6 @@ class _CallupsScreenState extends State<CallupsScreen> {
   Set<int> _selectedPlayerIds = {};
   bool _isLoading = true;
   bool _isNewCallUps = true;
-
 
   @override
   void initState() {
@@ -146,7 +145,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: widget.sportCategory.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -289,7 +288,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: ATLColors.soccerGreen,
+                backgroundColor: ATLColors.getPrimaryColor(SportCategory.football),
                 disabledBackgroundColor: Colors.grey,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

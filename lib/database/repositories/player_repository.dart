@@ -41,11 +41,5 @@ class PlayerRepository extends BaseRepository<Player> {
     await DB.PlaysAt.addPlaysAt(teamId, playerId);
   }
 
-  @override
-  Future<Player> getById(int id) async {
-    final allPlayers = await getAll();
-    return allPlayers.firstWhere(
-      (player) => player.id == id,
-    );
-  }
+
 }

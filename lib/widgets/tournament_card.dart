@@ -251,7 +251,7 @@ class _TournamentCardStatus extends State<TournamentCard>{
   /// Background color basato sullo stato del torneo
   Color _getBackgroundColor() {
     if (widget.tournament.isATL) {
-      return const Color(0xFF9FE2BF); // Verde ATL
+      return ATLColors.getSecondaryColor(widget.currentSport); // Verde ATL
     } else if (widget.tournament.paidTeams >= widget.tournament.numTeams) {
       return const Color(0xFFC5C5C5); // Grigio se torneo pieno
     } else {
@@ -311,7 +311,7 @@ class _TournamentCardStatus extends State<TournamentCard>{
   /// Colore del cuore preferiti
   Color _getFavoriteColor() {
     if (widget.tournament.isParticipating!) {
-      return Colors.green; // Verde se partecipo (precedenza)
+      return ATLColors.getPrimaryColor(widget.currentSport); // Verde se partecipo (precedenza)
     } else if (isFavorite) {
       return ATLColors.darkBlue; // Blu ATL se preferito
     } else {

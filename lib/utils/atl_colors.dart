@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../models/sport_category.dart';
 
 /// Classe che contiene tutti i colori fondamentali dell'applicazione ATL
 class ATLColors {
+
   // Colori principali
   static const Color darkBlue = Color(0xFF202448);
   static const Color background = Color(0xFFE2E8F0);
@@ -9,9 +11,9 @@ class ATLColors {
   static const Color title = Color(0xFF6B7280);
   
   // Colori del calcio
-  static const Color soccerGreen = Color(0xFF38A169);
-  static const Color soccerMediumGreen = Color(0xFF46C481);
-  static const Color soccerLightGreen = Color(0xFF60F3A4);
+  static const Color footballGreen = Color(0xFF38A169);
+  static const Color footballMediumGreen = Color(0xFF46C481);
+  static const Color footballLightGreen = Color(0xFF60F3A4);
   
   // Colori secondari
   static const Color lightBlue = Color(0xFFCFD4FF);
@@ -22,4 +24,22 @@ class ATLColors {
   
   @Deprecated('Usa ATLColors.lightBlue invece')
   static const Color atlLightBlue = lightBlue;
+
+  static Color getPrimaryColor(SportCategory sport) {
+    if (sport == SportCategory.football) {
+      return footballGreen;
+    }
+    else {
+      return darkBlue;
+    }
+  }
+
+  static Color getSecondaryColor(SportCategory sport) {
+    if (sport == SportCategory.football) {
+      return footballMediumGreen;
+    }
+    else {
+      return lightBlue;
+    }
+  }
 }
