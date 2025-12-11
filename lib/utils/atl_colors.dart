@@ -42,4 +42,13 @@ class ATLColors {
       return lightBlue;
     }
   }
+
+  static Color getTertiaryColor(SportCategory sport) {
+    if (sport == SportCategory.football) {
+      return footballLightGreen;
+    }
+    else {
+      return background;
+    }
+  }
 }

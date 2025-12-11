@@ -19,21 +19,22 @@ import '../../providers/user_provider.dart';
 import '../../widgets/home_team_widget.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
-
-  const PlayerHomeScreen({
-    super.key,
-  });
+  const PlayerHomeScreen({super.key});
 
   @override
   State<PlayerHomeScreen> createState() => _PlayerHomeScreenState();
 }
 
 class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final UserProvider userProvider = Provider.of<UserProvider>(
+    context,
+    listen: false,
+  );
   late final User user = userProvider.activeUser!;
-  late final int teamId = userProvider.currentTeamId!;
-  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
-  
+  late final int? teamId = userProvider.currentTeamId;
+  late final SportCategory _currentSport =
+      userProvider.selectedSportCategory ?? SportCategory.football;
+
   List<Tournament>? _activeTournaments;
   Map<int, List<SoccerMatch>> _tournamentMatches = {};
   Map<int, List<SoccerStanding>> _tournamentStandings = {};
@@ -45,6 +46,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   @override
   void initState() {
     super.initState();
+
     _loadPlayerData();
   }
 
@@ -52,65 +54,82 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       // Load user's team using teamId from user
       if (teamId != null && teamId != -1) {
-        _userTeam = await DB.Teams.getById(teamId);
-      }
-      
-      // Load active tournaments where user's team participates
-      //final allTournaments = DB.Tournaments.mockData;
-      //final activeTournaments = allTournaments.where((t) => t.status == TournamentStatus.scheduled).toList();
-      
-      final activeTournamentsId = (await DB.TournamentPartecipations.getByTeamId(teamId))
-          .map((p) => p.tournamentId).toSet();
+        _userTeam = await DB.Teams.getById(teamId!);
 
-      final activeTournaments = (await DB.Tournaments.getBySport('FOOTBALL'))
-          .where((t) => activeTournamentsId.contains(t.id)).toList();
+        // Load active tournaments where user's team participates
+        //final allTournaments = DB.Tournaments.mockData;
+        //final activeTournaments = allTournaments.where((t) => t.status == TournamentStatus.scheduled).toList();
 
-      // Load matches and standings for each tournament
-      for (var tournament in activeTournaments) {
-        final matches = DB.SoccerMatches.getMatchesByTournament(tournament.id);
-        final standings = DB.SoccerStandings.getStandingsByTournament(tournament.id);
-        
-        _tournamentMatches[tournament.id] = matches;
-        _tournamentStandings[tournament.id] = standings;
-        
-        // Cache teams
-        final teamIds = <int>{};
-        for (var match in matches) {
-          teamIds.add(match.homeTeamId);
-          teamIds.add(match.awayTeamId);
-        }
-        for (var standing in standings) {
-          teamIds.add(standing.teamId);
-        }
-        
-        for (var teamId in teamIds) {
-          if (!_teamsCache.containsKey(teamId)) {
-            final team = await DB.Teams.getById(teamId);
-            if (team != null) {
-              _teamsCache[teamId] = team;
+        final activeTournamentsId =
+            (await DB.TournamentPartecipations.getByTeamId(
+              teamId!,
+            )).map((p) => p.tournamentId).toSet();
+
+        final activeTournaments = (await DB.Tournaments.getBySport(
+          'FOOTBALL',
+        )).where((t) => activeTournamentsId.contains(t.id)).toList();
+
+        // Load matches and standings for each tournament
+        for (var tournament in activeTournaments) {
+          final matches = DB.SoccerMatches.getMatchesByTournament(
+            tournament.id,
+          );
+          final standings = DB.SoccerStandings.getStandingsByTournament(
+            tournament.id,
+          );
+
+          _tournamentMatches[tournament.id] = matches;
+          _tournamentStandings[tournament.id] = standings;
+
+          // Cache teams
+          final teamIds = <int>{};
+          for (var match in matches) {
+            teamIds.add(match.homeTeamId);
+            teamIds.add(match.awayTeamId);
+          }
+          for (var standing in standings) {
+            teamIds.add(standing.teamId);
+          }
+
+          for (var teamId in teamIds) {
+            if (!_teamsCache.containsKey(teamId)) {
+              final team = await DB.Teams.getById(teamId);
+              if (team != null) {
+                _teamsCache[teamId] = team;
+              }
             }
           }
         }
-      }
-      
-      if (mounted) {
+
+        if (mounted) {
+          setState(() {
+            _activeTournaments = activeTournaments;
+            _isLoading = false;
+          });
+        }
+      } else {
         setState(() {
-          _activeTournaments = activeTournaments;
           _isLoading = false;
         });
+        return;
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
-        );
+        // ✓ FIX: Usa addPostFrameCallback
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+          }
+        });
       }
     }
   }
@@ -124,24 +143,16 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
       Widget screen;
       switch (index) {
         case 0:
-          screen = ShopScreen(
-            currentSport: _currentSport,
-          );
+          screen = ShopScreen(currentSport: _currentSport);
           break;
         case 1:
-          screen = AllTournamentsScreen(
-            currentSport: _currentSport,
-          );
+          screen = AllTournamentsScreen(currentSport: _currentSport);
           break;
         case 2:
-          screen = TeamScreen(
-            currentSport: _currentSport,
-          );
+          screen = TeamScreen(currentSport: _currentSport);
           break;
         case 3:
-          screen = ProfileScreen(
-            currentSport: _currentSport,
-          );
+          screen = ProfileScreen(currentSport: _currentSport);
           break;
         default:
           return;
@@ -165,7 +176,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         duration: Duration(seconds: 2),
       ),
     );
-    
+
     /* TODO: Riabilitare questo codice quando ci saranno più sport
     showDialog(
       context: context,
@@ -199,6 +210,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Calcola il numero totale di pagine (tornei + pagina "need more")
+    final totalPages = (_activeTournaments?.length ?? 0) + 1;
+    final isOnNeedMorePage = _currentPage >= (_activeTournaments?.length ?? 0);
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -206,38 +221,41 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         leadingWidth: 90,
-        leading: GestureDetector(
-          onTap: () {
-            // TODO: Implementare prenotazione campo
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Book a field - Coming soon')),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-              color: ATLColors.darkBlue,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.stadium, color: Colors.white, size: 18),
-                SizedBox(height: 2),
-                Text(
-                  'Book a field',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    height: 1.1,
+        // Mostra "Book a field" solo se NON siamo sulla pagina "Need more?"
+        leading: !isOnNeedMorePage
+            ? GestureDetector(
+                onTap: () {
+                  // TODO: Implementare prenotazione campo
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Book a field - Coming soon')),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
+                  decoration: BoxDecoration(
+                    color: ATLColors.darkBlue,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.stadium, color: Colors.white, size: 18),
+                      SizedBox(height: 2),
+                      Text(
+                        'Book a field',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
+              )
+            : null,
         centerTitle: true,
         title: const Text(
           'HOME',
@@ -267,9 +285,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const LoadingATL()
-          : _buildPlayerHomeContent(),
+      body: _isLoading ? const LoadingATL() : _buildPlayerHomeContent(),
       bottomNavigationBar: PlayerCoordinatorBottomBar(
         currentIndex: 4,
         onTap: _onNavTap,
@@ -280,45 +296,18 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   }
 
   Widget _buildPlayerHomeContent() {
-    if (_activeTournaments == null || _activeTournaments!.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _currentSport.icon,
-              color: _currentSport.primaryColor,
-              size: 80,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No active tournaments',
-              style: TextStyle(
-                color: ATLColors.subtext,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Join a tournament to start playing!',
-              style: TextStyle(
-                color: ATLColors.title,
-                fontSize: 14,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    }
+    final tournamentsCount = _activeTournaments?.length ?? 0;
+    final totalPages = tournamentsCount + 1; // +1 per la pagina "Need more?"
 
     return Column(
       children: [
-        // Tournament name header
+        // Tournament name header o "Need more?" header
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           child: Text(
-            _activeTournaments![_currentPage].name.toUpperCase(),
+            _currentPage < tournamentsCount
+                ? _activeTournaments![_currentPage].name.toUpperCase()
+                : 'NEED MORE?',
             style: TextStyle(
               color: ATLColors.darkBlue,
               fontSize: 28,
@@ -328,14 +317,14 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             textAlign: TextAlign.center,
           ),
         ),
-        
+
         // Page indicators
-        if (_activeTournaments!.length > 1)
+        if (totalPages > 1)
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_activeTournaments!.length, (index) {
+              children: List.generate(totalPages, (index) {
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   width: 12,
@@ -350,8 +339,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               }),
             ),
           ),
-        
-        // Tournament card
+
+        // Tournament cards + "Need more?" page
         Expanded(
           child: PageView.builder(
             onPageChanged: (index) {
@@ -359,13 +348,18 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                 _currentPage = index;
               });
             },
-            itemCount: _activeTournaments!.length,
+            itemCount: totalPages,
             itemBuilder: (context, index) {
-              final tournament = _activeTournaments![index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildTournamentCard(tournament),
-              );
+              if (index < tournamentsCount) {
+                final tournament = _activeTournaments![index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildTournamentCard(tournament),
+                );
+              } else {
+                // Pagina "Need more?"
+                return _buildNeedMorePage();
+              }
             },
           ),
         ),
@@ -373,39 +367,137 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     );
   }
 
+  Widget _buildNeedMorePage() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search, color: _currentSport.primaryColor, size: 80),
+            const SizedBox(height: 24),
+            const Text(
+              'Looking for more passion?',
+              style: TextStyle(
+                color: ATLColors.title,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+
+            // Book a field button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // TODO: Implementare prenotazione campo
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Book a field - Coming soon')),
+                  );
+                },
+                icon: const Icon(Icons.stadium, size: 28),
+                label: const Text(
+                  'BOOK A FIELD',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ATLColors.darkBlue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Browse tournaments button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          AllTournamentsScreen(currentSport: _currentSport),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                },
+                icon: Icon(_currentSport.icon, size: 28),
+                label: const Text(
+                  'BROWSE TOURNAMENTS',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _currentSport.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTournamentCard(Tournament tournament) {
     final matches = _tournamentMatches[tournament.id] ?? [];
     final standings = _tournamentStandings[tournament.id] ?? [];
-    
+
     // Find user's team group
     final userStanding = standings.firstWhere(
       (s) => s.teamId == _userTeam?.id,
-      orElse: () => standings.isNotEmpty ? standings.first : SoccerStanding(
-        tournamentId: tournament.id,
-        teamId: 0,
-        points: 0,
-        won: 0,
-        drawn: 0,
-        lost: 0,
-        group: 'A',
-      ),
+      orElse: () => standings.isNotEmpty
+          ? standings.first
+          : SoccerStanding(
+              tournamentId: tournament.id,
+              teamId: 0,
+              points: 0,
+              won: 0,
+              drawn: 0,
+              lost: 0,
+              group: 'A',
+            ),
     );
-    
-    final groupStandings = standings
-        .where((s) => s.group == userStanding.group)
-        .toList()
-      ..sort((a, b) => b.points.compareTo(a.points));
-    
+
+    final groupStandings =
+        standings.where((s) => s.group == userStanding.group).toList()
+          ..sort((a, b) => b.points.compareTo(a.points));
+
     // Find next match
-    final userMatches = matches.where((m) =>
-      m.homeTeamId == _userTeam?.id || m.awayTeamId == _userTeam?.id).toList()
-      ..sort((a, b) {
-        if (a.matchDate == null && b.matchDate == null) return 0;
-        if (a.matchDate == null) return 1;
-        if (b.matchDate == null) return -1;
-        return a.matchDate!.compareTo(b.matchDate!);
-      });
-    
+    final userMatches =
+        matches
+            .where(
+              (m) =>
+                  m.homeTeamId == _userTeam?.id ||
+                  m.awayTeamId == _userTeam?.id,
+            )
+            .toList()
+          ..sort((a, b) {
+            if (a.matchDate == null && b.matchDate == null) return 0;
+            if (a.matchDate == null) return 1;
+            if (b.matchDate == null) return -1;
+            return a.matchDate!.compareTo(b.matchDate!);
+          });
+
     final nextMatch = userMatches.isNotEmpty ? userMatches.first : null;
 
     return SingleChildScrollView(
@@ -430,22 +522,24 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               awayTeam: _teamsCache[nextMatch.awayTeamId],
             ),
           ],
-          
+
           // Group standings
           ...groupStandings.asMap().entries.map((entry) {
             final rank = entry.key + 1;
             final standing = entry.value;
             final team = _teamsCache[standing.teamId];
-            
+
             if (team == null) return const SizedBox.shrink();
-            
+
             final isUserTeam = team.id == _userTeam?.id;
-            
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: HomeTeamWidget(
                 team: team,
-                color: isUserTeam ? ATLColors.getPrimaryColor(_currentSport) : Colors.white,
+                color: isUserTeam
+                    ? ATLColors.getPrimaryColor(_currentSport)
+                    : Colors.white,
                 rank: rank,
                 standingRecord: '${standing.points} pts',
                 sportCategory: _currentSport,

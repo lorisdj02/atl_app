@@ -101,13 +101,12 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
       List<Tournament> favoriteTournaments = [];
 
       if (!userProvider.isGuest) {
-        if (userProvider.isPlayer) {
+        if (userProvider.isPlayer &&
+            userProvider.currentTeamId != null &&
+            userProvider.currentTeamId != -1) {
           participatingTournaments =
               await DB.Tournaments.getParticipatingTournamentByPlayerAndTeam(
-                (await DB.Players.getById(
-                  userProvider.activeUser!.id,
-                ))!.playerId,
-                //TODO: HAI IL PLAYER ID IN PROVIDER
+                userProvider.activeRoleId!,
                 userProvider.currentTeamId!,
               );
         }
@@ -596,7 +595,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                       children: [
                         Icon(
                           Icons.search_off,
-                          color: widget.currentSport.primaryColor,
+                          color: ATLColors.getPrimaryColor(widget.currentSport),
                           size: 80,
                         ),
                         const SizedBox(height: 16),
@@ -682,7 +681,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                     ),
                   );
                 },
-                backgroundColor: widget.currentSport.primaryColor,
+                backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.add,
                 label: 'New',
               ),

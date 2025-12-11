@@ -77,12 +77,12 @@ class _LoginScreenState extends State<LoginScreen> {
         //userProvider.setActiveUser(user, roleId: await DB.Organizations.getById(user.id).then((o) => o!.organizationId));
         break;
       case UserRole.player:
+        userProvider.setActiveUser(user, roleId: await DB.Players.getById(user.id).then((p) => p!.playerId));
         try {
-          userProvider.setCurrentTeamId(await DB.PlaysAt.getTeamIdByPlayerId(user.id));
+          userProvider.setCurrentTeamId(await DB.PlaysAt.getTeamIdByPlayerId(userProvider.activeRoleId!));
         } catch (e) {
           userProvider.setCurrentTeamId(-1);
         }
-        userProvider.setActiveUser(user, roleId: await DB.Players.getById(user.id).then((p) => p!.playerId));
         break;
       case UserRole.guest:
         userProvider.setActiveUser(user);
