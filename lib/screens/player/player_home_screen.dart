@@ -17,6 +17,7 @@ import '../profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/home_team_widget.dart';
+import 'book_field_screen.dart'; // <-- AGGIUNTO
 
 class PlayerHomeScreen extends StatefulWidget {
   const PlayerHomeScreen({super.key});
@@ -224,11 +225,18 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         // Mostra "Book a field" solo se NON siamo sulla pagina "Need more?"
         leading: !isOnNeedMorePage
             ? GestureDetector(
-                onTap: () {
-                  // TODO: Implementare prenotazione campo
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Book a field - Coming soon')),
+                onTap: () async {
+                  // Naviga a BookFieldScreen
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => BookFieldScreen(sportCategory: _currentSport),
+                    ),
                   );
+                  
+                  // Se è stata creata una prenotazione, ricarica i dati
+                  if (result == true) {
+                    _loadPlayerData();
+                  }
                 },
                 child: Container(
                   margin: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
@@ -392,11 +400,18 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implementare prenotazione campo
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Book a field - Coming soon')),
+                onPressed: () async {
+                  // Naviga a BookFieldScreen
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => BookFieldScreen(sportCategory: _currentSport),
+                    ),
                   );
+                  
+                  // Se è stata creata una prenotazione, ricarica i dati
+                  if (result == true) {
+                    _loadPlayerData();
+                  }
                 },
                 icon: const Icon(Icons.stadium, size: 28),
                 label: const Text(

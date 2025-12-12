@@ -10,8 +10,8 @@ class LobbyBooking {
   final DateTime startTime;
   final DateTime finishTime;
   BookingStatus status;
-  int playerToFind;
-  final int maxPlayers;
+  int playerToFind;     //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
+  final int maxPlayers; //numero di giocatori totali -> prezzo per giocatore
   final int feePerPlayer;
 
   LobbyBooking({

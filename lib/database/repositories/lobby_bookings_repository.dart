@@ -76,7 +76,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     return start1.isBefore(end2) && start2.isBefore(end1);
   }
 
-  Future<List<int>?> getFreeFieldIds(DateTime startTime, DateTime finishTime, List<int> allFieldIds) async {
+  Future<List<int>?> getFreeFieldIds(DateTime startTime, DateTime finishTime, List<int> allFieldIds, {bool checkPrivate = true}) async {
     if(AppConfig.isDebug) {
       List<int> bookedFieldIds = [];
       List<LobbyBooking> bookings = await getByStatus(BookingStatus.booked) ?? [];
@@ -92,8 +92,11 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
           bookedFieldIds.add(booking.fieldId);
         }
       }
-      List<int> freePrivateBookingsFieldIds = (await DB.PrivateBookings.getFreeFieldIds(startTime, finishTime, allFieldIds)) ?? [];
-
+      
+      if(!checkPrivate) {
+        return allFieldIds.where((id) => !bookedFieldIds.contains(id)).toList();
+      }
+      List<int> freePrivateBookingsFieldIds = (await DB.PrivateBookings.getFreeFieldIds(startTime, finishTime, allFieldIds, checkLobby: false)) ?? [];
       return allFieldIds.where((id) => !bookedFieldIds.contains(id)).toList()..addAll(freePrivateBookingsFieldIds);
     }
     else {

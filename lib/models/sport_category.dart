@@ -26,6 +26,13 @@ extension SportCategoryExtension on SportCategory {
     }
   }
 
+  int get maxPlayers {
+    switch (this) {
+      case SportCategory.football:
+        return 22;
+    }
+  }
+
   String get id {
     switch (this) {
       case SportCategory.football:

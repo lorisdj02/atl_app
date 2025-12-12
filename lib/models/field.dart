@@ -8,9 +8,10 @@ class Field {
   final double locationX;
   final double locationY;
   final double costTournament;
-  final double costPrivate;
+  final double hourlyCostPrivate;
   final String city;
   final SportCategory? sportCategory;
+  final int maxPlayers;
 
   Field({
     required this.id,
@@ -19,9 +20,10 @@ class Field {
     required this.locationX,
     required this.locationY,
     required this.costTournament,
-    required this.costPrivate,
+    required this.hourlyCostPrivate,
     required this.city,
     required this.sportCategory,
+    required this.maxPlayers,
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {
@@ -32,8 +34,9 @@ class Field {
       locationX: double.parse(json['location_x'].toString()),
       locationY: double.parse(json['location_y'].toString()),
       costTournament: double.parse(json['cost_tournament'].toString()),
-      costPrivate: double.parse(json['cost_private'].toString()),
+      hourlyCostPrivate: double.parse(json['hourly_cost_private'].toString()),
       city: json['city'] ?? '',
+      maxPlayers: json['max_players'] ?? 0,
       sportCategory: json['sport_category'] != null ? SportCategory.values.firstWhere((e) => e.toJSON() == json['sport_category']) : null,
     );
   }
@@ -46,8 +49,10 @@ class Field {
       'location_x': locationX,
       'location_y': locationY,
       'cost_tournament': costTournament,
-      'cost_private': costPrivate,
+      'hourly_cost_private': hourlyCostPrivate,
       'city': city,
+      'sport_category': sportCategory?.toJSON(),
+      'max_players': maxPlayers,
     };
   }
 
@@ -55,5 +60,5 @@ class Field {
   String get formattedCostTournament => '€${costTournament.toStringAsFixed(2)}';
 
   /// Formatta il costo privato come stringa con valuta
-  String get formattedCostPrivate => '€${costPrivate.toStringAsFixed(2)}';
+  String get formattedHourlyCostPrivate => '€${hourlyCostPrivate.toStringAsFixed(2)}';
 }
