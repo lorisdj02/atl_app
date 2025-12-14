@@ -1,3 +1,4 @@
+import 'package:atl_app/models/private_bookings.dart';
 import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
@@ -17,7 +18,9 @@ import '../profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/home_team_widget.dart';
-import 'book_field_screen.dart'; // <-- AGGIUNTO
+import 'book_field_screen.dart';
+import '../../widgets/booking_widget.dart';
+import '../../models/lobby_booking.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
   const PlayerHomeScreen({super.key});
@@ -33,6 +36,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   );
   late final User user = userProvider.activeUser!;
   late final int? teamId = userProvider.currentTeamId;
+  late final int playerId = userProvider.activeRoleId!;
   late final SportCategory _currentSport =
       userProvider.selectedSportCategory ?? SportCategory.football;
 
@@ -41,6 +45,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   Map<int, List<SoccerStanding>> _tournamentStandings = {};
   Map<int, Team> _teamsCache = {};
   Team? _userTeam;
+  List<dynamic> _bookings = [];
   bool _isLoading = true;
   int _currentPage = 0;
 
@@ -57,6 +62,20 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     });
 
     try {
+      // Carica i booking
+      final privateBookings = await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
+      final lobbyBookings = await DB.LobbyBookings.getByPlayerId(playerId) ?? [];
+      print('Loaded ${privateBookings.length} private bookings and ${lobbyBookings.length} lobby bookings for player $playerId');
+      // Combina e ordina per startTime
+      final allBookings = <dynamic>[...privateBookings, ...lobbyBookings];
+      allBookings.sort((a, b) {
+        final aTime = a is PrivateBooking ? a.startTime : (a as LobbyBooking).startTime;
+        final bTime = b is PrivateBooking ? b.startTime : (b as LobbyBooking).startTime;
+        return aTime.compareTo(bTime);
+      });
+      
+      _bookings = allBookings;
+
       // Load user's team using teamId from user
       if (teamId != null && teamId != -1) {
         _userTeam = await DB.Teams.getById(teamId!);
@@ -211,9 +230,12 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Calcola il numero totale di pagine (tornei + pagina "need more")
-    final totalPages = (_activeTournaments?.length ?? 0) + 1;
-    final isOnNeedMorePage = _currentPage >= (_activeTournaments?.length ?? 0);
+    // Calcola il numero totale di pagine (tornei + 1 pagina booking + pagina "need more")
+    final tournamentsCount = _activeTournaments?.length ?? 0;
+    final bookingsCount = _bookings.length;
+    final hasBookings = bookingsCount > 0;
+    final totalPages = tournamentsCount + (hasBookings ? 1 : 0) + 1; // tornei + bookings page + need more
+    final isOnNeedMorePage = _currentPage >= (tournamentsCount + (hasBookings ? 1 : 0));
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -305,17 +327,17 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
   Widget _buildPlayerHomeContent() {
     final tournamentsCount = _activeTournaments?.length ?? 0;
-    final totalPages = tournamentsCount + 1; // +1 per la pagina "Need more?"
+    final bookingsCount = _bookings.length;
+    final hasBookings = bookingsCount > 0;
+    final totalPages = tournamentsCount + (hasBookings ? 1 : 0) + 1; // tornei + bookings page + need more
 
     return Column(
       children: [
-        // Tournament name header o "Need more?" header
+        // Tournament name header / Booking header / "Need more?" header
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           child: Text(
-            _currentPage < tournamentsCount
-                ? _activeTournaments![_currentPage].name.toUpperCase()
-                : 'NEED MORE?',
+            _getPageTitle(),
             style: TextStyle(
               color: ATLColors.darkBlue,
               fontSize: 28,
@@ -348,7 +370,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             ),
           ),
 
-        // Tournament cards + "Need more?" page
+        // Tournament cards + Bookings page + "Need more?" page
         Expanded(
           child: PageView.builder(
             onPageChanged: (index) {
@@ -364,6 +386,9 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: _buildTournamentCard(tournament),
                 );
+              } else if (hasBookings && index == tournamentsCount) {
+                // Pagina unica con tutti i bookings
+                return _buildBookingsPage();
               } else {
                 // Pagina "Need more?"
                 return _buildNeedMorePage();
@@ -372,6 +397,40 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  String _getPageTitle() {
+    final tournamentsCount = _activeTournaments?.length ?? 0;
+    final bookingsCount = _bookings.length;
+    final hasBookings = bookingsCount > 0;
+    
+    if (_currentPage < tournamentsCount) {
+      return _activeTournaments![_currentPage].name.toUpperCase();
+    } else if (hasBookings && _currentPage == tournamentsCount) {
+      return 'BOOKINGS';
+    } else {
+      return 'NEED MORE?';
+    }
+  }
+
+  Widget _buildBookingsPage() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ListView.separated(
+        itemCount: _bookings.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          final booking = _bookings[index];
+          return BookingWidget(
+            fieldId: booking is PrivateBooking ? booking.fieldId : (booking as LobbyBooking).fieldId,
+            startTime: booking is PrivateBooking ? booking.startTime : (booking as LobbyBooking).startTime,
+            finishTime: booking is PrivateBooking ? booking.finishTime : (booking as LobbyBooking).finishTime,
+            ownerId: booking is LobbyBooking ? booking.ownerId : null,
+            currentSport: _currentSport,
+          );
+        },
+      ),
     );
   }
 

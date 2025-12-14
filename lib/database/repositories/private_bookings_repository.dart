@@ -32,6 +32,16 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
     
   }
 
+  Future<bool> addPrivateBooking(PrivateBooking booking) async {
+    if(AppConfig.isDebug) {
+      _mockData.add(booking);
+      return true;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Ottieni private bookings per torneo
   Future<List<PrivateBooking>?> getByFieldId(int fieldId) async {
     if(AppConfig.isDebug) {

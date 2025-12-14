@@ -319,7 +319,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           status: BookingStatus.booked,
         );
         
-        await DB.PrivateBookings.create(newBooking);
+        await DB.PrivateBookings.addPrivateBooking(newBooking);
       } else {
         final baseCost = _selectedField!.costTournament;
         final feePerPlayer = (baseCost / _maxPlayers).round();
@@ -337,7 +337,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           status: BookingStatus.booked,
         );
         
-        await DB.LobbyBookings.create(newBooking);
+        await DB.LobbyBookings.addLobbyBooking(newBooking);
       }
 
       if (mounted) {

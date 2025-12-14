@@ -32,6 +32,16 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
+  Future<bool> addLobbyBooking(LobbyBooking booking) async {
+    if(AppConfig.isDebug) {
+      _mockData.add(booking);
+      return true;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Ottieni private bookings per torneo
   Future<List<LobbyBooking>?> getByFieldId(int fieldId) async {
     if(AppConfig.isDebug) {
@@ -68,7 +78,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-
+//TODO: devi controllare la data
   bool _isOverlapping(DateTime start1, DateTime end1, DateTime start2, DateTime end2) {
     // Due intervalli si sovrappongono se:
     // start1 < end2 AND start2 < end1
