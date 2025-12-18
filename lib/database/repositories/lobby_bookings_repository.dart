@@ -83,7 +83,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     // Due intervalli si sovrappongono se:
     // start1 < end2 AND start2 < end1
     // Questo copre tutti i casi di sovrapposizione possibili
-    return start1.isBefore(end2) && start2.isBefore(end1);
+    return start1.isBefore(end2) && start2.isBefore(end1) ;
   }
 
   Future<List<int>?> getFreeFieldIds(DateTime startTime, DateTime finishTime, List<int> allFieldIds, {bool checkPrivate = true}) async {
@@ -107,7 +107,82 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
         return allFieldIds.where((id) => !bookedFieldIds.contains(id)).toList();
       }
       List<int> freePrivateBookingsFieldIds = (await DB.PrivateBookings.getFreeFieldIds(startTime, finishTime, allFieldIds, checkLobby: false)) ?? [];
-      return allFieldIds.where((id) => !bookedFieldIds.contains(id)).toList()..addAll(freePrivateBookingsFieldIds);
+      List<int> freeLobbyFieldIds = allFieldIds.where((id) => !bookedFieldIds.contains(id)).toList();
+      // Restituisci solo i campi liberi in ENTRAMBI
+      return freeLobbyFieldIds.where((id) => freePrivateBookingsFieldIds.contains(id)).toList();
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
+
+  Future<List<LobbyBooking>> getBookedLobbyBookings(int? totalPlayers, String? city, DateTime? startTime, DateTime? endTime, int? playersToPay) async {
+    if(AppConfig.isDebug) {
+      if(totalPlayers == null && city == null && startTime == null && endTime == null) {
+        return _mockData.where((booking) => booking.status == BookingStatus.booked).toList();
+      }
+      else {
+        List<LobbyBooking> results = [];
+        for(LobbyBooking booking in _mockData) {
+          String bookingCity = (await DB.Fields.getById(booking.fieldId))!.city;
+          if(booking.status == BookingStatus.booked) {
+            if(totalPlayers != null && booking.maxPlayers < totalPlayers) {
+              continue;
+            }
+            if(city != null && bookingCity != city) {
+              continue;
+            }
+            if(startTime != null && startTime.isBefore(booking.startTime)) {
+              continue;
+            }
+            if(endTime != null && endTime.isAfter(booking.finishTime)) {
+              continue;
+            }
+            if(playersToPay != null && booking.playerToFind != playersToPay) {
+              continue;
+            }
+            results.add(booking);
+          }
+        }
+        return results;
+      }
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateLobbyBookingStatus(int lobbyBookingId, BookingStatus status) async {
+    if(AppConfig.isDebug) {
+      _mockData.firstWhere((booking) => booking.id == lobbyBookingId).status = status;
+      return true;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> decreasePlayersToFind(int lobbyBookingId, int playersFound) async {
+    if(AppConfig.isDebug) {
+      _mockData.firstWhere((booking) => booking.id == lobbyBookingId).playerToFind -= playersFound;
+      if(_mockData.firstWhere((booking) => booking.id == lobbyBookingId).playerToFind <= 0) {
+        updateLobbyBookingStatus(lobbyBookingId, BookingStatus.full);
+      }
+      return true;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> increasePlayersToFind(int lobbyBookingId, int playersLeft) async {
+    if(AppConfig.isDebug) {
+      _mockData.firstWhere((booking) => booking.id == lobbyBookingId).playerToFind += playersLeft;
+      if(_mockData.firstWhere((booking) => booking.id == lobbyBookingId).playerToFind > 0) {
+        updateLobbyBookingStatus(lobbyBookingId, BookingStatus.booked);
+      }
+      return true;
     }
     else {
       throw UnimplementedError();

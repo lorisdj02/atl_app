@@ -21,6 +21,7 @@ import '../../widgets/home_team_widget.dart';
 import 'book_field_screen.dart';
 import '../../widgets/booking_widget.dart';
 import '../../models/lobby_booking.dart';
+import 'join_lobby_screen.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
   const PlayerHomeScreen({super.key});
@@ -63,8 +64,15 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
     try {
       // Carica i booking
-      final privateBookings = await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
-      final lobbyBookings = await DB.LobbyBookings.getByPlayerId(playerId) ?? [];
+      final List<PrivateBooking> privateBookings = await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
+      List<LobbyBooking> lobbyBookings = await DB.LobbyBookings.getByPlayerId(playerId) ?? [];
+      List<int> notOwnerLobbyBookingIds = (await DB.LobbyBookingParticipations.getByPlayerId(playerId)).map((p) => p.lobbyBookingId).toList();
+      for (var lobbyBookingId in notOwnerLobbyBookingIds) {
+        final lobbyBooking = await DB.LobbyBookings.getById(lobbyBookingId);
+        if (lobbyBooking != null && !lobbyBookings.any((lb) => lb.id == lobbyBooking.id)) {
+          lobbyBookings.add(lobbyBooking);
+        }
+      }
       print('Loaded ${privateBookings.length} private bookings and ${lobbyBookings.length} lobby bookings for player $playerId');
       // Combina e ordina per startTime
       final allBookings = <dynamic>[...privateBookings, ...lobbyBookings];
@@ -428,6 +436,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             finishTime: booking is PrivateBooking ? booking.finishTime : (booking as LobbyBooking).finishTime,
             ownerId: booking is LobbyBooking ? booking.ownerId : null,
             currentSport: _currentSport,
+            bookingId: booking is PrivateBooking ? booking.id : (booking as LobbyBooking).id,
           );
         },
       ),
@@ -522,6 +531,40 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Join Lobby button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => JoinLobbyScreen(sportCategory: _currentSport),
+                    ),
+                  ).then((_) => _loadPlayerData());
+                },
+                icon: const Icon(Icons.groups, size: 28),
+                label: const Text(
+                  'JOIN LOBBY',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: _currentSport.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: _currentSport.primaryColor, width: 2),
                   ),
                 ),
               ),

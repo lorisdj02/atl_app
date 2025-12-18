@@ -1,4 +1,5 @@
 import 'package:atl_app/models/sport_category.dart';
+import 'package:flutter/material.dart';
 
 /// Modello Field dal database
 class Field {
@@ -12,6 +13,11 @@ class Field {
   final String city;
   final SportCategory? sportCategory;
   final int maxPlayers;
+  
+  // Nuovi campi
+  final TimeOfDay openingTime;
+  final TimeOfDay closingTime;
+  final List<int> closedWeekdays; // 1=Lunedì, 7=Domenica
 
   Field({
     required this.id,
@@ -24,6 +30,9 @@ class Field {
     required this.city,
     required this.sportCategory,
     required this.maxPlayers,
+    this.openingTime = const TimeOfDay(hour: 8, minute: 0), // Default 08:00
+    this.closingTime = const TimeOfDay(hour: 23, minute: 0), // Default 23:00
+    this.closedWeekdays = const [], // Default sempre aperto
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {
@@ -38,7 +47,21 @@ class Field {
       city: json['city'] ?? '',
       maxPlayers: json['max_players'] ?? 0,
       sportCategory: json['sport_category'] != null ? SportCategory.values.firstWhere((e) => e.toJSON() == json['sport_category']) : null,
+      openingTime: json['opening_time'] != null 
+          ? _timeFromString(json['opening_time']) 
+          : const TimeOfDay(hour: 8, minute: 0),
+      closingTime: json['closing_time'] != null 
+          ? _timeFromString(json['closing_time']) 
+          : const TimeOfDay(hour: 23, minute: 0),
+      closedWeekdays: json['closed_weekdays'] != null
+          ? List<int>.from(json['closed_weekdays'])
+          : [],
     );
+  }
+
+  static TimeOfDay _timeFromString(String time) {
+    final parts = time.split(':');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
   }
 
   Map<String, dynamic> toJson() {
@@ -53,6 +76,9 @@ class Field {
       'city': city,
       'sport_category': sportCategory?.toJSON(),
       'max_players': maxPlayers,
+      'opening_time': '${openingTime.hour.toString().padLeft(2, '0')}:${openingTime.minute.toString().padLeft(2, '0')}',
+      'closing_time': '${closingTime.hour.toString().padLeft(2, '0')}:${closingTime.minute.toString().padLeft(2, '0')}',
+      'closed_weekdays': closedWeekdays,
     };
   }
 
@@ -61,4 +87,19 @@ class Field {
 
   /// Formatta il costo privato come stringa con valuta
   String get formattedHourlyCostPrivate => '€${hourlyCostPrivate.toStringAsFixed(2)}';
+
+  /// Verifica se il campo è aperto in un determinato giorno/orario
+  bool isOpenAt(DateTime dateTime) {
+    // Controlla giorno chiusura (1=Lunedì, 7=Domenica)
+    if (closedWeekdays.contains(dateTime.weekday)) {
+      return false;
+    }
+    
+    // Controlla orario
+    final timeInMinutes = dateTime.hour * 60 + dateTime.minute;
+    final openingMinutes = openingTime.hour * 60 + openingTime.minute;
+    final closingMinutes = closingTime.hour * 60 + closingTime.minute;
+    
+    return timeInMinutes >= openingMinutes && timeInMinutes <= closingMinutes;
+  }
 }

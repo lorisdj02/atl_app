@@ -48,17 +48,21 @@ class LobbyBookingParticipationRepository extends BaseRepository<LobbyBookingPar
     }
   }
 
-  Future<bool> addParticipation(int playerId, int lobbyBookingId) async {
+  Future<bool> addParticipation(int playerId, int lobbyBookingId, int? playersPaid) async {
     if(AppConfig.isDebug) {
       final participation = LobbyBookingParticipation(
         playerId: playerId,
         lobbyBookingId: lobbyBookingId,
         joinedAt: DateTime.now(),
+        playersPaid: playersPaid ?? 1,
       );
       _mockdata.add(participation);
+      
       return Future.value(true);
     } else {
       throw UnimplementedError();
     }
   }
+
+
 }

@@ -5,6 +5,8 @@ import '../models/field.dart';
 import '../models/player.dart';
 import '../utils/atl_colors.dart';
 import '../models/sport_category.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 class BookingWidget extends StatefulWidget {
   final int fieldId;
@@ -12,6 +14,7 @@ class BookingWidget extends StatefulWidget {
   final DateTime finishTime;
   final int? ownerId; // Se presente, è una lobby booking
   final SportCategory currentSport;
+  final int bookingId; // ID della prenotazione (lobby o privata)
 
   const BookingWidget({
     super.key,
@@ -20,6 +23,7 @@ class BookingWidget extends StatefulWidget {
     required this.finishTime,
     this.ownerId,
     required this.currentSport,
+    required this.bookingId,
   });
 
   @override
@@ -30,6 +34,7 @@ class _BookingWidgetState extends State<BookingWidget> {
   Field? _field;
   Player? _owner;
   bool _isLoading = true;
+  bool _isParticipating = false;
 
   @override
   void initState() {
@@ -40,16 +45,27 @@ class _BookingWidgetState extends State<BookingWidget> {
   Future<void> _loadData() async {
     try {
       final field = await DB.Fields.getById(widget.fieldId);
+      
       Player? owner;
+      bool isParticipating = false;
       
       if (widget.ownerId != null) {
         owner = await DB.Players.getByPlayerId(widget.ownerId!);
-      }
-
+        
+        // Check if current user is participating
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        final playerId = userProvider.activeRoleId;
+        isParticipating = await DB.LobbyBookingParticipations.isParticipating(
+              playerId!,
+              widget.bookingId,
+            );
+          //}
+        }
       if (mounted) {
         setState(() {
           _field = field;
           _owner = owner;
+          _isParticipating = isParticipating;
           _isLoading = false;
         });
       }
@@ -187,8 +203,8 @@ class _BookingWidgetState extends State<BookingWidget> {
                   ),
                 ],
 
-                // Pulsante chat (solo per lobby)
-                if (isLobby) ...[
+                // Pulsante chat (solo per lobby SE si partecipa)
+                if (isLobby && _isParticipating) ...[
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,

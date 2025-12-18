@@ -47,6 +47,17 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   bool _isLoading = false;
   List<Field> _availableFields = [];
 
+  // Available player counts
+  final List<int> _availablePlayerCounts = [];
+
+  @override
+  void initState() {
+    if(widget.sportCategory == SportCategory.football) {
+      _availablePlayerCounts.addAll([10, 14, 16, 18, 22]);
+    }
+    super.initState();
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -97,6 +108,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   void _goToPreviousStep() {
     if (_currentStep > 1) {
       setState(() {
+        // Reset field selection when going back from step 4
+        if (_currentStep == 4) {
+          _selectedField = null;
+        }
         _currentStep--;
       });
     }
@@ -161,7 +176,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       setState(() {
         _availableFields = allFields
             .where((field) => freeFieldIds?.contains(field.id) ?? false)
+            .where((field) => field.isOpenAt(startDateTime))
+            .where((field) => field.isOpenAt(endDateTime))
             .toList();
+        
       });
     } catch (e) {
       if (mounted) {
@@ -222,61 +240,128 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Future<void> _selectTime(bool isStartTime) async {
-    final TimeOfDay? picked = await showTimePicker(
+    // Check if date is selected first
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Seleziona prima una data'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Generate available time slots (every 15 minutes)
+    final List<TimeOfDay> timeSlots = [];
+    final now = DateTime.now();
+    final isToday = _selectedDate != null &&
+        _selectedDate!.year == now.year &&
+        _selectedDate!.month == now.month &&
+        _selectedDate!.day == now.day;
+
+    for (int hour = 0; hour < 24; hour++) {
+      for (int minute in [0, 15, 30, 45]) {
+        final time = TimeOfDay(hour: hour, minute: minute);
+        
+        // Skip past times if selecting for today
+        if (isStartTime && isToday) {
+          final currentMinutes = now.hour * 60 + now.minute;
+          final timeMinutes = time.hour * 60 + time.minute;
+          if (timeMinutes <= currentMinutes) {
+            continue; // Skip this time slot
+          }
+        }
+        
+        // Skip invalid end times (less than 1 hour from start or in the past)
+        if (!isStartTime && _startTime != null) {
+          final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
+          final timeMinutes = time.hour * 60 + time.minute;
+          
+          // Must be at least 1 hour after start
+          if (timeMinutes - startMinutes < 60) {
+            continue;
+          }
+          
+          // Skip past times if today
+          if (isToday) {
+            final currentMinutes = now.hour * 60 + now.minute;
+            if (timeMinutes <= currentMinutes) {
+              continue;
+            }
+          }
+        }
+        
+        timeSlots.add(time);
+      }
+    }
+
+    final TimeOfDay? picked = await showDialog<TimeOfDay>(
       context: context,
-      initialTime: TimeOfDay.now(),
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: ColorScheme.light(
-                primary: ATLColors.darkBlue,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            isStartTime ? 'Seleziona ora inizio' : 'Seleziona ora fine',
+            style: TextStyle(
+              color: ATLColors.getPrimaryColor(widget.sportCategory),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: timeSlots.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Nessun orario disponibile',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: timeSlots.length,
+                    itemBuilder: (context, index) {
+                      final time = timeSlots[index];
+                      final timeString = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                      
+                      return ListTile(
+                        title: Text(
+                          timeString,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        onTap: () {
+                          Navigator.of(context).pop(time);
+                        },
+                      );
+                    },
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Annulla',
+                style: TextStyle(color: ATLColors.getPrimaryColor(widget.sportCategory)),
               ),
             ),
-            child: child!,
-          ),
+          ],
         );
       },
     );
     
     if (picked != null) {
-      // Round to nearest 15-minute interval
-      final minutes = (picked.minute / 15).round() * 15;
-      final roundedTime = TimeOfDay(
-        hour: minutes == 60 ? picked.hour + 1 : picked.hour,
-        minute: minutes == 60 ? 0 : minutes,
-      );
-      
       setState(() {
         if (isStartTime) {
-          _startTime = roundedTime;
+          _startTime = picked;
           // Validate that end time is at least 1 hour after start
           if (_endTime != null) {
-            final startMinutes = roundedTime.hour * 60 + roundedTime.minute;
+            final startMinutes = picked.hour * 60 + picked.minute;
             final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
             if (endMinutes - startMinutes < 60) {
               _endTime = null; // Reset end time if invalid
             }
           }
         } else {
-          // Validate that end time is at least 1 hour after start
-          if (_startTime != null) {
-            final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-            final endMinutes = roundedTime.hour * 60 + roundedTime.minute;
-            if (endMinutes - startMinutes >= 60) {
-              _endTime = roundedTime;
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('La prenotazione deve durare almeno 1 ora'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          } else {
-            _endTime = roundedTime;
-          }
+          _endTime = picked;
         }
       });
     }
@@ -658,47 +743,44 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           
           const SizedBox(height: 16),
           
-          // Max Players Slider
+          // Max Players Dropdown (instead of slider)
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade300),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Numero massimo giocatori',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      '$_maxPlayers',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: ATLColors.getPrimaryColor(widget.sportCategory),
-                      ),
-                    ),
-                  ],
+                const Text(
+                  'Numero massimo giocatori',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
-                Slider(
-                  value: _maxPlayers.toDouble(),
-                  min: 2,
-                  max: widget.sportCategory.maxPlayers.toDouble(),
-                  divisions: 20,
-                  activeColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                DropdownButton<int>(
+                  value: _maxPlayers,
+                  underline: const SizedBox(),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: ATLColors.getPrimaryColor(widget.sportCategory),
+                  ),
+                  items: _availablePlayerCounts.map((count) {
+                    return DropdownMenuItem(
+                      value: count,
+                      child: Text('$count'),
+                    );
+                  }).toList(),
                   onChanged: (value) {
-                    setState(() {
-                      _maxPlayers = value.toInt();
-                      if (_ownerPaysFor > _maxPlayers) {
-                        _ownerPaysFor = _maxPlayers;
-                      }
-                    });
+                    if (value != null) {
+                      setState(() {
+                        _maxPlayers = value;
+                        if (_ownerPaysFor > _maxPlayers) {
+                          _ownerPaysFor = _maxPlayers;
+                        }
+                      });
+                    }
                   },
                 ),
               ],
