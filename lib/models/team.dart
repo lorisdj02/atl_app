@@ -2,7 +2,7 @@ class Team {
   final int id;
   final String? cityId;
   final String name;
-  final String? alias;
+  final String alias;
   final String? description;
   final int captainId;
   final int? vice1Id;
@@ -18,7 +18,7 @@ class Team {
     required this.id,
     this.cityId,
     required this.name,
-    this.alias,
+    required this.alias,
     this.description,
     required this.captainId,
     this.vice1Id,

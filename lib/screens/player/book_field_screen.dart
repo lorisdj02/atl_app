@@ -214,6 +214,25 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     return baseCost;
   }
 
+  // Nuovo metodo per calcolare il costo totale da pagare
+  double _calculateTotalToPay() {
+    if (_selectedField == null || _startTime == null || _endTime == null) return 0.0;
+    
+    final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
+    final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
+    final durationMinutes = endMinutes - startMinutes;
+    final durationHours = durationMinutes / 60.0;
+    
+    final baseCost = _selectedField!.hourlyCostPrivate * durationHours;
+    
+    if (_selectedBookingType == BookingType.lobby) {
+      // Costo per giocatore * numero di giocatori che pago
+      return (baseCost / _maxPlayers) * _ownerPaysFor;
+    }
+    
+    return baseCost;
+  }
+
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -369,7 +388,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _createBooking() async {
     setState(() => _isLoading = true);
-
+    bool success = false;
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final currentUser = userProvider.activeUser;
@@ -404,10 +423,11 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           status: BookingStatus.booked,
         );
         
-        await DB.PrivateBookings.addPrivateBooking(newBooking);
+        success = await DB.PrivateBookings.addPrivateBooking(newBooking);
+        
       } else {
         final baseCost = _selectedField!.costTournament;
-        final feePerPlayer = (baseCost / _maxPlayers).round();
+        final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
         final playerToFind = _maxPlayers - _ownerPaysFor;
         
         final newBooking = LobbyBooking(
@@ -422,10 +442,19 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           status: BookingStatus.booked,
         );
         
-        await DB.LobbyBookings.addLobbyBooking(newBooking);
+        success = await DB().createLobby(
+          newBooking.id,
+          newBooking.fieldId,
+          newBooking.ownerId,
+          newBooking.maxPlayers,
+          newBooking.playerToFind,
+          newBooking.feePerPlayer,
+          newBooking.startTime,
+          newBooking.finishTime,
+        );
       }
 
-      if (mounted) {
+      if (mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Prenotazione creata con successo!'),
@@ -1049,6 +1078,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Widget _buildStep4() {
     final totalCost = _calculateCost();
+    final totalToPay = _calculateTotalToPay();
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1147,9 +1177,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          child: const Text(
-            'Conferma Prenotazione',
-            style: TextStyle(
+          child: Text(
+            'Conferma Prenotazione - €${totalToPay.toStringAsFixed(2)}',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,

@@ -157,50 +157,89 @@ class TeamRepository extends BaseRepository<Team> {
 
   /// Ottieni team per categoria
   Future<List<Team>> getByCategory(String categoryId) async {
-    final allTeams = await getAll();
-    return allTeams.where((team) => team.catId == categoryId).toList();
+    if(AppConfig.isDebug) {
+      return _mockData.where((team) => team.catId == categoryId).toList();
+    }
+    else{
+      throw UnimplementedError();
+    }
   }
 
   /// Ottieni team per città
   Future<List<Team>> getByCity(String cityId) async {
-    final allTeams = await getAll();
-    return allTeams.where((team) => team.cityId == cityId).toList();
+    if(AppConfig.isDebug) {
+      return _mockData.where((team) => team.cityId == cityId).toList();
+    }
+    else{
+      throw UnimplementedError();
+    }
   }
 
   Future<List<Team>> getVipTeams() async {
-    final allTeams = await getAll();
-    return allTeams.where((team) => team.vip).toList();
+    if(AppConfig.isDebug) {
+      return _mockData.where((team) => team.vip).toList();
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   Future<List<Team>> getNonVipTeams() async {
-    final allTeams = await getAll();
-    return allTeams.where((team) => !team.vip).toList();
+    if(AppConfig.isDebug) {
+      return _mockData.where((team) => !team.vip).toList();
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   Future<Team?> getByNameOrAlias(String name) async {
-    final allTeams = await getAll();
-    try {
-      return allTeams.firstWhere(
-        (team) => team.name.toLowerCase() == name.toLowerCase() || (team.alias?.toLowerCase() == name.toLowerCase()),
-      );
-    } catch (e) {
+   if(AppConfig.isDebug) {
+      for (var team in _mockData) {
+        if (team.name.toLowerCase() == name.toLowerCase() ||
+            team.alias.toLowerCase() == name.toLowerCase()) {
+          return team;
+        }
+      }
       return null;
+    } else {
+      throw UnimplementedError();
     }
   }
 
-  /// POST - Crea un nuovo team e inizializza le statistiche del capitano
-  @override
-  Future<Team> create(Team team) async {
-
-    if (AppConfig.isDebug) {
-      _mockData.add(team);
-      print('🔧 [DEBUG] Created team: ${team.name}');
-      return team;
+  Future<bool> isNameUnique(String name) async {
+    if(AppConfig.isDebug){
+      for (var team in _mockData) {
+        if (team.name.toLowerCase() == name.toLowerCase()) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
     }
-    else{
-      return super.create(team);
-    }
+  }
 
+  Future<bool> insertTeam(int id, String? cityId, String name, String alias, String? description, int captainId, String catId, String? imageUrl, bool vip, bool visibility) async {
+    final newTeam = Team(
+        id: id, // Temporary ID
+        cityId: cityId,
+        name: name,
+        alias: alias,
+        description: description,
+        captainId: captainId, // Usa playerId dell'utente corrente
+        catId: catId,
+        imageUrl: imageUrl,
+        vip: vip,
+        players: 1, // Solo il capitano inizialmente
+        visibility: visibility,
+      );
+
+    if(AppConfig.isDebug){
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      UnimplementedError();
+      return false;
+    }
   }
 
 }

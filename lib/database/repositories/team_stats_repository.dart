@@ -61,7 +61,6 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     }
   }
 
-@override
 Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) {
     if(AppConfig.isDebug){
       mockData.removeWhere((s) => s.playerId == playerId && s.teamId == teamId);
@@ -72,7 +71,7 @@ Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) {
     }
   }
 
-  Future<TeamStats> createStats({required int playerId, required int teamId, required int motm, required int goals}) {
+  Future<bool> createStats({required int playerId, required int teamId, required int motm, required int goals}) {
 
     if(getStatsForPlayerInTeam(playerId, teamId) != null){
       deleteByPlayerIdInTeam(playerId, teamId);
@@ -87,7 +86,7 @@ Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) {
 
     if(AppConfig.isDebug){
       _mockData.add(stats);
-      return super.create(stats);
+      return Future.value(true);
     }
     else{
       throw UnimplementedError();

@@ -65,11 +65,11 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     try {
       // Carica i booking
       final List<PrivateBooking> privateBookings = await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
-      List<LobbyBooking> lobbyBookings = await DB.LobbyBookings.getByPlayerId(playerId) ?? [];
-      List<int> notOwnerLobbyBookingIds = (await DB.LobbyBookingParticipations.getByPlayerId(playerId)).map((p) => p.lobbyBookingId).toList();
-      for (var lobbyBookingId in notOwnerLobbyBookingIds) {
+      List<int> lobbyBookingsIds = (await DB.LobbyBookingParticipations.getByPlayerId(playerId)).map((p) => p.lobbyBookingId).toList();
+      List<LobbyBooking> lobbyBookings = [];
+      for (var lobbyBookingId in lobbyBookingsIds) {
         final lobbyBooking = await DB.LobbyBookings.getById(lobbyBookingId);
-        if (lobbyBooking != null && !lobbyBookings.any((lb) => lb.id == lobbyBooking.id)) {
+        if (lobbyBooking != null){
           lobbyBookings.add(lobbyBooking);
         }
       }

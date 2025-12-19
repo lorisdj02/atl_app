@@ -32,9 +32,22 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-  Future<bool> addLobbyBooking(LobbyBooking booking) async {
+  Future<bool> addLobbyBooking(int id, int ownerId, int fieldId, DateTime startTime, DateTime finishTime, int maxPlayers, int playerToFind, double feePerPlayer) async {
+
+    LobbyBooking newLobbyBooking = LobbyBooking(
+      id: id,
+      ownerId: ownerId,
+      fieldId: fieldId,
+      startTime: startTime,
+      finishTime: finishTime,
+      maxPlayers: maxPlayers,
+      playerToFind: playerToFind,
+      feePerPlayer: feePerPlayer, 
+      status: BookingStatus.booked,
+    );
+
     if(AppConfig.isDebug) {
-      _mockData.add(booking);
+      _mockData.add(newLobbyBooking);
       return true;
     }
     else {

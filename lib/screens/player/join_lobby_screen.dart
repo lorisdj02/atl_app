@@ -406,15 +406,13 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       final playerId = userProvider.activeRoleId!;
 
       // TODO: GUARDA BACKEND - Add payment logic here
-      await DB.LobbyBookingParticipations.addParticipation(
-        playerId,
+      bool success = await DB().joinLobby(
         lobby.id,
+        playerId,
         playersPaid,
       );
 
-      await DB.LobbyBookings.decreasePlayersToFind(lobby.id, playersPaid);
-
-      if (mounted) {
+      if (mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Successfully joined lobby!'),

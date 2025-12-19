@@ -63,8 +63,9 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _acceptRequest(TeamRequest request) async {
     try {
-      await DB.Players.joinTeam(request.playerId, widget.teamId);
-      await DB.TeamRequests.deleteByPlayerId(request.playerId);
+      if ((await DB().acceptRequestToTeam(request.playerId, widget.teamId)) == false) {
+        throw Exception('Failed to accept request');
+      }
       
       if (mounted) {
         setState(() {
@@ -110,8 +111,14 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
     
     for (var request in requestsCopy) {
       try {
-        await DB.Players.joinTeam(request.playerId, widget.teamId);
-        await DB.TeamRequests.deleteByPlayerId(request.playerId);
+        if ((await DB().acceptRequestToTeam(request.playerId, widget.teamId)) == false) {
+          if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error accepting request')),
+          );
+        }
+          throw Exception('Failed to accept request');
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

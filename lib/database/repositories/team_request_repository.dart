@@ -38,40 +38,41 @@ class TeamRequestRepository extends BaseRepository<TeamRequest> {
     }
   }
 
-  void addRequest(TeamRequest request) {
+  Future<bool> addRequest(TeamRequest request) {
     if(AppConfig.isDebug){
       _mockdata.add(request);
+      return Future.value(true);
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<void> deleteRequest(TeamRequest request) {
+  Future<bool> deleteRequest(TeamRequest request) {
     if(AppConfig.isDebug){
       _mockdata.removeWhere((r) =>
           r.teamId == request.teamId && r.playerId == request.playerId);
-      return Future.value();
+      return Future.value(true);
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<void> deleteByTeam(int teamId) {
+  Future<bool> deleteByTeam(int teamId) {
     if(AppConfig.isDebug){
       _mockdata.removeWhere((r) => r.teamId == teamId);
-      return Future.value();
+      return Future.value(true);
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<void> deleteByPlayerId(int playerId) {
+  Future<bool> deleteByPlayerId(int playerId) {
     if(AppConfig.isDebug){
       _mockdata.removeWhere((r) => r.playerId == playerId);
-      return Future.value();
+      return Future.value(true);
     }
     else{
       throw UnimplementedError();

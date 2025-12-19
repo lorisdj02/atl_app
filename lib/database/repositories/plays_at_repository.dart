@@ -96,10 +96,10 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     }
   }
 
-  Future<void> addPlaysAt(int teamId, int playerId) {
+  Future<bool> addPlaysAt(int teamId, int playerId) {
     if (AppConfig.isDebug) {
       _mockData.add(PlaysAt(teamId: teamId, playerId: playerId, joined: DateTime.now()));
-      return Future.value();
+      return Future.value(true);
     } else {
       throw UnimplementedError();
     }
@@ -115,7 +115,7 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     }
   }
 
-  Future<List<int>> getPlayersinTeam(int teamId) async {
+  Future<List<int>> getPlayersIdinTeam(int teamId) async {
     if (AppConfig.isDebug) {
       // This method can be implemented to return players in a team if needed
       List<int> playersId = _mockData.where((pa) => pa.teamId == teamId).map((pa) => pa.playerId).toList();

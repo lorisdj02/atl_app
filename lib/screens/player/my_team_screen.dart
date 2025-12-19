@@ -18,34 +18,33 @@ import '../../widgets/players_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import 'player_requests_screen.dart';
 import 'pay_participation_screen.dart';
+import '../../widgets/atl_floating_button.dart';
 
 class MyTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const MyTeamScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const MyTeamScreen({super.key, required this.currentSport});
 
   @override
   State<MyTeamScreen> createState() => _MyTeamScreenState();
 }
 
-class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderStateMixin {
+class _MyTeamScreenState extends State<MyTeamScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Team? _myTeam;
   List<Player>? _players;
   List<Palmares>? _palmares;
   List<Tournament>? _tournaments;
   int _pendingPaymentsCount = 0;
-  
+
   // Cache per palmares
   final Map<int, Coordinator?> _coordinatorCache = {};
   final Map<int, Field?> _fieldCache = {};
-  
+
   // Cache per stats
   final Map<int, TeamStats?> _playerStatsCache = {};
-  
+
   bool _playersLoaded = false;
   bool _palmaresLoaded = false;
   bool _statsLoaded = false;
@@ -109,7 +108,7 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
     try {
       final team = await DB.Teams.getById(teamId);
       final players = await DB.Players.getByTeam(teamId);
-      
+
       if (mounted) {
         setState(() {
           _myTeam = team;
@@ -119,9 +118,9 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading players: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
       }
     }
   }
@@ -129,26 +128,28 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
   Future<void> _showRequestsScreen() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final int? teamId = userProvider.currentTeamId;
-    
+
     if (teamId == null) return;
-    
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PlayerRequestsScreen(
-          teamId: teamId,
-          sportCategory: widget.currentSport,
-        ),
-      ),
-    ).then((_) {
-      // Quando si torna dalla schermata, aggiorna la tab Players
-      _loadPlayersData(userProvider.currentTeamId!);
-    });
+
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (context) => PlayerRequestsScreen(
+              teamId: teamId,
+              sportCategory: widget.currentSport,
+            ),
+          ),
+        )
+        .then((_) {
+          // Quando si torna dalla schermata, aggiorna la tab Players
+          _loadPlayersData(userProvider.currentTeamId!);
+        });
   }
 
   Future<void> _loadPalmaresData(int teamId) async {
     try {
       final palmares = await DB.Palmares.getByTeam(teamId);
-      
+
       // Carica i tornei associati al palmares
       final tournamentIds = palmares.map((p) => p.tournamentId).toSet();
       final tournaments = <Tournament>[];
@@ -156,20 +157,22 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
         final tournament = await DB.Tournaments.getById(id);
         if (tournament != null) {
           tournaments.add(tournament);
-          
+
           // Pre-carica coordinator e field nella cache solo se non già presenti
           if (!_coordinatorCache.containsKey(tournament.coordinatorId)) {
-            final coordinator = await DB.Coordinators.getByCoordinatorId(tournament.coordinatorId);
+            final coordinator = await DB.Coordinators.getByCoordinatorId(
+              tournament.coordinatorId,
+            );
             _coordinatorCache[tournament.coordinatorId] = coordinator;
           }
-          
+
           if (!_fieldCache.containsKey(tournament.fieldId)) {
             final field = await DB.Fields.getById(tournament.fieldId);
             _fieldCache[tournament.fieldId] = field;
           }
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _palmares = palmares;
@@ -179,9 +182,9 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading palmares: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading palmares: $e')));
       }
     }
   }
@@ -197,17 +200,20 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
           });
         }
       }
-      
+
       // Carica le statistiche per ogni giocatore
       if (_players != null) {
         for (var player in _players!) {
           if (!_playerStatsCache.containsKey(player.id)) {
-            final stats = await DB.TeamStats.getStatsForPlayerInTeam(player.id, teamId);
+            final stats = await DB.TeamStats.getStatsForPlayerInTeam(
+              player.id,
+              teamId,
+            );
             _playerStatsCache[player.id] = stats;
           }
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _statsLoaded = true;
@@ -215,9 +221,9 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading stats: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading stats: $e')));
       }
     }
   }
@@ -226,12 +232,16 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
     try {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final int? teamId = userProvider.currentTeamId;
-      
+
       if (teamId == null) return;
-      
-      final participations = await DB.TournamentPartecipations.getByTeamId(teamId);
-      final pendingCount = participations.where((p) => (p.toPay ?? 0) > 0).length;
-      
+
+      final participations = await DB.TournamentPartecipations.getByTeamId(
+        teamId,
+      );
+      final pendingCount = participations
+          .where((p) => (p.toPay ?? 0) > 0)
+          .length;
+
       if (mounted) {
         setState(() {
           _pendingPaymentsCount = pendingCount;
@@ -245,19 +255,21 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
   Future<void> _showPaymentScreen() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final int? teamId = userProvider.currentTeamId;
-    
+
     if (teamId == null) return;
-    
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PayParticipationScreen(
-          teamId: teamId,
-          sportCategory: widget.currentSport,
-        ),
-      ),
-    ).then((_) {
-      _loadPendingPaymentsCount();
-    });
+
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (context) => PayParticipationScreen(
+              teamId: teamId,
+              sportCategory: widget.currentSport,
+            ),
+          ),
+        )
+        .then((_) {
+          _loadPendingPaymentsCount();
+        });
   }
 
   @override
@@ -309,24 +321,14 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
       body: TabBarView(
         controller: _tabController,
         physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          _buildPlayersTab(),
-          _buildPalmaresTab(),
-          _buildStatsTab(),
-        ],
+        children: [_buildPlayersTab(), _buildPalmaresTab(), _buildStatsTab()],
       ),
       floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton.extended(
+          ? ATLFloatingButton(
               onPressed: _showRequestsScreen,
               backgroundColor: widget.currentSport.primaryColor,
-              icon: const Icon(Icons.inbox, color: Colors.white),
-              label: const Text(
-                'Requests',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              icon: Icons.inbox,
+              label: 'Requests',
             )
           : null,
     );
@@ -373,7 +375,10 @@ class _MyTeamScreenState extends State<MyTeamScreen> with SingleTickerProviderSt
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 20,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

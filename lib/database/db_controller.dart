@@ -24,9 +24,9 @@ import 'repositories/lobby_booking_participation_repository.dart';
 class DB {
   // Singleton instance
   static final DB _instance = DB._internal();
-  
+
   factory DB() => _instance;
-  
+
   DB._internal() {
     _initializeRepositories();
   }
@@ -49,7 +49,8 @@ class DB {
   static late final SoccerStandingsRepository SoccerStandings;
   static late final PrivateBookingsRepository PrivateBookings;
   static late final LobbyBookingsRepository LobbyBookings;
-  static late final LobbyBookingParticipationRepository LobbyBookingParticipations;
+  static late final LobbyBookingParticipationRepository
+  LobbyBookingParticipations;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -78,11 +79,137 @@ class DB {
   static Future<void> initialize() async {
     // Inizializza il singleton
     DB();
-    
+
     if (AppConfig.isDebug) {
       print('🔧 DB in DEBUG mode - usando mock data');
     } else {
       print('🚀 DB in PRODUCTION mode - usando API');
     }
+  }
+
+  Future<bool> createTeam(
+    int id,
+    String? cityId,
+    String name,
+    String alias,
+    String? description,
+    int captainId,
+    String catId,
+    String? imageUrl,
+    bool vip,
+    bool visibility,
+  ) async {
+    if ((await Teams.insertTeam(
+          id,
+          cityId,
+          name,
+          alias,
+          description,
+          captainId,
+          catId,
+          imageUrl,
+          vip,
+          visibility,
+        )) ==
+        false) {
+      return false;
+    }
+    if ((await TeamStats.createStats(
+          playerId: captainId,
+          teamId: id,
+          motm: 0,
+          goals: 0,
+        )) ==
+        false) {
+      return false;
+    }
+    if ((await Players.joinTeam(captainId, id)) == false) {
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> confirmCallUps(
+    int tournamentId,
+    int teamId,
+    Set<int> selectedPlayerIds,
+    double tournamentFee,
+  ) async {
+    await CallUps.deleteCallUps(tournamentId, teamId);
+
+    for (int playerId in selectedPlayerIds) {
+      if ((await CallUps.addCallUp(tournamentId, teamId, playerId)) ==
+          false) {
+        await CallUps.deleteCallUps(tournamentId, teamId);
+        return false;
+      }
+    }
+
+    if ((await TournamentPartecipations.addPartecipation(
+          tournamentId,
+          teamId,
+          tournamentFee,
+        )) ==
+        false) {
+      await CallUps.deleteCallUps(tournamentId, teamId);
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> acceptRequestToTeam(int playerId, int teamId) async {
+    
+    if((await Players.joinTeam(playerId, teamId)) == false){
+      return false;
+    }
+    if((await TeamRequests.deleteByPlayerId(playerId)) == false){
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> createLobby(int id, int fieldId, int ownerId, int maxPlayers, int playerToFind, double feePerPlayer, DateTime startDateTime, DateTime endDateTime) async {
+ 
+    if((await LobbyBookings.addLobbyBooking(
+      id,
+      ownerId,
+      fieldId,
+      startDateTime,
+      endDateTime,
+      maxPlayers,
+      playerToFind,
+      feePerPlayer
+    )) == false){
+      return false;
+    }
+
+    if((await LobbyBookingParticipations.addParticipation(
+      id,
+      ownerId,
+      maxPlayers - playerToFind
+    )) == false){
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<bool> joinLobby(int lobbyBookingId, int playerId, int playersPaid) async {
+    if((await LobbyBookingParticipations.addParticipation(
+        lobbyBookingId,
+        playerId,
+        playersPaid,
+      )) == false){
+      return false;
+    }
+
+    if((await LobbyBookings.decreasePlayersToFind(lobbyBookingId, playersPaid)) == false){
+      await LobbyBookingParticipations.removeParticipation(
+        playerId,
+        lobbyBookingId,
+      );
+      return false;
+    }
+    return true;
   }
 }

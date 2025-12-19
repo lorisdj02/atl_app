@@ -12,7 +12,7 @@ class LobbyBooking {
   BookingStatus status;
   int playerToFind;     //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
   final int maxPlayers; //numero di giocatori totali -> prezzo per giocatore
-  final int feePerPlayer;
+  final double feePerPlayer;
 
   LobbyBooking({
     required this.id,

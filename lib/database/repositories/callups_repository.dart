@@ -69,17 +69,22 @@ class CallUpsRepository extends BaseRepository<CallUps> {
     }
   }
 
-  Future<void> addCallUp(CallUps callUp) async {
+  Future<bool> addCallUp(int tournamentId, int teamId, int playerId) async {
+    CallUps newCallUp = CallUps(
+      tournamentId: tournamentId,
+      teamId: teamId,
+      playerId: playerId,
+    );
+
     if (AppConfig.isDebug) {
-      _mockData.add(callUp);
-      print('🔧 [DEBUG] Added callup: Tournament ${callUp.tournamentId}, Team ${callUp.teamId}, Player ${callUp.playerId}');
-      return Future.value();
+      _mockData.add(newCallUp);
+      return Future.value(true);
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<bool> deleteCallUp(int tournamentId, int teamId) async {
+  Future<bool> deleteCallUps(int tournamentId, int teamId) async {
     if (AppConfig.isDebug) {
       _mockData.removeWhere((c) =>
           c.tournamentId == tournamentId && c.teamId == teamId);

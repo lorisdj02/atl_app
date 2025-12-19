@@ -48,7 +48,7 @@ class LobbyBookingParticipationRepository extends BaseRepository<LobbyBookingPar
     }
   }
 
-  Future<bool> addParticipation(int playerId, int lobbyBookingId, int? playersPaid) async {
+  Future<bool> addParticipation(int lobbyBookingId, int playerId, int? playersPaid) async {
     if(AppConfig.isDebug) {
       final participation = LobbyBookingParticipation(
         playerId: playerId,

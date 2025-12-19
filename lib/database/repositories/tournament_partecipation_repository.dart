@@ -108,7 +108,7 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
-  Future<void> addPartecipation(int tournamentId, int teamId, double toPay) async {
+  Future<bool> addPartecipation(int tournamentId, int teamId, double toPay) async {
     TournamentPartecipation newPartecipation = TournamentPartecipation(
       tournamentId: tournamentId,
       teamId: teamId,
@@ -116,7 +116,7 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     );
     if(AppConfig.isDebug){
       _mockdata.add(newPartecipation);
-      return Future.value();
+      return Future.value(true);
     }
     else{
       throw UnimplementedError();

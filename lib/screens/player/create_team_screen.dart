@@ -82,10 +82,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         throw Exception('User not found');
       }
 
-      // Verifica se il nome/alias è già in uso
-      final existingTeam = await DB.Teams.getByNameOrAlias(_nameController.text);
-      if (existingTeam != null) {
-        throw Exception('Nome o alias già in uso');
+      if ((await DB.Teams.isNameUnique(_nameController.text)) == false) {
+        throw Exception('Team name already in use');
       }
 
       // TODO: Upload immagine su server e ottenere URL
@@ -103,7 +101,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         id: DateTime.now().millisecondsSinceEpoch, // Temporary ID
         cityId: _selectedCity,
         name: _nameController.text.trim(),
-        alias: _aliasController.text.trim().isEmpty ? null : _aliasController.text.trim(),
+        alias: _aliasController.text.trim(),
         description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
         captainId: captainId, // Usa playerId dell'utente corrente
         catId: widget.currentSport.id,
@@ -113,23 +111,26 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         visibility: _visibility,
       );
 
-      final createdTeam = await DB.Teams.create(newTeam);
-
-      // Crea le statistiche iniziali per il capitano
-      await DB.TeamStats.createStats(
-        playerId: captainId,
-        teamId: createdTeam.id,
-        motm: 0,
-        goals: 0,
-      );
-
-      await DB.Players.joinTeam(captainId, createdTeam.id);
+      if((await DB().createTeam(
+        newTeam.id,
+        newTeam.cityId,
+        newTeam.name,
+        newTeam.alias,
+        newTeam.description,
+        newTeam.captainId,
+        newTeam.catId,
+        newTeam.imageUrl,
+        newTeam.vip,
+        newTeam.visibility,
+      )) == false) {
+        throw Exception('Failed to create team');
+      }
 
 
       // Aggiorna l'utente con il teamId
-      final updatedUser = currentUser.copyWith(teamId: createdTeam.id);
+      final updatedUser = currentUser.copyWith(teamId: newTeam.id);
       await userProvider.updateUser(updatedUser);
-      userProvider.setCurrentTeamId(createdTeam.id);
+      userProvider.setCurrentTeamId(newTeam.id);
 
       if (mounted) {
         print('🔧 [DEBUG] Team created successfully: ${newTeam.name}');
@@ -278,7 +279,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         UpperCaseTextFormatter(),
                       ],
                       decoration: InputDecoration(
-                        hintText: 'Team alias (optional)',
+                        hintText: 'Team alias',
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -288,8 +289,11 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         contentPadding: const EdgeInsets.all(16),
                       ),
                       validator: (value) {
-                        if (value != null && value.trim().isNotEmpty && value.trim().length < 3) {
-                          return 'L\'alias deve essere di almeno 3 caratteri';
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Inserisci l\'alias del team';
+                        }
+                        if (value.trim().length < 3) {
+                          return 'L\'alias deve essere di 3 caratteri';
                         }
                         return null;
                       },
@@ -331,12 +335,20 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                           border: InputBorder.none,
                           hintText: 'Select city',
                         ),
-                        items: ['1', '2', '3'].map((city) {
-                          return DropdownMenuItem(
-                            value: city,
-                            child: Text('Città $city'),
-                          );
-                        }).toList(),
+                        items: const [
+                          DropdownMenuItem(
+                            value: '1',
+                            child: Text('Milano'),
+                          ),
+                          DropdownMenuItem(
+                            value: '2',
+                            child: Text('Taranto'),
+                          ),
+                          DropdownMenuItem(
+                            value: '3',
+                            child: Text('Roma'),
+                          ),
+                        ],
                         onChanged: (value) {
                           setState(() {
                             _selectedCity = value;

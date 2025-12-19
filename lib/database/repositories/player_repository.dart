@@ -22,7 +22,7 @@ class PlayerRepository extends BaseRepository<Player> {
   List<Player> get mockData => _mockData;
 
   Future<List<Player>> getByTeam(int teamId) async {
-    final List playerIds = await DB.PlaysAt.getPlayersinTeam(teamId);
+    final List playerIds = await DB.PlaysAt.getPlayersIdinTeam(teamId);
     List<Player> players = [];
     for(final playerId in playerIds){
       players.add(await getByPlayerId(playerId));
@@ -31,14 +31,19 @@ class PlayerRepository extends BaseRepository<Player> {
   }
 
   Future<Player> getByPlayerId(int playerId) async {
-    final allPlayers = await getAll();
-    return allPlayers.firstWhere(
-      (player) => player.playerId == playerId,
-    );
+    if(AppConfig.isDebug) {
+      return mockData.firstWhere((player) => player.playerId == playerId);
+    }
+    else{
+      throw UnimplementedError();
+    }
   }
 
-  Future<void> joinTeam (int playerId, int teamId) async {
-    await DB.PlaysAt.addPlaysAt(teamId, playerId);
+  Future<bool> joinTeam (int playerId, int teamId) async {
+    if((await DB.PlaysAt.addPlaysAt(teamId, playerId)) == false) {
+      return false;
+    }
+    return true;
   }
 
 

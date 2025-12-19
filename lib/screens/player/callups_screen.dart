@@ -49,39 +49,23 @@ class _CallupsScreenState extends State<CallupsScreen> {
     }
   }
 
-  Future<void> _confirmCallUps() async {
-    try {
-      // Se esistono già convocazioni, rimuovile prima
-      if (!_isNewCallUps) {
-        await DB.CallUps.deleteCallUp(widget.tournament.id, widget.teamId);
-      }
-      
-      // Aggiungi le nuove convocazioni
-      for (int playerId in _selectedPlayerIds) {
-        CallUps newCallUp = CallUps(
-          tournamentId: widget.tournament.id,
-          teamId: widget.teamId,
-          playerId: playerId,
-        );
-        await DB.CallUps.addCallUp(newCallUp);
-      }
-      
-      print('✅ Call-ups confirmed: ${_selectedPlayerIds.length} players');
-    } catch (e) {
-      print('❌ Error confirming call-ups: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving call-ups: $e')),
-        );
-      }
+  Future<bool> _confirmCallUps() async {
+      if((await DB().confirmCallUps(widget.teamId, widget.tournament.id, _selectedPlayerIds, await _TournamentFee)) == false) {
+        if(mounted){
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error confirming call-ups')),
+          );
+        }
+        return false;
     }
+    return true;
   }
 
   Future<void> _loadTeamPlayers() async {
     setState(() => _isLoading = true);
     
     try {
-      final playerIds = await DB.PlaysAt.getPlayersinTeam(widget.teamId);
+      final playerIds = await DB.PlaysAt.getPlayersIdinTeam(widget.teamId);
       final players = <Player>[];
       
       for (final playerId in playerIds) {
@@ -275,15 +259,16 @@ class _CallupsScreenState extends State<CallupsScreen> {
               onPressed: _canConfirm()
                   ? () async {
                       // Handle confirmation
-                      await _confirmCallUps();
-                      await DB.TournamentPartecipations.addPartecipation(
-                        widget.tournament.id,
-                        widget.teamId,
-                        await _TournamentFee,
-                      );
+                      bool success = await _confirmCallUps();
+                      
                       if(mounted){
-                        
-                        Navigator.pop(context, true);
+                        if(success){
+                          Navigator.pop(context, true);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Error confirming call-ups')),
+                          );
+                        }
                       }
                     }
                   : null,
