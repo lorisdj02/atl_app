@@ -116,4 +116,16 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
       throw UnimplementedError();
     }
   }
+
+  Future<bool> deletePrivateBooking(int privateBookingId) async {
+    if(AppConfig.isDebug) {
+      _mockData.removeWhere((booking) => booking.id == privateBookingId);
+      return true;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
+  
 }

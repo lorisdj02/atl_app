@@ -28,6 +28,31 @@ class LobbyBookingParticipationRepository extends BaseRepository<LobbyBookingPar
     }
   }
 
+  Future<List<LobbyBookingParticipation>> getByLobbyBookingId(int lobbyBookingId) async {
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockdata.where((participation) => participation.lobbyBookingId == lobbyBookingId).toList(),
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<LobbyBookingParticipation?> getByPlayerAndLobbyBookingId(int playerId, int lobbyBookingId) async {
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockdata.firstWhere(
+          (participation) =>
+              participation.playerId == playerId &&
+              participation.lobbyBookingId == lobbyBookingId,
+          orElse: () => Future.value(null) as LobbyBookingParticipation,
+        ),
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> removeParticipation(int playerId, int lobbyBookingId) async {
     if(AppConfig.isDebug) {
       _mockdata.removeWhere((participation) =>
@@ -59,6 +84,29 @@ class LobbyBookingParticipationRepository extends BaseRepository<LobbyBookingPar
       _mockdata.add(participation);
       
       return Future.value(true);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> removeLobbyParticipation(int lobbyBookingId) async {
+    if(AppConfig.isDebug) {
+      _mockdata.removeWhere((participation) => participation.lobbyBookingId == lobbyBookingId);
+      return Future.value(true);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> getParticipantCount(int lobbyBookingId) async {
+    if (AppConfig.isDebug) {
+      int count = 0;
+      for(var participation in _mockdata) {
+        if(participation.lobbyBookingId == lobbyBookingId) {
+          count += participation.playersPaid;
+        }
+      }
+      return Future.value(count);
     } else {
       throw UnimplementedError();
     }

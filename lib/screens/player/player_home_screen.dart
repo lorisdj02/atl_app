@@ -437,6 +437,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             ownerId: booking is LobbyBooking ? booking.ownerId : null,
             currentSport: _currentSport,
             bookingId: booking is PrivateBooking ? booking.id : (booking as LobbyBooking).id,
+            onBookingDeleted: () => _loadPlayerData(),
           );
         },
       ),

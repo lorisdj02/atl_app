@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../config/app_config.dart';
 import 'repositories/user_repository.dart';
 import 'repositories/tournament_repository.dart';
@@ -99,34 +101,38 @@ class DB {
     bool vip,
     bool visibility,
   ) async {
-    if ((await Teams.insertTeam(
-          id,
-          cityId,
-          name,
-          alias,
-          description,
-          captainId,
-          catId,
-          imageUrl,
-          vip,
-          visibility,
-        )) ==
-        false) {
-      return false;
+    if (AppConfig.isDebug == true) {
+      if ((await Teams.insertTeam(
+            id,
+            cityId,
+            name,
+            alias,
+            description,
+            captainId,
+            catId,
+            imageUrl,
+            vip,
+            visibility,
+          )) ==
+          false) {
+        return false;
+      }
+      if ((await TeamStats.createStats(
+            playerId: captainId,
+            teamId: id,
+            motm: 0,
+            goals: 0,
+          )) ==
+          false) {
+        return false;
+      }
+      if ((await Players.joinTeam(captainId, id)) == false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
     }
-    if ((await TeamStats.createStats(
-          playerId: captainId,
-          teamId: id,
-          motm: 0,
-          goals: 0,
-        )) ==
-        false) {
-      return false;
-    }
-    if ((await Players.joinTeam(captainId, id)) == false) {
-      return false;
-    }
-    return true;
   }
 
   Future<bool> confirmCallUps(
@@ -135,81 +141,162 @@ class DB {
     Set<int> selectedPlayerIds,
     double tournamentFee,
   ) async {
-    await CallUps.deleteCallUps(tournamentId, teamId);
+    if (AppConfig.isDebug == true) {
+      await CallUps.deleteCallUps(tournamentId, teamId);
 
-    for (int playerId in selectedPlayerIds) {
-      if ((await CallUps.addCallUp(tournamentId, teamId, playerId)) ==
+      for (int playerId in selectedPlayerIds) {
+        if ((await CallUps.addCallUp(tournamentId, teamId, playerId)) ==
+            false) {
+          await CallUps.deleteCallUps(tournamentId, teamId);
+          return false;
+        }
+      }
+
+      if ((await TournamentPartecipations.addPartecipation(
+            tournamentId,
+            teamId,
+            tournamentFee,
+          )) ==
           false) {
         await CallUps.deleteCallUps(tournamentId, teamId);
         return false;
       }
+      return true;
+    } else {
+      throw UnimplementedError();
     }
-
-    if ((await TournamentPartecipations.addPartecipation(
-          tournamentId,
-          teamId,
-          tournamentFee,
-        )) ==
-        false) {
-      await CallUps.deleteCallUps(tournamentId, teamId);
-      return false;
-    }
-    return true;
   }
 
   Future<bool> acceptRequestToTeam(int playerId, int teamId) async {
-    
-    if((await Players.joinTeam(playerId, teamId)) == false){
-      return false;
+    if (AppConfig.isDebug == true) {
+      if ((await Players.joinTeam(playerId, teamId)) == false) {
+        return false;
+      }
+      if ((await TeamRequests.deleteByPlayerId(playerId)) == false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
     }
-    if((await TeamRequests.deleteByPlayerId(playerId)) == false){
-      return false;
-    }
-    return true;
   }
 
-  Future<bool> createLobby(int id, int fieldId, int ownerId, int maxPlayers, int playerToFind, double feePerPlayer, DateTime startDateTime, DateTime endDateTime) async {
- 
-    if((await LobbyBookings.addLobbyBooking(
-      id,
-      ownerId,
-      fieldId,
-      startDateTime,
-      endDateTime,
-      maxPlayers,
-      playerToFind,
-      feePerPlayer
-    )) == false){
-      return false;
-    }
+  Future<bool> createLobby(
+    int id,
+    int fieldId,
+    int ownerId,
+    int maxPlayers,
+    int playerToFind,
+    double feePerPlayer,
+    DateTime startDateTime,
+    DateTime endDateTime,
+  ) async {
+    if (AppConfig.isDebug == true) {
+      if ((await LobbyBookings.addLobbyBooking(
+            id,
+            ownerId,
+            fieldId,
+            startDateTime,
+            endDateTime,
+            maxPlayers,
+            playerToFind,
+            feePerPlayer,
+          )) ==
+          false) {
+        return false;
+      }
 
-    if((await LobbyBookingParticipations.addParticipation(
-      id,
-      ownerId,
-      maxPlayers - playerToFind
-    )) == false){
-      return false;
-    }
+      if ((await LobbyBookingParticipations.addParticipation(
+            id,
+            ownerId,
+            maxPlayers - playerToFind,
+          )) ==
+          false) {
+        return false;
+      }
 
-    return true;
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
   }
 
-  Future<bool> joinLobby(int lobbyBookingId, int playerId, int playersPaid) async {
-    if((await LobbyBookingParticipations.addParticipation(
-        lobbyBookingId,
-        playerId,
-        playersPaid,
-      )) == false){
-      return false;
-    }
+  Future<bool> joinLobby(
+    int lobbyBookingId,
+    int playerId,
+    int playersPaid,
+  ) async {
+    if (AppConfig.isDebug == true) {
+      if ((await LobbyBookingParticipations.addParticipation(
+            lobbyBookingId,
+            playerId,
+            playersPaid,
+          )) ==
+          false) {
+        return false;
+      }
 
-    if((await LobbyBookings.decreasePlayersToFind(lobbyBookingId, playersPaid)) == false){
-      await LobbyBookingParticipations.removeParticipation(
-        playerId,
-        lobbyBookingId,
-      );
-      return false;
+      if ((await LobbyBookings.decreasePlayersToFind(
+            lobbyBookingId,
+            playersPaid,
+          )) ==
+          false) {
+        await LobbyBookingParticipations.removeParticipation(
+          playerId,
+          lobbyBookingId,
+        );
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
     }
-    return true;
+  }
+
+  Future<bool> leaveLobby(int lobbyBookingId, int playerId) async {
+    if (AppConfig.isDebug == true) {
+      int? playersPaid =
+          (await LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
+            playerId,
+            lobbyBookingId,
+          ))?.playersPaid;
+      if (playersPaid == null) {
+        return false;
+      }
+      if ((await LobbyBookingParticipations.removeParticipation(
+            playerId,
+            lobbyBookingId,
+          )) ==
+          false) {
+        return false;
+      }
+
+      if ((await LobbyBookings.increasePlayersToFind(
+            lobbyBookingId,
+            playersPaid,
+          )) ==
+          false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteLobby(int lobbyBookingId) async {
+    if (AppConfig.isDebug == true) {
+      if ((await LobbyBookingParticipations
+              .removeLobbyParticipation(lobbyBookingId)) ==
+          false) {
+        return false;
+      }
+      if ((await LobbyBookings.removeLobbyBooking(lobbyBookingId)) == false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
   }
 }

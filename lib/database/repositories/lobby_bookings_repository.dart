@@ -32,6 +32,16 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
+  Future<bool> removeLobbyBooking(int lobbyBookingId) async {
+    if(AppConfig.isDebug) {
+      _mockData.removeWhere((booking) => booking.id == lobbyBookingId);
+      return true;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> addLobbyBooking(int id, int ownerId, int fieldId, DateTime startTime, DateTime finishTime, int maxPlayers, int playerToFind, double feePerPlayer) async {
 
     LobbyBooking newLobbyBooking = LobbyBooking(
@@ -201,4 +211,13 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
       throw UnimplementedError();
     }
   }
+
+  Future<int> getMaxParticipants(int lobbyBookingId) async {
+    if(AppConfig.isDebug) {
+      return _mockData.firstWhere((booking) => booking.id == lobbyBookingId).maxPlayers;
+    }
+    else {
+      throw UnimplementedError();
+    }
+  } 
 }

@@ -651,6 +651,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                 ownerId: lobby.ownerId,
                                 currentSport: widget.sportCategory,
                                 bookingId: lobby.id,
+                                isDeletable: false,
                               ),
                               const SizedBox(height: 12),
                               if (!isParticipating)
