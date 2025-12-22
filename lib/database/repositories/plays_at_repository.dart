@@ -57,28 +57,26 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
   List<PlaysAt> get mockData => _mockData;
 
 
-  Future<bool> isPlayerInTeam(int playerId){
+  Future<bool> isPlayerInTeam(int playerId) async {
     if(AppConfig.isDebug){
-      return Future.value(_mockData.any((pa) => pa.playerId == playerId));
+      return _mockData.any((pa) => pa.playerId == playerId);
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<List<PlaysAt>> getByTeamId(int teamId) {
+  Future<List<PlaysAt>> getByTeamId(int teamId) async{
     if (AppConfig.isDebug) {
-      return Future.value(
-          _mockData.where((playsAt) => playsAt.teamId == teamId).toList());
+      return _mockData.where((playsAt) => playsAt.teamId == teamId).toList();
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<List<PlaysAt>> getByPlayerId(int playerId) {
+  Future<List<PlaysAt>> getByPlayerId(int playerId) async{
     if (AppConfig.isDebug) {
-      return Future.value(
-          _mockData.where((playsAt) => playsAt.playerId == playerId).toList());
+      return _mockData.where((playsAt) => playsAt.playerId == playerId).toList();
     } else {
       throw UnimplementedError();
     }
@@ -96,20 +94,20 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     }
   }
 
-  Future<bool> addPlaysAt(int teamId, int playerId) {
+  Future<bool> addPlaysAt(int teamId, int playerId) async {
     if (AppConfig.isDebug) {
       _mockData.add(PlaysAt(teamId: teamId, playerId: playerId, joined: DateTime.now()));
-      return Future.value(true);
+      return true;
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<void> removePlaysAt(int teamId, int playerId) {
+  Future<bool> removePlaysAt(int teamId, int playerId) async{
     if (AppConfig.isDebug) {
       _mockData.removeWhere(
           (pa) => pa.teamId == teamId && pa.playerId == playerId);
-      return Future.value();
+      return true;
     } else {
       throw UnimplementedError();
     }
@@ -119,8 +117,7 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     if (AppConfig.isDebug) {
       // This method can be implemented to return players in a team if needed
       List<int> playersId = _mockData.where((pa) => pa.teamId == teamId).map((pa) => pa.playerId).toList();
-      print('🔧 [DEBUG] Players in team $teamId: $playersId');
-      return Future.value(playersId);
+      return playersId;
     } else {
       throw UnimplementedError();
     }

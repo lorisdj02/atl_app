@@ -18,44 +18,44 @@ class FavoriteTournamentsRepository extends BaseRepository<FavoriteTournaments> 
   @override
   List<FavoriteTournaments> get mockData => _mockData;
 
-  Future<List<FavoriteTournaments>> getByUserId(int userId) {
+  Future<List<FavoriteTournaments>> getByUserId(int userId) async {
     if(AppConfig.isDebug){
-      return Future.value(_mockData.where((fav) => fav.userId == userId).toList());
+      return _mockData.where((fav) => fav.userId == userId).toList();
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<void> addFavorite(int userId, int tournamentId) {
+  Future<bool> addFavorite(int userId, int tournamentId) async {
     if(AppConfig.isDebug){
       _mockData.add(FavoriteTournaments(
         userId: userId,
         tournamentId: tournamentId,
       ));
-      return Future.value();
+      return true;
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<void> removeFavorite(int userId, int tournamentId) {
+  Future<bool> removeFavorite(int userId, int tournamentId) async {
     if(AppConfig.isDebug){
       _mockData.removeWhere((fav) =>
           fav.userId == userId && fav.tournamentId == tournamentId);
-      return Future.value();
+      return true;
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<bool> isFavorite(int userId, int tournamentId) {
+  Future<bool> isFavorite(int userId, int tournamentId) async{
     if(AppConfig.isDebug){
-      return Future.value(_mockData.any(
+      return _mockData.any(
         (fav) => fav.userId == userId && fav.tournamentId == tournamentId
-      ));
+      );
     }
     else{
       throw UnimplementedError();

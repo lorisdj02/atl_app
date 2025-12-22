@@ -6,6 +6,7 @@ class ATLFloatingButton extends StatelessWidget {
   final Color backgroundColor;
   final IconData icon;
   final String label;
+  final Object? heroTag;
 
   const ATLFloatingButton({
     super.key,
@@ -13,12 +14,14 @@ class ATLFloatingButton extends StatelessWidget {
     required this.backgroundColor,
     required this.icon,
     required this.label,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton.extended(
               onPressed: onPressed,
+              heroTag: heroTag,
               backgroundColor: backgroundColor,
               icon: Icon(icon, color: Colors.white),
               label: Text(

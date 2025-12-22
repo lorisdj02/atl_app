@@ -29,50 +29,50 @@ class TeamRequestRepository extends BaseRepository<TeamRequest> {
   @override
   List<TeamRequest> get mockData => _mockdata;
 
-  Future<List<TeamRequest>> getByTeamId(int teamId) {
+  Future<List<TeamRequest>> getByTeamId(int teamId) async{
     if(AppConfig.isDebug){
-      return Future.value(_mockdata.where((request) => request.teamId == teamId).toList());
+      return _mockdata.where((request) => request.teamId == teamId).toList();
       }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<bool> addRequest(TeamRequest request) {
+  Future<bool> addRequest(TeamRequest request) async {
     if(AppConfig.isDebug){
       _mockdata.add(request);
-      return Future.value(true);
+      return true;
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<bool> deleteRequest(TeamRequest request) {
+  Future<bool> deleteRequest(TeamRequest request) async {
     if(AppConfig.isDebug){
       _mockdata.removeWhere((r) =>
           r.teamId == request.teamId && r.playerId == request.playerId);
-      return Future.value(true);
+      return true;
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<bool> deleteByTeam(int teamId) {
+  Future<bool> deleteByTeam(int teamId) async {
     if(AppConfig.isDebug){
       _mockdata.removeWhere((r) => r.teamId == teamId);
-      return Future.value(true);
+      return true;
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<bool> deleteByPlayerId(int playerId) {
+  Future<bool> deleteByPlayerId(int playerId) async {
     if(AppConfig.isDebug){
       _mockdata.removeWhere((r) => r.playerId == playerId);
-      return Future.value(true);
+      return true;
     }
     else{
       throw UnimplementedError();

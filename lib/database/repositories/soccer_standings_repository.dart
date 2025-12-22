@@ -91,11 +91,11 @@ class SoccerStandingsRepository extends BaseRepository<SoccerStanding> {
   
   List<SoccerStanding> get mockData => _mockData;
 
-  List<SoccerStanding> getStandingsByTournament(int tournamentId) {
+  Future<List<SoccerStanding>> getStandingsByTournament(int tournamentId) async{
     return mockData.where((standing) => standing.tournamentId == tournamentId).toList();
   }
 
-  List<SoccerStanding> getStandingsByGroup(int tournamentId, String group) {
+  Future<List<SoccerStanding>> getStandingsByGroup(int tournamentId, String group) async {
     return mockData.where((standing) =>
       standing.tournamentId == tournamentId && standing.group == group).toList();
   }

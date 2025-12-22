@@ -56,11 +56,11 @@ class SoccerMatchRepository extends BaseRepository<SoccerMatch> {
   @override
   List<SoccerMatch> get mockData => _mockdata;
 
-  List<SoccerMatch> getMatchesByTournament(int tournamentId) {
+  Future<List<SoccerMatch>> getMatchesByTournament(int tournamentId) async {
     return mockData.where((match) => match.tournamentId == tournamentId).toList();
   }
 
-  List<SoccerMatch> getMatchesByGroup(int tournamentId, String group) {
+  Future<List<SoccerMatch>> getMatchesByGroup(int tournamentId, String group) async {
     return mockData.where((match) =>
       match.tournamentId == tournamentId && match.group == group).toList();
   }

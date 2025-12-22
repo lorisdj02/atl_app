@@ -369,14 +369,9 @@ class _BookingWidgetState extends State<BookingWidget> {
                           if (confirm == true) {
                             bool success = false;
                             if (isLobby) {
-                              if(isOwner) {
-                                success = await DB().deleteLobby(widget.bookingId);
-                              }
-                              else {
-                                success = await DB().leaveLobby(widget.bookingId, playerId);
-                              }
+                              success = await DB().leaveLobby(widget.bookingId, playerId);
                             } else {
-                              success = await DB.PrivateBookings.deletePrivateBooking(widget.bookingId);
+                              success = await DB.PrivateBookings.deletePrivateBooking(widget.bookingId, playerId);
                             }
 
                             if (success) {

@@ -31,50 +31,50 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
   @override
   List<TeamStats> get mockData => _mockData;
 
-  Future<List<TeamStats>> getByTeamId(int teamId) {
+  Future<List<TeamStats>> getByTeamId(int teamId) async{
     if(AppConfig.isDebug){
-      return Future.value(mockData.where((stats) => stats.teamId == teamId).toList());
+      return mockData.where((stats) => stats.teamId == teamId).toList();
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<List<TeamStats>> getByPlayerId(int playerId) {
+  Future<List<TeamStats>> getByPlayerId(int playerId) async{
     if(AppConfig.isDebug){
-      return Future.value(mockData.where((stats) => stats.playerId == playerId).toList());
+      return mockData.where((stats) => stats.playerId == playerId).toList();
     }
     else{
       throw UnimplementedError();
     }
   }
 
-  Future<TeamStats>? getStatsForPlayerInTeam(int playerId, int teamId) {
+  Future<TeamStats>? getStatsForPlayerInTeam(int playerId, int teamId ) async {
     if(AppConfig.isDebug){
-      return Future.value(mockData.firstWhere(
+      return mockData.firstWhere(
         (stats) => stats.playerId == playerId && stats.teamId == teamId,
         orElse: () => TeamStats(playerId: playerId, teamId: teamId, motm: 0, goals: 0),
-      ));
+      );
     }
     else{
       throw UnimplementedError();
     }
   }
 
-Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) {
+Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) async {
     if(AppConfig.isDebug){
       mockData.removeWhere((s) => s.playerId == playerId && s.teamId == teamId);
-      return Future.value(true);
+      return true;
     }
     else{
-      return Future.error(UnimplementedError());
+      throw UnimplementedError();
     }
   }
 
-  Future<bool> createStats({required int playerId, required int teamId, required int motm, required int goals}) {
+  Future<bool> createStats({required int playerId, required int teamId, required int motm, required int goals}) async {
 
-    if(getStatsForPlayerInTeam(playerId, teamId) != null){
-      deleteByPlayerIdInTeam(playerId, teamId);
+    if(await getStatsForPlayerInTeam(playerId, teamId) != null){
+      await deleteByPlayerIdInTeam(playerId, teamId);
     }
 
     final stats = TeamStats(
@@ -86,7 +86,7 @@ Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) {
 
     if(AppConfig.isDebug){
       _mockData.add(stats);
-      return Future.value(true);
+      return true;
     }
     else{
       throw UnimplementedError();

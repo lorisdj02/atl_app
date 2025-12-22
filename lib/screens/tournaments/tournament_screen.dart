@@ -84,7 +84,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
 
   Future<void> _loadFixtures() async {
     try {
-      final matches = DB.SoccerMatches.getMatchesByTournament(widget.tournament.id);
+      final matches = await DB.SoccerMatches.getMatchesByTournament(widget.tournament.id);
       
       // Load teams for matches
       final teamIds = <int>{};
@@ -119,7 +119,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
 
   Future<void> _loadTables() async {
     try {
-      final standings = DB.SoccerStandings.getStandingsByTournament(widget.tournament.id);
+      final standings = await DB.SoccerStandings.getStandingsByTournament(widget.tournament.id);
       
       // Load teams and captains
       final teamIds = standings.map((s) => s.teamId).toSet();

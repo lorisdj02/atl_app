@@ -20,6 +20,7 @@ import 'player_requests_screen.dart';
 import 'pay_participation_screen.dart';
 import '../../widgets/atl_floating_button.dart';
 
+
 class MyTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
 
@@ -33,6 +34,9 @@ class _MyTeamScreenState extends State<MyTeamScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Team? _myTeam;
+  late UserProvider userProvider;
+  late int playerId;
+
   List<Player>? _players;
   List<Palmares>? _palmares;
   List<Tournament>? _tournaments;
@@ -54,6 +58,8 @@ class _MyTeamScreenState extends State<MyTeamScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
+    userProvider = Provider.of<UserProvider>(context, listen: false);
+    playerId = userProvider.activeRoleId!;
     // Load initial tab data
     _loadTabData(0);
     _loadPendingPaymentsCount();
@@ -323,14 +329,68 @@ class _MyTeamScreenState extends State<MyTeamScreen>
         physics: const AlwaysScrollableScrollPhysics(),
         children: [_buildPlayersTab(), _buildPalmaresTab(), _buildStatsTab()],
       ),
-      floatingActionButton: _tabController.index == 0
-          ? ATLFloatingButton(
-              onPressed: _showRequestsScreen,
-              backgroundColor: widget.currentSport.primaryColor,
-              icon: Icons.inbox,
-              label: 'Requests',
-            )
-          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            left: 30,
+            bottom: 0,
+            child: ATLFloatingButton(
+              heroTag: 'leave_team_fab',
+              onPressed: _showLeaveTeamDialog,
+              backgroundColor: Colors.red,
+              icon: Icons.exit_to_app,
+              label: 'Leave Team',
+            ),
+          ),
+          if (_tabController.index == 0)
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: ATLFloatingButton(
+                heroTag: 'requests_fab',
+                onPressed: _showRequestsScreen,
+                backgroundColor: widget.currentSport.primaryColor,
+                icon: Icons.inbox,
+                label: 'Requests',
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showLeaveTeamDialog() async {
+    // TODO: Implement leave team functionality
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave Team'),
+        content: const Text('Are you sure you want to leave this team?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async{
+              Navigator.pop(context);
+              if((await DB().leaveTeam(_myTeam!.id, playerId)) == false){
+                if(_myTeam!.captainId == playerId){
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Captains cannot leave the team. Please assign a vice-captain before leaving.')));
+                } else {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Error leaving the team. Please try again later.')));
+                }
+              }
+            },
+            child: const Text('Leave', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 

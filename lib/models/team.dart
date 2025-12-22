@@ -1,18 +1,18 @@
 class Team {
   final int id;
-  final String? cityId;
+  String? cityId;
   final String name;
   final String alias;
-  final String? description;
-  final int captainId;
-  final int? vice1Id;
-  final int? vice2Id;
+  String? description;
+  int captainId;
+  int? vice1Id;
+  int? vice2Id;
   final String catId;
-  final String? imageUrl;
-  final bool vip;
-  final int? rankPts;
-  final int players;
-  final bool visibility;
+  String? imageUrl;
+  bool vip;
+  int? rankPts;
+  int players;
+  bool visibility;
 
   Team({
     required this.id,

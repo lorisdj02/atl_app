@@ -103,10 +103,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
         // Load matches and standings for each tournament
         for (var tournament in activeTournaments) {
-          final matches = DB.SoccerMatches.getMatchesByTournament(
+          final matches = await DB.SoccerMatches.getMatchesByTournament(
             tournament.id,
           );
-          final standings = DB.SoccerStandings.getStandingsByTournament(
+          final standings = await DB.SoccerStandings.getStandingsByTournament(
             tournament.id,
           );
 

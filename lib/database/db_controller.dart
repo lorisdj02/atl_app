@@ -255,6 +255,9 @@ class DB {
 
   Future<bool> leaveLobby(int lobbyBookingId, int playerId) async {
     if (AppConfig.isDebug == true) {
+      if((await LobbyBookings.getById(lobbyBookingId))?.ownerId == playerId) {
+        return deleteLobby(lobbyBookingId, playerId);
+      }
       int? playersPaid =
           (await LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
             playerId,
@@ -284,8 +287,11 @@ class DB {
     }
   }
 
-  Future<bool> deleteLobby(int lobbyBookingId) async {
+  Future<bool> deleteLobby(int lobbyBookingId, int playerId) async {
     if (AppConfig.isDebug == true) {
+      if((await LobbyBookings.getById(lobbyBookingId))?.ownerId != playerId) {
+        return false;
+      }
       if ((await LobbyBookingParticipations
               .removeLobbyParticipation(lobbyBookingId)) ==
           false) {
@@ -294,6 +300,30 @@ class DB {
       if ((await LobbyBookings.removeLobbyBooking(lobbyBookingId)) == false) {
         return false;
       }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> leaveTeam(int teamId, int playerId) async {
+    if (AppConfig.isDebug == true) {
+      if ((await Teams.isTeamLeftable(teamId, playerId)) == false) {
+        return false;
+      }
+
+      if((await Teams.isCaptain(teamId, playerId) == true) && (await Teams.assignCaptain(teamId)) == false) {
+        return false;
+      }
+
+      if((await Teams.isVice1(teamId, playerId) == true) && (await Teams.updateVice1(teamId)) == false) {
+        return false;
+      }
+
+      if((await PlaysAt.removePlaysAt(teamId, playerId)) == false && (await Teams.updatePlayerCount(teamId, -1)) == false && (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false) {
+        return false;
+      }
+
       return true;
     } else {
       throw UnimplementedError();

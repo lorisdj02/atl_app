@@ -25,7 +25,7 @@ class TeamRepository extends BaseRepository<Team> {
           captainId: 1,
           catId: 'FOOTBALL',
           vip: true,
-          players: 15,
+          players: 6,
           rankPts: 250,
           imageUrl: null,
         ),
@@ -237,8 +237,139 @@ class TeamRepository extends BaseRepository<Team> {
       _mockData.add(newTeam);
       return true;
     } else {
-      UnimplementedError();
-      return false;
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isTeamLeftable(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      if(team.captainId == playerId && team.players > 1 && team.vice1Id == null && team.vice2Id == null) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isCaptain(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      return team.captainId == playerId;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> assignCaptain(int teamId) async{
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      newTeam.captainId = team.vice1Id ?? team.vice2Id ?? -1;
+      if(newTeam.captainId == -1){
+        return false; // Nessun capitano
+      }
+      newTeam.vice1Id = team.vice2Id;
+      newTeam.vice2Id = null;
+
+      _mockData.remove(team);
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updatePlayerCount(int teamId, int delta) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      newTeam.players += delta;
+      if(newTeam.players < 0) newTeam.players = 0;
+
+      _mockData.remove(team);
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateRankPoints(int teamId, int points) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      newTeam.rankPts = (newTeam.rankPts ?? 0) + points;
+      if(newTeam.rankPts! < 0) newTeam.rankPts = 0;
+
+      _mockData.remove(team);
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateViceCaptains(int teamId, int? vice1Id, int? vice2Id) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      newTeam.vice1Id = vice1Id;
+      newTeam.vice2Id = vice2Id;
+
+      _mockData.remove(team);
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateVice1(int teamId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      newTeam.vice1Id = team.vice2Id;
+      newTeam.vice2Id = null;
+
+      _mockData.remove(team);
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateVisibility(int teamId, bool visibility) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      newTeam.visibility = visibility;
+
+      _mockData.remove(team);
+      _mockData.add(newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isVice1(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      return team.vice1Id == playerId;
+    } else {
+      throw UnimplementedError();
     }
   }
 

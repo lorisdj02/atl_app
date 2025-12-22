@@ -117,9 +117,9 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
     }
   }
 
-  Future<bool> deletePrivateBooking(int privateBookingId) async {
+  Future<bool> deletePrivateBooking(int privateBookingId, int playerId) async {
     if(AppConfig.isDebug) {
-      _mockData.removeWhere((booking) => booking.id == privateBookingId);
+      _mockData.removeWhere((booking) => booking.id == privateBookingId && booking.playerId == playerId);
       return true;
     }
     else {
