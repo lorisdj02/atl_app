@@ -169,12 +169,25 @@ class DB {
 
   Future<bool> acceptRequestToTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug == true) {
+      if((await Teams.getById(teamId))?.players == 24){
+        return false;
+      }
+
       if ((await Players.joinTeam(playerId, teamId)) == false) {
         return false;
       }
       if ((await TeamRequests.deleteByPlayerId(playerId)) == false) {
         return false;
       }
+
+      if((await TeamStats.createStats(playerId: playerId, teamId: teamId, motm: 0, goals: 0)) == false) {
+        return false;
+      }
+
+      if((await Teams.updatePlayerCount(teamId, 1)) == false) {
+        return false;
+      }
+
       return true;
     } else {
       throw UnimplementedError();
@@ -255,7 +268,7 @@ class DB {
 
   Future<bool> leaveLobby(int lobbyBookingId, int playerId) async {
     if (AppConfig.isDebug == true) {
-      if((await LobbyBookings.getById(lobbyBookingId))?.ownerId == playerId) {
+      if ((await LobbyBookings.getById(lobbyBookingId))?.ownerId == playerId) {
         return deleteLobby(lobbyBookingId, playerId);
       }
       int? playersPaid =
@@ -289,11 +302,12 @@ class DB {
 
   Future<bool> deleteLobby(int lobbyBookingId, int playerId) async {
     if (AppConfig.isDebug == true) {
-      if((await LobbyBookings.getById(lobbyBookingId))?.ownerId != playerId) {
+      if ((await LobbyBookings.getById(lobbyBookingId))?.ownerId != playerId) {
         return false;
       }
-      if ((await LobbyBookingParticipations
-              .removeLobbyParticipation(lobbyBookingId)) ==
+      if ((await LobbyBookingParticipations.removeLobbyParticipation(
+            lobbyBookingId,
+          )) ==
           false) {
         return false;
       }
@@ -312,16 +326,26 @@ class DB {
         return false;
       }
 
-      if((await Teams.isCaptain(teamId, playerId) == true) && (await Teams.assignCaptain(teamId)) == false) {
+      if ((await Teams.isCaptain(teamId, playerId) == true)) {
+        if (await Teams.assignCaptain(teamId) == false) {
+          return false;
+        }
+      } else if ((await Teams.isVice1(teamId, playerId) == true)) {
+        if ((await Teams.updateVice1(teamId)) == false) {
+          return false;
+        }
+      }
+
+      if ((await PlaysAt.removePlaysAt(teamId, playerId)) == false &&
+          (await Teams.updatePlayerCount(teamId, -1)) == false &&
+          (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false) {
         return false;
       }
 
-      if((await Teams.isVice1(teamId, playerId) == true) && (await Teams.updateVice1(teamId)) == false) {
-        return false;
-      }
-
-      if((await PlaysAt.removePlaysAt(teamId, playerId)) == false && (await Teams.updatePlayerCount(teamId, -1)) == false && (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false) {
-        return false;
+      if((await Teams.getById(teamId))?.players == 0){
+        if((await Teams.deleteTeam(teamId)) == false){
+          return false;
+        }
       }
 
       return true;

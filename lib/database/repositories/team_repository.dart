@@ -373,4 +373,16 @@ class TeamRepository extends BaseRepository<Team> {
     }
   }
 
+  Future<bool> deleteTeam(int teamId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+
+      _mockData.remove(team);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
 }

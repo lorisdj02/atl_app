@@ -111,11 +111,14 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
     
     for (var request in requestsCopy) {
       try {
+        //TODO: gestire il caso in cui la squadra è piena
         if ((await DB().acceptRequestToTeam(request.playerId, widget.teamId)) == false) {
           if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error accepting request')),
+            if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error accepting request')),
           );
+          }
         }
           throw Exception('Failed to accept request');
         }

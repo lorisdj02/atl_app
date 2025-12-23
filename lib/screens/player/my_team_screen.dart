@@ -20,7 +20,6 @@ import 'player_requests_screen.dart';
 import 'pay_participation_screen.dart';
 import '../../widgets/atl_floating_button.dart';
 
-
 class MyTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
 
@@ -361,7 +360,6 @@ class _MyTeamScreenState extends State<MyTeamScreen>
   }
 
   Future<void> _showLeaveTeamDialog() async {
-    // TODO: Implement leave team functionality
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -455,10 +453,38 @@ class _MyTeamScreenState extends State<MyTeamScreen>
             ),
           ),
         Expanded(
-          child: PlayersWidget(
-            players: _players ?? [],
-            team: _myTeam,
-            sportCategory: widget.currentSport,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 100),
+                child: PlayersWidget(
+                  players: _players ?? [],
+                  team: _myTeam,
+                  sportCategory: widget.currentSport,
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 120,
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          ATLColors.background.withOpacity(0.0),
+                          ATLColors.background.withOpacity(0.7),
+                          ATLColors.background,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -486,27 +512,55 @@ class _MyTeamScreenState extends State<MyTeamScreen>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _palmares!.length,
-      itemBuilder: (context, index) {
-        final palmares = _palmares![index];
-        final tournament = _tournaments?.firstWhere(
-          (t) => t.id == palmares.tournamentId,
-        );
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 80),
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: _palmares!.length,
+            itemBuilder: (context, index) {
+              final palmares = _palmares![index];
+              final tournament = _tournaments?.firstWhere(
+                (t) => t.id == palmares.tournamentId,
+              );
 
-        if (tournament == null) {
-          return const SizedBox.shrink();
-        }
+              if (tournament == null) {
+                return const SizedBox.shrink();
+              }
 
-        return PalmaresWidget(
-          palmares: palmares,
-          tournament: tournament,
-          sportCategory: widget.currentSport,
-          coordinator: _coordinatorCache[tournament.coordinatorId],
-          field: _fieldCache[tournament.fieldId],
-        );
-      },
+              return PalmaresWidget(
+                palmares: palmares,
+                tournament: tournament,
+                sportCategory: widget.currentSport,
+                coordinator: _coordinatorCache[tournament.coordinatorId],
+                field: _fieldCache[tournament.fieldId],
+              );
+            },
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 100,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    ATLColors.background.withOpacity(0.0),
+                    ATLColors.background.withOpacity(0.7),
+                    ATLColors.background,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -515,10 +569,38 @@ class _MyTeamScreenState extends State<MyTeamScreen>
       return const LoadingATL();
     }
 
-    return PlayersStatsWidget(
-      players: _players ?? [],
-      sportCategory: widget.currentSport,
-      playerStats: _playerStatsCache,
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 80),
+          child: PlayersStatsWidget(
+            players: _players ?? [],
+            sportCategory: widget.currentSport,
+            playerStats: _playerStatsCache,
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 100,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    ATLColors.background.withOpacity(0.0),
+                    ATLColors.background.withOpacity(0.7),
+                    ATLColors.background,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -74,9 +74,20 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     }
   }
 
-  Future<List<PlaysAt>> getByPlayerId(int playerId) async{
+  Future<List<PlaysAt>?> getByPlayerId(int playerId) async{
     if (AppConfig.isDebug) {
       return _mockData.where((playsAt) => playsAt.playerId == playerId).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<PlaysAt>? getByPlayerIdAndCategory(int playerId, SportCategory category) async {
+    if (AppConfig.isDebug) {
+      // This method can be implemented to return PlaysAt by playerId and category if needed
+      PlaysAt? result = _mockData.firstWhere(
+          (pa) => pa.playerId == playerId);
+      return result;
     } else {
       throw UnimplementedError();
     }
@@ -123,4 +134,17 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     }
   }
 
+  Future<PlaysAt?> getByTeamAndPlayer(int teamId, int playerId) async{
+    if(AppConfig.isDebug){
+      try{
+        return _mockData.firstWhere((pa) =>
+            pa.teamId == teamId && pa.playerId == playerId);
+      } catch(e){
+        return null;
+      }
+    }
+    else{
+      throw UnimplementedError();
+    }
+  }
 }
