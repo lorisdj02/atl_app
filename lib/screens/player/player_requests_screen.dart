@@ -114,7 +114,12 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
         //TODO: gestire il caso in cui la squadra è piena
         if ((await DB().acceptRequestToTeam(request.playerId, widget.teamId)) == false) {
           if (mounted) {
-            if (mounted) {
+            if (await DB.Teams.isFull(widget.teamId) && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Team is full. Cannot accept more requests.')),
+              );
+              break; // Esce dal ciclo se la squadra è piena
+            } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Error accepting request')),
           );

@@ -1131,15 +1131,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               children: _participatingTeams!.map((team) {
                 return SquareTeamWidget(
                   team: team,
-                  currentSport: widget.currentSport,
-                  onTap: () {
-                    // TODO: Navigate to team detail screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Team ${team.name} - Coming soon'),
-                      ),
-                    );
-                  },
+                  sportCategory: widget.currentSport,
                 );
               }).toList(),
             ),

@@ -27,7 +27,6 @@ class CallupsScreen extends StatefulWidget {
 }
 
 class _CallupsScreenState extends State<CallupsScreen> {
-  
   List<Player> _teamPlayers = [];
   Set<int> _selectedPlayerIds = {};
   bool _isLoading = true;
@@ -50,29 +49,50 @@ class _CallupsScreenState extends State<CallupsScreen> {
   }
 
   Future<bool> _confirmCallUps() async {
-      if((await DB().confirmCallUps(widget.teamId, widget.tournament.id, _selectedPlayerIds, await _TournamentFee)) == false) {
-        if(mounted){
+    if ((await DB().confirmCallUps(
+          widget.tournament.id,
+          widget.teamId,
+          _selectedPlayerIds,
+          await _TournamentFee,
+        )) ==
+        false) {
+      if (mounted) {
+        bool isThereCaptain = false;
+        for (int playerId in _selectedPlayerIds) {
+          if (await DB.Teams.isCaptainOrVice(widget.teamId, playerId)) {
+            isThereCaptain = true;
+            break;
+          }
+        }
+        if (!isThereCaptain && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('At least one captain or vice must be selected'),
+            ),
+          );
+        } else if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error confirming call-ups')),
           );
         }
-        return false;
+      }
+      return false;
     }
     return true;
   }
 
   Future<void> _loadTeamPlayers() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final playerIds = await DB.PlaysAt.getPlayersIdinTeam(widget.teamId);
       final players = <Player>[];
-      
+
       for (final playerId in playerIds) {
         final player = await DB.Players.getByPlayerId(playerId);
         players.add(player);
       }
-      
+
       if (mounted) {
         setState(() {
           _teamPlayers = players;
@@ -83,9 +103,9 @@ class _CallupsScreenState extends State<CallupsScreen> {
       print('❌ Error loading team players: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading players: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
       }
     }
   }
@@ -120,8 +140,8 @@ class _CallupsScreenState extends State<CallupsScreen> {
 
   bool _canConfirm() {
     final count = _selectedPlayerIds.length;
-    return count >= widget.tournament.minPlayers && 
-           count <= widget.tournament.maxPlayers;
+    return count >= widget.tournament.minPlayers &&
+        count <= widget.tournament.maxPlayers;
   }
 
   @override
@@ -184,73 +204,75 @@ class _CallupsScreenState extends State<CallupsScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _teamPlayers.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No players found in this team',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                ? const Center(
+                    child: Text(
+                      'No players found in this team',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _teamPlayers.length,
+                    itemBuilder: (context, index) {
+                      final player = _teamPlayers[index];
+                      final isSelected = _selectedPlayerIds.contains(
+                        player.playerId,
+                      );
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _teamPlayers.length,
-                        itemBuilder: (context, index) {
-                          final player = _teamPlayers[index];
-                          final isSelected = _selectedPlayerIds.contains(player.playerId);
-                          
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.grey[300],
+                            child: Icon(
+                              Icons.person,
+                              size: 35,
+                              color: Colors.grey[600],
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              leading: CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Colors.grey[300],
-                                child: Icon(
-                                  Icons.person,
-                                  size: 35,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              title: Text(
-                                player.username,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              trailing: isSelected
-                                  ? Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.green,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.check,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                    )
-                                  : null,
-                              onTap: () => _togglePlayerSelection(player.playerId),
+                          ),
+                          title: Text(
+                            player.username,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                          trailing: isSelected
+                              ? Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                )
+                              : null,
+                          onTap: () => _togglePlayerSelection(player.playerId),
+                        ),
+                      );
+                    },
+                  ),
           ),
           Container(
             padding: const EdgeInsets.all(20),
@@ -260,20 +282,18 @@ class _CallupsScreenState extends State<CallupsScreen> {
                   ? () async {
                       // Handle confirmation
                       bool success = await _confirmCallUps();
-                      
-                      if(mounted){
-                        if(success){
+
+                      if (mounted) {
+                        if (success) {
                           Navigator.pop(context, true);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Error confirming call-ups')),
-                          );
                         }
                       }
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: ATLColors.getPrimaryColor(SportCategory.football),
+                backgroundColor: ATLColors.getPrimaryColor(
+                  SportCategory.football,
+                ),
                 disabledBackgroundColor: Colors.grey,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

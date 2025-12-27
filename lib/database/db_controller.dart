@@ -144,6 +144,20 @@ class DB {
     if (AppConfig.isDebug == true) {
       await CallUps.deleteCallUps(tournamentId, teamId);
 
+      bool canContinue = false;
+      for(int playerId in selectedPlayerIds){
+        if((await Teams.isCaptainOrVice(teamId, playerId)) == true){
+          canContinue = true;
+          break;
+        }
+      }
+
+      
+
+      if(canContinue == false){
+        return false;
+      }
+
       for (int playerId in selectedPlayerIds) {
         if ((await CallUps.addCallUp(tournamentId, teamId, playerId)) ==
             false) {
@@ -338,7 +352,8 @@ class DB {
 
       if ((await PlaysAt.removePlaysAt(teamId, playerId)) == false &&
           (await Teams.updatePlayerCount(teamId, -1)) == false &&
-          (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false) {
+          (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false &&
+          (await CallUps.deleteByPlayerAndTeam(playerId, teamId)) == false) {
         return false;
       }
 

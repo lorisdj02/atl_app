@@ -276,8 +276,9 @@ class TeamRepository extends BaseRepository<Team> {
       newTeam.vice1Id = team.vice2Id;
       newTeam.vice2Id = null;
 
-      _mockData.remove(team);
-      _mockData.add(newTeam);
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
       return true;
     } else {
       throw UnimplementedError();
@@ -292,8 +293,9 @@ class TeamRepository extends BaseRepository<Team> {
       newTeam.players += delta;
       if(newTeam.players < 0) newTeam.players = 0;
 
-      _mockData.remove(team);
-      _mockData.add(newTeam);
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
       return true;
     } else {
       throw UnimplementedError();
@@ -308,8 +310,9 @@ class TeamRepository extends BaseRepository<Team> {
       newTeam.rankPts = (newTeam.rankPts ?? 0) + points;
       if(newTeam.rankPts! < 0) newTeam.rankPts = 0;
 
-      _mockData.remove(team);
-      _mockData.add(newTeam);
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
       return true;
     } else {
       throw UnimplementedError();
@@ -324,8 +327,9 @@ class TeamRepository extends BaseRepository<Team> {
       newTeam.vice1Id = vice1Id;
       newTeam.vice2Id = vice2Id;
 
-      _mockData.remove(team);
-      _mockData.add(newTeam);
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
       return true;
     } else {
       throw UnimplementedError();
@@ -340,8 +344,9 @@ class TeamRepository extends BaseRepository<Team> {
       newTeam.vice1Id = team.vice2Id;
       newTeam.vice2Id = null;
 
-      _mockData.remove(team);
-      _mockData.add(newTeam);
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
       return true;
     } else {
       throw UnimplementedError();
@@ -355,8 +360,9 @@ class TeamRepository extends BaseRepository<Team> {
       Team newTeam = team;
       newTeam.visibility = visibility;
 
-      _mockData.remove(team);
-      _mockData.add(newTeam);
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
       return true;
     } else {
       throw UnimplementedError();
@@ -385,4 +391,79 @@ class TeamRepository extends BaseRepository<Team> {
     }
   }
 
+  Future<bool> isFull(int teamId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      // Supponiamo che il limite massimo di giocatori per una squadra sia 20
+      return team.players == 24;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isCaptainOrVice(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      return team.captainId == playerId || team.vice1Id == playerId || team.vice2Id == playerId;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isVice2(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      return team.vice2Id == playerId;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> promoteToVice(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      if(team.vice1Id == null){
+        newTeam.vice1Id = playerId;
+      } else if(team.vice2Id == null){
+        newTeam.vice2Id = playerId;
+      } else {
+        return false; // Entrambi i ruoli di vice sono già occupati
+      }
+
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> demoteVice(int teamId, int playerId) async {
+    if(AppConfig.isDebug){
+      Team? team = await getById(teamId);
+      if(team == null) return false;
+      Team newTeam = team;
+      if(team.vice1Id == playerId){
+        newTeam.vice1Id = team.vice2Id;
+        newTeam.vice2Id = null;
+      } else if(team.vice2Id == playerId){
+        newTeam.vice2Id = null;
+      } else {
+        return false; // Il giocatore non è vice
+      }
+
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
+import 'abstract_team_widget.dart';
 
 /// Widget quadrato per visualizzare un team in formato compatto
-class SquareTeamWidget extends StatelessWidget {
-  final Team team;
-  final SportCategory currentSport;
-  final VoidCallback? onTap;
+class SquareTeamWidget extends AbstractTeamWidget {
 
   const SquareTeamWidget({
     super.key,
-    required this.team,
-    required this.currentSport,
-    this.onTap,
+    required super.team,
+    required super.sportCategory,
+    super.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => handleTeamTap(context),
       child: Container(
         width: 80,
         height: 80,
@@ -26,7 +24,7 @@ class SquareTeamWidget extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: currentSport.primaryColor.withOpacity(0.3),
+            color: sportCategory.primaryColor.withOpacity(0.3),
             width: 2,
           ),
           boxShadow: [
@@ -37,11 +35,11 @@ class SquareTeamWidget extends StatelessWidget {
             ),
           ],
         ),
-        child: team.imageUrl != null
+        child: (imageUrl ?? team.imageUrl) != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.network(
-                  team.imageUrl!,
+                  imageUrl ?? team.imageUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return _buildPlaceholder();
@@ -60,7 +58,7 @@ class SquareTeamWidget extends StatelessWidget {
         children: [
           Icon(
             Icons.shield,
-            color: currentSport.primaryColor,
+            color: sportCategory.primaryColor,
             size: 32,
           ),
           const SizedBox(height: 4),
@@ -69,7 +67,7 @@ class SquareTeamWidget extends StatelessWidget {
             child: Text(
               team.alias ?? team.name.substring(0, 3).toUpperCase(),
               style: TextStyle(
-                color: currentSport.primaryColor,
+                color: sportCategory.primaryColor,
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),

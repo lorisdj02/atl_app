@@ -1,67 +1,25 @@
-import 'package:atl_app/models/sport_category.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../utils/atl_colors.dart';
-import '../models/team.dart';
-import '../database/db_controller.dart';
-import '../providers/user_provider.dart';
-import '../screens/player/my_team_screen.dart';
-import '../screens/player/team_detail_screen.dart';
+import 'abstract_team_widget.dart';
 
 /// Widget per visualizzare un team nella ricerca
-class SearchTeamWidget extends StatelessWidget {
-  final Team team;
+class SearchTeamWidget extends AbstractTeamWidget {
   final Color color;
-  final String? imageUrl;
   final String? captainName;
-  final SportCategory sportCategory;
 
   const SearchTeamWidget({
     super.key,
-    required this.team,
+    required super.team,
     this.color = Colors.white,
-    this.imageUrl,
+    super.imageUrl,
     this.captainName,
-    required this.sportCategory,
+    required super.sportCategory,
   });
-
-  Future<void> _handleTeamTap(BuildContext context) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final int? playerId = userProvider.activeRoleId;
-
-    if (playerId == null) return;
-
-    // Check if player is part of this team
-    final playAt = await DB.PlaysAt.getByTeamAndPlayer(team.id, playerId);
-
-    if (!context.mounted) return;
-
-    if (playAt == null) {
-      // Player is NOT part of the team -> go to TeamDetailScreen
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => TeamDetailScreen(
-            teamId: team.id,
-            currentSport: sportCategory,
-          ),
-        ),
-      );
-    } else {
-      // Player IS part of the team -> go to MyTeamScreen
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => MyTeamScreen(
-            currentSport: sportCategory,
-          ),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => _handleTeamTap(context),
+      onTap: () => handleTeamTap(context),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         padding: const EdgeInsets.all(16),
@@ -79,29 +37,7 @@ class SearchTeamWidget extends StatelessWidget {
         child: Row(
           children: [
             // Logo del team
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey.shade200,
-                border: Border.all(
-                  color: Colors.grey.shade300,
-                  width: 2,
-                ),
-              ),
-              child: imageUrl != null
-                  ? ClipOval(
-                      child: Image.network(
-                        imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.shield, size: 32, color: Colors.grey);
-                        },
-                      ),
-                    )
-                  : const Icon(Icons.shield, size: 32, color: Colors.grey),
-            ),
+            buildTeamLogo(size: 60),
             const SizedBox(width: 16),
             // Informazioni del team
             Expanded(

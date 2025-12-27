@@ -461,6 +461,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
                 team: team,
                 color: bgColor,
                 rank: rank,
+                sportCategory: widget.sportCategory,
                 standingRecord: '${standing.points} - ${standing.won} - ${standing.drawn} - ${standing.lost}',
               );
             }),
