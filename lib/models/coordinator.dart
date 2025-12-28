@@ -3,8 +3,6 @@ import 'user.dart';
 /// Modello Coordinator dal database
 class Coordinator extends User {
   final int coordinatorId;
-  final String name;
-  final String surname;
   final int level;
 
   Coordinator({
@@ -19,10 +17,12 @@ class Coordinator extends User {
     super.isVip = false,
     required super.phone,
     required this.coordinatorId,
-    required this.name,
-    required this.surname,
+    required super.name,
+    required super.surname,
     required this.level,
     super.passwordMD5,
+    super.imageUrl,
+    required super.birthdate,
   }) : super(role: UserRole.coordinator);
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
@@ -43,6 +43,9 @@ class Coordinator extends User {
       name: json['name'],
       surname: json['surname'],
       level: json['level'],
+      passwordMD5: json['password_md5'],
+      imageUrl: json['image_url'],
+      birthdate: DateTime.parse(json['birthdate'])
     );
   }
 

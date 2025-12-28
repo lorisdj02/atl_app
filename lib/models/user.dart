@@ -31,7 +31,7 @@ enum UserRole {
 /// Modello astratto User dal database
 class User {
   final int id;
-  final String username;
+  String username;
   final String email;
   final String firebaseUid;
   final DateTime createdAt;
@@ -43,6 +43,9 @@ class User {
   String phone;
   String? passwordMD5;
   String? imageUrl;
+  final String name;
+  final String surname;
+  final DateTime birthdate;
 
   User({
     required this.id,
@@ -58,6 +61,9 @@ class User {
     required this.phone,
     this.passwordMD5,
     this.imageUrl,
+    required this.name,
+    required this.surname,
+    required this.birthdate,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
@@ -91,6 +97,11 @@ class User {
       'role': role.name.toUpperCase(),
       'vip': isVip,
       'phone': phone,
+      'password_md5': passwordMD5,
+      'image_url': imageUrl,
+      'name': name,
+      'surname': surname,
+      'birthdate': birthdate.toIso8601String(),
     };
   }
 
@@ -130,6 +141,9 @@ class User {
     String? passwordMD5,
     String? imageUrl,
     int? teamId,
+    DateTime? birthdate,
+    String? name,
+    String? surname,
   }) {
     return User(
       id: id ?? this.id,
@@ -145,6 +159,15 @@ class User {
       phone: phone ?? this.phone,
       passwordMD5: passwordMD5 ?? this.passwordMD5,
       imageUrl: imageUrl ?? this.imageUrl,
+      name: name ?? this.name,
+      surname: surname ?? this.surname,
+      birthdate: birthdate ?? this.birthdate,
     );
   }
+
+  bool get isGuest => role == UserRole.guest;
+  bool get isPlayer => role == UserRole.player;
+  bool get isCoordinator => role == UserRole.coordinator;
+  bool get isReferee => role == UserRole.referee;
+  bool get isOrganization => role == UserRole.organization;
 }

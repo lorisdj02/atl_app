@@ -5,9 +5,6 @@ import 'user.dart';
 /// Modello Player dal database
 class Player extends User {
   final int playerId;
-  final String name;
-  final String surname;
-  final DateTime? birthdate;
 
   Player({
     required super.id,
@@ -21,10 +18,11 @@ class Player extends User {
     super.isVip = false,
     required super.phone,
     required this.playerId,
-    required this.name,
-    required this.surname,
-    this.birthdate,
+    required super.name,
+    required super.surname,
+    required super.birthdate,
     super.passwordMD5,
+    super.imageUrl,
   }) : super(role: UserRole.player);
 
   factory Player.fromJson(Map<String, dynamic> json) {
@@ -44,9 +42,9 @@ class Player extends User {
       playerId: json['player_id'],
       name: json['name'],
       surname: json['surname'],
-      birthdate: json['birthdate'] != null
-          ? DateTime.parse(json['birthdate'])
-          : null,
+      birthdate: DateTime.parse(json['birthdate']),
+      passwordMD5: json['password_md5'],
+      imageUrl: json['image_url'],
     );
   }
 
@@ -55,9 +53,6 @@ class Player extends User {
     return {
       ...super.toJson(),
       'player_id': playerId,
-      'name': name,
-      'surname': surname,
-      'birthdate': birthdate?.toIso8601String(),
     };
   }
 

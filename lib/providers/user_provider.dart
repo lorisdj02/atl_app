@@ -12,13 +12,13 @@ class UserProvider with ChangeNotifier {
   int? get activeRoleId => _roleId;
   SportCategory? get selectedSportCategory => _selectedSportCategory;
 
-  void setActiveUser(User user, {int? roleId}) {
+  Future<void> setActiveUser(User user, {int? roleId}) async {
     _activeUser = user;
     _roleId = roleId;
     notifyListeners();
   }
 
-  void clearActiveUser() {
+  Future<void> clearActiveUser() async {
     _activeUser = null;
     _roleId = null;
     _currentTeamId = null;
@@ -30,21 +30,21 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setCurrentTeamId(int teamId) {
+  Future<void> setCurrentTeamId(int teamId) async {
     if(teamId != -1){
       _currentTeamId = teamId;
       notifyListeners();
     }
   }
 
-  void clearCurrentTeamId() {
+  Future<void> clearCurrentTeamId() async {
     _currentTeamId = null;
     notifyListeners();
   }
 
-  void logout() {
-    clearCurrentTeamId();
-    clearActiveUser();
+  Future<void> logout() async {
+    await clearCurrentTeamId();
+    await clearActiveUser();
   }
 
   bool get isGuest => _activeUser?.role == UserRole.guest;

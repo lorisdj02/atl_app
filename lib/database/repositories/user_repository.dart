@@ -1,3 +1,5 @@
+import 'package:atl_app/config/app_config.dart';
+
 import '../../models/user.dart';
 import '../../models/player.dart';
 import 'base_repository.dart';
@@ -28,6 +30,7 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Doe',
       birthdate: DateTime(1995, 5, 15),
       passwordMD5: 'a',
+      isVip: true,
     ),
     Player(
       id: 2,
@@ -43,7 +46,6 @@ class UserRepository extends BaseRepository<User> {
       birthdate: DateTime(1998, 8, 22),
       isVip: true,
       passwordMD5: 'a',
-      //teamId: DB.Teams.mockData[0].id,
     ),
     Coordinator(
       id: 3,
@@ -58,6 +60,7 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Johnson',
       level: 2,
       passwordMD5: 'a',
+      birthdate: DateTime(1988, 2, 14),
     ),
     Coordinator(
       id: 4,
@@ -72,6 +75,7 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Smith',
       level: 3,
       passwordMD5: 'a',
+      birthdate: DateTime(1985, 1, 1),
     ),
     Coordinator(
       id: 5,
@@ -86,6 +90,7 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Brown',
       level: 1,
       passwordMD5: 'a',
+      birthdate: DateTime(1990, 10, 10),
     ),
     Player(
       id: 6,
@@ -213,7 +218,7 @@ class UserRepository extends BaseRepository<User> {
       surname: 'Senatore',
       birthdate: DateTime(1995, 8, 15),
       passwordMD5: 'a',
-    )
+    ),
   ];
 
   @override
@@ -243,9 +248,69 @@ class UserRepository extends BaseRepository<User> {
   Future<User?> getByEmailOrUsername(String identifier, String password) async {
     final users = await getAll();
     try {
-      return users.firstWhere((u) => u.passwordMD5 == password && (u.email == identifier || u.username == identifier));
+      return users.firstWhere(
+        (u) =>
+            u.passwordMD5 == password &&
+            (u.email == identifier || u.username == identifier),
+      );
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<bool> updateUserInfo({
+    required int id,
+    String? username,
+    String? phone,
+    String? oldPasswordMD5,
+    String? newPasswordMD5,
+    DateTime? birthdate,
+    String? imgUrl
+  }) async {
+    if (AppConfig.isDebug) {
+      // Update mock data
+      final index = _mockData.indexWhere((u) => u.id == id);
+      if (index == -1) return false;
+
+      if(username != null) {
+        _mockData[index].username = username;
+      }
+      if(phone != null) {
+        _mockData[index].phone = phone;
+      }
+      if(newPasswordMD5 != null && oldPasswordMD5 != null && _mockData[index].passwordMD5 == oldPasswordMD5) {
+        _mockData[index].passwordMD5 = newPasswordMD5;
+      }
+      if(imgUrl != null) {
+        _mockData[index].imageUrl = imgUrl;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteAccount (int id, String passwordMD5) async {
+    if (AppConfig.isDebug) {
+      final index = _mockData.indexWhere((u) => u.id == id && u.passwordMD5 == passwordMD5);
+      if (index == -1) return false;
+
+      _mockData.removeAt(index);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateBalance(int id, double newBalance) async {
+    if (AppConfig.isDebug) {
+      final index = _mockData.indexWhere((u) => u.id == id);
+      if (index == -1) return false;
+
+      _mockData[index].balance = newBalance;
+      return true;
+    } else {
+      throw UnimplementedError();
     }
   }
 }

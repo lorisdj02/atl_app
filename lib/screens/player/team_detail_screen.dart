@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
 import '../../models/sport_category.dart';
 import '../../models/team_request.dart';
@@ -25,6 +26,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   bool _requestLoaded = false;
   bool _isPlayerInTeam = false;
 
+
   @override
   void initState() {
     super.initState();
@@ -36,9 +38,16 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   int getTeamId() => widget.teamId;
 
   Future<void> _loadRequestStatus() async {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
+      setState(() {
+        _requestLoaded = true;
+      });
+      return;
+    }
     try {
       final TeamRequest? existingRequest =
-          await DB.TeamRequests.getByTeamAndPlayer(widget.teamId, playerId);
+          await DB.TeamRequests.getByTeamAndPlayer(widget.teamId, playerId!);
       if (mounted) {
         setState(() {
           _existingRequest = existingRequest;
@@ -55,9 +64,16 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _checkPlayerInTeam() async {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
+      setState(() {
+        _requestLoaded = true;
+      });
+      return;
+    }
     try {
       final playAt = await DB.PlaysAt.getByPlayerIdAndCategory(
-        playerId,
+        playerId!,
         widget.currentSport,
       );
       if (mounted) {
@@ -75,8 +91,15 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _handleJoinTeam() async {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
+      setState(() {
+        _requestLoaded = true;
+      });
+      return;
+    }
     try {
-      if (await DB.TeamRequests.addRequest(widget.teamId, playerId) == false) {
+      if (await DB.TeamRequests.addRequest(widget.teamId, playerId!) == false) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error sending request')),
@@ -100,6 +123,13 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _handleCancelRequest() async {
+    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
+      setState(() {
+        _requestLoaded = true;
+      });
+      return;
+    }
     if (_existingRequest == null) return;
 
     try {
@@ -185,7 +215,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
           buildStatsTab(),
         ],
       ),
-      floatingActionButton: (_requestLoaded && !_isPlayerInTeam)
+      floatingActionButton: (_requestLoaded && !_isPlayerInTeam && playerId != null)
           ? ATLFloatingButton(
               heroTag: 'join_team_fab',
               onPressed: _existingRequest != null

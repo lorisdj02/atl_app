@@ -3,8 +3,6 @@ import 'user.dart';
 /// Modello Referee dal database
 class Referee extends User {
   final int refereeId;
-  final String name;
-  final String surname;
   final int level;
 
   Referee({
@@ -19,10 +17,12 @@ class Referee extends User {
     super.isVip = false,
     required super.phone,
     required this.refereeId,
-    required this.name,
-    required this.surname,
+    required super.name,
+    required super.surname,
     required this.level,
     super.passwordMD5,
+    super.imageUrl,
+    required super.birthdate,
   }) : super(role: UserRole.referee);
 
   factory Referee.fromJson(Map<String, dynamic> json) {
@@ -43,6 +43,9 @@ class Referee extends User {
       name: json['name'],
       surname: json['surname'],
       level: json['level'],
+      passwordMD5: json['password_md5'],
+      imageUrl: json['image_url'],
+      birthdate: DateTime.parse(json['birthdate'])
     );
   }
 
@@ -51,8 +54,6 @@ class Referee extends User {
     return {
       ...super.toJson(),
       'referee_id': refereeId,
-      'name': name,
-      'surname': surname,
       'level': level,
     };
   }

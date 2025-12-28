@@ -28,7 +28,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   late TabController tabController;
   Team? team;
   late UserProvider userProvider;
-  late int playerId;
+  late int? playerId;
 
   List<Player>? players;
   List<Palmares>? palmares;
@@ -51,7 +51,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(onTabChanged);
     userProvider = Provider.of<UserProvider>(context, listen: false);
-    playerId = userProvider.activeRoleId!;
+    playerId = userProvider.activeRoleId;
     loadTabData(0);
   }
 

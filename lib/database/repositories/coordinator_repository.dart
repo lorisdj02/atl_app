@@ -13,9 +13,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
   Map<String, dynamic> toJson(Coordinator item) => item.toJson();
 
   @override
-  List<Coordinator> get mockData => [
-    ...DB.Users.mockData.whereType<Coordinator>(),
-  ];
+  List<Coordinator> get mockData => DB.Users.mockData.whereType<Coordinator>().toList();
 
   Future<Coordinator> getByCoordinatorId(int coordinatorId) async {
     final allCoordinators = await getAll();

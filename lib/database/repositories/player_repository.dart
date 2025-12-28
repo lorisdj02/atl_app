@@ -14,12 +14,9 @@ class PlayerRepository extends BaseRepository<Player> {
   @override
   Map<String, dynamic> toJson(Player item) => item.toJson();
 
-  List<Player> _mockData = [
-    ...DB.Users.mockData.whereType<Player>(),
-  ];
 
   @override
-  List<Player> get mockData => _mockData;
+  List<Player> get mockData => DB.Users.mockData.whereType<Player>().toList();
 
   Future<List<Player>> getByTeam(int teamId) async {
     final List playerIds = await DB.PlaysAt.getPlayersIdinTeam(teamId);
@@ -45,6 +42,5 @@ class PlayerRepository extends BaseRepository<Player> {
     }
     return true;
   }
-
 
 }

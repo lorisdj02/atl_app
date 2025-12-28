@@ -145,16 +145,14 @@ class DB {
       await CallUps.deleteCallUps(tournamentId, teamId);
 
       bool canContinue = false;
-      for(int playerId in selectedPlayerIds){
-        if((await Teams.isCaptainOrVice(teamId, playerId)) == true){
+      for (int playerId in selectedPlayerIds) {
+        if ((await Teams.isCaptainOrVice(teamId, playerId)) == true) {
           canContinue = true;
           break;
         }
       }
 
-      
-
-      if(canContinue == false){
+      if (canContinue == false) {
         return false;
       }
 
@@ -183,7 +181,7 @@ class DB {
 
   Future<bool> acceptRequestToTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug == true) {
-      if((await Teams.getById(teamId))?.players == 24){
+      if ((await Teams.getById(teamId))?.players == 24) {
         return false;
       }
 
@@ -194,11 +192,17 @@ class DB {
         return false;
       }
 
-      if((await TeamStats.createStats(playerId: playerId, teamId: teamId, motm: 0, goals: 0)) == false) {
+      if ((await TeamStats.createStats(
+            playerId: playerId,
+            teamId: teamId,
+            motm: 0,
+            goals: 0,
+          )) ==
+          false) {
         return false;
       }
 
-      if((await Teams.updatePlayerCount(teamId, 1)) == false) {
+      if ((await Teams.updatePlayerCount(teamId, 1)) == false) {
         return false;
       }
 
@@ -280,10 +284,10 @@ class DB {
     }
   }
 
-  Future<bool> leaveLobby(int lobbyBookingId, int playerId) async {
+  Future<bool> leaveLobby(int lobbyBookingId, int playerId, {deleteAccount = false}) async {
     if (AppConfig.isDebug == true) {
       if ((await LobbyBookings.getById(lobbyBookingId))?.ownerId == playerId) {
-        return deleteLobby(lobbyBookingId, playerId);
+        return deleteLobby(lobbyBookingId, playerId, deleteAccount: deleteAccount);
       }
       int? playersPaid =
           (await LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
@@ -314,7 +318,7 @@ class DB {
     }
   }
 
-  Future<bool> deleteLobby(int lobbyBookingId, int playerId) async {
+  Future<bool> deleteLobby(int lobbyBookingId, int playerId, {deleteAccount = false}) async {
     if (AppConfig.isDebug == true) {
       if ((await LobbyBookings.getById(lobbyBookingId))?.ownerId != playerId) {
         return false;
@@ -334,7 +338,7 @@ class DB {
     }
   }
 
-  Future<bool> leaveTeam(int teamId, int playerId) async {
+  Future<bool> leaveTeam(int teamId, int playerId, {deleteAccount = false}) async {
     if (AppConfig.isDebug == true) {
       if ((await Teams.isTeamLeftable(teamId, playerId)) == false) {
         return false;
@@ -350,17 +354,58 @@ class DB {
         }
       }
 
-      if ((await PlaysAt.removePlaysAt(teamId, playerId)) == false &&
-          (await Teams.updatePlayerCount(teamId, -1)) == false &&
-          (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false &&
-          (await CallUps.deleteByPlayerAndTeam(playerId, teamId)) == false) {
+      if ((await PlaysAt.removePlaysAt(teamId, playerId)) == false ||
+          (await TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) == false ||
+          (await CallUps.deleteByPlayerAndTeam(playerId, teamId)) == false ||
+          (await Teams.updatePlayerCount(teamId, -1) == false)) {
         return false;
       }
 
-      if((await Teams.getById(teamId))?.players == 0){
-        if((await Teams.deleteTeam(teamId)) == false){
+      if ((await Teams.getById(teamId))?.players == 0) {
+        if ((await Teams.deleteTeam(teamId)) == false) {
           return false;
         }
+      }
+
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteAccount(int id, String passwordMD5) async {
+    if (AppConfig.isDebug) {
+      if ((await Users.getById(id))?.passwordMD5 != passwordMD5) {
+        return false;
+      }
+
+      if ((await Users.getById(id))!.isPlayer) {
+        final playerId = (await Players.getById(id))!.playerId;
+        final List<int> teamIds = await PlaysAt.getByPlayerId(
+          playerId,
+        ).then((playsAtList) => playsAtList!.map((pa) => pa.teamId).toList());
+
+        for (final teamId in teamIds) {
+          if ((await leaveTeam(teamId, playerId, deleteAccount: true)) == false) {
+            return false;
+          }
+        }
+
+        final List<int> lobbyIds =
+            await LobbyBookingParticipations.getByPlayerId(playerId).then(
+              (participations) =>
+                  participations!.map((p) => p.lobbyBookingId).toList(),
+            );
+
+        for (final lobbyId in lobbyIds) {
+          if ((await leaveLobby(lobbyId, playerId, deleteAccount: true)) == false) {
+            return false;
+          }
+        }
+      }
+
+      if (await Users.deleteAccount(id, passwordMD5) == false) {
+        return false;
       }
 
       return true;

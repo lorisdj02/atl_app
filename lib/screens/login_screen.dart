@@ -111,6 +111,9 @@ class _LoginScreenState extends State<LoginScreen> {
       createdAt: DateTime.now(),
       balance: 0.0,
       phone: '',
+      name: 'Guest',
+      surname: '',
+      birthdate: DateTime.now(),
     ));
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(

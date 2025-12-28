@@ -24,53 +24,54 @@ abstract class AbstractTeamWidget extends StatelessWidget {
   /// Handles team tap navigation
   /// Checks if player is part of the team and navigates accordingly
   Future<void> handleTeamTap(BuildContext context) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final int? playerId = userProvider.activeRoleId;
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
 
-    if (playerId == null) return;
+    if (userProvider.isPlayer && userProvider.activeRoleId != null) {
+      final int playerId = userProvider.activeRoleId!;
 
-    // Check if player is part of this team
-    final playAt = await DB.PlaysAt.getByTeamAndPlayer(team.id, playerId);
+      // Check if player is part of this team
+      final playAt = await DB.PlaysAt.getByTeamAndPlayer(team.id, playerId);
 
-    if (!context.mounted) return;
+      if (!context.mounted) return;
 
-    if (playAt == null) {
-      // Player is NOT part of the team -> go to TeamDetailScreen
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => TeamDetailScreen(
-            teamId: team.id,
-            currentSport: sportCategory,
+      if (playAt == null) {
+        // Player is NOT part of the team -> go to TeamDetailScreen
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>
+                TeamDetailScreen(teamId: team.id, currentSport: sportCategory),
           ),
-        ),
-      );
+        );
+      } else {
+        // Player IS part of the team -> go to MyTeamScreen
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => MyTeamScreen(currentSport: sportCategory),
+          ),
+        );
+      }
     } else {
-      // Player IS part of the team -> go to MyTeamScreen
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => MyTeamScreen(
-            currentSport: sportCategory,
-          ),
+          builder: (context) =>
+              TeamDetailScreen(teamId: team.id, currentSport: sportCategory),
         ),
       );
     }
   }
 
   /// Builds the team logo widget
-  Widget buildTeamLogo({
-    required double size,
-    double borderWidth = 2,
-  }) {
+  Widget buildTeamLogo({required double size, double borderWidth = 2}) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.grey.shade200,
-        border: Border.all(
-          color: Colors.grey.shade300,
-          width: borderWidth,
-        ),
+        border: Border.all(color: Colors.grey.shade300, width: borderWidth),
       ),
       child: imageUrl != null
           ? ClipOval(
@@ -78,7 +79,11 @@ abstract class AbstractTeamWidget extends StatelessWidget {
                 imageUrl!,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.shield, size: size * 0.53, color: Colors.grey);
+                  return Icon(
+                    Icons.shield,
+                    size: size * 0.53,
+                    color: Colors.grey,
+                  );
                 },
               ),
             )

@@ -205,6 +205,7 @@ class TeamRepository extends BaseRepository<Team> {
     }
   }
 
+
   Future<bool> isNameUnique(String name) async {
     if(AppConfig.isDebug){
       for (var team in _mockData) {

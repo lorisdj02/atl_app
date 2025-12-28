@@ -288,7 +288,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              if ((await DB().leaveTeam(team!.id, playerId)) == false) {
+              if ((await DB().leaveTeam(team!.id, playerId!)) == false) {
                 if (team!.captainId == playerId) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

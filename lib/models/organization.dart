@@ -4,8 +4,6 @@ import 'user.dart';
 class Organization extends User {
   final int organizationId;
   final String orgName;
-  final String name;
-  final String surname;
 
   Organization({
     required super.id,
@@ -20,9 +18,11 @@ class Organization extends User {
     required super.phone,
     required this.organizationId,
     required this.orgName,
-    required this.name,
-    required this.surname,
+    required super.name,
+    required super.surname,
     super.passwordMD5,
+    super.imageUrl,
+    required super.birthdate,
   }) : super(role: UserRole.organization);
 
   factory Organization.fromJson(Map<String, dynamic> json) {
@@ -43,6 +43,9 @@ class Organization extends User {
       orgName: json['org_name'],
       name: json['name'],
       surname: json['surname'],
+      passwordMD5: json['password_md5'],
+      imageUrl: json['image_url'],
+      birthdate: DateTime.parse(json['birthdate']),
     );
   }
 
