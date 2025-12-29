@@ -14,7 +14,7 @@ import '../../database/db_controller.dart';
 import '../../l10n/app_localizations.dart';
 import 'dart:async';
 import 'tournament_detail_screen.dart';
-import 'tournament_screen.dart';
+import 'football_tournament_screen.dart';
 
 class AllTournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -554,7 +554,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                       children: [
                         Icon(
                           Icons.emoji_events,
-                          color: widget.currentSport.primaryColor,
+                          color: ATLColors.getPrimaryColor(widget.currentSport),
                           size: 80,
                         ),
                         const SizedBox(height: 16),
@@ -644,7 +644,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                             if(tournament.sportName == 'FOOTBALL'){
                               await Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => TournamentScreen(
+                                  builder: (context) => FootballTournamentScreen(
                                     tournament: tournament,
                                     sportCategory: widget.currentSport,
                                   ),

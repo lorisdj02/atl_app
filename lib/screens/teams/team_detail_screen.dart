@@ -6,7 +6,7 @@ import '../../models/sport_category.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_floating_button.dart';
-import 'abstract_team_screen.dart';
+import '../player/abstract_team_screen.dart';
 
 class TeamDetailScreen extends AbstractTeamScreen {
   final int teamId;
@@ -165,7 +165,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
-        backgroundColor: widget.currentSport.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -223,7 +223,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
                   : _handleJoinTeam,
               backgroundColor: _existingRequest != null
                   ? Colors.red
-                  : widget.currentSport.primaryColor,
+                  : ATLColors.getPrimaryColor(widget.currentSport),
               icon: _existingRequest != null ? Icons.cancel : Icons.add,
               label: _existingRequest != null ? 'Cancel Request' : 'Join Team',
             )

@@ -42,23 +42,22 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-  Future<bool> addLobbyBooking(int id, int ownerId, int fieldId, DateTime startTime, DateTime finishTime, int maxPlayers, int playerToFind, double feePerPlayer) async {
+  Future<int> addLobbyBooking(int ownerId, int fieldId, DateTime startTime, DateTime finishTime, int maxPlayers, int playerToFind, double feePerPlayer) async {
 
-    LobbyBooking newLobbyBooking = LobbyBooking(
-      id: id,
+    if(AppConfig.isDebug) {
+      LobbyBooking newLobbyBooking = LobbyBooking(
+      id: _mockData.length + 1,
       ownerId: ownerId,
       fieldId: fieldId,
       startTime: startTime,
       finishTime: finishTime,
       maxPlayers: maxPlayers,
       playerToFind: playerToFind,
-      feePerPlayer: feePerPlayer, 
+      feePerPlayer: feePerPlayer,
       status: BookingStatus.booked,
     );
-
-    if(AppConfig.isDebug) {
       _mockData.add(newLobbyBooking);
-      return true;
+      return newLobbyBooking.id;
     }
     else {
       throw UnimplementedError();

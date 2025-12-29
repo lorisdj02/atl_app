@@ -2,6 +2,8 @@
 enum MatchStatus {
   scheduled,
   started,
+  halftime,
+  startHalf,
   finished,
   notScheduled,
   homeRetired,
@@ -21,6 +23,10 @@ class SoccerMatch {
   final int tournamentId;
   final String? group;
   final int? day;
+  DateTime? startMatch;
+  DateTime? halfTime;
+  DateTime? startHalf;
+  DateTime? endMatch;
 
   SoccerMatch({
     required this.id,
@@ -34,6 +40,10 @@ class SoccerMatch {
     required this.tournamentId,
     this.group,
     this.day,
+    this.startMatch,
+    this.halfTime,
+    this.startHalf,
+    this.endMatch,
   });
 
 

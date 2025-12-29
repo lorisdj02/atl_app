@@ -32,9 +32,17 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
     
   }
 
-  Future<bool> addPrivateBooking(PrivateBooking booking) async {
+  Future<bool> addPrivateBooking(int playerId, int fieldId, DateTime startTime, DateTime finishTime, BookingStatus status) async {
     if(AppConfig.isDebug) {
-      _mockData.add(booking);
+      final PrivateBooking newBooking = PrivateBooking(
+        id: _mockData.length + 1,
+        playerId: playerId,
+        fieldId: fieldId,
+        startTime: startTime,
+        finishTime: finishTime,
+        status: status,
+      );
+      _mockData.add(newBooking);
       return true;
     }
     else {

@@ -177,7 +177,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
-        backgroundColor: widget.sportCategory.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),

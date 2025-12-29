@@ -11,21 +11,6 @@ enum SportCategory {
 
 /// Estensione per ottenere colori e nomi delle categorie sportive
 extension SportCategoryExtension on SportCategory {
-  /// Colore primario associato allo sport
-  Color get primaryColor {
-    switch (this) {
-      case SportCategory.football:
-        return const Color(0xFF38A169); // Verde calcio
-      // TODO: Colori per altri sport
-      // case SportCategory.basketball:
-      //   return const Color(0xFFE85D04); // Arancione basket
-      // case SportCategory.volleyball:
-      //   return const Color(0xFF0077B6); // Blu pallavolo
-      // case SportCategory.tennis:
-      //   return const Color(0xFFFFBA08); // Giallo tennis
-    }
-  }
-
   int get maxPlayers {
     switch (this) {
       case SportCategory.football:
@@ -37,35 +22,6 @@ extension SportCategoryExtension on SportCategory {
     switch (this) {
       case SportCategory.football:
         return 'FOOTBALL';
-    }
-  }
-  /// Colore secondario (più chiaro)
-  Color get secondaryColor {
-    switch (this) {
-      case SportCategory.football:
-        return const Color(0xFF46C481);
-      // TODO: Colori secondari per altri sport
-      // case SportCategory.basketball:
-      //   return const Color(0xFFF48C06);
-      // case SportCategory.volleyball:
-      //   return const Color(0xFF0096C7);
-      // case SportCategory.tennis:
-      //   return const Color(0xFFFAA307);
-    }
-  }
-
-  /// Colore terziario (più chiaro ancora)
-  Color get tertiaryColor {
-    switch (this) {
-      case SportCategory.football:
-        return const Color(0xFF60F3A4);
-      // TODO: Colori terziari per altri sport
-      // case SportCategory.basketball:
-      //   return const Color(0xFFFFBA08);
-      // case SportCategory.volleyball:
-      //   return const Color(0xFF48CAE4);
-      // case SportCategory.tennis:
-      //   return const Color(0xFFFDDA0D);
     }
   }
 

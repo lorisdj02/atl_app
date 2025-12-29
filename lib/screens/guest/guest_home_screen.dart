@@ -4,7 +4,7 @@ import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
-import '../team_screen.dart';
+import '../teams/team_screen.dart';
 import '../guest/guest_profile_screen.dart';
 import '../../providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -172,7 +172,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
             children: [
               Icon(
                 _currentSport.icon,
-                color: _currentSport.primaryColor,
+                color: ATLColors.getPrimaryColor(_currentSport),
                 size: 32,
               ),
               const SizedBox(width: 12),
@@ -208,7 +208,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
               children: [
                 Icon(
                   _currentSport.icon,
-                  color: _currentSport.primaryColor,
+                  color: ATLColors.getPrimaryColor(_currentSport),
                   size: 64,
                 ),
                 const SizedBox(height: 16),

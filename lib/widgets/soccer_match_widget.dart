@@ -1,24 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../models/soccer_match.dart';
-import '../models/team.dart';
-import '../utils/atl_colors.dart';
+import '../models/sport_category.dart';
+import 'abstract_soccer_match_widget.dart';
+import '../screens/tournaments/soccer_match_screen.dart';
 
-class SoccerMatchWidget extends StatelessWidget {
-  final SoccerMatch match;
-  final Team? homeTeam;
-  final Team? awayTeam;
+class SoccerMatchWidget extends AbstractSoccerMatchWidget {
+  final bool clickable;
+  final SportCategory? currentSport;
 
   const SoccerMatchWidget({
     super.key,
-    required this.match,
-    this.homeTeam,
-    this.awayTeam,
+    required super.match,
+    super.homeTeam,
+    super.awayTeam,
+    this.clickable = true,
+    this.currentSport,
   });
 
   @override
+  double get statusIconSize => 16.0;
+
+  @override
+  double get statusFontSize => 14.0;
+
+  @override
+  EdgeInsets get statusPadding =>
+      const EdgeInsets.symmetric(horizontal: 12, vertical: 6);
+
+  @override
+  double get teamIconSize => 70.0;
+
+  @override
+  double get teamNameFontSize => 16.0;
+
+  @override
+  double get scoreFontSize => 36.0;
+
+  @override
+  EdgeInsets get scoreHorizontalPadding =>
+      const EdgeInsets.symmetric(horizontal: 20);
+
+  @override
+  double get minuteFontSize => 12.0;
+
+  @override
+  EdgeInsets get minutePadding =>
+      const EdgeInsets.symmetric(horizontal: 8, vertical: 3);
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
+    final content = Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -32,280 +62,28 @@ class SoccerMatchWidget extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Date/Status header
-          _buildStatusHeader(),
-          const SizedBox(height: 24),
-          // Match row
-          Row(
-            children: [
-              // Home team
-              Expanded(
-                child: _buildTeam(homeTeam, isHome: true),
-              ),
-              // Score or dash
-              _buildScore(),
-              // Away team
-              Expanded(
-                child: _buildTeam(awayTeam, isHome: false),
-              ),
-            ],
-          ),
-        ],
-      ),
+      child: buildContent(),
     );
-  }
 
-  Widget _buildStatusHeader() {
-    switch (match.status) {
-      case MatchStatus.scheduled:
-        if (match.matchDate != null) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.calendar_today, size: 16, color: ATLColors.darkBlue),
-              const SizedBox(width: 6),
-              Text(
-                DateFormat('dd-MM-yyyy').format(match.matchDate!),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: ATLColors.darkBlue,
-                ),
+    if (!clickable) {
+      return content;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (currentSport != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SoccerMatchScreen(
+                matchId: match.id,
+                currentSport: currentSport!,
               ),
-              const SizedBox(width: 12),
-              const Icon(Icons.access_time, size: 16, color: ATLColors.darkBlue),
-              const SizedBox(width: 6),
-              Text(
-                DateFormat('HH:mm').format(match.matchDate!),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: ATLColors.darkBlue,
-                ),
-              ),
-            ],
+            ),
           );
         }
-        return const Text(
-          'Scheduled',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: ATLColors.darkBlue,
-          ),
-        );
-      case MatchStatus.started:
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.red.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.play_circle_filled, size: 18, color: Colors.red.shade700),
-              const SizedBox(width: 6),
-              Text(
-                'Live',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red.shade700,
-                ),
-              ),
-            ],
-          ),
-        );
-      case MatchStatus.finished:
-        return const Text(
-          'Full-time',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: ATLColors.subtext,
-          ),
-        );
-      case MatchStatus.notScheduled:
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.schedule, size: 18, color: Colors.grey.shade700),
-              const SizedBox(width: 6),
-              Text(
-                'To be scheduled',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade700,
-                ),
-              ),
-            ],
-          ),
-        );
-      case MatchStatus.homeRetired:
-      case MatchStatus.awayRetired:
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.orange.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.warning, size: 18, color: Colors.orange.shade700),
-              const SizedBox(width: 6),
-              Text(
-                'Retired',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange.shade700,
-                ),
-              ),
-            ],
-          ),
-        );
-      case MatchStatus.canceled:
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.red.shade100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.cancel, size: 18, color: Colors.red.shade700),
-              const SizedBox(width: 6),
-              Text(
-                'Canceled',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.red.shade700,
-                ),
-              ),
-            ],
-          ),
-        );
-    }
-  }
-
-  Widget _buildTeam(Team? team, {required bool isHome}) {
-    if (team == null) {
-      return const Text(
-        'Loading...',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 16, color: ATLColors.subtext),
-      );
-    }
-
-    return Column(
-      children: [
-        Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey.shade200,
-            border: Border.all(color: Colors.grey.shade300, width: 3),
-          ),
-          child: const Icon(Icons.shield, size: 40, color: Colors.grey),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          team.name,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScore() {
-    if (match.status == MatchStatus.finished || match.status == MatchStatus.started) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Text(
-                  '${match.scoreHome ?? 0}',
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: ATLColors.darkBlue,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  '-',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: ATLColors.subtext,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '${match.scoreAway ?? 0}',
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: ATLColors.darkBlue,
-                  ),
-                ),
-              ],
-            ),
-            if (match.status == MatchStatus.started)
-              Container(
-                margin: const EdgeInsets.only(top: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade700,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  "50'+5",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      );
-    }
-
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        '-',
-        style: TextStyle(
-          fontSize: 36,
-          fontWeight: FontWeight.bold,
-          color: ATLColors.subtext,
-        ),
-      ),
+      },
+      child: content,
     );
   }
 }

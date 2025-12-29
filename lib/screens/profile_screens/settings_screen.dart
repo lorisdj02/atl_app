@@ -67,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SnackBar(content: Text('Settings will be saved soon')),
                 );
               },
-              activeColor: widget.currentSport.primaryColor,
+              activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
             ),
           ),
           if (_notificationsEnabled) ...[
@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _emailNotifications = value);
                 },
-                activeColor: widget.currentSport.primaryColor,
+                activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
               ),
             ),
             _SettingTile(
@@ -92,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _pushNotifications = value);
                 },
-                activeColor: widget.currentSport.primaryColor,
+                activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
               ),
             ),
           ],
@@ -114,7 +114,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SnackBar(content: Text('Dark mode coming soon')),
                 );
               },
-              activeColor: widget.currentSport.primaryColor,
+              activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
             ),
           ),
           _SettingTile(
@@ -169,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) {
                 setState(() => _autoPlayVideos = value);
               },
-              activeColor: widget.currentSport.primaryColor,
+              activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
             ),
           ),
           

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../utils/atl_colors.dart';
 import '../models/palmares.dart';
 import '../models/sport_category.dart';
 import '../models/tournament.dart';
@@ -26,7 +26,7 @@ class PalmaresWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWinner = palmares.position == PalmaresPosition.WINNER;
     final bgColor = isWinner 
-        ? sportCategory.primaryColor.withOpacity(0.2)
+        ? ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
         : Colors.white;
 
     return Container(
@@ -50,12 +50,12 @@ class PalmaresWidget extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: sportCategory.primaryColor.withOpacity(0.2),
+              color: ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               Icons.emoji_events,
-              color: sportCategory.primaryColor,
+              color: ATLColors.getPrimaryColor(sportCategory),
               size: 30,
             ),
           ),
@@ -138,7 +138,7 @@ class PalmaresWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: sportCategory.primaryColor,
+              color: ATLColors.getPrimaryColor(sportCategory),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(

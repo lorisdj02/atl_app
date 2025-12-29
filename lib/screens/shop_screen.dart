@@ -46,7 +46,7 @@ class ShopScreen extends StatelessWidget {
               children: [
                 Icon(
                   Icons.shopping_cart,
-                  color: currentSport.primaryColor,
+                  color: ATLColors.getPrimaryColor(currentSport),
                   size: 80,
                 ),
                 const SizedBox(height: 16),

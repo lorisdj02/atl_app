@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
 import 'abstract_team_widget.dart';
+import '../utils/atl_colors.dart';
 
 /// Widget quadrato per visualizzare un team in formato compatto
 class SquareTeamWidget extends AbstractTeamWidget {
@@ -24,7 +25,7 @@ class SquareTeamWidget extends AbstractTeamWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: sportCategory.primaryColor.withOpacity(0.3),
+            color: ATLColors.getPrimaryColor(sportCategory).withOpacity(0.3),
             width: 2,
           ),
           boxShadow: [
@@ -58,7 +59,7 @@ class SquareTeamWidget extends AbstractTeamWidget {
         children: [
           Icon(
             Icons.shield,
-            color: sportCategory.primaryColor,
+            color: ATLColors.getPrimaryColor(sportCategory),
             size: 32,
           ),
           const SizedBox(height: 4),
@@ -67,7 +68,7 @@ class SquareTeamWidget extends AbstractTeamWidget {
             child: Text(
               team.alias ?? team.name.substring(0, 3).toUpperCase(),
               style: TextStyle(
-                color: sportCategory.primaryColor,
+                color: ATLColors.getPrimaryColor(sportCategory),
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),

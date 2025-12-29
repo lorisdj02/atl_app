@@ -5,7 +5,7 @@ import '../models/sport_category.dart';
 import '../database/db_controller.dart';
 import '../providers/user_provider.dart';
 import '../screens/player/my_team_screen.dart';
-import '../screens/player/team_detail_screen.dart';
+import '../screens/teams/team_detail_screen.dart';
 
 /// Abstract base widget for all team widgets
 /// Provides common functionality like navigation handling

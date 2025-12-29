@@ -117,10 +117,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: widget.currentSport.primaryColor.withOpacity(0.2),
+                      backgroundColor: ATLColors.getPrimaryColor(widget.currentSport).withOpacity(0.2),
                       child: Icon(
                         Icons.mail_outline,
-                        color: widget.currentSport.primaryColor,
+                        color: ATLColors.getPrimaryColor(widget.currentSport),
                         size: 40,
                       ),
                     ),
@@ -155,7 +155,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       icon: Icons.email,
                       label: 'Email',
                       value: 'support@atl.com',
-                      color: widget.currentSport.primaryColor,
+                      color: ATLColors.getPrimaryColor(widget.currentSport),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -269,7 +269,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 text: _isSubmitting ? 'Sending...' : 'Send Message',
                 size: ATLButtonSize.large,
                 isFilled: true,
-                color: widget.currentSport.primaryColor,
+                color: ATLColors.getPrimaryColor(widget.currentSport),
                 fullWidth: true,
                 onPressed: _isSubmitting ? () {} : _submitForm,
               ),
@@ -287,7 +287,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   child: Text(
                     'Check our FAQ',
                     style: TextStyle(
-                      color: widget.currentSport.primaryColor,
+                      color: ATLColors.getPrimaryColor(widget.currentSport),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

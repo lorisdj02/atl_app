@@ -423,7 +423,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           status: BookingStatus.booked,
         );
         
-        success = await DB.PrivateBookings.addPrivateBooking(newBooking);
+        success = await DB.PrivateBookings.addPrivateBooking(newBooking.playerId, newBooking.fieldId, newBooking.startTime, newBooking.finishTime, newBooking.status);
         
       } else {
         final baseCost = _selectedField!.costTournament;
@@ -431,7 +431,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         final playerToFind = _maxPlayers - _ownerPaysFor;
         
         final newBooking = LobbyBooking(
-          id: DateTime.now().millisecondsSinceEpoch,
+          id: 0, // ID will be set by the database
           fieldId: _selectedField!.id,
           ownerId: userProvider.activeRoleId!,
           maxPlayers: _maxPlayers,
@@ -443,7 +443,6 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         );
         
         success = await DB().createLobby(
-          newBooking.id,
           newBooking.fieldId,
           newBooking.ownerId,
           newBooking.maxPlayers,

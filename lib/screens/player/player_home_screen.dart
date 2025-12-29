@@ -13,7 +13,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/soccer_match_widget.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
-import '../team_screen.dart';
+import '../teams/team_screen.dart';
 import '../profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
@@ -370,7 +370,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: index == _currentPage
-                        ? _currentSport.primaryColor
+                        ? ATLColors.getPrimaryColor(_currentSport)
                         : Colors.grey.shade300,
                   ),
                 );
@@ -451,7 +451,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search, color: _currentSport.primaryColor, size: 80),
+            Icon(Icons.search, color: ATLColors.getPrimaryColor(_currentSport), size: 80),
             const SizedBox(height: 24),
             const Text(
               'Looking for more passion?',
@@ -528,7 +528,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _currentSport.primaryColor,
+                  backgroundColor: ATLColors.getPrimaryColor(_currentSport),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -562,10 +562,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: _currentSport.primaryColor,
+                  foregroundColor: ATLColors.getPrimaryColor(_currentSport),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: _currentSport.primaryColor, width: 2),
+                    side: BorderSide(color: ATLColors.getPrimaryColor(_currentSport), width: 2),
                   ),
                 ),
               ),
@@ -638,6 +638,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               match: nextMatch,
               homeTeam: _teamsCache[nextMatch.homeTeamId],
               awayTeam: _teamsCache[nextMatch.awayTeamId],
+              currentSport: _currentSport,
             ),
           ],
 

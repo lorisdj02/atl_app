@@ -175,7 +175,7 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: widget.sportCategory.primaryColor,
+              color: ATLColors.getPrimaryColor(widget.sportCategory),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(

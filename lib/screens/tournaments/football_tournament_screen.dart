@@ -10,21 +10,21 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/small_soccer_match_widget.dart';
 import '../../widgets/standings_team_widget.dart';
 
-class TournamentScreen extends StatefulWidget {
+class FootballTournamentScreen extends StatefulWidget {
   final Tournament tournament;
   final SportCategory sportCategory;
 
-  const TournamentScreen({
+  const FootballTournamentScreen({
     super.key,
     required this.tournament,
     required this.sportCategory,
   });
 
   @override
-  State<TournamentScreen> createState() => _TournamentScreenState();
+  State<FootballTournamentScreen> createState() => _FootballTournamentScreenState();
 }
 
-class _TournamentScreenState extends State<TournamentScreen> with SingleTickerProviderStateMixin {
+class _FootballTournamentScreenState extends State<FootballTournamentScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   
   List<SoccerMatch>? _matches;
@@ -164,7 +164,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
-        backgroundColor: widget.sportCategory.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -222,7 +222,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
                   const SnackBar(content: Text('Chat coming soon')),
                 );
               },
-              backgroundColor: widget.sportCategory.primaryColor,
+              backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
               icon: const Icon(Icons.chat_bubble, color: Colors.white),
               label: const Text(
                 'Chat',
@@ -312,7 +312,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
                         });
                       }
                     },
-                    selectedColor: widget.sportCategory.primaryColor,
+                    selectedColor: ATLColors.getPrimaryColor(widget.sportCategory),
                     labelStyle: TextStyle(
                       color: _selectedDay == day ? Colors.white : ATLColors.darkBlue,
                       fontWeight: FontWeight.bold,
@@ -354,6 +354,7 @@ class _TournamentScreenState extends State<TournamentScreen> with SingleTickerPr
                         match: match,
                         homeTeam: _teamsCache[match.homeTeamId],
                         awayTeam: _teamsCache[match.awayTeamId],
+                        currentSport: widget.sportCategory,
                       )),
                   const SizedBox(height: 16),
                 ],

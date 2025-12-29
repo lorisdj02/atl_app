@@ -335,7 +335,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
-        backgroundColor: widget.currentSport.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -436,7 +436,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
               child: ATLFloatingButton(
                 heroTag: 'requests_fab',
                 onPressed: _showRequestsScreen,
-                backgroundColor: widget.currentSport.primaryColor,
+                backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.inbox,
                 label: 'Requests',
               ),

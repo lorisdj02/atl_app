@@ -219,9 +219,10 @@ class TeamRepository extends BaseRepository<Team> {
     }
   }
 
-  Future<bool> insertTeam(int id, String? cityId, String name, String alias, String? description, int captainId, String catId, String? imageUrl, bool vip, bool visibility) async {
-    final newTeam = Team(
-        id: id, // Temporary ID
+  Future<int> insertTeam(String? cityId, String name, String alias, String? description, int captainId, String catId, String? imageUrl, bool vip, bool visibility) async {
+    if(AppConfig.isDebug){
+      final newTeam = Team(
+        id: _mockData.length + 1, // Temporary ID
         cityId: cityId,
         name: name,
         alias: alias,
@@ -233,10 +234,8 @@ class TeamRepository extends BaseRepository<Team> {
         players: 1, // Solo il capitano inizialmente
         visibility: visibility,
       );
-
-    if(AppConfig.isDebug){
       _mockData.add(newTeam);
-      return true;
+      return newTeam.id;
     } else {
       throw UnimplementedError();
     }

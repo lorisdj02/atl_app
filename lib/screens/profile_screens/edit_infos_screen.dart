@@ -219,14 +219,14 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                   children: [
                     CircleAvatar(
                       radius: 60,
-                      backgroundColor: widget.currentSport.primaryColor.withOpacity(0.2),
+                      backgroundColor: ATLColors.getPrimaryColor(widget.currentSport).withOpacity(0.2),
                       backgroundImage: user?.imageUrl != null 
                           ? NetworkImage(user!.imageUrl!) 
                           : null,
                       child: user?.imageUrl == null
                           ? Icon(
                               Icons.person,
-                              color: widget.currentSport.primaryColor,
+                              color: ATLColors.getPrimaryColor(widget.currentSport),
                               size: 60,
                             )
                           : null,
@@ -243,7 +243,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                         },
                         child: CircleAvatar(
                           radius: 18,
-                          backgroundColor: widget.currentSport.primaryColor,
+                          backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                           child: const Icon(
                             Icons.camera_alt,
                             color: Colors.white,

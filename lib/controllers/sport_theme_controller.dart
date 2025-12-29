@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
+import '../utils/ATL_colors.dart';
 
 /// Controller per gestire lo sport attivo e il tema dell'app
 class SportThemeController extends ChangeNotifier {
@@ -7,9 +8,9 @@ class SportThemeController extends ChangeNotifier {
 
   SportCategory get currentSport => _currentSport;
 
-  Color get primaryColor => _currentSport.primaryColor;
-  Color get secondaryColor => _currentSport.secondaryColor;
-  Color get tertiaryColor => _currentSport.tertiaryColor;
+  Color get primaryColor => ATLColors.getPrimaryColor(_currentSport);
+  Color get secondaryColor => ATLColors.getSecondaryColor(_currentSport);
+  Color get tertiaryColor => ATLColors.getTertiaryColor(_currentSport);
 
   void changeSport(SportCategory sport) {
     _currentSport = sport;

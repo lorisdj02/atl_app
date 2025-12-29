@@ -63,7 +63,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
-        backgroundColor: widget.sportCategory.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -158,7 +158,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
                 value: progress,
                 minHeight: 12,
                 backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(widget.sportCategory.primaryColor),
+                valueColor: AlwaysStoppedAnimation<Color>(ATLColors.getPrimaryColor(widget.sportCategory)),
               ),
             ),
             const SizedBox(height: 16),
@@ -168,7 +168,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () => _showPaymentDialog(participation, tournament),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.sportCategory.primaryColor,
+                      backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -293,7 +293,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.sportCategory.primaryColor,
+              backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
             ),
             child: const Text('Pay'),
           ),

@@ -255,7 +255,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: widget.currentSport.primaryColor,
+                                color: ATLColors.getPrimaryColor(widget.currentSport),
                                 width: 2,
                               ),
                               image: _tournamentCoordinator!.imageUrl != null
@@ -273,7 +273,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             child: _tournamentCoordinator!.imageUrl == null
                                 ? Icon(
                                     Icons.person,
-                                    color: widget.currentSport.primaryColor,
+                                    color: ATLColors.getPrimaryColor(widget.currentSport),
                                     size: 28,
                                   )
                                 : null,
@@ -308,7 +308,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: widget.currentSport.primaryColor,
+                                      color: ATLColors.getPrimaryColor(widget.currentSport),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Text(
@@ -347,8 +347,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                widget.currentSport.primaryColor,
-                                widget.currentSport.primaryColor.withOpacity(
+                                ATLColors.getPrimaryColor(widget.currentSport),
+                                ATLColors.getPrimaryColor(widget.currentSport).withOpacity(
                                   0.8,
                                 ),
                               ],
@@ -358,7 +358,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: widget.currentSport.primaryColor
+                                color: ATLColors.getPrimaryColor(widget.currentSport)
                                     .withOpacity(0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
@@ -546,7 +546,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                   children: [
                                     Icon(
                                       Icons.description,
-                                      color: widget.currentSport.primaryColor,
+                                      color: ATLColors.getPrimaryColor(widget.currentSport),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
@@ -583,7 +583,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: widget.currentSport.primaryColor
+                              color: ATLColors.getPrimaryColor(widget.currentSport)
                                   .withOpacity(0.3),
                               width: 2,
                             ),
@@ -602,7 +602,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                 children: [
                                   Icon(
                                     Icons.payment,
-                                    color: widget.currentSport.primaryColor,
+                                    color: ATLColors.getPrimaryColor(widget.currentSport),
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
@@ -619,7 +619,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                               Text(
                                 widget.tournament.formattedFee,
                                 style: TextStyle(
-                                  color: widget.currentSport.primaryColor,
+                                  color: ATLColors.getPrimaryColor(widget.currentSport),
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -760,7 +760,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: widget.currentSport.primaryColor,
+            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(
@@ -835,7 +835,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.currentSport.primaryColor,
+              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -872,7 +872,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.currentSport.primaryColor,
+              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -911,7 +911,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.currentSport.primaryColor,
+                  backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -1033,7 +1033,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               )
             : null,
         color: widget.tournament.photoURL == null
-            ? widget.currentSport.primaryColor
+            ? ATLColors.getPrimaryColor(widget.currentSport)
             : null,
       ),
       child: widget.tournament.photoURL == null
@@ -1144,7 +1144,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: widget.currentSport.primaryColor, size: 20),
+        Icon(icon, color: ATLColors.getPrimaryColor(widget.currentSport), size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

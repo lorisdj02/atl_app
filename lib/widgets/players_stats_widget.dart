@@ -109,10 +109,10 @@ class PlayersStatsWidget extends StatelessWidget {
     
     if (position == 0) {
       // Primo posto: colore primario dello sport
-      backgroundColor = sportCategory.primaryColor.withOpacity(0.1);
+      backgroundColor = ATLColors.getPrimaryColor(sportCategory).withOpacity(0.1);
     } else if (position == 1) {
       // Secondo posto: colore secondario dello sport
-      backgroundColor = sportCategory.secondaryColor.withOpacity(0.1);
+      backgroundColor = ATLColors.getSecondaryColor(sportCategory).withOpacity(0.1);
     } else {
       // Altri: bianco
       backgroundColor = Colors.white;
@@ -140,9 +140,9 @@ class PlayersStatsWidget extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               color: position == 0 
-                  ? sportCategory.primaryColor
+                  ? ATLColors.getPrimaryColor(sportCategory)
                   : position == 1
-                      ? sportCategory.secondaryColor
+                      ? ATLColors.getSecondaryColor(sportCategory)
                       : Colors.grey.shade400,
               borderRadius: BorderRadius.circular(8),
             ),
@@ -197,9 +197,9 @@ class PlayersStatsWidget extends StatelessWidget {
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: position == 0
-                  ? sportCategory.primaryColor
+                  ? ATLColors.getPrimaryColor(sportCategory)
                   : position == 1
-                      ? sportCategory.secondaryColor
+                      ? ATLColors.getSecondaryColor(sportCategory)
                       : Colors.black87,
             ),
           ),

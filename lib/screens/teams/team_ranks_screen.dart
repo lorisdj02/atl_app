@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../database/db_controller.dart';
-import '../widgets/ranks_team_widget.dart';
-import '../models/sport_category.dart';
-import '../utils/atl_colors.dart';
+import '../../database/db_controller.dart';
+import '../../widgets/ranks_team_widget.dart';
+import '../../models/sport_category.dart';
+import '../../utils/atl_colors.dart';
 
 class TeamRanksScreen extends StatelessWidget {
   final SportCategory sportCategory;

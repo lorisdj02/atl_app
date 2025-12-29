@@ -7,7 +7,7 @@ import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
-import '../team_screen.dart';
+import '../teams/team_screen.dart';
 import '../profile_screen.dart';
 
 class CoordinatorHomeScreen extends StatefulWidget {
@@ -211,10 +211,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: _currentSport.primaryColor.withOpacity(0.2),
+                  backgroundColor: ATLColors.getPrimaryColor(_currentSport).withOpacity(0.2),
                   child: Icon(
                     Icons.admin_panel_settings,
-                    color: _currentSport.primaryColor,
+                    color: ATLColors.getPrimaryColor(_currentSport),
                     size: 32,
                   ),
                 ),
@@ -235,7 +235,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                       Text(
                         user.roleDisplayName,
                         style: TextStyle(
-                          color: _currentSport.primaryColor,
+                          color: ATLColors.getPrimaryColor(_currentSport),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -322,7 +322,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               children: [
                 Icon(
                   _currentSport.icon,
-                  color: _currentSport.primaryColor,
+                  color: ATLColors.getPrimaryColor(_currentSport),
                   size: 64,
                 ),
                 const SizedBox(height: 16),
@@ -358,7 +358,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _currentSport.primaryColor, width: 2),
+          border: Border.all(color: ATLColors.getPrimaryColor(_currentSport), width: 2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -371,7 +371,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
           children: [
             Icon(
               icon,
-              color: _currentSport.primaryColor,
+              color: ATLColors.getPrimaryColor(_currentSport),
               size: 32,
             ),
             const SizedBox(height: 8),

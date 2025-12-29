@@ -98,7 +98,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
       // Crea il team
       final newTeam = Team(
-        id: DateTime.now().millisecondsSinceEpoch, // Temporary ID
+        id: 0, // ID sarà assegnato dal DB
         cityId: _selectedCity,
         name: _nameController.text.trim(),
         alias: _aliasController.text.trim(),
@@ -112,7 +112,6 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       );
 
       if((await DB().createTeam(
-        newTeam.id,
         newTeam.cityId,
         newTeam.name,
         newTeam.alias,
@@ -126,12 +125,14 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         throw Exception('Failed to create team');
       }
 
-
+      final int newTeamId = (await DB.PlaysAt.getByPlayerIdAndCategory(currentUser.id, widget.currentSport))?.teamId ?? -1;
+      if (newTeamId == -1) {
+        throw Exception('Failed to retrieve new team ID');
+      }
       // Aggiorna l'utente con il teamId
-      final updatedUser = currentUser.copyWith(teamId: newTeam.id);
+      final updatedUser = currentUser.copyWith(teamId: newTeamId);
       await userProvider.updateUser(updatedUser);
-      userProvider.setCurrentTeamId(newTeam.id);
-
+      userProvider.setCurrentTeamId(newTeamId);
       if (mounted) {
         print('🔧 [DEBUG] Team created successfully: ${newTeam.name}');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +165,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
-        backgroundColor: widget.currentSport.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -402,7 +403,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                     ElevatedButton(
                       onPressed: _isLoading ? null : _createTeam,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.currentSport.primaryColor,
+                        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

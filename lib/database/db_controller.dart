@@ -19,6 +19,7 @@ import 'repositories/soccer_standings_repository.dart';
 import 'repositories/private_bookings_repository.dart';
 import 'repositories/lobby_bookings_repository.dart';
 import 'repositories/lobby_booking_participation_repository.dart';
+import 'repositories/football_match_event_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -53,6 +54,7 @@ class DB {
   static late final LobbyBookingsRepository LobbyBookings;
   static late final LobbyBookingParticipationRepository
   LobbyBookingParticipations;
+  static late final FootballMatchEventRepository FootballMatchEvents;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -74,6 +76,7 @@ class DB {
     PrivateBookings = PrivateBookingsRepository();
     LobbyBookings = LobbyBookingsRepository();
     LobbyBookingParticipations = LobbyBookingParticipationRepository();
+    FootballMatchEvents = FootballMatchEventRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -90,7 +93,6 @@ class DB {
   }
 
   Future<bool> createTeam(
-    int id,
     String? cityId,
     String name,
     String alias,
@@ -102,19 +104,18 @@ class DB {
     bool visibility,
   ) async {
     if (AppConfig.isDebug == true) {
-      if ((await Teams.insertTeam(
-            id,
-            cityId,
-            name,
-            alias,
-            description,
-            captainId,
-            catId,
-            imageUrl,
-            vip,
-            visibility,
-          )) ==
-          false) {
+      final int id = await Teams.insertTeam(
+        cityId,
+        name,
+        alias,
+        description,
+        captainId,
+        catId,
+        imageUrl,
+        vip,
+        visibility,
+      );
+      if (id == -1) {
         return false;
       }
       if ((await TeamStats.createStats(
@@ -213,7 +214,6 @@ class DB {
   }
 
   Future<bool> createLobby(
-    int id,
     int fieldId,
     int ownerId,
     int maxPlayers,
@@ -223,17 +223,16 @@ class DB {
     DateTime endDateTime,
   ) async {
     if (AppConfig.isDebug == true) {
-      if ((await LobbyBookings.addLobbyBooking(
-            id,
-            ownerId,
-            fieldId,
-            startDateTime,
-            endDateTime,
-            maxPlayers,
-            playerToFind,
-            feePerPlayer,
-          )) ==
-          false) {
+      final id = await LobbyBookings.addLobbyBooking(
+        ownerId,
+        fieldId,
+        startDateTime,
+        endDateTime,
+        maxPlayers,
+        playerToFind,
+        feePerPlayer,
+      );
+      if (id == -1) {
         return false;
       }
 
@@ -284,10 +283,18 @@ class DB {
     }
   }
 
-  Future<bool> leaveLobby(int lobbyBookingId, int playerId, {deleteAccount = false}) async {
+  Future<bool> leaveLobby(
+    int lobbyBookingId,
+    int playerId, {
+    deleteAccount = false,
+  }) async {
     if (AppConfig.isDebug == true) {
       if ((await LobbyBookings.getById(lobbyBookingId))?.ownerId == playerId) {
-        return deleteLobby(lobbyBookingId, playerId, deleteAccount: deleteAccount);
+        return deleteLobby(
+          lobbyBookingId,
+          playerId,
+          deleteAccount: deleteAccount,
+        );
       }
       int? playersPaid =
           (await LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
@@ -318,7 +325,11 @@ class DB {
     }
   }
 
-  Future<bool> deleteLobby(int lobbyBookingId, int playerId, {deleteAccount = false}) async {
+  Future<bool> deleteLobby(
+    int lobbyBookingId,
+    int playerId, {
+    deleteAccount = false,
+  }) async {
     if (AppConfig.isDebug == true) {
       if ((await LobbyBookings.getById(lobbyBookingId))?.ownerId != playerId) {
         return false;
@@ -338,7 +349,11 @@ class DB {
     }
   }
 
-  Future<bool> leaveTeam(int teamId, int playerId, {deleteAccount = false}) async {
+  Future<bool> leaveTeam(
+    int teamId,
+    int playerId, {
+    deleteAccount = false,
+  }) async {
     if (AppConfig.isDebug == true) {
       if ((await Teams.isTeamLeftable(teamId, playerId)) == false) {
         return false;
@@ -386,7 +401,8 @@ class DB {
         ).then((playsAtList) => playsAtList!.map((pa) => pa.teamId).toList());
 
         for (final teamId in teamIds) {
-          if ((await leaveTeam(teamId, playerId, deleteAccount: true)) == false) {
+          if ((await leaveTeam(teamId, playerId, deleteAccount: true)) ==
+              false) {
             return false;
           }
         }
@@ -398,7 +414,8 @@ class DB {
             );
 
         for (final lobbyId in lobbyIds) {
-          if ((await leaveLobby(lobbyId, playerId, deleteAccount: true)) == false) {
+          if ((await leaveLobby(lobbyId, playerId, deleteAccount: true)) ==
+              false) {
             return false;
           }
         }

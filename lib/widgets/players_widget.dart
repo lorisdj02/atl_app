@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
+import '../utils/atl_colors.dart';
 
 class PlayersWidget extends StatelessWidget {
   final List<Player> players;
@@ -35,10 +36,10 @@ class PlayersWidget extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: sportCategory.primaryColor.withOpacity(0.1),
+              color: ATLColors.getPrimaryColor(sportCategory).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: sportCategory.primaryColor.withOpacity(0.3),
+                color: ATLColors.getPrimaryColor(sportCategory).withOpacity(0.3),
                 width: 2,
               ),
             ),
@@ -49,7 +50,7 @@ class PlayersWidget extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.shield,
-                      color: sportCategory.primaryColor,
+                      color: ATLColors.getPrimaryColor(sportCategory),
                       size: 32,
                     ),
                     const SizedBox(width: 12),
@@ -62,7 +63,7 @@ class PlayersWidget extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: sportCategory.primaryColor,
+                              color: ATLColors.getPrimaryColor(sportCategory),
                             ),
                           ),
                           if (team?.alias != null) ...[
@@ -159,8 +160,8 @@ class PlayersWidget extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isCaptain ?  sportCategory.primaryColor.withOpacity(0.2)
-                  : (isVice1 || isVice2) ? sportCategory.secondaryColor.withOpacity(0.2)
+              color: isCaptain ?  ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
+                  : (isVice1 || isVice2) ? ATLColors.getSecondaryColor(sportCategory).withOpacity(0.2)
                   : Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -179,7 +180,7 @@ class PlayersWidget extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: sportCategory.primaryColor,
+                      color: ATLColors.getPrimaryColor(sportCategory),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(

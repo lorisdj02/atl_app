@@ -95,14 +95,14 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
                           children: [
                             Icon(
                               currentSport.icon,
-                              color: currentSport.primaryColor,
+                              color: ATLColors.getPrimaryColor(currentSport),
                               size: 32,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               currentSport.name,
                               style: TextStyle(
-                                color: currentSport.primaryColor,
+                                color: ATLColors.getPrimaryColor(currentSport),
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -114,14 +114,14 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.home,
-                              color: currentSport.primaryColor,
+                              color: ATLColors.getPrimaryColor(currentSport),
                               size: 32,
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'Home',
                               style: TextStyle(
-                                color: currentSport.primaryColor,
+                                color: ATLColors.getPrimaryColor(currentSport),
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
                               ),

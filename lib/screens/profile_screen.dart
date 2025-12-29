@@ -38,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
       return Scaffold(
         backgroundColor: ATLColors.background,
         body: Center(
-          child: CircularProgressIndicator(color: currentSport.primaryColor),
+          child: CircularProgressIndicator(color: ATLColors.getPrimaryColor(currentSport)),
         ),
       );
     }

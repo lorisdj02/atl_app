@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../database/db_controller.dart';
-import '../models/team.dart';
-import '../models/sport_category.dart';
-import '../providers/user_provider.dart';
-import '../utils/atl_colors.dart';
-import '../utils/navigation_helper.dart';
-import '../widgets/loading_atl.dart';
-import '../widgets/atl_floating_button.dart';
-import '../widgets/player_coordinator_bottom_bar.dart';
-import 'player/my_team_screen.dart';
-import 'player/create_team_screen.dart';
-import '../models/user.dart';
-import '../widgets/search_team_widget.dart';
-import '../widgets/ranks_team_widget.dart';
+import '../../database/db_controller.dart';
+import '../../models/team.dart';
+import '../../models/sport_category.dart';
+import '../../providers/user_provider.dart';
+import '../../utils/atl_colors.dart';
+import '../../utils/navigation_helper.dart';
+import '../../widgets/loading_atl.dart';
+import '../../widgets/atl_floating_button.dart';
+import '../../widgets/player_coordinator_bottom_bar.dart';
+import '../player/my_team_screen.dart';
+import '../player/create_team_screen.dart';
+import '../../models/user.dart';
+import '../../widgets/search_team_widget.dart';
+import '../../widgets/ranks_team_widget.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -546,7 +546,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                           children: [
                             Icon(
                               Icons.group,
-                              color: widget.currentSport.primaryColor,
+                              color: ATLColors.getPrimaryColor(widget.currentSport),
                               size: 80,
                             ),
                             const SizedBox(height: 16),
@@ -578,7 +578,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                               children: [
                                 Icon(
                                   Icons.search_off,
-                                  color: widget.currentSport.primaryColor,
+                                  color: ATLColors.getPrimaryColor(widget.currentSport),
                                   size: 80,
                                 ),
                                 const SizedBox(height: 16),
@@ -659,7 +659,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                     );
                   }
                 },
-                backgroundColor: widget.currentSport.primaryColor,
+                backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.add,
                 label: 'Crea',
               ),

@@ -1,3 +1,4 @@
+import 'package:atl_app/utils/ATL_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
@@ -73,7 +74,7 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: widget.sportCategory.primaryColor,
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
