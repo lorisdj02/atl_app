@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
-import 'abstract_soccer_match_widget.dart';
-import '../screens/tournaments/soccer_match_screen.dart';
+import 'abstract_football_match_widget.dart';
+import '../screens/tournaments/football_match_screen.dart';
 
-class SmallSoccerMatchWidget extends AbstractSoccerMatchWidget {
+class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
   final SportCategory currentSport;
 
-  const SmallSoccerMatchWidget({
+  const SmallFootballMatchWidget({
     super.key,
     required super.match,
     super.homeTeam,
     super.awayTeam,
     required this.currentSport,
-  });
+    required super.minutesPerRound,
+    required super.minutesPerPause,
+  }) : super(sportCategory: currentSport);
 
   @override
   double get statusIconSize => 14.0;
@@ -51,7 +53,7 @@ class SmallSoccerMatchWidget extends AbstractSoccerMatchWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SoccerMatchScreen(
+            builder: (context) => FootballMatchScreen(
               matchId: match.id,
               currentSport: currentSport,
             ),

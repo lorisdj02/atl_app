@@ -1,54 +1,31 @@
+import 'match.dart';
 
-enum MatchStatus {
-  scheduled,
-  started,
-  halftime,
-  startHalf,
-  finished,
-  notScheduled,
-  homeRetired,
-  awayRetired,
-  canceled
-}
 
-class SoccerMatch {
-  final int id;
-  final int homeTeamId;
-  final int awayTeamId;
-  final DateTime? matchDate;
-  final int? refereeId;
-  final MatchStatus status;
-  int? scoreHome;
-  int? scoreAway;
-  final int tournamentId;
-  final String? group;
-  final int? day;
-  DateTime? startMatch;
-  DateTime? halfTime;
-  DateTime? startHalf;
-  DateTime? endMatch;
+class FootballMatch extends Match {
+  int? refereeId;
 
-  SoccerMatch({
-    required this.id,
-    required this.homeTeamId,
-    required this.awayTeamId,
-    this.matchDate,
+
+  FootballMatch({
     this.refereeId,
-    this.status = MatchStatus.notScheduled,
-    this.scoreHome,
-    this.scoreAway,
-    required this.tournamentId,
-    this.group,
-    this.day,
-    this.startMatch,
-    this.halfTime,
-    this.startHalf,
-    this.endMatch,
+    required super.id,
+    required super.homeTeamId,
+    required super.awayTeamId,
+    super.matchDate,
+    super.scoreHome,
+    super.scoreAway,
+    required super.tournamentId,
+    super.day,
+    super.group,
+    super.startMatch,
+    super.halfTime,
+    super.startHalf,
+    super.endMatch,
+    super.status = MatchStatus.notScheduled,
   });
 
 
-  factory SoccerMatch.fromJson(Map<String, dynamic> json) {
-    return SoccerMatch(
+  factory FootballMatch.fromJson(Map<String, dynamic> json) {
+    return FootballMatch(
       id: json['id'],
       homeTeamId: json['homeTeamId'],
       awayTeamId: json['awayTeamId'],

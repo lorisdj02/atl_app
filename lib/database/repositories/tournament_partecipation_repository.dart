@@ -21,12 +21,12 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     TournamentPartecipation(
       tournamentId: 7,
       teamId: 2,
-      toPay: 200.0,
+      toPay: 0.0,
     ),
     TournamentPartecipation(
       tournamentId: 7,
       teamId: 3,
-      toPay: 150.0,
+      toPay: 0.0,
     ),
     TournamentPartecipation(
       tournamentId: 8,
@@ -91,6 +91,24 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
+  Future<List<TournamentPartecipation>> getPaidByTournamentId(int tournamentId) {
+    if(AppConfig.isDebug){
+      return Future.value(_mockdata.where((partecipation) => partecipation.tournamentId == tournamentId && (partecipation.toPay ?? 0) <= 0).toList());
+    }
+    else{
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<TournamentPartecipation>> getPaidByTeamId(int teamId) {
+    if(AppConfig.isDebug){
+      return Future.value(_mockdata.where((partecipation) => partecipation.teamId == teamId && (partecipation.toPay ?? 0) <= 0).toList());
+    }
+    else{
+      throw UnimplementedError();
+    }
+  }
+
   Future<TournamentPartecipation?> getByTournamentAndTeam(int tournamentId, int teamId) async {
     if (AppConfig.isDebug) {
       try {
@@ -134,7 +152,7 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
-  Future<void> updatePayment(int tournamentId, int teamId, double toPay) async {
+  Future<bool> updatePayment(int tournamentId, int teamId, double toPay) async {
     if (AppConfig.isDebug) {
       for (var partecipation in _mockdata) {
         if (partecipation.tournamentId == tournamentId &&
@@ -143,7 +161,7 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
           break;
         }
       }
-      return Future.value();
+      return true;
     } else {
       throw UnimplementedError();
     }

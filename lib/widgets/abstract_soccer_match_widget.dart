@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/soccer_match.dart';
+import '../models/football_match.dart';
 import '../models/team.dart';
+import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'live_minute_widget.dart';
+import '../models/match.dart';
 
-abstract class AbstractSoccerMatchWidget extends StatelessWidget {
-  final SoccerMatch match;
+abstract class AbstractFootballMatchWidget extends StatelessWidget {
+  final FootballMatch match;
   final Team? homeTeam;
   final Team? awayTeam;
+  final int minutesPerRound;
+  final SportCategory sportCategory;
+  final int minutesPerPause;
 
-  const AbstractSoccerMatchWidget({
+  const AbstractFootballMatchWidget({
     super.key,
     required this.match,
     this.homeTeam,
     this.awayTeam,
+    required this.minutesPerRound,
+    required this.sportCategory,
+    required this.minutesPerPause,
   });
 
   // Metodi astratti da implementare nelle classi figlie
@@ -337,10 +345,13 @@ abstract class AbstractSoccerMatchWidget extends StatelessWidget {
                 match.status == MatchStatus.halftime ||
                 match.status == MatchStatus.startHalf)
               LiveMinuteWidget(
+                minutesPerPause: minutesPerPause,
+                minutesPerRound: minutesPerRound,
                 match: match,
                 fontSize: minuteFontSize,
                 padding: minutePadding,
                 borderRadius: scoreFontSize * 0.167,
+                sportCategory: sportCategory,
               ),
           ],
         ),

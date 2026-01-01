@@ -25,36 +25,6 @@ enum TournamentStatus {
   }
 }
 
-enum TournamentFormat {
-  // 1. Solo partite secche
-  singleMatchOnly,
-  
-  // 2. Andata e ritorno solo nei gironi
-  homeAndAwayGroupStage, 
-  
-  // 3. Andata e ritorno solo nelle fasi finali
-  homeAndAwayKnockoutStage, 
-  
-  // 4. Andata e ritorno totale
-  fullHomeAndAway,
-}
-
-// Estensione per aggiungere funzionalità all'enum
-extension TournamentFormatExtension on TournamentFormat {
-  String displayName(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (this) {
-      case TournamentFormat.singleMatchOnly:
-        return l10n.formatSingleMatchOnly;
-      case TournamentFormat.homeAndAwayGroupStage:
-        return l10n.formatHomeAndAwayGroupStage;
-      case TournamentFormat.homeAndAwayKnockoutStage:
-        return l10n.formatHomeAndAwayKnockoutStage;
-      case TournamentFormat.fullHomeAndAway:
-        return l10n.formatFullHomeAndAway;
-    }
-  }
-}
 
 
 /// Enum per la fase del torneo
@@ -98,9 +68,10 @@ class Tournament {
   final DateTime? startDate;
   final String sportName;
   final int numTeams;
-  final int paidTeams; // Numero team iscritti (deve essere <= numTeams)
+  int paidTeams; // Numero team iscritti (deve essere <= numTeams)
   final int numGroups;
-  final int round2; // 0 se solo andata, 1 se andata e ritorno solo nei gironi, 2 se andata e ritorno solo nelle fasi finali, 3 se andata e ritorno totale
+  final bool round2GroupStage;
+  final bool round2FinalStage;
   final int qualified;
   final String description;
   final int payCoordinator;
@@ -117,6 +88,8 @@ class Tournament {
   bool? isFavorite;
   bool? isParticipating;
   String? coordinatorName;
+  final int minutesPerRound;
+  final int minutesPerPause;
 
   Tournament({
     required this.id,
@@ -128,8 +101,10 @@ class Tournament {
     required this.numTeams,
     required this.paidTeams,
     required this.numGroups,
-    required this.round2,
+    this.round2GroupStage = false,
+    this.round2FinalStage = false,
     required this.qualified,
+    required this.minutesPerRound,
     required this.description,
     required this.payCoordinator,
     this.status = TournamentStatus.created,
@@ -146,6 +121,7 @@ class Tournament {
     this.coordinatorName,
     required this.minPlayers,
     required this.maxPlayers,
+    required this.minutesPerPause,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -165,7 +141,8 @@ class Tournament {
       numTeams: json['num_teams'] ?? 8,
       paidTeams: json['paid_teams'] ?? 0,
       numGroups: json['num_groups'] ?? 2,
-      round2: json['round2'] ?? 0,
+      round2GroupStage: json['round2_group_stage'] ?? false,
+      round2FinalStage: json['round2_final_stage'] ?? false,
       qualified: json['qualified'] ?? 4,
       description: json['description'] ?? '',
       payCoordinator: json['pay_coordinator'] ?? 0,
@@ -182,6 +159,9 @@ class Tournament {
       coordinatorName: json['coordinator'] is Map 
           ? json['coordinator']['username'] 
           : null,
+      date: json['date'],
+      minutesPerRound: json['minutes_per_round'],
+      minutesPerPause: json['minutes_per_pause'],
     );
   }
 
@@ -196,7 +176,8 @@ class Tournament {
       'num_teams': numTeams,
       'paid_teams': paidTeams,
       'num_groups': numGroups,
-      'round2': round2,
+      'round2_group_stage': round2GroupStage,
+      'round2_final_stage': round2FinalStage,
       'qualified': qualified,
       'description': description,
       'pay_coordinator': payCoordinator,
@@ -207,6 +188,11 @@ class Tournament {
       'is_atl': isATL,
       'phase': phase.name.toUpperCase(),
       'name': name,
+      'min_players': minPlayers,
+      'max_players': maxPlayers,
+      'photo_url': photoURL,
+      'minutes_per_round': minutesPerRound,
+      'minutes_per_pause': minutesPerPause,
     };
   }
 
@@ -282,7 +268,8 @@ class Tournament {
       numTeams: numTeams,
       paidTeams: paidTeams,
       numGroups: numGroups,
-      round2: round2,
+      round2GroupStage: round2GroupStage,
+      round2FinalStage: round2FinalStage,
       qualified: qualified,
       description: description,
       payCoordinator: payCoordinator,
@@ -300,6 +287,8 @@ class Tournament {
       isParticipating: isParticipating ?? this.isParticipating,
       date: date,
       coordinatorName: coordinatorName,
+      minutesPerRound: minutesPerRound,
+      minutesPerPause: minutesPerPause,
     );
   }
 }

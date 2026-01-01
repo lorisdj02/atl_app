@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../../database/db_controller.dart';
 import '../../models/tournament.dart';
 import '../../models/sport_category.dart';
-import '../../models/soccer_match.dart';
-import '../../models/soccer_standing.dart';
+import '../../models/football_match.dart';
+import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
-import '../../widgets/small_soccer_match_widget.dart';
+import '../../widgets/small_football_match_widget.dart';
 import '../../widgets/standings_team_widget.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
@@ -27,8 +27,8 @@ class FootballTournamentScreen extends StatefulWidget {
 class _FootballTournamentScreenState extends State<FootballTournamentScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   
-  List<SoccerMatch>? _matches;
-  List<SoccerStanding>? _standings;
+  List<FootballMatch>? _matches;
+  List<FootballStanding>? _standings;
   Map<int, Team> _teamsCache = {};
   Map<int, String> _captainNamesCache = {};
   
@@ -84,7 +84,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
 
   Future<void> _loadFixtures() async {
     try {
-      final matches = await DB.SoccerMatches.getMatchesByTournament(widget.tournament.id);
+      final matches = await DB.FootballMatches.getMatchesByTournament(widget.tournament.id);
       
       // Load teams for matches
       final teamIds = <int>{};
@@ -119,7 +119,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
 
   Future<void> _loadTables() async {
     try {
-      final standings = await DB.SoccerStandings.getStandingsByTournament(widget.tournament.id);
+      final standings = await DB.FootballStandings.getStandingsByTournament(widget.tournament.id);
       
       // Load teams and captains
       final teamIds = standings.map((s) => s.teamId).toSet();
@@ -350,11 +350,13 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
                       ),
                     ),
                   ),
-                  ...groupMatches.map((match) => SmallSoccerMatchWidget(
+                  ...groupMatches.map((match) => SmallFootballMatchWidget(
                         match: match,
                         homeTeam: _teamsCache[match.homeTeamId],
                         awayTeam: _teamsCache[match.awayTeamId],
                         currentSport: widget.sportCategory,
+                        minutesPerRound: widget.tournament.minutesPerRound,
+                        minutesPerPause: widget.tournament.minutesPerPause,
                       )),
                   const SizedBox(height: 16),
                 ],
@@ -388,6 +390,11 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
     }
 
     final groups = _getGroups();
+    
+    // Calcola quanti team per gruppo si qualificano
+    final qualifiedPerGroup = widget.tournament.numGroups > 0 
+        ? (widget.tournament.qualified / widget.tournament.numGroups).ceil()
+        : 0;
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -451,10 +458,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
               
               if (team == null) return const SizedBox.shrink();
 
+              // Colora solo i team nelle prime X posizioni qualificate
               Color bgColor = Colors.white;
-              if (rank == 1) {
-                bgColor = ATLColors.getPrimaryColor(widget.sportCategory);
-              } else if (rank == 2) {
+              if (rank <= qualifiedPerGroup) {
                 bgColor = ATLColors.getPrimaryColor(widget.sportCategory);
               }
 

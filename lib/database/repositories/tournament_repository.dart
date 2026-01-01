@@ -41,9 +41,10 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize1: 1000.0,
       prize2: 500.0,
       isATL: true,
-      round2: 1,
       minPlayers: 5,
       maxPlayers: 10,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     Tournament(
       id: 2,
@@ -63,9 +64,10 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 50.0,
       prize1: 1000.0,
       prize2: 500.0,
-      round2: 1,
       minPlayers: 5,
       maxPlayers: 10,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     Tournament(
       id: 3,
@@ -85,9 +87,10 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 60.0,
       prize1: 2000.0,
       prize2: 1000.0,
-      round2: 1,
       minPlayers: 7,
       maxPlayers: 14,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     // Torneo attivo esistente
     Tournament(
@@ -109,9 +112,10 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize1: 1500.0,
       prize2: 750.0,
       phase: TournamentPhase.group,
-      round2: 0,
       minPlayers: 6,
       maxPlayers: 12,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     Tournament(
       id: 5,
@@ -131,9 +135,11 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 65.0,
       prize1: 2500.0,
       prize2: 1200.0,
-      round2: 1,
+      round2FinalStage: true,
       minPlayers: 8,
       maxPlayers: 16,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     Tournament(
       id: 6,
@@ -153,10 +159,12 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 70.0,
       prize1: 1800.0,
       prize2: 900.0,
-      round2: 1,
+      round2GroupStage: true,
       isATL: true,
       minPlayers: 5,
       maxPlayers: 5,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     Tournament(
       id: 7,
@@ -168,7 +176,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       sportName: 'FOOTBALL',
       startDate: DateTime.now().add(const Duration(days: 15)),
       numTeams: 16,
-      paidTeams: 3,
+      paidTeams: 2,
       numGroups: 3,
       qualified: 6,
       payCoordinator: 90,
@@ -176,9 +184,12 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 60.0,
       prize1: 1300.0,
       prize2: 600.0,
-      round2: 1,
+      round2GroupStage: true,
+      round2FinalStage: false,
       minPlayers: 6,
       maxPlayers: 12,
+      minutesPerRound: 45,
+      minutesPerPause: 15,
     ),
     Tournament(
       id: 8,
@@ -198,9 +209,12 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 75.0,
       prize1: 2200.0,
       prize2: 1100.0,
-      round2: 1,
+      round2GroupStage: true,
+      round2FinalStage: false,
       minPlayers: 5,
       maxPlayers: 10,
+      minutesPerRound: 24,
+      minutesPerPause: 5,
     ),
   ];
 
@@ -294,6 +308,54 @@ class TournamentRepository extends BaseRepository<Tournament> {
     if (AppConfig.isDebug) {
       final tournament = _mockData.firstWhere((t) => t.id == tournamentId, orElse: () => throw Exception('Tournament not found'));
       return tournament.fee;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> getPaidTeamsCount(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final tournament = _mockData.firstWhere((t) => t.id == tournamentId, orElse: () => throw Exception('Tournament not found'));
+      return tournament.paidTeams;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> incrementPaidTeams(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final index = _mockData.indexWhere((t) => t.id == tournamentId);
+      if (index == -1) {
+        return false;
+      }
+      Tournament tournament = _mockData[index];
+      if (tournament.paidTeams < tournament.numTeams) {
+        tournament.paidTeams += 1;
+        _mockData[index] = tournament;
+        print('🔧 [DEBUG] Incremented paid teams for tournament ${tournament.name}. New count: ${tournament.paidTeams}');
+        return true;
+      } else {
+        print('🔧 [DEBUG] Cannot increment paid teams for tournament ${tournament.name}. Already at max: ${tournament.numTeams}');
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> getMinutesPerRoundById(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament = await getById(tournamentId);
+      return tournament?.minutesPerRound ?? 0;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> getMinutesPerPauseById(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament = await getById(tournamentId);
+      return tournament?.minutesPerPause ?? 0;
     } else {
       throw UnimplementedError();
     }

@@ -142,7 +142,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
       // Carica le partecipazioni del torneo
       final partecipations = await DB
-          .TournamentPartecipations.getByTournamentId(widget.tournament.id);
+          .TournamentPartecipations.getPaidByTournamentId(widget.tournament.id);
 
       // Carica i team corrispondenti
       final teams = <Team>[];

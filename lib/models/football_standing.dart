@@ -1,4 +1,4 @@
-class SoccerStanding {
+class FootballStanding {
   final int teamId;
   final int points;
   final int won;
@@ -7,7 +7,7 @@ class SoccerStanding {
   final int tournamentId;
   final String group;
 
-  SoccerStanding({
+  FootballStanding({
     required this.teamId,
     required this.points,
     required this.won,
@@ -17,8 +17,8 @@ class SoccerStanding {
     required this.group,
   });
 
-  factory SoccerStanding.fromJson(Map<String, dynamic> json) {
-    return SoccerStanding(
+  factory FootballStanding.fromJson(Map<String, dynamic> json) {
+    return FootballStanding(
       teamId: json['teamId'],
       points: json['points'],
       won: json['won'],

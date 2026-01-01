@@ -4,24 +4,23 @@ import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../models/tournament.dart';
-import '../../models/soccer_match.dart';
-import '../../models/soccer_standing.dart';
+import '../../models/football_match.dart';
+import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
 import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
-import '../../widgets/soccer_match_widget.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
 import '../profile_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../../widgets/home_team_widget.dart';
 import 'book_field_screen.dart';
 import '../../widgets/booking_widget.dart';
 import '../../models/lobby_booking.dart';
 import 'join_lobby_screen.dart';
+import '../../widgets/tournament_card_home.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
   const PlayerHomeScreen({super.key});
@@ -42,8 +41,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
       userProvider.selectedSportCategory ?? SportCategory.football;
 
   List<Tournament>? _activeTournaments;
-  Map<int, List<SoccerMatch>> _tournamentMatches = {};
-  Map<int, List<SoccerStanding>> _tournamentStandings = {};
+  Map<int, List<FootballMatch>> _tournamentMatches = {};
+  Map<int, List<FootballStanding>> _tournamentStandings = {};
   Map<int, Team> _teamsCache = {};
   Team? _userTeam;
   List<dynamic> _bookings = [];
@@ -93,7 +92,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         //final activeTournaments = allTournaments.where((t) => t.status == TournamentStatus.scheduled).toList();
 
         final activeTournamentsId =
-            (await DB.TournamentPartecipations.getByTeamId(
+            (await DB.TournamentPartecipations.getPaidByTeamId(
               teamId!,
             )).map((p) => p.tournamentId).toSet();
 
@@ -103,10 +102,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
         // Load matches and standings for each tournament
         for (var tournament in activeTournaments) {
-          final matches = await DB.SoccerMatches.getMatchesByTournament(
+          final matches = await DB.FootballMatches.getMatchesByTournament(
             tournament.id,
           );
-          final standings = await DB.SoccerStandings.getStandingsByTournament(
+          final standings = await DB.FootballStandings.getStandingsByTournament(
             tournament.id,
           );
 
@@ -392,7 +391,14 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                 final tournament = _activeTournaments![index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildTournamentCard(tournament),
+                child: TournamentCardHome(
+                  tournament: tournament,
+                  matches: _tournamentMatches[tournament.id] ?? [],
+                  standings: _tournamentStandings[tournament.id] ?? [],
+                  teamsCache: _teamsCache,
+                  userTeam: _userTeam,
+                  sportCategory: _currentSport,
+                ),
                 );
               } else if (hasBookings && index == tournamentsCount) {
                 // Pagina unica con tutti i bookings
@@ -572,100 +578,6 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTournamentCard(Tournament tournament) {
-    final matches = _tournamentMatches[tournament.id] ?? [];
-    final standings = _tournamentStandings[tournament.id] ?? [];
-
-    // Find user's team group
-    final userStanding = standings.firstWhere(
-      (s) => s.teamId == _userTeam?.id,
-      orElse: () => standings.isNotEmpty
-          ? standings.first
-          : SoccerStanding(
-              tournamentId: tournament.id,
-              teamId: 0,
-              points: 0,
-              won: 0,
-              drawn: 0,
-              lost: 0,
-              group: 'A',
-            ),
-    );
-
-    final groupStandings =
-        standings.where((s) => s.group == userStanding.group).toList()
-          ..sort((a, b) => b.points.compareTo(a.points));
-
-    // Find next match
-    final userMatches =
-        matches
-            .where(
-              (m) =>
-                  m.homeTeamId == _userTeam?.id ||
-                  m.awayTeamId == _userTeam?.id,
-            )
-            .toList()
-          ..sort((a, b) {
-            if (a.matchDate == null && b.matchDate == null) return 0;
-            if (a.matchDate == null) return 1;
-            if (b.matchDate == null) return -1;
-            return a.matchDate!.compareTo(b.matchDate!);
-          });
-
-    final nextMatch = userMatches.isNotEmpty ? userMatches.first : null;
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Next match card
-          if (nextMatch != null) ...[
-            Text(
-              'GROUP ${userStanding.group}',
-              style: TextStyle(
-                color: ATLColors.subtext,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-              ),
-            ),
-            const SizedBox(height: 12),
-            SoccerMatchWidget(
-              match: nextMatch,
-              homeTeam: _teamsCache[nextMatch.homeTeamId],
-              awayTeam: _teamsCache[nextMatch.awayTeamId],
-              currentSport: _currentSport,
-            ),
-          ],
-
-          // Group standings
-          ...groupStandings.asMap().entries.map((entry) {
-            final rank = entry.key + 1;
-            final standing = entry.value;
-            final team = _teamsCache[standing.teamId];
-
-            if (team == null) return const SizedBox.shrink();
-
-            final isUserTeam = team.id == _userTeam?.id;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: HomeTeamWidget(
-                team: team,
-                color: isUserTeam
-                    ? ATLColors.getPrimaryColor(_currentSport)
-                    : Colors.white,
-                rank: rank,
-                standingRecord: '${standing.points} pts',
-                sportCategory: _currentSport,
-              ),
-            );
-          }).toList(),
-        ],
       ),
     );
   }

@@ -278,11 +278,14 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
 
               // TODO: Payment integration
               final newToPay = toPay - amount;
-              await DB.TournamentPartecipations.updatePayment(
-                participation.tournamentId,
-                participation.teamId,
-                newToPay,
-              );
+              if(await DB().updatePayment(participation.tournamentId, participation.teamId, newToPay) == false){
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error processing payment')),
+                  );
+                }
+                return;
+              }
 
               if (context.mounted) {
                 Navigator.of(context).pop();

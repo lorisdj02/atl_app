@@ -1,19 +1,19 @@
 /// Modello per le statistiche dei giocatori nei tornei di calcio
-class TournamentStatsSoccer {
+class FootballTournamentStats {
   final int playerId;
   final int tournamentId;
   final int goals;
   final int motm; // Man of the Match
 
-  TournamentStatsSoccer({
+  FootballTournamentStats({
     required this.playerId,
     required this.tournamentId,
     this.goals = 0,
     this.motm = 0,
   });
 
-  factory TournamentStatsSoccer.fromJson(Map<String, dynamic> json) {
-    return TournamentStatsSoccer(
+  factory FootballTournamentStats.fromJson(Map<String, dynamic> json) {
+    return FootballTournamentStats(
       playerId: json['player_id'],
       tournamentId: json['tournament_id'],
       goals: json['goals'] ?? 0,

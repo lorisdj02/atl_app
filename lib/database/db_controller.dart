@@ -14,8 +14,8 @@ import 'repositories/plays_at_repository.dart';
 import 'repositories/tournament_partecipation_repository.dart';
 import 'repositories/callups_repository.dart';
 import 'repositories/favorite_tournaments_repository.dart';
-import 'repositories/soccer_match_repository.dart';
-import 'repositories/soccer_standings_repository.dart';
+import 'repositories/football_match_repository.dart';
+import 'repositories/football_standings_repository.dart';
 import 'repositories/private_bookings_repository.dart';
 import 'repositories/lobby_bookings_repository.dart';
 import 'repositories/lobby_booking_participation_repository.dart';
@@ -48,8 +48,8 @@ class DB {
   static late final TournamentPartecipationRepository TournamentPartecipations;
   static late final CallUpsRepository CallUps;
   static late final FavoriteTournamentsRepository FavoriteTournaments;
-  static late final SoccerMatchRepository SoccerMatches;
-  static late final SoccerStandingsRepository SoccerStandings;
+  static late final FootballMatchRepository FootballMatches;
+  static late final FootballStandingsRepository FootballStandings;
   static late final PrivateBookingsRepository PrivateBookings;
   static late final LobbyBookingsRepository LobbyBookings;
   static late final LobbyBookingParticipationRepository
@@ -71,8 +71,8 @@ class DB {
     TournamentPartecipations = TournamentPartecipationRepository();
     CallUps = CallUpsRepository();
     FavoriteTournaments = FavoriteTournamentsRepository();
-    SoccerMatches = SoccerMatchRepository();
-    SoccerStandings = SoccerStandingsRepository();
+    FootballMatches = FootballMatchRepository();
+    FootballStandings = FootballStandingsRepository();
     PrivateBookings = PrivateBookingsRepository();
     LobbyBookings = LobbyBookingsRepository();
     LobbyBookingParticipations = LobbyBookingParticipationRepository();
@@ -424,6 +424,25 @@ class DB {
       if (await Users.deleteAccount(id, passwordMD5) == false) {
         return false;
       }
+
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updatePayment(int tournamentId, int teamId, double newToPay) async {
+    if (AppConfig.isDebug) {
+      if(await TournamentPartecipations.updatePayment(
+                tournamentId,
+                teamId,
+                newToPay,
+      ) == false){
+        return false;
+        }
+        if(newToPay == 0 && (await Tournaments.incrementPaidTeams(tournamentId)) == false){
+          return false;
+        }
 
       return true;
     } else {

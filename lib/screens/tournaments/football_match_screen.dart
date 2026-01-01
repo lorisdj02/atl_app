@@ -1,39 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/soccer_match.dart';
+import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
 import '../../models/football_match_event.dart';
 import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
-import '../../widgets/soccer_match_widget.dart';
+import '../../widgets/football_match_widget.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/match_event_card.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
+import '../../models/match.dart';
 
-class SoccerMatchScreen extends StatefulWidget {
+class FootballMatchScreen extends StatefulWidget {
   final int matchId;
   final SportCategory currentSport;
 
-  const SoccerMatchScreen({
+  const FootballMatchScreen({
     super.key,
     required this.matchId,
     required this.currentSport,
   });
 
   @override
-  State<SoccerMatchScreen> createState() => _SoccerMatchScreenState();
+  State<FootballMatchScreen> createState() => _FootballMatchScreenState();
 }
 
-class _SoccerMatchScreenState extends State<SoccerMatchScreen> {
-  SoccerMatch? _match;
+class _FootballMatchScreenState extends State<FootballMatchScreen> {
+  FootballMatch? _match;
   late final Team _homeTeam;
   late final Team _awayTeam;
   List<FootballMatchEvent> _events = [];
   bool _isLoading = true;
   bool _isScheduled = false;
+  late final int _minutesPerRound;
+  late final int _minutesPerPause;
 
   @override
   void initState() {
@@ -46,7 +49,7 @@ class _SoccerMatchScreenState extends State<SoccerMatchScreen> {
 
     try {
       // Carica la partita dal database
-      final SoccerMatch? match = await DB.SoccerMatches.getById(widget.matchId);
+      final FootballMatch? match = await DB.FootballMatches.getById(widget.matchId);
 
       if (match == null) {
         setState(() => _isLoading = false);
@@ -69,6 +72,14 @@ class _SoccerMatchScreenState extends State<SoccerMatchScreen> {
       // Determina se la partita è schedulata
       final isScheduled = match.status != MatchStatus.notScheduled;
 
+      final minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(match.tournamentId);
+      final minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(match.tournamentId);
+
+      if (minutesPerRound == 0 || minutesPerPause == 0) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
       setState(() {
         _match = match;
         _homeTeam = homeTeam;
@@ -76,6 +87,8 @@ class _SoccerMatchScreenState extends State<SoccerMatchScreen> {
         _events = events;
         _isScheduled = isScheduled;
         _isLoading = false;
+        _minutesPerRound = minutesPerRound;
+        _minutesPerPause = minutesPerPause;
       });
     } catch (e) {
       print('Error loading match data: $e');
@@ -93,7 +106,7 @@ class _SoccerMatchScreenState extends State<SoccerMatchScreen> {
           await DB.FootballMatchEvents.getByMatchId(widget.matchId);
 
       // Ricarica anche la partita per aggiornare il punteggio
-      final SoccerMatch? match = await DB.SoccerMatches.getById(widget.matchId);
+      final FootballMatch? match = await DB.FootballMatches.getById(widget.matchId);
 
       if (match != null) {
         setState(() {
@@ -140,11 +153,14 @@ class _SoccerMatchScreenState extends State<SoccerMatchScreen> {
                 child: Column(
                   children: [
                     // Widget della partita
-                    SoccerMatchWidget(
+                    FootballMatchWidget(
                       match: _match!,
                       homeTeam: _homeTeam,
                       awayTeam: _awayTeam,
                       clickable: false,
+                      currentSport: widget.currentSport,
+                      minutesPerRound: _minutesPerRound,
+                      minutesPerPause: _minutesPerPause,
                     ),
                     const SizedBox(height: 16),
                     // Sezione Eventi
