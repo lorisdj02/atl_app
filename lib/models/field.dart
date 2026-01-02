@@ -18,6 +18,7 @@ class Field {
   final TimeOfDay openingTime;
   final TimeOfDay closingTime;
   final List<int> closedWeekdays; // 1=Lunedì, 7=Domenica
+  final String address;
 
   Field({
     required this.id,
@@ -33,6 +34,7 @@ class Field {
     this.openingTime = const TimeOfDay(hour: 8, minute: 0), // Default 08:00
     this.closingTime = const TimeOfDay(hour: 23, minute: 0), // Default 23:00
     this.closedWeekdays = const [], // Default sempre aperto
+    this.address = 'Via Roma 1',
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {

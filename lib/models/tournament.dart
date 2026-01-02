@@ -66,7 +66,7 @@ class Tournament {
   final int fieldId;
   final String city;
   final DateTime? startDate;
-  final String sportName;
+  final int sportId;
   final int numTeams;
   int paidTeams; // Numero team iscritti (deve essere <= numTeams)
   final int numGroups;
@@ -74,22 +74,19 @@ class Tournament {
   final bool round2FinalStage;
   final int qualified;
   final String description;
-  final int payCoordinator;
+  final double payCoordinator;
+  final bool isPublic;
   final TournamentStatus status;
   final double fee;
   final double prize1;
   final double prize2;
   final bool isATL;
   final TournamentPhase phase;
-  final int minPlayers;
-  final int maxPlayers;
   final String? photoURL;
   final String? date;
+
   bool? isFavorite;
   bool? isParticipating;
-  String? coordinatorName;
-  final int minutesPerRound;
-  final int minutesPerPause;
 
   Tournament({
     required this.id,
@@ -97,14 +94,13 @@ class Tournament {
     required this.fieldId,
     required this.city,
     this.startDate,
-    required this.sportName,
+    required this.sportId,
     required this.numTeams,
     required this.paidTeams,
     required this.numGroups,
     this.round2GroupStage = false,
     this.round2FinalStage = false,
     required this.qualified,
-    required this.minutesPerRound,
     required this.description,
     required this.payCoordinator,
     this.status = TournamentStatus.created,
@@ -118,10 +114,7 @@ class Tournament {
     this.isFavorite = false,
     this.isParticipating = false,
     this.date,
-    this.coordinatorName,
-    required this.minPlayers,
-    required this.maxPlayers,
-    required this.minutesPerPause,
+    this.isPublic = true,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -137,7 +130,7 @@ class Tournament {
       startDate: json['start_date'] != null
           ? DateTime.parse(json['start_date'])
           : null,
-      sportName: json['sport_name'] ?? '',
+      sportId: json['sport_id'],
       numTeams: json['num_teams'] ?? 8,
       paidTeams: json['paid_teams'] ?? 0,
       numGroups: json['num_groups'] ?? 2,
@@ -153,15 +146,9 @@ class Tournament {
       isATL: json['is_atl'] ?? false,
       phase: _phaseFromString(json['phase'] ?? 'GROUP'),
       name: json['name'] ?? '',
-      minPlayers: json['min_players'] ?? 5,
-      maxPlayers: json['max_players'] ?? 10,
       photoURL: json['photo_url'],
-      coordinatorName: json['coordinator'] is Map 
-          ? json['coordinator']['username'] 
-          : null,
       date: json['date'],
-      minutesPerRound: json['minutes_per_round'],
-      minutesPerPause: json['minutes_per_pause'],
+      isPublic: json['is'] ?? true,
     );
   }
 
@@ -172,7 +159,7 @@ class Tournament {
       'field': fieldId,
       'city': city,
       'start_date': startDate?.toIso8601String(),
-      'sport_name': sportName,
+      'sport_id': sportId,
       'num_teams': numTeams,
       'paid_teams': paidTeams,
       'num_groups': numGroups,
@@ -188,11 +175,9 @@ class Tournament {
       'is_atl': isATL,
       'phase': phase.name.toUpperCase(),
       'name': name,
-      'min_players': minPlayers,
-      'max_players': maxPlayers,
       'photo_url': photoURL,
-      'minutes_per_round': minutesPerRound,
-      'minutes_per_pause': minutesPerPause,
+      'date': date,
+      'isPublic': isPublic,
     };
   }
 
@@ -264,7 +249,7 @@ class Tournament {
       fieldId: fieldId,
       city: city,
       startDate: startDate,
-      sportName: sportName,
+      sportId: sportId,
       numTeams: numTeams,
       paidTeams: paidTeams,
       numGroups: numGroups,
@@ -280,15 +265,10 @@ class Tournament {
       isATL: isATL,
       phase: phase,
       name: name,
-      minPlayers: minPlayers,
-      maxPlayers: maxPlayers,
       photoURL: photoURL,
       isFavorite: isFavorite ?? this.isFavorite,
       isParticipating: isParticipating ?? this.isParticipating,
       date: date,
-      coordinatorName: coordinatorName,
-      minutesPerRound: minutesPerRound,
-      minutesPerPause: minutesPerPause,
     );
   }
 }

@@ -56,4 +56,12 @@ extension SportCategoryExtension on SportCategory {
   }
 
   String toJSON() => name;
+
+  static SportCategory fromJson(String json) {
+    switch (json.toUpperCase()) {
+      case 'FOOTBALL':
+        return SportCategory.football;
+    }
+    throw ArgumentError('Unknown sport category: $json');
+  }
 }

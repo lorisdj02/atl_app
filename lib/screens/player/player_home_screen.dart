@@ -41,6 +41,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
       userProvider.selectedSportCategory ?? SportCategory.football;
 
   List<Tournament>? _activeTournaments;
+  Map<int, int> _minutesPerRound = {};
+  Map<int, int> _minutesPerPause = {};
   Map<int, List<FootballMatch>> _tournamentMatches = {};
   Map<int, List<FootballStanding>> _tournamentStandings = {};
   Map<int, Team> _teamsCache = {};
@@ -48,6 +50,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   List<dynamic> _bookings = [];
   bool _isLoading = true;
   int _currentPage = 0;
+  
 
   @override
   void initState() {
@@ -96,8 +99,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               teamId!,
             )).map((p) => p.tournamentId).toSet();
 
-        final activeTournaments = (await DB.Tournaments.getBySport(
-          'FOOTBALL',
+        final activeTournaments = (await DB.Tournaments.getBySportCategory(_currentSport
         )).where((t) => activeTournamentsId.contains(t.id)).toList();
 
         // Load matches and standings for each tournament
@@ -109,6 +111,11 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             tournament.id,
           );
 
+          final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(tournament.id);
+          final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(tournament.id);
+
+          _minutesPerRound[tournament.id] = minutesPerRound;
+          _minutesPerPause[tournament.id] = minutesPerPause;
           _tournamentMatches[tournament.id] = matches;
           _tournamentStandings[tournament.id] = standings;
 
@@ -398,6 +405,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   teamsCache: _teamsCache,
                   userTeam: _userTeam,
                   sportCategory: _currentSport,
+                  minutesPerRound: _minutesPerRound[tournament.id]!,
+                  minutesPerPause: _minutesPerPause[tournament.id]!,
                 ),
                 );
               } else if (hasBookings && index == tournamentsCount) {

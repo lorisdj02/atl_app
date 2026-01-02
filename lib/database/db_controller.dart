@@ -20,6 +20,7 @@ import 'repositories/private_bookings_repository.dart';
 import 'repositories/lobby_bookings_repository.dart';
 import 'repositories/lobby_booking_participation_repository.dart';
 import 'repositories/football_match_event_repository.dart';
+import 'repositories/sport_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -55,6 +56,7 @@ class DB {
   static late final LobbyBookingParticipationRepository
   LobbyBookingParticipations;
   static late final FootballMatchEventRepository FootballMatchEvents;
+  static late final SportRepository Sports;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -77,6 +79,7 @@ class DB {
     LobbyBookings = LobbyBookingsRepository();
     LobbyBookingParticipations = LobbyBookingParticipationRepository();
     FootballMatchEvents = FootballMatchEventRepository();
+    Sports = SportRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -444,6 +447,26 @@ class DB {
           return false;
         }
 
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteCallups(int tournamentId, int teamId) async {
+    if (AppConfig.isDebug){
+      if(await DB.CallUps.deleteByTournamentAndTeam(
+                      tournamentId,
+                      teamId,
+                    ) == false){
+        return false;
+      }
+      if(await DB.TournamentPartecipations.deletePartecipation(
+                      tournamentId,
+                      teamId,
+                    ) == false){
+        return false;
+      }
       return true;
     } else {
       throw UnimplementedError();

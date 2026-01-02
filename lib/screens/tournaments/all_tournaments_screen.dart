@@ -6,7 +6,7 @@ import '../../widgets/tournament_card.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../../models/sport_category.dart';
-import '../../models/user.dart';
+import '../coordinator/create_tournament_screen.dart';
 import '../../models/tournament.dart';
 import '../../utils/atl_colors.dart';
 import '../../utils/navigation_helper.dart';
@@ -105,10 +105,16 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
             userProvider.currentTeamId != null &&
             userProvider.currentTeamId != -1) {
           participatingTournaments =
-              await DB.Tournaments.getParticipatingTournamentByPlayerAndTeam(
+              await DB.Tournaments.getActiveParticipatingTournamentByPlayerAndTeam(
                 userProvider.activeRoleId!,
                 userProvider.currentTeamId!,
               );
+        }
+        else if (userProvider.isCoordinator) {
+          participatingTournaments =
+              await DB.Tournaments.getActiveOwnedByCoordinatorId(
+            userProvider.activeRoleId!,
+          );
         }
 
         favoriteTournaments = await DB.Tournaments.getFavoriteTournamentByUser(
@@ -640,8 +646,10 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                             );
                           }
                           else if (tournament.status == TournamentStatus.scheduled){
+                            SportCategory tournamentSportCategory =
+                                (await DB.Sports.getById(tournament.sportId))!.category;
                             //TODO: Navigare alla schermata del torneo in corso
-                            if(tournament.sportName == 'FOOTBALL'){
+                            if(tournamentSportCategory == SportCategory.football){
                               await Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) => FootballTournamentScreen(
@@ -666,20 +674,21 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
           // Floating Action Button "New" - SOLO per coordinatori in My Tournaments
           if (!Provider.of<UserProvider>(context).isGuest &&
               Provider.of<UserProvider>(context).activeUser != null &&
-              Provider.of<UserProvider>(context).activeUser!.role ==
-                  UserRole.coordinator &&
+              Provider.of<UserProvider>(context).isCoordinator &&
               _showMyTournaments)
             Positioned(
               right: 16,
               bottom: 16,
               child: ATLFloatingButton(
                 onPressed: () {
-                  // TODO: Navigare a schermata creazione torneo
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).comingSoon),
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CreateTournamentScreen(currentSport: widget.currentSport),
                     ),
-                  );
+                  ).then((_) {
+                    // Ricarica la lista dei tornei dopo la creazione
+                    _loadTournaments();
+                  });
                 },
                 backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.add,

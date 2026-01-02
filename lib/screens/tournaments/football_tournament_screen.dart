@@ -38,12 +38,27 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
   int _selectedDay = 1;
   int _currentIndex = 0;
 
+  int? _minutesPerRound;
+  int? _minutesPerPause;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
     _loadTabData(0);
+    _loadMinutes();
+  }
+
+  Future<void> _loadMinutes() async {
+    _minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(widget.tournament.id);
+    _minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(widget.tournament.id);
+
+    if (mounted && (_minutesPerRound == null || _minutesPerPause == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error loading sport settings')),
+      );
+    }
   }
 
   @override
@@ -355,8 +370,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
                         homeTeam: _teamsCache[match.homeTeamId],
                         awayTeam: _teamsCache[match.awayTeamId],
                         currentSport: widget.sportCategory,
-                        minutesPerRound: widget.tournament.minutesPerRound,
-                        minutesPerPause: widget.tournament.minutesPerPause,
+                        minutesPerRound: _minutesPerRound!,
+                        minutesPerPause: _minutesPerPause!,
                       )),
                   const SizedBox(height: 16),
                 ],

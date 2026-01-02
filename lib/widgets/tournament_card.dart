@@ -155,10 +155,12 @@ class _TournamentCardStatus extends State<TournamentCard>{
                                 ));
                                 return;
                               }
+
+                              int userId = Provider.of<UserProvider>(context, listen: false).activeUser!.id;
                               Future.microtask(() async {
                               await DB.Tournaments.toggleFavoriteStatus(
                                 widget.tournament.id,
-                                Provider.of<UserProvider>(context, listen: false).activeUser!.id,
+                                userId,
                               );});
 
                               isFavorite = !isFavorite;

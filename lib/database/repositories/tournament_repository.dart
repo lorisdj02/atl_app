@@ -1,4 +1,5 @@
 import 'package:atl_app/config/app_config.dart';
+import 'package:atl_app/models/sport_category.dart';
 
 import '../db_controller.dart';
 import '../../models/tournament.dart';
@@ -29,7 +30,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 1,
       fieldId: 1,
       city: 'Milano',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime(2024, 1, 15),
       numTeams: 16,
       paidTeams: 16,
@@ -41,10 +42,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize1: 1000.0,
       prize2: 500.0,
       isATL: true,
-      minPlayers: 5,
-      maxPlayers: 10,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     Tournament(
       id: 2,
@@ -53,7 +50,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 1,
       fieldId: 2,
       city: 'Roma',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime(2024, 3, 1),
       numTeams: 16,
       paidTeams: 16,
@@ -64,10 +61,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 50.0,
       prize1: 1000.0,
       prize2: 500.0,
-      minPlayers: 5,
-      maxPlayers: 10,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     Tournament(
       id: 3,
@@ -76,7 +69,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 1,
       fieldId: 1,
       city: 'Milano',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime(2024, 6, 1),
       numTeams: 32,
       paidTeams: 32,
@@ -87,10 +80,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 60.0,
       prize1: 2000.0,
       prize2: 1000.0,
-      minPlayers: 7,
-      maxPlayers: 14,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     // Torneo attivo esistente
     Tournament(
@@ -100,7 +89,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 1,
       fieldId: 1,
       city: 'Milano',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime.now().subtract(const Duration(days: 10)),
       numTeams: 16,
       paidTeams: 12,
@@ -112,10 +101,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize1: 1500.0,
       prize2: 750.0,
       phase: TournamentPhase.group,
-      minPlayers: 6,
-      maxPlayers: 12,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     Tournament(
       id: 5,
@@ -124,7 +109,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 1,
       fieldId: 2,
       city: 'Roma',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime.now().add(const Duration(days: 20)),
       numTeams: 24,
       paidTeams: 24,
@@ -136,10 +121,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize1: 2500.0,
       prize2: 1200.0,
       round2FinalStage: true,
-      minPlayers: 8,
-      maxPlayers: 16,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     Tournament(
       id: 6,
@@ -148,7 +129,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 2,
       fieldId: 1,
       city: 'Milano',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime.now().add(const Duration(days: 30)),
       numTeams: 20,
       paidTeams: 15,
@@ -161,10 +142,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize2: 900.0,
       round2GroupStage: true,
       isATL: true,
-      minPlayers: 5,
-      maxPlayers: 5,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     Tournament(
       id: 7,
@@ -173,7 +150,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 1,
       fieldId: 2,
       city: 'Roma',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime.now().add(const Duration(days: 15)),
       numTeams: 16,
       paidTeams: 2,
@@ -186,10 +163,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize2: 600.0,
       round2GroupStage: true,
       round2FinalStage: false,
-      minPlayers: 6,
-      maxPlayers: 12,
-      minutesPerRound: 45,
-      minutesPerPause: 15,
     ),
     Tournament(
       id: 8,
@@ -198,7 +171,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       coordinatorId: 2,
       fieldId: 1,
       city: 'Milano',
-      sportName: 'FOOTBALL',
+      sportId: 1,
       startDate: DateTime.now().add(const Duration(days: 40)),
       numTeams: 8,
       paidTeams: 8,
@@ -211,17 +184,40 @@ class TournamentRepository extends BaseRepository<Tournament> {
       prize2: 1100.0,
       round2GroupStage: true,
       round2FinalStage: false,
-      minPlayers: 5,
-      maxPlayers: 10,
-      minutesPerRound: 24,
-      minutesPerPause: 5,
     ),
   ];
 
   /// Metodo custom: ottieni tornei per coordinatore
   Future<List<Tournament>> getByCoordinator(int coordinatorId) async {
-    final tournaments = await getAll();
-    return tournaments.where((t) => t.coordinatorId == coordinatorId).toList();
+    if(AppConfig.isDebug){
+      final tournaments = _mockData.where((t) => t.coordinatorId == coordinatorId).toList();
+      return tournaments;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<Tournament>> getByField(int fieldId) async {
+    if(AppConfig.isDebug){
+      final tournaments = _mockData.where((t) => t.fieldId == fieldId).toList();
+      return tournaments;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<Tournament>> getActiveOwnedByCoordinatorId(int coordinatorId) async {
+    if(AppConfig.isDebug){
+      List<Tournament> tournaments = await getActive();
+      tournaments.retainWhere((t) => t.coordinatorId == coordinatorId);
+
+      tournaments = tournaments.map((t) => t.copyWith(
+        isParticipating: true,
+      )).toList();
+      return tournaments;
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   /// Metodo custom: ottieni tornei attivi
@@ -234,9 +230,13 @@ class TournamentRepository extends BaseRepository<Tournament> {
   }
 
   /// Metodo custom: ottieni tornei per sport
-  Future<List<Tournament>> getBySport(String sportName) async {
-    final tournaments = await getAll();
-    return tournaments.where((t) => t.sportName == sportName).toList();
+  Future<List<Tournament>> getBySportCategory(SportCategory category) async {
+    if(AppConfig.isDebug){
+      final sportIds = (await DB.Sports.getByCategory(category)).map((s) => s.id).toList();
+      return mockData.where((t) => sportIds.contains(t.sportId)).toList();
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   @override
@@ -250,13 +250,14 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
-  Future<List<Tournament>> getParticipatingTournamentByPlayerAndTeam(int playerId, int teamId) async {
+  Future<List<Tournament>> getActiveParticipatingTournamentByPlayerAndTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug) {
       // In modalità debug, restituisci tutti i tornei come preferiti
-      //TODO: implementare logica per la partecipazione effettiva del giocatore
+      List<int> activeTournamentsId = (await getActive()).map((t) => t.id).toList();
       List<int> callupsTournamentsIds = (await DB.CallUps.getByPlayerAndTeam(playerId, teamId))
           .map((c) => c.tournamentId).toList();
       List<Tournament> participatingTournaments = _mockData.where((t) => callupsTournamentsIds.contains(t.id)).map((t) => t.copyWith(isParticipating: true)).toList();
+      participatingTournaments = participatingTournaments.where((t) => activeTournamentsId.contains(t.id)).toList();
       return participatingTournaments;
       //return (await getActive()).where((t) => t.isFavorite == true || t.isParticipating == true).toList();
     } else {
@@ -345,8 +346,8 @@ class TournamentRepository extends BaseRepository<Tournament> {
 
   Future<int> getMinutesPerRoundById(int tournamentId) async {
     if (AppConfig.isDebug) {
-      final Tournament? tournament = await getById(tournamentId);
-      return tournament?.minutesPerRound ?? 0;
+      final Tournament tournament = mockData.firstWhere((t) => t.id == tournamentId);
+      return (await DB.Sports.getMinutesPerRoundById(tournament.sportId))!;
     } else {
       throw UnimplementedError();
     }
@@ -354,8 +355,155 @@ class TournamentRepository extends BaseRepository<Tournament> {
 
   Future<int> getMinutesPerPauseById(int tournamentId) async {
     if (AppConfig.isDebug) {
-      final Tournament? tournament = await getById(tournamentId);
-      return tournament?.minutesPerPause ?? 0;
+      final Tournament tournament = mockData.firstWhere((t) => t.id == tournamentId);
+      return (await DB.Sports.getMinutesPerPauseById(tournament.sportId))!;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<double> calculatePrize1(Tournament tournament) async {
+    if (AppConfig.isDebug) {
+      // Logica di calcolo fittizia per debug
+      double basePrize = 1000.0;
+      double fieldMultiplier = 1.0; // Potrebbe essere basato sulla popolarità del campo
+      double sportMultiplier = 1.0; // Potrebbe essere basato sulla popolarità dello sport
+      double teamMultiplier = tournament.numTeams / 8.0; // Più squadre, più alto il premio
+
+      double prize1 = basePrize * fieldMultiplier * sportMultiplier * teamMultiplier;
+      return prize1;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<double> calculatePrize2(Tournament tournament) async {
+    if (AppConfig.isDebug) {
+      // Logica di calcolo fittizia per debug
+      double basePrize = 500.0;
+      double fieldMultiplier = 1.0; // Potrebbe essere basato sulla popolarità del campo
+      double sportMultiplier = 1.0; // Potrebbe essere basato sulla popolarità dello sport
+      double teamMultiplier = tournament.numTeams / 8.0; // Più squadre, più alto il premio
+
+      double prize2 = basePrize * fieldMultiplier * sportMultiplier * teamMultiplier;
+      return prize2;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<double> calculateTournamentFee(Tournament tournament) async {
+    if (AppConfig.isDebug) {
+      // Logica di calcolo fittizia per debug
+      double baseFee = 50.0;
+      double fieldMultiplier = 1.0; // Potrebbe essere basato sulla popolarità del campo
+      double sportMultiplier = 1.0; // Potrebbe essere basato sulla popolarità dello sport
+      double teamMultiplier = tournament.numTeams / 8.0; // Più squadre, più alta la quota
+
+      double fee = baseFee * fieldMultiplier * sportMultiplier * teamMultiplier;
+      return fee +1;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<double> calculatePayCoordinator(Tournament tournament) async {
+    if (AppConfig.isDebug) {
+      // Logica di calcolo fittizia per debug
+      double basePay = 100.0;
+      double fieldMultiplier = 1.0; // Potrebbe essere basato sulla popolarità del campo
+      double sportMultiplier = 1.0; // Potrebbe essere basato sulla popolarità dello sport
+      double teamMultiplier = tournament.numTeams / 8.0; // Più squadre, più alto il compenso
+
+      double payCoordinator = basePay * fieldMultiplier * sportMultiplier * teamMultiplier;
+      return payCoordinator;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> newTournament({required String name,
+        required int coordinatorId,
+        required int fieldId,
+        required String city,
+        DateTime? startDate,
+        required int sportId,
+        required int numTeams,
+        required int numGroups,
+        required bool round2GroupStage,
+        required bool round2FinalStage,
+        required int qualified,
+        required String description,
+        required bool payCoordinator,
+        required bool prize1,
+        required bool prize2,
+        required bool isPublic,}) async{
+    if(AppConfig.isDebug){
+
+      final Tournament mockTournament = Tournament(
+        id: _mockData.length + 1,
+        name: name,
+        coordinatorId: coordinatorId,
+        fieldId: fieldId,
+        city: city,
+        startDate: startDate,
+        sportId: sportId,
+        numTeams: numTeams,
+        paidTeams: 0,
+        numGroups: numGroups,
+        round2GroupStage: round2GroupStage,
+        round2FinalStage: round2FinalStage,
+        qualified: qualified,
+        description: description,
+        payCoordinator: 0,
+        status: TournamentStatus.created,
+        fee: 0,
+        prize1: 0,
+        prize2: 0,
+        isPublic: isPublic,
+        isATL: false
+      );
+
+      if(prize1 != payCoordinator){
+        return false;
+      }
+
+      final double calculatedFee = await calculateTournamentFee(mockTournament);
+      final double calculatedPrize1 = prize1 ? await calculatePrize1(mockTournament) : 0.0;
+      final double calculatedPrize2 = prize2 ? await calculatePrize2(mockTournament) : 0.0;
+      final double calculatedPayCoordinator = payCoordinator ? await calculatePayCoordinator(mockTournament) : 0.0;
+
+      if(calculatedFee == 0){
+        return false;
+      }
+
+      final Tournament newTournament = Tournament(
+        id: _mockData.length + 1,
+        name: name,
+        coordinatorId: coordinatorId,
+        fieldId: fieldId,
+        city: city,
+        startDate: startDate,
+        sportId: sportId,
+        numTeams: numTeams,
+        paidTeams: 0,
+        numGroups: numGroups,
+        round2GroupStage: round2GroupStage,
+        round2FinalStage: round2FinalStage,
+        qualified: qualified,
+        description: description,
+        payCoordinator: calculatedPayCoordinator,
+        status: TournamentStatus.created,
+        fee: calculatedFee,
+        prize1: calculatedPrize1,
+        prize2: calculatedPrize2,
+        isPublic: isPublic,
+        isATL: false
+      );
+      _mockData.add(newTournament);
+      print('🔧 [DEBUG] Created new tournament: ${newTournament.name} with fee: ${newTournament.fee}, prize1: ${newTournament.prize1}, prize2: ${newTournament.prize2}, payCoordinator: ${newTournament.payCoordinator}');
+      print('🔧 [DEBUG] Sport ID: ${newTournament.sportId}');
+      return true;
     } else {
       throw UnimplementedError();
     }

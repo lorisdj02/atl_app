@@ -9,17 +9,16 @@ import '../../database/repositories/player_repository.dart';
 import '../../database/repositories/callups_repository.dart';
 import '../../models/callups.dart';
 import '../../database/db_controller.dart';
+import '../../models/sport.dart';
 
 class CallupsScreen extends StatefulWidget {
   final Tournament tournament;
   final int teamId;
-  final SportCategory currentSport;
 
   const CallupsScreen({
     Key? key,
     required this.tournament,
     required this.teamId,
-    required this.currentSport,
   }) : super(key: key);
 
   @override
@@ -31,12 +30,31 @@ class _CallupsScreenState extends State<CallupsScreen> {
   Set<int> _selectedPlayerIds = {};
   bool _isLoading = true;
   bool _isNewCallUps = true;
+  Sport? _tournamentSport;
 
   @override
   void initState() {
+    _loadSport();
     super.initState();
+
     _loadTeamPlayers();
     _checkCallUps();
+  }
+
+  Future<void> _loadSport() async {
+    try {
+      print(
+        '🔧 [DEBUG] Loading sport for tournament ID: ${widget.tournament.id}, sportId: ${widget.tournament.sportId}',
+      );
+      final Sport? sport = await DB.Sports.getById(widget.tournament.sportId);
+      if (mounted && sport != null) {
+        setState(() {
+          _tournamentSport = sport;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading sport: $e');
+    }
   }
 
   Future<double> get _TournamentFee async {
@@ -139,17 +157,42 @@ class _CallupsScreenState extends State<CallupsScreen> {
   }
 
   bool _canConfirm() {
+    if (_tournamentSport == null) return false;
     final count = _selectedPlayerIds.length;
-    return count >= widget.tournament.minPlayers &&
-        count <= widget.tournament.maxPlayers;
+    return count >= _tournamentSport!.minPlayersPerTeam &&
+        count <= _tournamentSport!.maxPlayersPerTeam;
   }
 
   @override
   Widget build(BuildContext context) {
+    // Show loading if sport is not yet loaded
+    if (_tournamentSport == null) {
+      return Scaffold(
+        backgroundColor: Colors.grey[200],
+        appBar: AppBar(
+          backgroundColor: ATLColors.darkBlue,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Call-ups',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+        backgroundColor: ATLColors.getPrimaryColor(_tournamentSport!.category),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -190,7 +233,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
                   ),
                 ),
                 Text(
-                  'Min ${widget.tournament.minPlayers} players, Max ${widget.tournament.maxPlayers} players',
+                  'Min ${_tournamentSport!.minPlayersPerTeam} players, Max ${_tournamentSport!.maxPlayersPerTeam} players',
                   style: TextStyle(
                     fontSize: 16,
                     color: _canConfirm() ? Colors.green : Colors.orange,

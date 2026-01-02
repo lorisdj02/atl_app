@@ -15,6 +15,8 @@ class TournamentCardHome extends StatelessWidget {
   final Map<int, Team> teamsCache;
   final Team? userTeam;
   final SportCategory sportCategory;
+  final int minutesPerRound;
+  final int minutesPerPause;
 
   const TournamentCardHome({
     super.key,
@@ -24,6 +26,8 @@ class TournamentCardHome extends StatelessWidget {
     required this.teamsCache,
     required this.userTeam,
     required this.sportCategory,
+    required this.minutesPerRound,
+    required this.minutesPerPause,
   });
 
   @override
@@ -116,8 +120,8 @@ class TournamentCardHome extends StatelessWidget {
               homeTeam: teamsCache[nextMatch.homeTeamId],
               awayTeam: teamsCache[nextMatch.awayTeamId],
               currentSport: sportCategory,
-              minutesPerRound: tournament.minutesPerRound,
-              minutesPerPause: tournament.minutesPerPause,
+              minutesPerRound: minutesPerRound,
+              minutesPerPause: minutesPerPause,
             ),
           ],
 

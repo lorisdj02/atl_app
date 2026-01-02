@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/tournament.dart';
@@ -810,7 +812,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   builder: (context) => CallupsScreen(
                     tournament: widget.tournament,
                     teamId: _playerTeam!.id,
-                    currentSport: widget.currentSport,
                   ),
                 ),
               );
@@ -896,7 +897,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                       builder: (context) => CallupsScreen(
                         tournament: widget.tournament,
                         teamId: _playerTeam!.id,
-                        currentSport: widget.currentSport,
                       ),
                     ),
                   );
@@ -950,21 +950,25 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   );
 
                   if (confirmed == true) {
-                    await DB.CallUps.deleteByTournamentAndTeam(
+                    bool success = await DB().deleteCallups(
                       widget.tournament.id,
                       _playerTeam!.id,
                     );
-                    await DB.TournamentPartecipations.deletePartecipation(
-                      widget.tournament.id,
-                      _playerTeam!.id,
-                    );
-                    if (mounted) {
+                    if (mounted && success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Call-ups deleted successfully'),
                         ),
                       );
                       await _checkPartecipation();
+                    }
+                    else if (mounted && !success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to delete call-ups'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
                     }
                   }
                 },

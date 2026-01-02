@@ -141,12 +141,12 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
-  Future<void> deletePartecipation(int tournamentId, int teamId) async {
+  Future<bool> deletePartecipation(int tournamentId, int teamId) async {
     if (AppConfig.isDebug) {
       _mockdata.removeWhere((partecipation) =>
           partecipation.tournamentId == tournamentId &&
           partecipation.teamId == teamId);
-      return Future.value();
+      return true;
     } else {
       throw UnimplementedError();
     }
