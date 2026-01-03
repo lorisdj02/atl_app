@@ -8,6 +8,8 @@ class Sport {
   final int minutesPerRound;
   final int minutesPerPause;
   final SportCategory category;
+  final int numReferee;
+  final List<String> refereeRoles;
 
   Sport({
     required this.id,
@@ -17,6 +19,8 @@ class Sport {
     required this.minutesPerRound,
     required this.minutesPerPause,
     required this.category,
+    required this.numReferee,
+    this.refereeRoles = const ['MAIN'],
   });
 
   Map<String, dynamic> toJson() {
@@ -28,6 +32,8 @@ class Sport {
       'minutesPerRound': minutesPerRound,
       'minutesPerPause': minutesPerPause,
       'category': category.toJSON(),
+      'numReferee': numReferee,
+      'refereeRoles': refereeRoles,
     };
   }
 
@@ -38,5 +44,7 @@ class Sport {
       maxPlayersPerTeam = json['maxPlayersPerTeam'],
       minutesPerRound = json['minutesPerRound'],
       minutesPerPause = json['minutesPerPause'],
-      category = SportCategoryExtension.fromJson(json['category']);
+      category = SportCategoryExtension.fromJson(json['category']),
+      numReferee = json['numReferee'],
+      refereeRoles = List<String>.from(json['refereeRoles']);
 }

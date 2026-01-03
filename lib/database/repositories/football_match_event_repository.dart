@@ -20,6 +20,7 @@ class FootballMatchEventRepository extends BaseRepository<FootballMatchEvent> {
       matchId: 1,
       type: FootballMatchEventType.start,
       minute: 0,
+      eventTime: DateTime.now().subtract(const Duration(minutes: 23)),
     ),
     FootballMatchEvent(
       id: 2,
@@ -27,6 +28,35 @@ class FootballMatchEventRepository extends BaseRepository<FootballMatchEvent> {
       type: FootballMatchEventType.goal,
       minute: 15,
       playerId: 1,
+      eventTime: DateTime.now().subtract(const Duration(minutes: 8)),
+    ),
+    FootballMatchEvent(
+      id: 3,
+      matchId: 2,
+      type: FootballMatchEventType.start,
+      minute: 0,
+      eventTime: DateTime.now().subtract(const Duration(hours: 2)),
+    ),
+    FootballMatchEvent(
+      id: 4,
+      matchId: 2,
+      type: FootballMatchEventType.halftime,
+      minute: 20,
+      eventTime: DateTime.now().subtract(const Duration(hours: 1, minutes: 40)),
+    ),
+    FootballMatchEvent(
+      id: 5,
+      matchId: 2,
+      type: FootballMatchEventType.startHalf,
+      minute: 20,
+      eventTime: DateTime.now().subtract(const Duration(hours: 1, minutes: 37)),
+    ),
+    FootballMatchEvent(
+      id: 6,
+      matchId: 2,
+      type: FootballMatchEventType.finish,
+      minute: 40,
+      eventTime: DateTime.now().subtract(const Duration(hours: 1, minutes: 10)),
     ),
   ];
 
@@ -41,3 +71,5 @@ class FootballMatchEventRepository extends BaseRepository<FootballMatchEvent> {
     }
   }
 }
+
+//TODO TODO A parità di minute, ordinare per eventTime. Far gestire anche i minuti di recupero nella visualizzazione e inserimento

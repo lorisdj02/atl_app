@@ -4,8 +4,7 @@ import '../models/football_match.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import 'live_minute_widget.dart';
-import '../models/match.dart';
+import 'football_live_minute_widget.dart';
 
 abstract class AbstractFootballMatchWidget extends StatelessWidget {
   final FootballMatch match;
@@ -344,7 +343,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             if (match.status == MatchStatus.started ||
                 match.status == MatchStatus.halftime ||
                 match.status == MatchStatus.startHalf)
-              LiveMinuteWidget(
+              FootballLiveMinuteWidget(
                 minutesPerPause: minutesPerPause,
                 minutesPerRound: minutesPerRound,
                 match: match,

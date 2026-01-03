@@ -6,7 +6,8 @@ enum FootballMatchEventType {
   penalty,
   ownGoal,
   start,
-  half,
+  halftime,
+  startHalf,
   finish,
 }
 
@@ -15,7 +16,9 @@ class FootballMatchEvent {
   final FootballMatchEventType type;
   final int? playerId;
   final int minute;
+  final int additionalMinute;
   final int matchId;
+  final DateTime eventTime;
 
   FootballMatchEvent({
     required this.id,
@@ -23,6 +26,8 @@ class FootballMatchEvent {
     this.playerId,
     required this.minute,
     required this.matchId,
+    required this.eventTime,
+    this.additionalMinute = 0,
   });
 
   factory FootballMatchEvent.fromJson(Map<String, dynamic> json) {
@@ -34,6 +39,7 @@ class FootballMatchEvent {
       playerId: json['playerId'],
       minute: json['minute'],
       matchId: json['matchId'],
+      eventTime: DateTime.parse(json['eventTime']),
     );
   }
 
@@ -44,6 +50,7 @@ class FootballMatchEvent {
       'playerId': playerId,
       'minute': minute,
       'matchId': matchId,
+      'eventTime': eventTime.toIso8601String(),
     };
   }
 }

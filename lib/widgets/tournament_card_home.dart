@@ -64,17 +64,7 @@ class TournamentCardHome extends StatelessWidget {
     // Find user's team group
     final userStanding = standings.firstWhere(
       (s) => s.teamId == userTeam?.id,
-      orElse: () => standings.isNotEmpty
-          ? standings.first
-          : FootballStanding(
-              tournamentId: tournament.id,
-              teamId: 0,
-              points: 0,
-              won: 0,
-              drawn: 0,
-              lost: 0,
-              group: 'A',
-            ),
+      orElse: () => standings.first,
     );
 
     final groupStandings =

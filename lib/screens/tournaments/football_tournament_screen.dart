@@ -8,7 +8,7 @@ import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/small_football_match_widget.dart';
-import '../../widgets/standings_team_widget.dart';
+import '../../widgets/football_standings_team_widget.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
   final Tournament tournament;
@@ -21,20 +21,22 @@ class FootballTournamentScreen extends StatefulWidget {
   });
 
   @override
-  State<FootballTournamentScreen> createState() => _FootballTournamentScreenState();
+  State<FootballTournamentScreen> createState() =>
+      _FootballTournamentScreenState();
 }
 
-class _FootballTournamentScreenState extends State<FootballTournamentScreen> with SingleTickerProviderStateMixin {
+class _FootballTournamentScreenState extends State<FootballTournamentScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   List<FootballMatch>? _matches;
   List<FootballStanding>? _standings;
   Map<int, Team> _teamsCache = {};
   Map<int, String> _captainNamesCache = {};
-  
+
   bool _fixturesLoaded = false;
   bool _tablesLoaded = false;
-  
+
   int _selectedDay = 1;
   int _currentIndex = 0;
 
@@ -51,8 +53,12 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
   }
 
   Future<void> _loadMinutes() async {
-    _minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(widget.tournament.id);
-    _minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(widget.tournament.id);
+    _minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
+      widget.tournament.id,
+    );
+    _minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
+      widget.tournament.id,
+    );
 
     if (mounted && (_minutesPerRound == null || _minutesPerPause == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,15 +105,17 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
 
   Future<void> _loadFixtures() async {
     try {
-      final matches = await DB.FootballMatches.getMatchesByTournament(widget.tournament.id);
-      
+      final matches = await DB.FootballMatches.getMatchesByTournament(
+        widget.tournament.id,
+      );
+
       // Load teams for matches
       final teamIds = <int>{};
       for (var match in matches) {
         teamIds.add(match.homeTeamId);
         teamIds.add(match.awayTeamId);
       }
-      
+
       for (var teamId in teamIds) {
         if (!_teamsCache.containsKey(teamId)) {
           final team = await DB.Teams.getById(teamId);
@@ -116,7 +124,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
           }
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _matches = matches;
@@ -125,26 +133,28 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading fixtures: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading fixtures: $e')));
       }
     }
   }
 
   Future<void> _loadTables() async {
     try {
-      final standings = await DB.FootballStandings.getStandingsByTournament(widget.tournament.id);
-      
+      final standings = await DB.FootballStandings.getStandingsByTournament(
+        widget.tournament.id,
+      );
+
       // Load teams and captains
       final teamIds = standings.map((s) => s.teamId).toSet();
-      
+
       for (var teamId in teamIds) {
         if (!_teamsCache.containsKey(teamId)) {
           final team = await DB.Teams.getById(teamId);
           if (team != null) {
             _teamsCache[teamId] = team;
-            
+
             // Load captain name
             final captain = await DB.Players.getByUserId(team.captainId);
             if (captain != null) {
@@ -153,7 +163,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
           }
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _standings = standings;
@@ -162,16 +172,19 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading tables: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading tables: $e')));
       }
     }
   }
 
   List<String> _getGroups() {
     final groupCount = widget.tournament.numGroups;
-    return List.generate(groupCount, (i) => String.fromCharCode(65 + i)); // A, B, C...
+    return List.generate(
+      groupCount,
+      (i) => String.fromCharCode(65 + i),
+    ); // A, B, C...
   }
 
   @override
@@ -223,11 +236,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
       body: TabBarView(
         controller: _tabController,
         physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          _buildFixturesTab(),
-          _buildTablesTab(),
-          _buildStatsTab(),
-        ],
+        children: [_buildFixturesTab(), _buildTablesTab(), _buildStatsTab()],
       ),
       floatingActionButton: _currentIndex == 0
           ? FloatingActionButton.extended(
@@ -303,7 +312,10 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
     }
 
     final groups = _getGroups();
-    final maxDay = _matches!.fold<int>(0, (max, match) => match.day != null && match.day! > max ? match.day! : max);
+    final maxDay = _matches!.fold<int>(
+      0,
+      (max, match) => match.day != null && match.day! > max ? match.day! : max,
+    );
 
     return Column(
       children: [
@@ -327,9 +339,13 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
                         });
                       }
                     },
-                    selectedColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                    selectedColor: ATLColors.getPrimaryColor(
+                      widget.sportCategory,
+                    ),
                     labelStyle: TextStyle(
-                      color: _selectedDay == day ? Colors.white : ATLColors.darkBlue,
+                      color: _selectedDay == day
+                          ? Colors.white
+                          : ATLColors.darkBlue,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -365,14 +381,16 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
                       ),
                     ),
                   ),
-                  ...groupMatches.map((match) => SmallFootballMatchWidget(
-                        match: match,
-                        homeTeam: _teamsCache[match.homeTeamId],
-                        awayTeam: _teamsCache[match.awayTeamId],
-                        currentSport: widget.sportCategory,
-                        minutesPerRound: _minutesPerRound!,
-                        minutesPerPause: _minutesPerPause!,
-                      )),
+                  ...groupMatches.map(
+                    (match) => SmallFootballMatchWidget(
+                      match: match,
+                      homeTeam: _teamsCache[match.homeTeamId],
+                      awayTeam: _teamsCache[match.awayTeamId],
+                      currentSport: widget.sportCategory,
+                      minutesPerRound: _minutesPerRound!,
+                      minutesPerPause: _minutesPerPause!,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                 ],
               );
@@ -405,21 +423,16 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
     }
 
     final groups = _getGroups();
-    
-    // Calcola quanti team per gruppo si qualificano
-    final qualifiedPerGroup = widget.tournament.numGroups > 0 
-        ? (widget.tournament.qualified / widget.tournament.numGroups).ceil()
-        : 0;
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
-        final groupStandings = _standings!
-            .where((s) => s.group == group)
-            .toList()
-          ..sort((a, b) => b.points.compareTo(a.points));
+        final groupStandings =
+            _standings!.where((s) => s.group == group).toList()
+              // Ordina per rank (gestito dal DB)
+              ..sort((a, b) => a.rank.compareTo(b.rank));
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,9 +465,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
                     ),
                   ),
                   const SizedBox(
-                    width: 100,
+                    width: 140,
                     child: Text(
-                      'Pts - W - D - L',
+                      'Pts - W - D - L - GD',
                       textAlign: TextAlign.right,
                       style: TextStyle(
                         fontSize: 12,
@@ -466,25 +479,29 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
                 ],
               ),
             ),
-            ...groupStandings.asMap().entries.map((entry) {
-              final rank = entry.key + 1;
-              final standing = entry.value;
+            ...groupStandings.map((standing) {
               final team = _teamsCache[standing.teamId];
-              
+
               if (team == null) return const SizedBox.shrink();
 
-              // Colora solo i team nelle prime X posizioni qualificate
+              // Colora i team qualificati (basato su standing.qualified dal DB)
               Color bgColor = Colors.white;
-              if (rank <= qualifiedPerGroup) {
+              if (standing.qualified) {
                 bgColor = ATLColors.getPrimaryColor(widget.sportCategory);
               }
 
-              return StandingsTeamWidget(
+              // Calcola la Goal Difference
+              final goalDifference =
+                  standing.goalsScored - standing.goalsConceded;
+
+              return FootballStandingsTeamWidget(
                 team: team,
                 color: bgColor,
-                rank: rank,
+                rank: standing.rank,
                 sportCategory: widget.sportCategory,
-                standingRecord: '${standing.points} - ${standing.won} - ${standing.drawn} - ${standing.lost}',
+                standingRecord:
+                    '${standing.points} - ${standing.won} - ${standing.drawn} - ${standing.lost}',
+                goalDifference: goalDifference,
               );
             }),
             const SizedBox(height: 24),

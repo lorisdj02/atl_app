@@ -25,6 +25,8 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerRound: 20,
       minutesPerPause: 5,
       category: SportCategory.football,
+      numReferee: 1,
+      refereeRoles: ['MAIN'],
     ),
     Sport(
       id: 2,
@@ -34,6 +36,8 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerRound: 25,
       minutesPerPause: 10,
       category: SportCategory.football,
+      numReferee: 1,
+      refereeRoles: ['MAIN'],
     ),
     Sport(
       id: 3,
@@ -43,6 +47,8 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerRound: 30,
       minutesPerPause: 10,
       category: SportCategory.football,
+      numReferee: 1,
+      refereeRoles: ['MAIN'],
     ),
     Sport(
       id: 4,
@@ -52,6 +58,8 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerRound: 40,
       minutesPerPause: 10,
       category: SportCategory.football,
+      numReferee: 3,
+      refereeRoles: ['MAIN', 'ASSISTANT', 'ASSISTANT'],
     ),
   ];
 

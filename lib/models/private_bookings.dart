@@ -28,9 +28,7 @@ class PrivateBooking {
       playerId: json['player_id'],
       startTime: DateTime.parse(json['start_time']),
       finishTime: DateTime.parse(json['finish_time']),
-      status: BookingStatus.values.firstWhere(
-        (e) => e.toString() == 'BookingStatus.' + json['status'],
-      ),
+      status: BookingStatusExtension.fromString(json['status']),
     );
   }
 
@@ -41,7 +39,7 @@ class PrivateBooking {
       'player_id': playerId,
       'start_time': startTime.toIso8601String(),
       'finish_time': finishTime.toIso8601String(),
-      'status': status.toString().split('.').last,
+      'status': status.toShortString(),
     };
   }
 }

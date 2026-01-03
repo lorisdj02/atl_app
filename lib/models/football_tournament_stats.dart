@@ -2,8 +2,8 @@
 class FootballTournamentStats {
   final int playerId;
   final int tournamentId;
-  final int goals;
-  final int motm; // Man of the Match
+  int goals;
+  int motm; // Man of the Match
 
   FootballTournamentStats({
     required this.playerId,

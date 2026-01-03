@@ -260,13 +260,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     // Eventi del match (start, half, finish)
     if (event.type == FootballMatchEventType.start ||
-        event.type == FootballMatchEventType.half ||
+        event.type == FootballMatchEventType.halftime ||
         event.type == FootballMatchEventType.finish) {
       source = EventSource.match;
       String eventName = '';
       if (event.type == FootballMatchEventType.start) {
         eventName = 'Match started';
-      } else if (event.type == FootballMatchEventType.half) {
+      } else if (event.type == FootballMatchEventType.halftime) {
         eventName = 'Halftime';
       } else if (event.type == FootballMatchEventType.finish) {
         eventName = 'Full time';

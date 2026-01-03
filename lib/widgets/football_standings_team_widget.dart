@@ -5,18 +5,32 @@ import '../models/sport_category.dart';
 import 'abstract_team_widget.dart';
 
 /// Widget per visualizzare un team nella classifica
-class StandingsTeamWidget extends AbstractTeamWidget {
+///
+/// TODO: Ordinamento standings (gestito nel DB):
+/// I team vengono ordinati in base al campo 'rank' salvato nel DB.
+/// Il rank viene calcolato dal backend secondo questi criteri:
+/// 1. Punti (points) - DESC
+/// 2. Goal Difference (goalsScored - goalsConceded) - DESC
+/// 3. Goal Scored (goalsScored) - DESC
+/// 4. Goal Conceded (goalsConceded) - ASC
+/// 5. Nome team (team.name) - ASC (alfabetico)
+///
+/// L'ordinamento avviene sempre all'interno dello stesso gruppo.
+/// Il frontend si fida ciecamente del valore 'rank' fornito dal DB.
+class FootballStandingsTeamWidget extends AbstractTeamWidget {
   final Color color;
   final int? rank;
   final String? standingRecord;
+  final int? goalDifference;
 
-  const StandingsTeamWidget({
+  const FootballStandingsTeamWidget({
     super.key,
     required super.team,
     this.color = Colors.white,
     super.imageUrl,
     this.rank,
     this.standingRecord,
+    this.goalDifference,
     required super.sportCategory,
   });
 
@@ -68,7 +82,7 @@ class StandingsTeamWidget extends AbstractTeamWidget {
                 ),
               ),
             ),
-            // Full record (Pts - W - D - L)
+            // Full record (Pts - W - D - L - GD)
             if (standingRecord != null)
               Text(
                 standingRecord!,
@@ -78,6 +92,20 @@ class StandingsTeamWidget extends AbstractTeamWidget {
                   color: color == Colors.white
                       ? ATLColors.darkBlue
                       : Colors.white,
+                ),
+              ),
+            if (goalDifference != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  ' - ${goalDifference! >= 0 ? '+' : ''}$goalDifference',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: color == Colors.white
+                        ? ATLColors.darkBlue
+                        : Colors.white,
+                  ),
                 ),
               ),
           ],

@@ -1,13 +1,29 @@
 import 'match.dart';
+import 'presence_status.dart';
+
+enum MatchStatus {
+  scheduled,
+  started,
+  halftime,
+  startHalf,
+  finished,
+  notScheduled,
+  homeRetired,
+  awayRetired,
+  canceled,
+}
 
 class FootballMatch extends Match {
-  int? refereeId;
+  final int homeTeamId;
+  final int awayTeamId;
+  DateTime? halfTime;
+  DateTime? startHalf;
+  final MatchStatus status;
 
   FootballMatch({
-    this.refereeId,
     required super.id,
-    required super.homeTeamId,
-    required super.awayTeamId,
+    required this.homeTeamId,
+    required this.awayTeamId,
     super.matchDate,
     super.scoreHome,
     super.scoreAway,
@@ -15,10 +31,11 @@ class FootballMatch extends Match {
     super.day,
     super.group,
     super.startMatch,
-    super.halfTime,
-    super.startHalf,
+    this.halfTime,
+    this.startHalf,
     super.endMatch,
-    super.status = MatchStatus.notScheduled,
+    this.status = MatchStatus.notScheduled,
+    super.coordinatorStatus = PresenceStatus.assigned,
   });
 
   factory FootballMatch.fromJson(Map<String, dynamic> json) {
@@ -29,9 +46,9 @@ class FootballMatch extends Match {
       matchDate: json['matchDate'] != null
           ? DateTime.parse(json['matchDate'])
           : null,
-      refereeId: json['refereeId'],
       status: MatchStatus.values.firstWhere(
-        (e) => e.toString() == 'MatchStatus.' + json['status'],
+        (e) => e.toString().split('.').last == json['status'],
+        orElse: () => MatchStatus.notScheduled,
       ),
       scoreHome: json['scoreHome'],
       scoreAway: json['scoreAway'],
@@ -47,7 +64,6 @@ class FootballMatch extends Match {
       'homeTeamId': homeTeamId,
       'awayTeamId': awayTeamId,
       'matchDate': matchDate?.toIso8601String(),
-      'refereeId': refereeId,
       'status': status.toString().split('.').last,
       'scoreHome': scoreHome,
       'scoreAway': scoreAway,

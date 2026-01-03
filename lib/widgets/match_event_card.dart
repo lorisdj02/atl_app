@@ -34,8 +34,10 @@ class MatchEventCard extends StatelessWidget {
         return Icons.rectangle;
       case FootballMatchEventType.start:
         return Icons.play_circle_filled;
-      case FootballMatchEventType.half:
+      case FootballMatchEventType.halftime:
         return Icons.pause_circle_filled;
+      case FootballMatchEventType.startHalf:
+        return Icons.play_circle_filled;
       case FootballMatchEventType.finish:
         return Icons.stop_circle;
     }
@@ -54,7 +56,8 @@ class MatchEventCard extends StatelessWidget {
       case FootballMatchEventType.redYellowCard:
         return Colors.red.shade700;
       case FootballMatchEventType.start:
-      case FootballMatchEventType.half:
+      case FootballMatchEventType.startHalf:
+      case FootballMatchEventType.halftime:
       case FootballMatchEventType.finish:
         return ATLColors.darkBlue;
     }

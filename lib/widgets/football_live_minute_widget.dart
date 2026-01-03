@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import '../models/match.dart';
+import '../models/football_match.dart';
 
 /// Widget che mostra il minutaggio in tempo reale della partita
-class LiveMinuteWidget extends StatefulWidget {
-  final Match match;
+class FootballLiveMinuteWidget extends StatefulWidget {
+  final FootballMatch match;
   final int minutesPerRound;
   final double fontSize;
   final EdgeInsets padding;
@@ -14,7 +14,7 @@ class LiveMinuteWidget extends StatefulWidget {
   final SportCategory sportCategory;
   final int minutesPerPause;
 
-  const LiveMinuteWidget({
+  const FootballLiveMinuteWidget({
     super.key,
     required this.match,
     required this.fontSize,
@@ -26,10 +26,10 @@ class LiveMinuteWidget extends StatefulWidget {
   });
 
   @override
-  State<LiveMinuteWidget> createState() => _LiveMinuteWidgetState();
+  State<FootballLiveMinuteWidget> createState() => _FootballLiveMinuteWidgetState();
 }
 
-class _LiveMinuteWidgetState extends State<LiveMinuteWidget> {
+class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
   late Timer _timer;
   int _currentMinute = 0;
   int _additionalMinutes = 0;
