@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../models/tournament.dart';
 import '../../models/sport_category.dart';
 import '../../models/team.dart';
@@ -12,7 +13,7 @@ import '../../providers/user_provider.dart';
 import '../../models/player.dart';
 import '../../models/coordinator.dart';
 import '../../models/tournament_partecipation.dart';
-import '../../widgets/tournament_summary.dart';
+import '../../widgets/tournament_info_dialog.dart';
 import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
 
@@ -196,89 +197,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(0.7),
       builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 40,
-          ),
-          child: GestureDetector(
-            onTap: () {}, // Prevent closing when tapping the dialog content
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Close button
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Tournament Summary with scroll indicator
-                  Flexible(
-                    child: Stack(
-                      children: [
-                        SingleChildScrollView(
-                          child: TournamentSummary(
-                            tournament: widget.tournament,
-                          ),
-                        ),
-                        // Scroll indicator at bottom
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: IgnorePointer(
-                            child: Container(
-                              height: 60,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(0.3),
-                                  ],
-                                ),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: Colors.white.withOpacity(0.8),
-                                      size: 32,
-                                    ),
-                                    Text(
-                                      'Scorri per vedere tutto',
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.8),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        return TournamentInfoDialog(
+          tournament: widget.tournament,
+          sportCategory: widget.currentSport,
         );
       },
     );
@@ -651,7 +572,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                               _buildInfoRow(
                                 Icons.calendar_today,
                                 'Date',
-                                widget.tournament.date ?? 'TBA',
+                                widget.tournament.startDate != null
+                                    ? DateFormat('MMMM yyyy').format(
+                                        widget.tournament.startDate!,
+                                      )
+                                    : 'TBA',
                               ),
                               const SizedBox(height: 12),
                               _buildInfoRow(

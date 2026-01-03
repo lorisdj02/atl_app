@@ -81,7 +81,6 @@ class Tournament {
   final bool isATL;
   final TournamentPhase phase;
   final String? photoURL;
-  final String? date;
 
   bool? isFavorite;
   bool? isParticipating;
@@ -111,7 +110,6 @@ class Tournament {
     this.photoURL,
     this.isFavorite = false,
     this.isParticipating = false,
-    this.date,
     this.isPublic = true,
   });
 
@@ -143,7 +141,6 @@ class Tournament {
       phase: _phaseFromString(json['phase'] ?? 'GROUP'),
       name: json['name'] ?? '',
       photoURL: json['photo_url'],
-      date: json['date'],
       isPublic: json['is'] ?? true,
     );
   }
@@ -172,7 +169,6 @@ class Tournament {
       'phase': phase.name.toUpperCase(),
       'name': name,
       'photo_url': photoURL,
-      'date': date,
       'isPublic': isPublic,
     };
   }
@@ -261,7 +257,6 @@ class Tournament {
       photoURL: photoURL,
       isFavorite: isFavorite ?? this.isFavorite,
       isParticipating: isParticipating ?? this.isParticipating,
-      date: date,
     );
   }
 }

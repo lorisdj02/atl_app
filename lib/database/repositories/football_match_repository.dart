@@ -59,6 +59,42 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       group: 'B',
       day: 1,
     ),
+    FootballMatch(
+      id: 5,
+      homeTeamId: 1,
+      awayTeamId: 6,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'A',
+      day: 2,
+    ),
+    FootballMatch(
+      id: 6,
+      homeTeamId: 5,
+      awayTeamId: 7,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'A',
+      day: 2,
+    ),
+    FootballMatch(
+      id: 7,
+      homeTeamId: 8,
+      awayTeamId: 10,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'B',
+      day: 2,
+    ),
+    FootballMatch(
+      id: 8,
+      homeTeamId: 9,
+      awayTeamId: 11,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'B',
+      day: 2,
+    ),
   ];
 
   @override
