@@ -4,7 +4,6 @@ import '../../models/football_match_event.dart';
 import 'base_repository.dart';
 
 class FootballMatchEventRepository extends BaseRepository<FootballMatchEvent> {
-
   @override
   String get endpoint => 'football_match_events';
 
@@ -27,20 +26,18 @@ class FootballMatchEventRepository extends BaseRepository<FootballMatchEvent> {
       matchId: 1,
       type: FootballMatchEventType.goal,
       minute: 15,
-      playerId: 1
-    )
+      playerId: 1,
+    ),
   ];
 
   @override
   List<FootballMatchEvent> get mockData => _mockData;
 
-  Future<List<FootballMatchEvent>> getByMatchId(int matchId) async{
-    if(AppConfig.isDebug){
+  Future<List<FootballMatchEvent>> getByMatchId(int matchId) async {
+    if (AppConfig.isDebug) {
       return mockData.where((event) => event.matchId == matchId).toList();
-    }
-    else{
+    } else {
       throw UnimplementedError();
     }
   }
-
 }

@@ -6,11 +6,7 @@ class LoadingATL extends StatelessWidget {
   final double size;
   final double strokeWidth;
 
-  const LoadingATL({
-    super.key,
-    this.size = 40.0,
-    this.strokeWidth = 4.0,
-  });
+  const LoadingATL({super.key, this.size = 40.0, this.strokeWidth = 4.0});
 
   @override
   Widget build(BuildContext context) {

@@ -18,33 +18,31 @@ import '../../widgets/ranks_team_widget.dart';
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const TeamScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const TeamScreen({super.key, required this.currentSport});
 
   @override
   State<TeamScreen> createState() => _TeamScreenState();
 }
 
-class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateMixin {
+class _TeamScreenState extends State<TeamScreen>
+    with SingleTickerProviderStateMixin {
   List<Team>? _teams;
   bool _isLoading = true;
   TabController? _tabController;
   int _previousTabIndex = 0;
   Key _scaffoldKey = UniqueKey(); // Chiave per forzare rebuild
-  
+
   // Cache unificata: associa teamId -> team e captainName
   final Map<int, Map<String, dynamic>> _teamCache = {};
-  
+
   // Filtri
   final TextEditingController _searchController = TextEditingController();
-  
+
   // Filtri avanzati
   String? _selectedCity;
   bool? _vipFilter;
   RangeValues _playersRange = const RangeValues(1, 24);
-  
+
   // Filtri temporanei per il dialog
   String? _tempSelectedCity;
   bool? _tempVipFilter;
@@ -53,8 +51,8 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   /// Verifica se ci sono filtri attivi
   bool get _hasActiveFilters {
     return _selectedCity != null ||
-           _vipFilter != null ||
-           _playersRange != const RangeValues(1, 24);
+        _vipFilter != null ||
+        _playersRange != const RangeValues(1, 24);
   }
 
   @override
@@ -63,20 +61,24 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
     _refreshState();
   }
 
-  void _refreshState(){
+  void _refreshState() {
     // Dispose del vecchio controller PRIMA del setState
     _tabController?.removeListener(() {});
     _tabController?.dispose();
-    
+
     setState(() {
-      final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+      final UserProvider userProvider = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      );
       final isPlayer = userProvider.isPlayer;
       int? teamId = userProvider.currentTeamId;
-      final showMyTeamTab = !userProvider.isGuest && isPlayer && teamId != null && teamId != -1;
-    
+      final showMyTeamTab =
+          !userProvider.isGuest && isPlayer && teamId != null && teamId != -1;
+
       // Forza rebuild completo
       _scaffoldKey = UniqueKey();
-      
+
       // Guest: 2 tabs (Search + Ranks)
       // Coordinator: 2 tabs (Search + Ranks)
       // Player con team: 3 tabs (Search + My team + Ranks)
@@ -85,26 +87,29 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
         vsync: this,
       );
       print('Inizialized TabController with length: ${_tabController!.length}');
-      
+
       if (showMyTeamTab) {
         _tabController!.addListener(() {
           // Naviga a My Team screen quando il tab 1 è selezionato (solo se showMyTeamTab è true)
           if (_tabController!.index == 1 && _tabController!.indexIsChanging) {
             // Resetta subito al tab precedente per evitare l'animazione
             _tabController!.index = _previousTabIndex;
-            
+
             Future.microtask(() {
               if (mounted) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => MyTeamScreen(currentSport: widget.currentSport),
-                  ),
-                ).then((_) {
-                  // Ricarica i dati quando si torna da My Team
-                  if (mounted) {
-                    _loadTeams();
-                  }
-                });
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            MyTeamScreen(currentSport: widget.currentSport),
+                      ),
+                    )
+                    .then((_) {
+                      // Ricarica i dati quando si torna da My Team
+                      if (mounted) {
+                        _loadTeams();
+                      }
+                    });
               }
             });
           } else if (_tabController!.index != 1) {
@@ -121,7 +126,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
         });
       }
     });
-    
+
     _loadTeams();
   }
 
@@ -137,18 +142,18 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   Future<void> _loadTeams() async {
     setState(() => _isLoading = true);
     try {
-      final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+      final UserProvider userProvider = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      );
       final isPlayer = userProvider.activeUser?.role == UserRole.player;
       List<Team> teams = await DB.Teams.getAll();
-      
+
       // Pre-carica i team e i capitani nella cache unificata
       for (var team in teams) {
         if (!_teamCache.containsKey(team.id)) {
           final captain = await DB.Players.getByPlayerId(team.captainId);
-          _teamCache[team.id] = {
-            'team': team,
-            'captainName': captain.username,
-          };
+          _teamCache[team.id] = {'team': team, 'captainName': captain.username};
         } else {
           // Aggiorna solo il team se già in cache, mantieni il captainName
           _teamCache[team.id] = {
@@ -157,15 +162,15 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
           };
         }
       }
-      
+
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
-      
+
       // In "Ranks" ordina per rankPts - con controllo null-safe
       if (_tabController != null && _tabController!.index == ranksTabIndex) {
         teams.sort((a, b) => (b.rankPts ?? 0).compareTo(a.rankPts ?? 0));
       }
-      
+
       setState(() {
         _teams = teams;
         _isLoading = false;
@@ -173,9 +178,9 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading teams: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading teams: $e')));
       }
     }
   }
@@ -185,7 +190,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
     _tempSelectedCity = _selectedCity;
     _tempVipFilter = _vipFilter;
     _tempPlayersRange = _playersRange;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -198,7 +203,10 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Filtro Città
-                const Text('Città', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Città',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -215,7 +223,10 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                     items: [
                       const DropdownMenuItem(value: null, child: Text('Tutte')),
                       ...['1', '2', '3'].map((city) {
-                        return DropdownMenuItem(value: city, child: Text('Città $city'));
+                        return DropdownMenuItem(
+                          value: city,
+                          child: Text('Città $city'),
+                        );
                       }),
                     ],
                     onChanged: (value) {
@@ -225,11 +236,14 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Filtro VIP
-                const Text('VIP', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'VIP',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -255,11 +269,14 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                     },
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Filtro Numero Giocatori
-                const Text('Numero Giocatori', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Numero Giocatori',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 RangeSlider(
                   values: _tempPlayersRange,
@@ -295,9 +312,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 Navigator.pop(context);
                 _loadTeams();
               },
-              style: TextButton.styleFrom(
-                foregroundColor: ATLColors.darkBlue,
-              ),
+              style: TextButton.styleFrom(foregroundColor: ATLColors.darkBlue),
               child: const Text('Reset'),
             ),
             TextButton(
@@ -309,9 +324,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 });
                 Navigator.pop(context);
               },
-              style: TextButton.styleFrom(
-                foregroundColor: ATLColors.darkBlue,
-              ),
+              style: TextButton.styleFrom(foregroundColor: ATLColors.darkBlue),
               child: const Text('Applica'),
             ),
           ],
@@ -326,17 +339,17 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
       if (_selectedCity != null && t.cityId != _selectedCity) {
         return false;
       }
-      
+
       // Filtro VIP
       if (_vipFilter != null && t.vip != _vipFilter) {
         return false;
       }
-      
+
       // Filtro numero giocatori
       if (t.players < _playersRange.start || t.players > _playersRange.end) {
         return false;
       }
-      
+
       // Filtro ricerca per nome o alias
       if (_searchController.text.isNotEmpty) {
         final query = _searchController.text.toLowerCase();
@@ -346,7 +359,7 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
           return false;
         }
       }
-      
+
       return true;
     }).toList();
   }
@@ -358,10 +371,13 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
     final isGuest = userProvider.isGuest;
     final currentTab = _tabController?.index ?? 0;
     final int? teamId = userProvider.currentTeamId;
-    final showMyTeamTab = !isGuest && isPlayer && teamId != null && teamId != -1;
+    final showMyTeamTab =
+        !isGuest && isPlayer && teamId != null && teamId != -1;
 
     // Debug: verifica lo stato
-    print('DEBUG TeamScreen - isGuest: $isGuest, isPlayer: $isPlayer, showMyTeamTab: $showMyTeamTab, role: ${userProvider.activeUser?.role}');
+    print(
+      'DEBUG TeamScreen - isGuest: $isGuest, isPlayer: $isPlayer, showMyTeamTab: $showMyTeamTab, role: ${userProvider.activeUser?.role}',
+    );
 
     return Scaffold(
       key: _scaffoldKey, // Aggiungi chiave per forzare rebuild
@@ -428,15 +444,11 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 height: 44,
                 child: Row(
                   children: [
-                    Expanded(
-                      child: _buildTabButton('Search', 0),
-                    ),
+                    Expanded(child: _buildTabButton('Search', 0)),
                     // My team - SOLO per player (non guest)
                     if (showMyTeamTab) ...[
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildTabButton('My team', 1),
-                      ),
+                      Expanded(child: _buildTabButton('My team', 1)),
                     ],
                     const SizedBox(width: 12),
                     Expanded(
@@ -517,7 +529,11 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 color: Colors.orange.shade100,
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.orange.shade700,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
@@ -533,112 +549,115 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 ),
               ),
             ),
-          
+
           // Lista team
           Positioned.fill(
             top: isGuest ? 44 : 0,
             child: _isLoading
                 ? const LoadingATL()
                 : _teams == null || _teams!.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.group,
-                              color: ATLColors.getPrimaryColor(widget.currentSport),
-                              size: 80,
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Nessun team disponibile',
-                              style: TextStyle(
-                                color: ATLColors.darkBlue,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Torna più tardi',
-                              style: TextStyle(
-                                color: ATLColors.subtext,
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.group,
+                          color: ATLColors.getPrimaryColor(widget.currentSport),
+                          size: 80,
                         ),
-                      )
-                    : _applyFilters(_teams!).isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  color: ATLColors.getPrimaryColor(widget.currentSport),
-                                  size: 80,
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Nessun team trovato',
-                                  style: TextStyle(
-                                    color: ATLColors.darkBlue,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _hasActiveFilters
-                                      ? 'Prova a modificare i filtri'
-                                      : 'Torna più tardi',
-                                  style: const TextStyle(
-                                    color: ATLColors.subtext,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: _applyFilters(_teams!).length,
-                            itemBuilder: (context, index) {
-                              final filteredTeams = _applyFilters(_teams!);
-                              final team = filteredTeams[index];
-                              final cachedData = _teamCache[team.id];
-                              
-                              // Calcola l'indice corretto per Ranks in base alla presenza di My team
-                              final ranksTabIndex = showMyTeamTab ? 2 : 1;
-                              final showRankPts = currentTab == ranksTabIndex;
-                              
-                              if(showRankPts){
-                              return RanksTeamWidget(
-                                team: team,
-                                imageUrl: team.imageUrl,
-                                rankPts: showRankPts ? (team.rankPts ?? 0) : null,
-                                sportCategory: widget.currentSport,
-                                captainName: cachedData?['captainName'] as String?,
-                              );
-                              } else {
-                                return SearchTeamWidget(
-                                  team: team,
-                                  sportCategory: widget.currentSport,
-                                  imageUrl: team.imageUrl,
-                                  captainName: cachedData?['captainName'] as String?,
-                                );
-                              }
-                            },
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Nessun team disponibile',
+                          style: TextStyle(
+                            color: ATLColors.darkBlue,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Torna più tardi',
+                          style: TextStyle(
+                            color: ATLColors.subtext,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : _applyFilters(_teams!).isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          color: ATLColors.getPrimaryColor(widget.currentSport),
+                          size: 80,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Nessun team trovato',
+                          style: TextStyle(
+                            color: ATLColors.darkBlue,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _hasActiveFilters
+                              ? 'Prova a modificare i filtri'
+                              : 'Torna più tardi',
+                          style: const TextStyle(
+                            color: ATLColors.subtext,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _applyFilters(_teams!).length,
+                    itemBuilder: (context, index) {
+                      final filteredTeams = _applyFilters(_teams!);
+                      final team = filteredTeams[index];
+                      final cachedData = _teamCache[team.id];
+
+                      // Calcola l'indice corretto per Ranks in base alla presenza di My team
+                      final ranksTabIndex = showMyTeamTab ? 2 : 1;
+                      final showRankPts = currentTab == ranksTabIndex;
+
+                      if (showRankPts) {
+                        return RanksTeamWidget(
+                          team: team,
+                          imageUrl: team.imageUrl,
+                          rankPts: showRankPts ? (team.rankPts ?? 0) : null,
+                          sportCategory: widget.currentSport,
+                          captainName: cachedData?['captainName'] as String?,
+                        );
+                      } else {
+                        return SearchTeamWidget(
+                          team: team,
+                          sportCategory: widget.currentSport,
+                          imageUrl: team.imageUrl,
+                          captainName: cachedData?['captainName'] as String?,
+                        );
+                      }
+                    },
+                  ),
           ),
-          
+
           // Floating Action Button "Crea" - SOLO per player (non guest) in Search tab senza team
-          if (!isGuest && isPlayer && currentTab == 0 && (teamId == null || teamId == -1))
+          if (!isGuest &&
+              isPlayer &&
+              currentTab == 0 &&
+              (teamId == null || teamId == -1))
             Positioned(
               right: 16,
               bottom: 16,
@@ -646,15 +665,17 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 onPressed: () async {
                   final result = await Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => CreateTeamScreen(currentSport: widget.currentSport),
+                      builder: (context) =>
+                          CreateTeamScreen(currentSport: widget.currentSport),
                     ),
                   );
-                  
+
                   // Se il team è stato creato, ricarica completamente lo screen
                   if (mounted) {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
-                        builder: (context) => TeamScreen(currentSport: widget.currentSport),
+                        builder: (context) =>
+                            TeamScreen(currentSport: widget.currentSport),
                       ),
                     );
                   }

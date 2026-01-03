@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/tournament.dart';
@@ -14,6 +12,7 @@ import '../../providers/user_provider.dart';
 import '../../models/player.dart';
 import '../../models/coordinator.dart';
 import '../../models/tournament_partecipation.dart';
+import '../../widgets/tournament_summary.dart';
 import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
 
@@ -36,6 +35,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   bool _isLoading = true;
   bool _isLoadingTeams = true;
   Field? _tournamentField;
+  String? _cityName;
   Player? _currentPlayer;
   Team? _playerTeam;
   Coordinator? _tournamentCoordinator;
@@ -106,7 +106,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       );
       if (userProvider.isPlayer && !userProvider.isGuest) {
         final userId = userProvider.activeUser!.id;
-        final player = await DB.Players.getById(userId);
+        final player = await DB.Players.getByUserId(userId);
 
         if (userProvider.currentTeamId != null &&
             userProvider.currentTeamId != -1) {
@@ -173,8 +173,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     // Implementa il caricamento dei dettagli del torneo se necessario
     try {
       final field = await DB.Fields.getById(widget.tournament.fieldId);
+      final city = await DB.Cities.getById(widget.tournament.cityId);
       setState(() {
         _tournamentField = field;
+        _cityName = city?.name;
       });
     } catch (e) {
       if (mounted) {
@@ -186,6 +188,100 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  void _showFullInfoDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.7),
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 40,
+          ),
+          child: GestureDetector(
+            onTap: () {}, // Prevent closing when tapping the dialog content
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 500),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Close button
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Tournament Summary with scroll indicator
+                  Flexible(
+                    child: Stack(
+                      children: [
+                        SingleChildScrollView(
+                          child: TournamentSummary(
+                            tournament: widget.tournament,
+                          ),
+                        ),
+                        // Scroll indicator at bottom
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withOpacity(0.3),
+                                  ],
+                                ),
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Colors.white.withOpacity(0.8),
+                                      size: 32,
+                                    ),
+                                    Text(
+                                      'Scorri per vedere tutto',
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -257,7 +353,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: ATLColors.getPrimaryColor(widget.currentSport),
+                                color: ATLColors.getPrimaryColor(
+                                  widget.currentSport,
+                                ),
                                 width: 2,
                               ),
                               image: _tournamentCoordinator!.imageUrl != null
@@ -275,56 +373,107 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             child: _tournamentCoordinator!.imageUrl == null
                                 ? Icon(
                                     Icons.person,
-                                    color: ATLColors.getPrimaryColor(widget.currentSport),
+                                    color: ATLColors.getPrimaryColor(
+                                      widget.currentSport,
+                                    ),
                                     size: 28,
                                   )
                                 : null,
                           ),
                           const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _tournamentCoordinator!.username,
-                                style: TextStyle(
-                                  color: ATLColors.darkBlue,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _tournamentCoordinator!.username,
+                                  style: TextStyle(
+                                    color: ATLColors.darkBlue,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Coordinator',
+                                      style: TextStyle(
+                                        color: ATLColors.subtext,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: ATLColors.getPrimaryColor(
+                                          widget.currentSport,
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        'Lv. ${_tournamentCoordinator!.level}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Full Info Button
+                          GestureDetector(
+                            onTap: _showFullInfoDialog,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: ATLColors.getPrimaryColor(
+                                  widget.currentSport,
+                                ).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: ATLColors.getPrimaryColor(
+                                    widget.currentSport,
+                                  ),
+                                  width: 1,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Row(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    'Coordinator',
-                                    style: TextStyle(
-                                      color: ATLColors.subtext,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 16,
+                                    color: ATLColors.getPrimaryColor(
+                                      widget.currentSport,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: ATLColors.getPrimaryColor(widget.currentSport),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      'Lv. ${_tournamentCoordinator!.level}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Full info',
+                                    style: TextStyle(
+                                      color: ATLColors.getPrimaryColor(
+                                        widget.currentSport,
                                       ),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -350,9 +499,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             gradient: LinearGradient(
                               colors: [
                                 ATLColors.getPrimaryColor(widget.currentSport),
-                                ATLColors.getPrimaryColor(widget.currentSport).withOpacity(
-                                  0.8,
-                                ),
+                                ATLColors.getPrimaryColor(
+                                  widget.currentSport,
+                                ).withOpacity(0.8),
                               ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
@@ -360,8 +509,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: ATLColors.getPrimaryColor(widget.currentSport)
-                                    .withOpacity(0.3),
+                                color: ATLColors.getPrimaryColor(
+                                  widget.currentSport,
+                                ).withOpacity(0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
                               ),
@@ -507,7 +657,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                               _buildInfoRow(
                                 Icons.location_on,
                                 'Location',
-                                '${_tournamentField?.name ?? 'TBA'} - ${widget.tournament.city}',
+                                '${_tournamentField?.name ?? 'TBA'} - ${_cityName ?? 'TBA'}',
                               ),
                               const SizedBox(height: 12),
                               _buildInfoRow(
@@ -548,7 +698,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                   children: [
                                     Icon(
                                       Icons.description,
-                                      color: ATLColors.getPrimaryColor(widget.currentSport),
+                                      color: ATLColors.getPrimaryColor(
+                                        widget.currentSport,
+                                      ),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
@@ -585,8 +737,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: ATLColors.getPrimaryColor(widget.currentSport)
-                                  .withOpacity(0.3),
+                              color: ATLColors.getPrimaryColor(
+                                widget.currentSport,
+                              ).withOpacity(0.3),
                               width: 2,
                             ),
                             boxShadow: [
@@ -604,7 +757,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                 children: [
                                   Icon(
                                     Icons.payment,
-                                    color: ATLColors.getPrimaryColor(widget.currentSport),
+                                    color: ATLColors.getPrimaryColor(
+                                      widget.currentSport,
+                                    ),
                                     size: 24,
                                   ),
                                   const SizedBox(width: 12),
@@ -621,7 +776,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                               Text(
                                 widget.tournament.formattedFee,
                                 style: TextStyle(
-                                  color: ATLColors.getPrimaryColor(widget.currentSport),
+                                  color: ATLColors.getPrimaryColor(
+                                    widget.currentSport,
+                                  ),
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -911,7 +1068,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+                  backgroundColor: ATLColors.getPrimaryColor(
+                    widget.currentSport,
+                  ),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -961,8 +1120,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                         ),
                       );
                       await _checkPartecipation();
-                    }
-                    else if (mounted && !success) {
+                    } else if (mounted && !success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Failed to delete call-ups'),
@@ -1148,7 +1306,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: ATLColors.getPrimaryColor(widget.currentSport), size: 20),
+        Icon(
+          icon,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
+          size: 20,
+        ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

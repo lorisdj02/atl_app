@@ -1,5 +1,3 @@
-
-
 class TournamentPartecipation {
   final int tournamentId;
   final int teamId;
@@ -20,10 +18,6 @@ class TournamentPartecipation {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'tournamentId': tournamentId,
-      'teamId': teamId,
-      'toPay': toPay,
-    };
+    return {'tournamentId': tournamentId, 'teamId': teamId, 'toPay': toPay};
   }
 }

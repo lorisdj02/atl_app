@@ -12,14 +12,17 @@ import 'package:provider/provider.dart';
 class GuestHomeScreen extends StatefulWidget {
   const GuestHomeScreen({super.key});
 
-
   @override
   State<GuestHomeScreen> createState() => _GuestHomeScreenState();
 }
 
 class _GuestHomeScreenState extends State<GuestHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
+  late final UserProvider userProvider = Provider.of<UserProvider>(
+    context,
+    listen: false,
+  );
+  late final SportCategory _currentSport =
+      userProvider.selectedSportCategory ?? SportCategory.football;
 
   void _onNavTap(int index) {
     if (index == 4) {
@@ -29,24 +32,20 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
       switch (index) {
         case 0:
           // Shop - può visualizzare ma non acquistare
-          screen = ShopScreen(
-            currentSport: _currentSport,
-          );
+          screen = ShopScreen(currentSport: _currentSport);
           break;
         case 1:
           // Tournaments - può visualizzare
-          screen = AllTournamentsScreen(
-            currentSport: _currentSport,
-          );
+          screen = AllTournamentsScreen(currentSport: _currentSport);
           break;
         case 2:
           // Team - può visualizzare
-          screen = TeamScreen(
-            currentSport: _currentSport,
-          );
+          screen = TeamScreen(currentSport: _currentSport);
           break;
         case 3:
-          screen = const GuestProfileScreen(currentSport: SportCategory.football);
+          screen = const GuestProfileScreen(
+            currentSport: SportCategory.football,
+          );
           break;
         default:
           return;
@@ -164,9 +163,9 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Today's matches title
           Row(
             children: [
@@ -187,9 +186,9 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // TODO: Lista partite del giorno
           Container(
             padding: const EdgeInsets.all(24),
@@ -214,18 +213,12 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'No matches today',
-                  style: TextStyle(
-                    color: ATLColors.subtext,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Login to follow tournaments!',
-                  style: TextStyle(
-                    color: ATLColors.title,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: ATLColors.title, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],

@@ -55,10 +55,7 @@ class SearchTeamWidget extends AbstractTeamWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Captain: ${captainName ?? 'Loading...'}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -68,7 +65,10 @@ class SearchTeamWidget extends AbstractTeamWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: ATLColors.darkBlue.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -96,7 +96,10 @@ class SearchTeamWidget extends AbstractTeamWidget {
                 if (team.vip) ...[
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.amber.shade100,
                       borderRadius: BorderRadius.circular(12),

@@ -1,7 +1,1 @@
-enum BookingStatus {
-  booked,
-  full,
-  inProgress,
-  finished,
-  refound
-}
+enum BookingStatus { booked, full, inProgress, finished, refound }

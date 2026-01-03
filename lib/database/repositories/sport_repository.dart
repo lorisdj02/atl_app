@@ -53,36 +53,50 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerPause: 10,
       category: SportCategory.football,
     ),
-    
   ];
 
-  Future<List<Sport>> getByCategory(SportCategory category) async {
-    if(AppConfig.isDebug){
-      return mockData.where((sport) => sport.category == category).toList();
+  Future<Sport?> getById(int id) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((sport) => sport.id == id);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
     }
-    else{
+  }
+
+  Future<List<Sport>> getByCategory(SportCategory category) async {
+    if (AppConfig.isDebug) {
+      return mockData.where((sport) => sport.category == category).toList();
+    } else {
       throw UnimplementedError();
     }
   }
 
   Future<int?> getMinutesPerRoundById(int sportId) async {
-    if(AppConfig.isDebug) {
-      final sport = mockData.firstWhere((sport) => sport.id == sportId, orElse: () => throw Exception('Sport not found'));
-      return sport.minutesPerRound;
-    }
-    else{
+    if (AppConfig.isDebug) {
+      try {
+        final sport = mockData.firstWhere((sport) => sport.id == sportId);
+        return sport.minutesPerRound;
+      } catch (e) {
+        return null;
+      }
+    } else {
       throw UnimplementedError();
     }
   }
 
   Future<int?> getMinutesPerPauseById(int sportId) async {
-    if(AppConfig.isDebug) {
-      final sport = mockData.firstWhere((sport) => sport.id == sportId, orElse: () => throw Exception('Sport not found'));
+    if (AppConfig.isDebug) {
+      final sport = mockData.firstWhere(
+        (sport) => sport.id == sportId,
+        orElse: () => throw Exception('Sport not found'),
+      );
       return sport.minutesPerPause;
-    }
-    else{
+    } else {
       throw UnimplementedError();
     }
   }
-
 }

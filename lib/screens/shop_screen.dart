@@ -11,14 +11,10 @@ import 'login_screen.dart';
 class ShopScreen extends StatelessWidget {
   final SportCategory currentSport;
 
-  const ShopScreen({
-    super.key,
-    required this.currentSport,
-  });
-  
+  const ShopScreen({super.key, required this.currentSport});
+
   @override
   Widget build(BuildContext context) {
-
     final UserProvider userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
@@ -61,10 +57,7 @@ class ShopScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Coming soon',
-                  style: TextStyle(
-                    color: ATLColors.subtext,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
                 if (userProvider.isGuest) ...[
                   const SizedBox(height: 24),
@@ -80,7 +73,7 @@ class ShopScreen extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Banner guest mode
           if (userProvider.isGuest)
             Positioned(
@@ -96,7 +89,11 @@ class ShopScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.orange.shade700, size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.orange.shade700,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -111,7 +108,9 @@ class ShopScreen extends StatelessWidget {
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
                         );
                       },
                       child: const Text('LOGIN'),

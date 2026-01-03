@@ -86,8 +86,7 @@ class TournamentCardHome extends StatelessWidget {
         matches
             .where(
               (m) =>
-                  m.homeTeamId == userTeam?.id ||
-                  m.awayTeamId == userTeam?.id,
+                  m.homeTeamId == userTeam?.id || m.awayTeamId == userTeam?.id,
             )
             .toList()
           ..sort((a, b) {

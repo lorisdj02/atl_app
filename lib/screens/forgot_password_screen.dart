@@ -52,7 +52,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void _sendPasswordResetEmail() {
     // TODO: Implement server request
     print('Invio email di recupero a: ${_emailController.text}');
-    
+
     _startCountdown();
   }
 
@@ -64,11 +64,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         children: [
           // Background color
           Container(
-            decoration: const BoxDecoration(
-              color: ATLColors.background,
-            ),
+            decoration: const BoxDecoration(color: ATLColors.background),
           ),
-          
+
           // Background image at the bottom
           Positioned(
             bottom: 0,
@@ -78,14 +76,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               'images/login_background.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 300,
-                  color: Colors.transparent,
-                );
+                return Container(height: 300, color: Colors.transparent);
               },
             ),
           ),
-          
+
           // Main content (scrollable)
           SafeArea(
             child: SingleChildScrollView(
@@ -94,7 +89,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 30),
-                    
+
                     // Logo
                     Image.asset(
                       'images/logo_vertical.png',
@@ -104,13 +99,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           height: 200,
                           width: 200,
                           color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported, size: 75),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 75,
+                          ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Title text
                     Text(
                       AppLocalizations.of(context).forgotPasswordSubtitle,
@@ -121,9 +119,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Email TextField
                     ATLTextField(
                       controller: _emailController,
@@ -131,12 +129,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       keyboardType: TextInputType.emailAddress,
                       enabled: !_isWaiting,
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Send email button
                     ATLButton(
-                      text: _isWaiting 
+                      text: _isWaiting
                           ? 'Wait ${_secondsRemaining}s...'
                           : AppLocalizations.of(context).sendEmail,
                       size: ATLButtonSize.large,
@@ -144,9 +142,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       color: ATLColors.darkBlue,
                       onPressed: _isWaiting ? () {} : _sendPasswordResetEmail,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Cancel button
                     ATLButton(
                       text: AppLocalizations.of(context).cancel,
@@ -157,7 +155,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         Navigator.of(context).pop();
                       },
                     ),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),

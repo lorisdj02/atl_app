@@ -25,8 +25,6 @@ enum TournamentStatus {
   }
 }
 
-
-
 /// Enum per la fase del torneo
 enum TournamentPhase {
   group,
@@ -64,7 +62,7 @@ class Tournament {
   final String name;
   final int coordinatorId;
   final int fieldId;
-  final String city;
+  final int cityId;
   final DateTime? startDate;
   final int sportId;
   final int numTeams;
@@ -92,7 +90,7 @@ class Tournament {
     required this.id,
     required this.coordinatorId,
     required this.fieldId,
-    required this.city,
+    required this.cityId,
     this.startDate,
     required this.sportId,
     required this.numTeams,
@@ -120,13 +118,11 @@ class Tournament {
   factory Tournament.fromJson(Map<String, dynamic> json) {
     return Tournament(
       id: json['id'],
-      coordinatorId: json['coordinator'] is int 
-          ? json['coordinator'] 
+      coordinatorId: json['coordinator'] is int
+          ? json['coordinator']
           : json['coordinator']['id'],
-      fieldId: json['field'] is int 
-          ? json['field'] 
-          : json['field']['id'],
-      city: json['city'] ?? '',
+      fieldId: json['field'] is int ? json['field'] : json['field']['id'],
+      cityId: json['city'] is int ? json['city'] : json['city']['id'],
       startDate: json['start_date'] != null
           ? DateTime.parse(json['start_date'])
           : null,
@@ -157,7 +153,7 @@ class Tournament {
       'id': id,
       'coordinator': coordinatorId,
       'field': fieldId,
-      'city': city,
+      'city': cityId,
       'start_date': startDate?.toIso8601String(),
       'sport_id': sportId,
       'num_teams': numTeams,
@@ -239,15 +235,12 @@ class Tournament {
     }
   }
 
-  Tournament copyWith({
-    bool? isFavorite,
-    bool? isParticipating,
-  }) {
+  Tournament copyWith({bool? isFavorite, bool? isParticipating}) {
     return Tournament(
       id: id,
       coordinatorId: coordinatorId,
       fieldId: fieldId,
-      city: city,
+      cityId: cityId,
       startDate: startDate,
       sportId: sportId,
       numTeams: numTeams,

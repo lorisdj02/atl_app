@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../database/db_controller.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/sport_category.dart';
+import '../../models/city.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/booking_widget.dart';
@@ -10,10 +11,7 @@ import '../../widgets/booking_widget.dart';
 class JoinLobbyScreen extends StatefulWidget {
   final SportCategory sportCategory;
 
-  const JoinLobbyScreen({
-    super.key,
-    required this.sportCategory,
-  });
+  const JoinLobbyScreen({super.key, required this.sportCategory});
 
   @override
   State<JoinLobbyScreen> createState() => _JoinLobbyScreenState();
@@ -22,7 +20,7 @@ class JoinLobbyScreen extends StatefulWidget {
 class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   // Filters
   int? _selectedTotalPlayers;
-  String? _selectedCity;
+  int? _selectedCity;
   DateTime? _selectedDay;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -33,12 +31,30 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   bool _isLoading = false;
 
   final List<int> _availablePlayerCounts = [10, 14, 16, 18, 22];
-  final List<String> _cities = ['Milano', 'Roma', 'Taranto'];
+  List<City> _availableCities = [];
 
   @override
   void initState() {
     super.initState();
+    _loadCities();
     _loadLobbies();
+  }
+
+  Future<void> _loadCities() async {
+    try {
+      final cities = await DB.Cities.getAll();
+      if (mounted) {
+        setState(() {
+          _availableCities = cities;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore nel caricamento città: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadLobbies() async {
@@ -86,29 +102,30 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         }
       }
 
-      List<LobbyBooking> lobbies = await DB.LobbyBookings.getBookedLobbyBookings(
-        _selectedTotalPlayers,
-        _selectedCity,
-        startDateTime,
-        endDateTime,
-        null
-      );
+      List<LobbyBooking> lobbies =
+          await DB.LobbyBookings.getBookedLobbyBookings(
+            _selectedTotalPlayers,
+            _selectedCity,
+            startDateTime,
+            endDateTime,
+            null,
+          );
 
       // Filter out lobbies where current user is the owner
       lobbies = lobbies.where((lobby) => lobby.ownerId != playerId).toList();
 
       // Additional filter for playersToPay
       if (_maxPlayersToPay != null) {
-        lobbies = lobbies.where((lobby) => lobby.playerToFind <= _maxPlayersToPay!).toList();
+        lobbies = lobbies
+            .where((lobby) => lobby.playerToFind <= _maxPlayersToPay!)
+            .toList();
       }
 
       // Check participation status for each lobby
       final participationStatus = <int, bool>{};
       for (var lobby in lobbies) {
-        final isParticipating = await DB.LobbyBookingParticipations.isParticipating(
-          playerId,
-          lobby.id,
-        );
+        final isParticipating = await DB
+            .LobbyBookingParticipations.isParticipating(playerId, lobby.id);
         participationStatus[lobby.id] = isParticipating;
       }
 
@@ -139,9 +156,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ATLColors.darkBlue,
-            ),
+            colorScheme: ColorScheme.light(primary: ATLColors.darkBlue),
           ),
           child: child!,
         );
@@ -171,13 +186,13 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
     for (int hour = 0; hour < 24; hour++) {
       for (int minute in [0, 15, 30, 45]) {
         final time = TimeOfDay(hour: hour, minute: minute);
-        
+
         if (!isStartTime && _startTime != null) {
           final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
           final timeMinutes = time.hour * 60 + time.minute;
           if (timeMinutes <= startMinutes) continue;
         }
-        
+
         timeSlots.add(time);
       }
     }
@@ -200,8 +215,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
               itemCount: timeSlots.length,
               itemBuilder: (context, index) {
                 final time = timeSlots[index];
-                final timeString = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-                
+                final timeString =
+                    '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
                 return ListTile(
                   title: Text(timeString, style: const TextStyle(fontSize: 18)),
                   onTap: () => Navigator.of(context).pop(time),
@@ -253,7 +269,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: ATLColors.getPrimaryColor(widget.sportCategory).withOpacity(0.1),
+                  color: ATLColors.getPrimaryColor(
+                    widget.sportCategory,
+                  ).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -261,7 +279,10 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                   children: [
                     const Text(
                       'Total Fee:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       '€${lobby.feePerPlayer.toStringAsFixed(2)}',
@@ -289,7 +310,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
               icon: const Icon(Icons.attach_money),
               label: const Text('Join'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                backgroundColor: ATLColors.getPrimaryColor(
+                  widget.sportCategory,
+                ),
                 foregroundColor: Colors.white,
               ),
             ),
@@ -304,7 +327,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           final fee = lobby.feePerPlayer * selectedPlayers;
-          
+
           return AlertDialog(
             title: Text(
               'Join Lobby',
@@ -351,7 +374,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: ATLColors.getPrimaryColor(widget.sportCategory).withOpacity(0.1),
+                    color: ATLColors.getPrimaryColor(
+                      widget.sportCategory,
+                    ).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -359,14 +384,19 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     children: [
                       const Text(
                         'Total Fee:',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         '€${fee.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: ATLColors.getPrimaryColor(widget.sportCategory),
+                          color: ATLColors.getPrimaryColor(
+                            widget.sportCategory,
+                          ),
                         ),
                       ),
                     ],
@@ -387,7 +417,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                 icon: const Icon(Icons.attach_money),
                 label: const Text('Join'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                  backgroundColor: ATLColors.getPrimaryColor(
+                    widget.sportCategory,
+                  ),
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -406,11 +438,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       final playerId = userProvider.activeRoleId!;
 
       // TODO: GUARDA BACKEND - Add payment logic here
-      bool success = await DB().joinLobby(
-        lobby.id,
-        playerId,
-        playersPaid,
-      );
+      bool success = await DB().joinLobby(lobby.id, playerId, playersPaid);
 
       if (mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -492,15 +520,26 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildFilterDropdown(
+                      child: _buildFilterDropdown<int>(
                         hint: 'City',
                         value: _selectedCity,
-                        items: _cities,
+                        items: _availableCities.map((c) => c.id).toList(),
                         onChanged: (value) {
                           setState(() => _selectedCity = value);
                           _loadLobbies();
                         },
-                        displayText: (val) => val,
+                        displayText: (val) {
+                          final city = _availableCities.firstWhere(
+                            (c) => c.id == val,
+                            orElse: () => City(
+                              id: 0,
+                              name: '',
+                              centerLat: 0,
+                              centerLng: 0,
+                            ),
+                          );
+                          return city.name;
+                        },
                       ),
                     ),
                   ],
@@ -512,14 +551,23 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                       child: GestureDetector(
                         onTap: _selectDay,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.calendar_today, size: 20, color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                              Icon(
+                                Icons.calendar_today,
+                                size: 20,
+                                color: ATLColors.getPrimaryColor(
+                                  widget.sportCategory,
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _selectedDay == null
@@ -527,7 +575,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                     : '${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _selectedDay == null ? Colors.grey : Colors.black,
+                                  color: _selectedDay == null
+                                      ? Colors.grey
+                                      : Colors.black,
                                 ),
                               ),
                             ],
@@ -557,14 +607,23 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                       child: GestureDetector(
                         onTap: () => _selectTime(true),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.access_time, size: 20, color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                              Icon(
+                                Icons.access_time,
+                                size: 20,
+                                color: ATLColors.getPrimaryColor(
+                                  widget.sportCategory,
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _startTime == null
@@ -572,7 +631,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                     : '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _startTime == null ? Colors.grey : Colors.black,
+                                  color: _startTime == null
+                                      ? Colors.grey
+                                      : Colors.black,
                                 ),
                               ),
                             ],
@@ -585,14 +646,23 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                       child: GestureDetector(
                         onTap: () => _selectTime(false),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.access_time, size: 20, color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                              Icon(
+                                Icons.access_time,
+                                size: 20,
+                                color: ATLColors.getPrimaryColor(
+                                  widget.sportCategory,
+                                ),
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 _endTime == null
@@ -600,7 +670,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                     : '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: _endTime == null ? Colors.grey : Colors.black,
+                                  color: _endTime == null
+                                      ? Colors.grey
+                                      : Colors.black,
                                 ),
                               ),
                             ],
@@ -616,7 +688,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                   icon: const Icon(Icons.clear_all),
                   label: const Text('Clear Filters'),
                   style: TextButton.styleFrom(
-                    foregroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                    foregroundColor: ATLColors.getPrimaryColor(
+                      widget.sportCategory,
+                    ),
                   ),
                 ),
               ],
@@ -628,53 +702,61 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _availableLobbies.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No lobbies available',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _availableLobbies.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          final lobby = _availableLobbies[index];
-                          final isParticipating = _participationStatus[lobby.id] ?? false;
-                          
-                          return Column(
-                            children: [
-                              BookingWidget(
-                                fieldId: lobby.fieldId,
-                                startTime: lobby.startTime,
-                                finishTime: lobby.finishTime,
-                                ownerId: lobby.ownerId,
-                                currentSport: widget.sportCategory,
-                                bookingId: lobby.id,
-                                isDeletable: false,
-                              ),
-                              const SizedBox(height: 12),
-                              if (!isParticipating)
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () => _showJoinDialog(lobby),
-                                    icon: const Icon(Icons.add_circle),
-                                    label: Text('Join (${lobby.playerToFind} spots left)'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
+                ? const Center(
+                    child: Text(
+                      'No lobbies available',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _availableLobbies.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final lobby = _availableLobbies[index];
+                      final isParticipating =
+                          _participationStatus[lobby.id] ?? false;
+
+                      return Column(
+                        children: [
+                          BookingWidget(
+                            fieldId: lobby.fieldId,
+                            startTime: lobby.startTime,
+                            finishTime: lobby.finishTime,
+                            ownerId: lobby.ownerId,
+                            currentSport: widget.sportCategory,
+                            bookingId: lobby.id,
+                            isDeletable: false,
+                          ),
+                          const SizedBox(height: 12),
+                          if (!isParticipating)
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showJoinDialog(lobby),
+                                icon: const Icon(Icons.add_circle),
+                                label: Text(
+                                  'Join (${lobby.playerToFind} spots left)',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ATLColors.getPrimaryColor(
+                                    widget.sportCategory,
+                                  ),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                            ],
-                          );
-                        },
-                      ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -702,7 +784,10 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
           items: items.map((item) {
             return DropdownMenuItem(
               value: item,
-              child: Text(displayText(item), style: const TextStyle(fontSize: 14)),
+              child: Text(
+                displayText(item),
+                style: const TextStyle(fontSize: 14),
+              ),
             );
           }).toList(),
           onChanged: onChanged,

@@ -8,7 +8,8 @@ class OrganizationContactScreen extends StatefulWidget {
   const OrganizationContactScreen({super.key});
 
   @override
-  State<OrganizationContactScreen> createState() => _OrganizationContactScreenState();
+  State<OrganizationContactScreen> createState() =>
+      _OrganizationContactScreenState();
 }
 
 class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
@@ -42,7 +43,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
   bool _isValidPhone(String phone) {
     // Rimuove spazi, trattini e parentesi
     final cleanPhone = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    
+
     // Accetta numeri con prefisso internazionale (+39, +1, etc) o senza
     // Minimo 8 cifre, massimo 15 cifre
     final phoneRegex = RegExp(r'^\+?[0-9]{8,15}$');
@@ -118,11 +119,9 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
         children: [
           // Background color
           Container(
-            decoration: const BoxDecoration(
-              color: ATLColors.background,
-            ),
+            decoration: const BoxDecoration(color: ATLColors.background),
           ),
-          
+
           // Background image at the bottom
           Positioned(
             bottom: -100,
@@ -132,14 +131,11 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
               'images/login_background.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 300,
-                  color: Colors.transparent,
-                );
+                return Container(height: 300, color: Colors.transparent);
               },
             ),
           ),
-          
+
           // Main content
           SafeArea(
             child: SingleChildScrollView(
@@ -148,7 +144,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 40),
-                    
+
                     // Logo
                     Image.asset(
                       'images/logo_vertical.png',
@@ -158,13 +154,16 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                           height: 150,
                           width: 150,
                           color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported, size: 50),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                          ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Three dots indicator
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -176,34 +175,37 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                         _buildDot(true), // Terzo step attivo
                       ],
                     ),
-                    
+
                     const SizedBox(height: 40),
-                    
+
                     // Email TextField
                     ATLTextField(
                       controller: _emailController,
                       hintText: 'Email',
                       keyboardType: TextInputType.emailAddress,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Phone TextField
                     ATLTextField(
                       controller: _phoneController,
                       hintText: 'Phone',
                       keyboardType: TextInputType.phone,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Message TextField (multiline)
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: TextField(
                         controller: _messageController,
                         maxLines: 6,
@@ -221,9 +223,9 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Contact us button
                     ATLButton(
                       text: 'Contact us!',
@@ -232,9 +234,9 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                       color: ATLColors.darkBlue,
                       onPressed: _sendContactMessage,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Cancel button
                     ATLButton(
                       text: AppLocalizations.of(context).cancel,
@@ -245,7 +247,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                         Navigator.of(context).pop();
                       },
                     ),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -264,10 +266,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isActive ? ATLColors.darkBlue : Colors.transparent,
-        border: Border.all(
-          color: ATLColors.darkBlue,
-          width: 2,
-        ),
+        border: Border.all(color: ATLColors.darkBlue, width: 2),
       ),
     );
   }

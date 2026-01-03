@@ -32,11 +32,11 @@ class Sport {
   }
 
   Sport.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        name = json['name'],
-        minPlayersPerTeam = json['minPlayersPerTeam'],
-        maxPlayersPerTeam = json['maxPlayersPerTeam'],
-        minutesPerRound = json['minutesPerRound'],
-        minutesPerPause = json['minutesPerPause'],
-        category = SportCategoryExtension.fromJson(json['category']);
+    : id = json['id'],
+      name = json['name'],
+      minPlayersPerTeam = json['minPlayersPerTeam'],
+      maxPlayersPerTeam = json['maxPlayersPerTeam'],
+      minutesPerRound = json['minutesPerRound'],
+      minutesPerPause = json['minutesPerPause'],
+      category = SportCategoryExtension.fromJson(json['category']);
 }

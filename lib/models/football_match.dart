@@ -1,9 +1,7 @@
 import 'match.dart';
 
-
 class FootballMatch extends Match {
   int? refereeId;
-
 
   FootballMatch({
     this.refereeId,
@@ -23,15 +21,18 @@ class FootballMatch extends Match {
     super.status = MatchStatus.notScheduled,
   });
 
-
   factory FootballMatch.fromJson(Map<String, dynamic> json) {
     return FootballMatch(
       id: json['id'],
       homeTeamId: json['homeTeamId'],
       awayTeamId: json['awayTeamId'],
-      matchDate: json['matchDate'] != null ? DateTime.parse(json['matchDate']) : null,
+      matchDate: json['matchDate'] != null
+          ? DateTime.parse(json['matchDate'])
+          : null,
       refereeId: json['refereeId'],
-      status: MatchStatus.values.firstWhere((e) => e.toString() == 'MatchStatus.' + json['status']),
+      status: MatchStatus.values.firstWhere(
+        (e) => e.toString() == 'MatchStatus.' + json['status'],
+      ),
       scoreHome: json['scoreHome'],
       scoreAway: json['scoreAway'],
       tournamentId: json['tournamentId'],

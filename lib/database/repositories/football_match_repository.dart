@@ -1,3 +1,5 @@
+import 'package:atl_app/config/app_config.dart';
+
 import 'base_repository.dart';
 import '../../models/football_match.dart';
 import '../../models/match.dart';
@@ -9,11 +11,11 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   String get endpoint => 'football_matches';
 
   @override
-  FootballMatch fromJson(Map<String, dynamic> json) => FootballMatch.fromJson(json);
+  FootballMatch fromJson(Map<String, dynamic> json) =>
+      FootballMatch.fromJson(json);
 
   @override
   Map<String, dynamic> toJson(FootballMatch item) => item.toJson();
-
 
   List<FootballMatch> _mockdata = [
     FootballMatch(
@@ -62,12 +64,32 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   @override
   List<FootballMatch> get mockData => _mockdata;
 
-  Future<List<FootballMatch>> getMatchesByTournament(int tournamentId) async {
-    return mockData.where((match) => match.tournamentId == tournamentId).toList();
+  Future<FootballMatch?> getById(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((match) => match.id == matchId);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
   }
 
-  Future<List<FootballMatch>> getMatchesByGroup(int tournamentId, String group) async {
-    return mockData.where((match) =>
-      match.tournamentId == tournamentId && match.group == group).toList();
+  Future<List<FootballMatch>> getMatchesByTournament(int tournamentId) async {
+    return mockData
+        .where((match) => match.tournamentId == tournamentId)
+        .toList();
+  }
+
+  Future<List<FootballMatch>> getMatchesByGroup(
+    int tournamentId,
+    String group,
+  ) async {
+    return mockData
+        .where(
+          (match) => match.tournamentId == tournamentId && match.group == group,
+        )
+        .toList();
   }
 }

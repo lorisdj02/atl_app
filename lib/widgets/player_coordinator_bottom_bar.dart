@@ -52,20 +52,12 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
                   index: 1,
                 ),
                 const SizedBox(width: 70), // Spazio per il bottone centrale
-                _buildNavItem(
-                  icon: Icons.group,
-                  label: 'Team',
-                  index: 2,
-                ),
-                _buildNavItem(
-                  icon: Icons.person,
-                  label: 'Me',
-                  index: 3,
-                ),
+                _buildNavItem(icon: Icons.group, label: 'Team', index: 2),
+                _buildNavItem(icon: Icons.person, label: 'Me', index: 3),
               ],
             ),
           ),
-          
+
           // Floating Action Button centrale - TONDO E PIÙ GRANDE
           Positioned(
             left: MediaQuery.of(context).size.width / 2 - 40,
@@ -153,11 +145,7 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
+            Icon(icon, color: color, size: 28),
             const SizedBox(height: 4),
             Text(
               label,

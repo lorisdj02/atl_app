@@ -14,14 +14,14 @@ abstract class AppLocalizations {
   String get register;
   String get continueAsGuest;
   String get invalidCredentials;
-  
+
   // Forgot Password Screen
   String get forgotPasswordTitle;
   String get forgotPasswordSubtitle;
   String get sendEmail;
   String get cancel;
   String get waitSeconds;
-  
+
   // Registration
   String get coordinator;
   String get coordinatorDesc;
@@ -39,7 +39,7 @@ abstract class AppLocalizations {
   String get username;
   String get registerButton;
   String get undo;
-  
+
   // Tournaments screen
   String get tournaments;
   String get search;
@@ -62,7 +62,7 @@ abstract class AppLocalizations {
   String get tryChangingFilters;
   String get favoriteFeatureComingSoon;
   String get tournamentDetails;
-  
+
   // Common
   String get comingSoon;
   String get darkMode;
@@ -72,23 +72,23 @@ abstract class AppLocalizations {
   String get gallery;
   String get camera;
   String get error;
-  
+
   // Validation
   String get fillAllFields;
   String get invalidEmail;
   String get invalidPhone;
   String get messageSentSuccess;
-  
+
   // Teams count (methods with parameters)
   String teamsCount(int paid, int total);
   String teamsTotal(int count);
-  
+
   // Tournament Status
   String get statusCreated;
   String get statusScheduled;
   String get statusFinished;
   String get statusCanceled;
-  
+
   // Tournament Phase
   String get phaseGroupStage;
   String get phaseRoundOf32;
@@ -97,7 +97,7 @@ abstract class AppLocalizations {
   String get phaseQuarterFinals;
   String get phaseSemiFinals;
   String get phaseFinal;
-  
+
   // Tournament Format
   String get formatSingleMatchOnly;
   String get formatHomeAndAwayGroupStage;

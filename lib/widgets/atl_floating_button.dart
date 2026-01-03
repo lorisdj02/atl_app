@@ -20,17 +20,17 @@ class ATLFloatingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton.extended(
-              onPressed: onPressed,
-              heroTag: heroTag,
-              backgroundColor: backgroundColor,
-              icon: Icon(icon, color: Colors.white),
-              label: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            );
+      onPressed: onPressed,
+      heroTag: heroTag,
+      backgroundColor: backgroundColor,
+      icon: Icon(icon, color: Colors.white),
+      label: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 }

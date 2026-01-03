@@ -34,11 +34,17 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
 
   Future<void> _loadParticipations() async {
     try {
-      final participations = await DB.TournamentPartecipations.getByTeamId(widget.teamId);
-      final pendingPayments = participations.where((p) => (p.toPay ?? 0) > 0).toList();
+      final participations = await DB.TournamentPartecipations.getByTeamId(
+        widget.teamId,
+      );
+      final pendingPayments = participations
+          .where((p) => (p.toPay ?? 0) > 0)
+          .toList();
 
       for (var participation in pendingPayments) {
-        final tournament = await DB.Tournaments.getById(participation.tournamentId);
+        final tournament = await DB.Tournaments.getById(
+          participation.tournamentId,
+        );
         _tournamentCache[participation.tournamentId] = tournament;
       }
 
@@ -81,32 +87,35 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
       body: _isLoading
           ? const LoadingATL()
           : _participations == null || _participations!.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle, size: 80, color: Colors.green),
-                      SizedBox(height: 16),
-                      Text(
-                        'No pending payments',
-                        style: TextStyle(fontSize: 18, color: ATLColors.subtext),
-                      ),
-                    ],
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.check_circle, size: 80, color: Colors.green),
+                  SizedBox(height: 16),
+                  Text(
+                    'No pending payments',
+                    style: TextStyle(fontSize: 18, color: ATLColors.subtext),
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _participations!.length,
-                  itemBuilder: (context, index) {
-                    final participation = _participations![index];
-                    final tournament = _tournamentCache[participation.tournamentId];
-                    return _buildParticipationCard(participation, tournament);
-                  },
-                ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _participations!.length,
+              itemBuilder: (context, index) {
+                final participation = _participations![index];
+                final tournament = _tournamentCache[participation.tournamentId];
+                return _buildParticipationCard(participation, tournament);
+              },
+            ),
     );
   }
 
-  Widget _buildParticipationCard(TournamentPartecipation participation, Tournament? tournament) {
+  Widget _buildParticipationCard(
+    TournamentPartecipation participation,
+    Tournament? tournament,
+  ) {
     final double toPay = participation.toPay ?? 0;
     final double totalCost = tournament?.fee ?? toPay;
     final double paid = totalCost - toPay;
@@ -158,7 +167,9 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
                 value: progress,
                 minHeight: 12,
                 backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(ATLColors.getPrimaryColor(widget.sportCategory)),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  ATLColors.getPrimaryColor(widget.sportCategory),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -166,9 +177,12 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _showPaymentDialog(participation, tournament),
+                    onPressed: () =>
+                        _showPaymentDialog(participation, tournament),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                      backgroundColor: ATLColors.getPrimaryColor(
+                        widget.sportCategory,
+                      ),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -193,7 +207,10 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
     );
   }
 
-  void _showPaymentDialog(TournamentPartecipation participation, Tournament? tournament) {
+  void _showPaymentDialog(
+    TournamentPartecipation participation,
+    Tournament? tournament,
+  ) {
     final toPay = participation.toPay ?? 0;
     final amountController = TextEditingController();
 
@@ -214,7 +231,9 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
                 _MaxValueInputFormatter(maxValue: toPay),
@@ -264,21 +283,32 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
 
               if (amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Amount must be greater than 0')),
+                  const SnackBar(
+                    content: Text('Amount must be greater than 0'),
+                  ),
                 );
                 return;
               }
 
               if (amount > toPay) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Amount cannot exceed €${toPay.toStringAsFixed(2)}')),
+                  SnackBar(
+                    content: Text(
+                      'Amount cannot exceed €${toPay.toStringAsFixed(2)}',
+                    ),
+                  ),
                 );
                 return;
               }
 
               // TODO: Payment integration
               final newToPay = toPay - amount;
-              if(await DB().updatePayment(participation.tournamentId, participation.teamId, newToPay) == false){
+              if (await DB().updatePayment(
+                    participation.tournamentId,
+                    participation.teamId,
+                    newToPay,
+                  ) ==
+                  false) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Error processing payment')),
@@ -291,7 +321,11 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
                 Navigator.of(context).pop();
                 _loadParticipations();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Payment of €${amount.toStringAsFixed(2)} processed')),
+                  SnackBar(
+                    content: Text(
+                      'Payment of €${amount.toStringAsFixed(2)} processed',
+                    ),
+                  ),
                 );
               }
             },
@@ -321,7 +355,7 @@ class _MaxValueInputFormatter extends TextInputFormatter {
     }
 
     final double? value = double.tryParse(newValue.text);
-    
+
     if (value == null) {
       return oldValue;
     }

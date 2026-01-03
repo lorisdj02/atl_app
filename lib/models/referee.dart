@@ -45,17 +45,13 @@ class Referee extends User {
       level: json['level'],
       passwordMD5: json['password_md5'],
       imageUrl: json['image_url'],
-      birthdate: DateTime.parse(json['birthdate'])
+      birthdate: DateTime.parse(json['birthdate']),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    return {
-      ...super.toJson(),
-      'referee_id': refereeId,
-      'level': level,
-    };
+    return {...super.toJson(), 'referee_id': refereeId, 'level': level};
   }
 
   String get fullName => '$name $surname';

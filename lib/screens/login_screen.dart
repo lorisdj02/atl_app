@@ -52,9 +52,15 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     // Replace mock user creation with DB call
-    final User? user = await DB.Users.getByEmailOrUsername(usernameOrEmail, password);
+    final User? user = await DB.Users.getByEmailOrUsername(
+      usernameOrEmail,
+      password,
+    );
 
     if (user == null || user.passwordMD5 != password) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,7 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
     switch (user.role) {
       case UserRole.coordinator:
         // Fetch and set coordinator-specific data if needed
-        userProvider.setActiveUser(user, roleId: await DB.Coordinators.getById(user.id).then((c) => c!.coordinatorId));
+        userProvider.setActiveUser(
+          user,
+          roleId: await DB.Coordinators.getByUserId(
+            user.id,
+          ).then((c) => c!.coordinatorId),
+        );
         break;
       case UserRole.organization:
         // Fetch and set organization-specific data if needed
@@ -77,9 +88,16 @@ class _LoginScreenState extends State<LoginScreen> {
         //userProvider.setActiveUser(user, roleId: await DB.Organizations.getById(user.id).then((o) => o!.organizationId));
         break;
       case UserRole.player:
-        userProvider.setActiveUser(user, roleId: await DB.Players.getById(user.id).then((p) => p!.playerId));
+        userProvider.setActiveUser(
+          user,
+          roleId: await DB.Players.getByUserId(
+            user.id,
+          ).then((p) => p!.playerId),
+        );
         try {
-          userProvider.setCurrentTeamId(await DB.PlaysAt.getTeamIdByPlayerId(userProvider.activeRoleId!));
+          userProvider.setCurrentTeamId(
+            await DB.PlaysAt.getTeamIdByPlayerId(userProvider.activeRoleId!),
+          );
         } catch (e) {
           userProvider.setCurrentTeamId(-1);
         }
@@ -91,33 +109,39 @@ class _LoginScreenState extends State<LoginScreen> {
         break;
     }
 
-    print('Logged in as: ${user.username}, Team ID: ${userProvider.currentTeamId}');
+    print(
+      'Logged in as: ${user.username}, Team ID: ${userProvider.currentTeamId}',
+    );
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => HomeRouter.getHomeScreen(user),
-      ),
+      MaterialPageRoute(builder: (context) => HomeRouter.getHomeScreen(user)),
     );
   }
 
   void _handleGuestUser() {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    userProvider.setActiveUser(User(
-      id: 0,
-      username: 'Guest',
-      email: '',
-      passwordMD5: '',
-      role: UserRole.guest,
-      firebaseUid: '',
-      createdAt: DateTime.now(),
-      balance: 0.0,
-      phone: '',
-      name: 'Guest',
-      surname: '',
-      birthdate: DateTime.now(),
-    ));
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+    userProvider.setActiveUser(
+      User(
+        id: 0,
+        username: 'Guest',
+        email: '',
+        passwordMD5: '',
+        role: UserRole.guest,
+        firebaseUid: '',
+        createdAt: DateTime.now(),
+        balance: 0.0,
+        phone: '',
+        name: 'Guest',
+        surname: '',
+        birthdate: DateTime.now(),
+      ),
+    );
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => HomeRouter.getHomeScreen(userProvider.activeUser!),
+        builder: (context) =>
+            HomeRouter.getHomeScreen(userProvider.activeUser!),
       ),
     );
   }
@@ -130,11 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           // Background color
           Container(
-            decoration: const BoxDecoration(
-              color: ATLColors.background,
-            ),
+            decoration: const BoxDecoration(color: ATLColors.background),
           ),
-          
+
           // Background image at the bottom
           Positioned(
             bottom: 0,
@@ -144,14 +166,11 @@ class _LoginScreenState extends State<LoginScreen> {
               'images/login_background.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 300,
-                  color: Colors.transparent,
-                );
+                return Container(height: 300, color: Colors.transparent);
               },
             ),
           ),
-          
+
           // Main content (scrollable)
           SafeArea(
             child: SingleChildScrollView(
@@ -160,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 30),
-                    
+
                     // Logo
                     Image.asset(
                       'images/logo_vertical.png',
@@ -170,22 +189,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 256,
                           width: 256,
                           color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported, size: 75),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 75,
+                          ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Username or Email TextField
                     ATLTextField(
                       controller: _emailController,
                       hintText: 'Username or Email',
                       keyboardType: TextInputType.text,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Password TextField
                     ATLTextField(
                       controller: _passwordController,
@@ -205,9 +227,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Forgot password link
                     TextButton(
                       onPressed: () {
@@ -226,9 +248,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 10),
-                    
+
                     // Log in button
                     ATLButton(
                       text: AppLocalizations.of(context).logIn,
@@ -237,9 +259,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: ATLColors.darkBlue,
                       onPressed: _handleLogin,
                     ),
-                    
+
                     const SizedBox(height: 10),
-                    
+
                     // Register button
                     ATLButton(
                       text: AppLocalizations.of(context).register,
@@ -254,9 +276,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 56),
-                    
+
                     // Continue as guest button - BIANCO e SMALL
                     ATLButton(
                       text: AppLocalizations.of(context).continueAsGuest,
@@ -268,7 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _handleGuestUser();
                       },
                     ),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),

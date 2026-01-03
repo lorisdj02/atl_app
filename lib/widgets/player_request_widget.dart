@@ -49,7 +49,11 @@ class PlayerRequestWidget extends StatelessWidget {
                       player!.imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.person, color: Colors.white, size: 30);
+                        return const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 30,
+                        );
                       },
                     ),
                   )

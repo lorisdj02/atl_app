@@ -23,9 +23,16 @@ class ProfileScreen extends StatelessWidget {
 
   Future<void> _handleLogOut(BuildContext context) async {
     await Provider.of<UserProvider>(context, listen: false).logout();
+
+    // Naviga direttamente alla LoginScreen senza animazioni
+    // e rimuove tutte le route precedenti dallo stack
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+        transitionDuration: Duration.zero, // Nessuna animazione
+        reverseTransitionDuration: Duration.zero,
+      ),
+      (route) => false, // Rimuove tutte le route precedenti
     );
   }
 
@@ -38,7 +45,9 @@ class ProfileScreen extends StatelessWidget {
       return Scaffold(
         backgroundColor: ATLColors.background,
         body: Center(
-          child: CircularProgressIndicator(color: ATLColors.getPrimaryColor(currentSport)),
+          child: CircularProgressIndicator(
+            color: ATLColors.getPrimaryColor(currentSport),
+          ),
         ),
       );
     }

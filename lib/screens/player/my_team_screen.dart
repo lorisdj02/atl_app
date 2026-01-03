@@ -44,7 +44,9 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
       final participations = await DB.TournamentPartecipations.getByTeamId(
         teamId,
       );
-      final pendingCount = participations.where((p) => (p.toPay ?? 0) > 0).length;
+      final pendingCount = participations
+          .where((p) => (p.toPay ?? 0) > 0)
+          .length;
 
       if (mounted) {
         setState(() {
@@ -98,7 +100,8 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     if (team == null) return;
 
     final isCaptain = playerId == team!.captainId;
-    final isViceCaptain = playerId == team!.vice1Id || playerId == team!.vice2Id;
+    final isViceCaptain =
+        playerId == team!.vice1Id || playerId == team!.vice2Id;
 
     if (!isCaptain && !isViceCaptain) return;
 
@@ -192,7 +195,9 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${player.username} promoted to Vice Captain')),
+          SnackBar(
+            content: Text('${player.username} promoted to Vice Captain'),
+          ),
         );
         await loadPlayersData(team!.id);
       } else if (mounted) {
@@ -203,9 +208,9 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -214,9 +219,9 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
       final success = await DB.Teams.demoteVice(team!.id, player.playerId);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${player.username} demoted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('${player.username} demoted')));
         await loadPlayersData(team!.id);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -224,9 +229,9 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -263,14 +268,14 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         );
         await loadPlayersData(team!.id);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to expel player')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to expel player')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 

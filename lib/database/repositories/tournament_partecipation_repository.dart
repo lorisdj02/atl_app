@@ -5,111 +5,100 @@ import '../../models/tournament_partecipation.dart';
 import '../api_client.dart';
 import 'package:dio/dio.dart';
 
-class TournamentPartecipationRepository extends BaseRepository<TournamentPartecipation> {
+class TournamentPartecipationRepository
+    extends BaseRepository<TournamentPartecipation> {
   final Dio _dio = ApiClient.instance;
 
   @override
   String get endpoint => 'tournament_partecipations';
 
   @override
-  TournamentPartecipation fromJson(Map<String, dynamic> json) => TournamentPartecipation.fromJson(json);
+  TournamentPartecipation fromJson(Map<String, dynamic> json) =>
+      TournamentPartecipation.fromJson(json);
 
   @override
   Map<String, dynamic> toJson(TournamentPartecipation item) => item.toJson();
 
   List<TournamentPartecipation> _mockdata = [
-    TournamentPartecipation(
-      tournamentId: 7,
-      teamId: 2,
-      toPay: 0.0,
-    ),
-    TournamentPartecipation(
-      tournamentId: 7,
-      teamId: 3,
-      toPay: 0.0,
-    ),
-    TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 1,
-      toPay: 0,
-    ),
-    TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 5,
-      toPay: 0,
-    ),
-    TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 6,
-      toPay: 0,
-    ),
-    TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 7,
-      toPay: 0,
-    ),
-     TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 8,
-      toPay: 0,
-    ),
-     TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 9,
-      toPay: 0,
-    ),
-     TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 10,
-      toPay: 0,
-    ),
-     TournamentPartecipation(
-      tournamentId: 8,
-      teamId: 11,
-      toPay: 0,
-    ),
+    TournamentPartecipation(tournamentId: 7, teamId: 2, toPay: 0.0),
+    TournamentPartecipation(tournamentId: 7, teamId: 3, toPay: 0.0),
+    TournamentPartecipation(tournamentId: 8, teamId: 1, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 5, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 6, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 7, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 8, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 9, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 10, toPay: 0),
+    TournamentPartecipation(tournamentId: 8, teamId: 11, toPay: 0),
   ];
 
   @override
   List<TournamentPartecipation> get mockData => _mockdata;
 
   Future<List<TournamentPartecipation>> getByTournamentId(int tournamentId) {
-    if(AppConfig.isDebug){
-      return Future.value(_mockdata.where((partecipation) => partecipation.tournamentId == tournamentId).toList());
-    }
-    else{
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockdata
+            .where(
+              (partecipation) => partecipation.tournamentId == tournamentId,
+            )
+            .toList(),
+      );
+    } else {
       throw UnimplementedError();
     }
   }
 
   Future<List<TournamentPartecipation>> getByTeamId(int teamId) {
-    if(AppConfig.isDebug){
-      return Future.value(_mockdata.where((partecipation) => partecipation.teamId == teamId).toList());
-    }
-    else{
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockdata
+            .where((partecipation) => partecipation.teamId == teamId)
+            .toList(),
+      );
+    } else {
       throw UnimplementedError();
     }
   }
 
-  Future<List<TournamentPartecipation>> getPaidByTournamentId(int tournamentId) {
-    if(AppConfig.isDebug){
-      return Future.value(_mockdata.where((partecipation) => partecipation.tournamentId == tournamentId && (partecipation.toPay ?? 0) <= 0).toList());
-    }
-    else{
+  Future<List<TournamentPartecipation>> getPaidByTournamentId(
+    int tournamentId,
+  ) {
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockdata
+            .where(
+              (partecipation) =>
+                  partecipation.tournamentId == tournamentId &&
+                  (partecipation.toPay ?? 0) <= 0,
+            )
+            .toList(),
+      );
+    } else {
       throw UnimplementedError();
     }
   }
 
   Future<List<TournamentPartecipation>> getPaidByTeamId(int teamId) {
-    if(AppConfig.isDebug){
-      return Future.value(_mockdata.where((partecipation) => partecipation.teamId == teamId && (partecipation.toPay ?? 0) <= 0).toList());
-    }
-    else{
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockdata
+            .where(
+              (partecipation) =>
+                  partecipation.teamId == teamId &&
+                  (partecipation.toPay ?? 0) <= 0,
+            )
+            .toList(),
+      );
+    } else {
       throw UnimplementedError();
     }
   }
 
-  Future<TournamentPartecipation?> getByTournamentAndTeam(int tournamentId, int teamId) async {
+  Future<TournamentPartecipation?> getByTournamentAndTeam(
+    int tournamentId,
+    int teamId,
+  ) async {
     if (AppConfig.isDebug) {
       try {
         final partecipation = _mockdata.firstWhere(
@@ -126,26 +115,31 @@ class TournamentPartecipationRepository extends BaseRepository<TournamentParteci
     }
   }
 
-  Future<bool> addPartecipation(int tournamentId, int teamId, double toPay) async {
+  Future<bool> addPartecipation(
+    int tournamentId,
+    int teamId,
+    double toPay,
+  ) async {
     TournamentPartecipation newPartecipation = TournamentPartecipation(
       tournamentId: tournamentId,
       teamId: teamId,
       toPay: toPay,
     );
-    if(AppConfig.isDebug){
+    if (AppConfig.isDebug) {
       _mockdata.add(newPartecipation);
       return Future.value(true);
-    }
-    else{
+    } else {
       throw UnimplementedError();
     }
   }
 
   Future<bool> deletePartecipation(int tournamentId, int teamId) async {
     if (AppConfig.isDebug) {
-      _mockdata.removeWhere((partecipation) =>
-          partecipation.tournamentId == tournamentId &&
-          partecipation.teamId == teamId);
+      _mockdata.removeWhere(
+        (partecipation) =>
+            partecipation.tournamentId == tournamentId &&
+            partecipation.teamId == teamId,
+      );
       return true;
     } else {
       throw UnimplementedError();

@@ -224,37 +224,58 @@ class UserRepository extends BaseRepository<User> {
   @override
   List<User> get mockData => _mockData;
 
+  Future<User?> getByUserId(int id) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((user) => user.id == id);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Metodo custom: ottieni user per username
   Future<User?> getByUsername(String username) async {
-    final users = await getAll();
-    try {
-      return users.firstWhere((u) => u.username == username);
-    } catch (e) {
-      return null;
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((user) => user.username == username);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
     }
   }
 
   /// Metodo custom: ottieni user per email
   Future<User?> getByEmail(String email) async {
-    final users = await getAll();
-    try {
-      return users.firstWhere((u) => u.email == email);
-    } catch (e) {
-      return null;
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((user) => user.email == email);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
     }
   }
 
   /// Metodo custom: ottieni user per email o username
   Future<User?> getByEmailOrUsername(String identifier, String password) async {
-    final users = await getAll();
-    try {
-      return users.firstWhere(
-        (u) =>
-            u.passwordMD5 == password &&
-            (u.email == identifier || u.username == identifier),
-      );
-    } catch (e) {
-      return null;
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere(
+          (u) =>
+              u.passwordMD5 == password &&
+              (u.email == identifier || u.username == identifier),
+        );
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
     }
   }
 
@@ -265,23 +286,25 @@ class UserRepository extends BaseRepository<User> {
     String? oldPasswordMD5,
     String? newPasswordMD5,
     DateTime? birthdate,
-    String? imgUrl
+    String? imgUrl,
   }) async {
     if (AppConfig.isDebug) {
       // Update mock data
       final index = _mockData.indexWhere((u) => u.id == id);
       if (index == -1) return false;
 
-      if(username != null) {
+      if (username != null) {
         _mockData[index].username = username;
       }
-      if(phone != null) {
+      if (phone != null) {
         _mockData[index].phone = phone;
       }
-      if(newPasswordMD5 != null && oldPasswordMD5 != null && _mockData[index].passwordMD5 == oldPasswordMD5) {
+      if (newPasswordMD5 != null &&
+          oldPasswordMD5 != null &&
+          _mockData[index].passwordMD5 == oldPasswordMD5) {
         _mockData[index].passwordMD5 = newPasswordMD5;
       }
-      if(imgUrl != null) {
+      if (imgUrl != null) {
         _mockData[index].imageUrl = imgUrl;
       }
       return true;
@@ -290,9 +313,11 @@ class UserRepository extends BaseRepository<User> {
     }
   }
 
-  Future<bool> deleteAccount (int id, String passwordMD5) async {
+  Future<bool> deleteAccount(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
-      final index = _mockData.indexWhere((u) => u.id == id && u.passwordMD5 == passwordMD5);
+      final index = _mockData.indexWhere(
+        (u) => u.id == id && u.passwordMD5 == passwordMD5,
+      );
       if (index == -1) return false;
 
       _mockData.removeAt(index);

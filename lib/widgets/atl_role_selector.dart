@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
 
-enum UserRole {
-  coordinator,
-  player,
-  referee,
-  organization,
-}
+enum UserRole { coordinator, player, referee, organization }
 
 /// Widget per la selezione del ruolo utente
 class ATLRoleSelector extends StatelessWidget {
@@ -87,11 +82,7 @@ class ATLRoleSelector extends StatelessWidget {
                 color: ATLColors.darkBlue,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                _icon,
-                color: Colors.white,
-                size: 30,
-              ),
+              child: Icon(_icon, color: Colors.white, size: 30),
             ),
             const SizedBox(width: 16),
             // Titolo e sottotitolo

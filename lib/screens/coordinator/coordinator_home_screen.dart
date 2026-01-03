@@ -11,17 +11,19 @@ import '../teams/team_screen.dart';
 import '../profile_screen.dart';
 
 class CoordinatorHomeScreen extends StatefulWidget {
-  const CoordinatorHomeScreen({
-    super.key,
-  });
+  const CoordinatorHomeScreen({super.key});
 
   @override
   State<CoordinatorHomeScreen> createState() => _CoordinatorHomeScreenState();
 }
 
 class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
+  late final UserProvider userProvider = Provider.of<UserProvider>(
+    context,
+    listen: false,
+  );
+  late final SportCategory _currentSport =
+      userProvider.selectedSportCategory ?? SportCategory.football;
 
   void _onNavTap(int index) {
     if (index == 4) {
@@ -30,24 +32,16 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       Widget screen;
       switch (index) {
         case 0:
-          screen = ShopScreen(
-            currentSport: _currentSport,
-          );
+          screen = ShopScreen(currentSport: _currentSport);
           break;
         case 1:
-          screen = AllTournamentsScreen(
-            currentSport: _currentSport,
-          );
+          screen = AllTournamentsScreen(currentSport: _currentSport);
           break;
         case 2:
-          screen = TeamScreen(
-            currentSport: _currentSport,
-          );
+          screen = TeamScreen(currentSport: _currentSport);
           break;
         case 3:
-          screen = ProfileScreen(
-            currentSport: _currentSport,
-          );
+          screen = ProfileScreen(currentSport: _currentSport);
           break;
         default:
           return;
@@ -71,7 +65,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         duration: Duration(seconds: 2),
       ),
     );
-    
+
     /* TODO: Riabilitare questo codice quando ci saranno più sport
     showDialog(
       context: context,
@@ -105,9 +99,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     final user = userProvider.activeUser!;
-    
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -185,9 +182,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   }
 
   Widget _buildCoordinatorHomeContent() {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     final user = userProvider.activeUser!;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -211,7 +211,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               children: [
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: ATLColors.getPrimaryColor(_currentSport).withOpacity(0.2),
+                  backgroundColor: ATLColors.getPrimaryColor(
+                    _currentSport,
+                  ).withOpacity(0.2),
                   child: Icon(
                     Icons.admin_panel_settings,
                     color: ATLColors.getPrimaryColor(_currentSport),
@@ -246,9 +248,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick actions for coordinator
           Text(
             'COORDINATOR TOOLS',
@@ -259,9 +261,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -277,21 +279,17 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildActionCard(
-                  'Manage Teams',
-                  Icons.group,
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
-                ),
+                child: _buildActionCard('Manage Teams', Icons.group, () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Coming soon')));
+                }),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Upcoming tournaments
           Text(
             'UPCOMING TOURNAMENTS',
@@ -302,9 +300,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -328,18 +326,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'No tournaments scheduled',
-                  style: TextStyle(
-                    color: ATLColors.subtext,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Create a tournament to get started!',
-                  style: TextStyle(
-                    color: ATLColors.title,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: ATLColors.title, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -358,7 +350,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: ATLColors.getPrimaryColor(_currentSport), width: 2),
+          border: Border.all(
+            color: ATLColors.getPrimaryColor(_currentSport),
+            width: 2,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),

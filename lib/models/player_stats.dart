@@ -1,4 +1,4 @@
-class PlayerStats{
+class PlayerStats {
   final int playerId;
 
   int footballMotms;

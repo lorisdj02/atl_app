@@ -6,7 +6,6 @@ import '../utils/atl_colors.dart';
 
 /// Widget quadrato per visualizzare un team in formato compatto
 class SquareTeamWidget extends AbstractTeamWidget {
-
   const SquareTeamWidget({
     super.key,
     required super.team,

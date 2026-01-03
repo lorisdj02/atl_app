@@ -13,10 +13,7 @@ import '../../widgets/info_row_widget.dart';
 class EditInfosScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const EditInfosScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const EditInfosScreen({super.key, required this.currentSport});
 
   @override
   State<EditInfosScreen> createState() => _EditInfosScreenState();
@@ -24,12 +21,12 @@ class EditInfosScreen extends StatefulWidget {
 
 class _EditInfosScreenState extends State<EditInfosScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _usernameController;
   late TextEditingController _phoneController;
   late TextEditingController _oldPasswordController;
   late TextEditingController _newPasswordController;
-  
+
   bool _isLoading = false;
   bool _hasChanges = false;
   bool _showPasswordFields = false;
@@ -38,12 +35,12 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   void initState() {
     super.initState();
     final user = Provider.of<UserProvider>(context, listen: false).activeUser;
-    
+
     _usernameController = TextEditingController(text: user?.username ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
     _oldPasswordController = TextEditingController();
     _newPasswordController = TextEditingController();
-    
+
     // Add listeners to detect changes
     _usernameController.addListener(_onFieldChanged);
     _phoneController.addListener(_onFieldChanged);
@@ -68,13 +65,14 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
 
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.activeUser;
     if (user == null) return;
-    
+
     // Validate password fields if changing password
-    if (_oldPasswordController.text.isNotEmpty || _newPasswordController.text.isNotEmpty) {
+    if (_oldPasswordController.text.isNotEmpty ||
+        _newPasswordController.text.isNotEmpty) {
       if (_oldPasswordController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -84,7 +82,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         );
         return;
       }
-      
+
       if (_newPasswordController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -94,7 +92,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         );
         return;
       }
-      
+
       if (_newPasswordController.text.length < 6) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -104,7 +102,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         );
         return;
       }
-      
+
       // Check if old password matches
       if (user.passwordMD5 != _oldPasswordController.text) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -116,40 +114,40 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         return;
       }
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       // Update user info through repository
       final bool success = await DB.Users.updateUserInfo(
         id: user.id,
-        username: _usernameController.text != user.username 
-            ? _usernameController.text 
+        username: _usernameController.text != user.username
+            ? _usernameController.text
             : null,
-        phone: _phoneController.text != user.phone 
-            ? _phoneController.text 
+        phone: _phoneController.text != user.phone
+            ? _phoneController.text
             : null,
-        oldPasswordMD5: _oldPasswordController.text.isNotEmpty 
-            ? _oldPasswordController.text 
+        oldPasswordMD5: _oldPasswordController.text.isNotEmpty
+            ? _oldPasswordController.text
             : null,
-        newPasswordMD5: _newPasswordController.text.isNotEmpty 
-            ? _newPasswordController.text 
+        newPasswordMD5: _newPasswordController.text.isNotEmpty
+            ? _newPasswordController.text
             : null,
       );
-      
+
       if (!success) {
         throw Exception('Failed to update user info');
       }
-      
+
       // Retrieve updated user from repository
-      final updatedUser = await DB.Users.getById(user.id);
+      final updatedUser = await DB.Users.getByUserId(user.id);
       if (updatedUser == null) {
         throw Exception('Failed to retrieve updated user');
       }
-      
+
       // Update UserProvider
       await userProvider.updateUser(updatedUser);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -157,7 +155,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         setState(() {
           _hasChanges = false;
           _oldPasswordController.clear();
@@ -219,14 +217,18 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                   children: [
                     CircleAvatar(
                       radius: 60,
-                      backgroundColor: ATLColors.getPrimaryColor(widget.currentSport).withOpacity(0.2),
-                      backgroundImage: user?.imageUrl != null 
-                          ? NetworkImage(user!.imageUrl!) 
+                      backgroundColor: ATLColors.getPrimaryColor(
+                        widget.currentSport,
+                      ).withOpacity(0.2),
+                      backgroundImage: user?.imageUrl != null
+                          ? NetworkImage(user!.imageUrl!)
                           : null,
                       child: user?.imageUrl == null
                           ? Icon(
                               Icons.person,
-                              color: ATLColors.getPrimaryColor(widget.currentSport),
+                              color: ATLColors.getPrimaryColor(
+                                widget.currentSport,
+                              ),
                               size: 60,
                             )
                           : null,
@@ -238,12 +240,16 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                         onTap: () {
                           // TODO: Implement image picker
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Photo upload coming soon')),
+                            const SnackBar(
+                              content: Text('Photo upload coming soon'),
+                            ),
                           );
                         },
                         child: CircleAvatar(
                           radius: 18,
-                          backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+                          backgroundColor: ATLColors.getPrimaryColor(
+                            widget.currentSport,
+                          ),
                           child: const Icon(
                             Icons.camera_alt,
                             color: Colors.white,
@@ -256,7 +262,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              
+
               // Editable Information Section
               const Text(
                 'Editable Information',
@@ -267,23 +273,23 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               _buildLabel('Username'),
               ATLTextField(
                 controller: _usernameController,
                 hintText: 'Enter username',
               ),
               const SizedBox(height: 16),
-              
+
               _buildLabel('Phone'),
               ATLTextField(
                 controller: _phoneController,
                 hintText: 'Enter phone number',
                 keyboardType: TextInputType.phone,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Change Password Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -298,7 +304,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                   ),
                   IconButton(
                     icon: Icon(
-                      _showPasswordFields ? Icons.expand_less : Icons.expand_more,
+                      _showPasswordFields
+                          ? Icons.expand_less
+                          : Icons.expand_more,
                       color: ATLColors.darkBlue,
                     ),
                     onPressed: () {
@@ -313,7 +321,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                   ),
                 ],
               ),
-              
+
               if (_showPasswordFields) ...[
                 const SizedBox(height: 16),
                 _buildLabel('Current Password'),
@@ -330,9 +338,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                   obscureText: true,
                 ),
               ],
-              
+
               const SizedBox(height: 32),
-              
+
               // Account Details (Read-only)
               const Text(
                 'Account Details',
@@ -343,32 +351,40 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               InfoRowWidget(label: 'Email', value: user?.email ?? 'N/A'),
               if (isPlayer) ...[
                 InfoRowWidget(label: 'Name', value: user.name),
                 InfoRowWidget(label: 'Surname', value: user.surname),
-                InfoRowWidget(label: 'Birth Date', value: _formatDate(user.birthdate)),
+                InfoRowWidget(
+                  label: 'Birth Date',
+                  value: _formatDate(user.birthdate),
+                ),
               ],
-              InfoRowWidget(label: 'Role', value: user?.roleDisplayName ?? 'N/A'),
-              InfoRowWidget(label: 'Member since', value: _formatDate(user?.createdAt)),
-              InfoRowWidget(label: 'VIP Status', value: user?.isVip == true ? 'Active' : 'Inactive'),
-              
+              InfoRowWidget(
+                label: 'Role',
+                value: user?.roleDisplayName ?? 'N/A',
+              ),
+              InfoRowWidget(
+                label: 'Member since',
+                value: _formatDate(user?.createdAt),
+              ),
+              InfoRowWidget(
+                label: 'VIP Status',
+                value: user?.isVip == true ? 'Active' : 'Inactive',
+              ),
+
               const SizedBox(height: 32),
-              
+
               // Save Button
               ATLButton(
                 text: _isLoading ? 'Saving...' : 'Save Changes',
                 size: ATLButtonSize.large,
                 isFilled: true,
-                color: _hasChanges 
-                    ? ATLColors.darkBlue 
-                    : ATLColors.subtext,
+                color: _hasChanges ? ATLColors.darkBlue : ATLColors.subtext,
                 fullWidth: true,
                 onPressed: _hasChanges && !_isLoading ? _saveChanges : () {},
               ),
-              
-
             ],
           ),
         ),

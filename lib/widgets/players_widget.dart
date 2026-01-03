@@ -21,9 +21,7 @@ class PlayersWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (players.isEmpty) {
-      return const Center(
-        child: Text('No players found'),
-      );
+      return const Center(child: Text('No players found'));
     }
 
     return ListView.builder(
@@ -39,7 +37,9 @@ class PlayersWidget extends StatelessWidget {
               color: ATLColors.getPrimaryColor(sportCategory).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: ATLColors.getPrimaryColor(sportCategory).withOpacity(0.3),
+                color: ATLColors.getPrimaryColor(
+                  sportCategory,
+                ).withOpacity(0.3),
                 width: 2,
               ),
             ),
@@ -82,7 +82,10 @@ class PlayersWidget extends StatelessWidget {
                     ),
                     if (team?.vip == true)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.amber.shade100,
                           borderRadius: BorderRadius.circular(8),
@@ -112,11 +115,7 @@ class PlayersWidget extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(
-                      Icons.people,
-                      size: 18,
-                      color: Colors.grey.shade600,
-                    ),
+                    Icon(Icons.people, size: 18, color: Colors.grey.shade600),
                     const SizedBox(width: 6),
                     Text(
                       '${team?.players ?? 0}/24 Players',
@@ -160,8 +159,10 @@ class PlayersWidget extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isCaptain ?  ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
-                  : (isVice1 || isVice2) ? ATLColors.getSecondaryColor(sportCategory).withOpacity(0.2)
+              color: isCaptain
+                  ? ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
+                  : (isVice1 || isVice2)
+                  ? ATLColors.getSecondaryColor(sportCategory).withOpacity(0.2)
                   : Colors.white,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -194,9 +195,9 @@ class PlayersWidget extends StatelessWidget {
                       ),
                     ),
                   ),
-                
+
                 if (isCaptain || isVice1 || isVice2) const SizedBox(width: 12),
-                
+
                 // Avatar
                 Container(
                   width: 50,
@@ -211,15 +212,19 @@ class PlayersWidget extends StatelessWidget {
                             player.imageUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.person, color: Colors.white, size: 30);
+                              return const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 30,
+                              );
                             },
                           ),
                         )
                       : const Icon(Icons.person, color: Colors.white, size: 30),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 // Player name
                 Expanded(
                   child: Text(

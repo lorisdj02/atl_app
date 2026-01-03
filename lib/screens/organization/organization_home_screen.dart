@@ -7,22 +7,21 @@ import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
-
-  const OrganizationHomeScreen({
-    super.key,
-  });
+  const OrganizationHomeScreen({super.key});
 
   @override
   State<OrganizationHomeScreen> createState() => _OrganizationHomeScreenState();
 }
 
 class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final UserProvider userProvider = Provider.of<UserProvider>(
+    context,
+    listen: false,
+  );
   late final SportCategory? sportCategory = userProvider.selectedSportCategory;
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -62,7 +61,10 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   }
 
   Widget _buildOrganizationHomeContent() {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     final user = userProvider.activeUser!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -122,9 +124,9 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick actions
           Text(
             'QUICK ACTIONS',
@@ -135,69 +137,53 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
-                child: _buildActionCard(
-                  'Manage Fields',
-                  Icons.stadium,
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
-                ),
+                child: _buildActionCard('Manage Fields', Icons.stadium, () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Coming soon')));
+                }),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildActionCard(
-                  'Bookings',
-                  Icons.calendar_month,
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
-                ),
+                child: _buildActionCard('Bookings', Icons.calendar_month, () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Coming soon')));
+                }),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
-                child: _buildActionCard(
-                  'Revenue',
-                  Icons.attach_money,
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
-                ),
+                child: _buildActionCard('Revenue', Icons.attach_money, () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Coming soon')));
+                }),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildActionCard(
-                  'Reports',
-                  Icons.bar_chart,
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
-                ),
+                child: _buildActionCard('Reports', Icons.bar_chart, () {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Coming soon')));
+                }),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Recent activity
           Text(
             'RECENT ACTIVITY',
@@ -208,9 +194,9 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -226,26 +212,16 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
             ),
             child: Column(
               children: [
-                const Icon(
-                  Icons.inbox,
-                  color: ATLColors.darkBlue,
-                  size: 64,
-                ),
+                const Icon(Icons.inbox, color: ATLColors.darkBlue, size: 64),
                 const SizedBox(height: 16),
                 Text(
                   'No recent activity',
-                  style: TextStyle(
-                    color: ATLColors.subtext,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Activity will appear here',
-                  style: TextStyle(
-                    color: ATLColors.title,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: ATLColors.title, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -275,11 +251,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: ATLColors.darkBlue,
-              size: 32,
-            ),
+            Icon(icon, color: ATLColors.darkBlue, size: 32),
             const SizedBox(height: 8),
             Text(
               label,

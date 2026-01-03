@@ -8,7 +8,8 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
   String get endpoint => 'football_standings';
 
   @override
-  FootballStanding fromJson(Map<String, dynamic> json) => FootballStanding.fromJson(json);
+  FootballStanding fromJson(Map<String, dynamic> json) =>
+      FootballStanding.fromJson(json);
 
   @override
   Map<String, dynamic> toJson(FootballStanding item) => item.toJson();
@@ -88,15 +89,26 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       group: 'B',
     ),
   ];
-  
+
   List<FootballStanding> get mockData => _mockData;
 
-  Future<List<FootballStanding>> getStandingsByTournament(int tournamentId) async{
-    return mockData.where((standing) => standing.tournamentId == tournamentId).toList();
+  Future<List<FootballStanding>> getStandingsByTournament(
+    int tournamentId,
+  ) async {
+    return mockData
+        .where((standing) => standing.tournamentId == tournamentId)
+        .toList();
   }
 
-  Future<List<FootballStanding>> getStandingsByGroup(int tournamentId, String group) async {
-    return mockData.where((standing) =>
-      standing.tournamentId == tournamentId && standing.group == group).toList();
+  Future<List<FootballStanding>> getStandingsByGroup(
+    int tournamentId,
+    String group,
+  ) async {
+    return mockData
+        .where(
+          (standing) =>
+              standing.tournamentId == tournamentId && standing.group == group,
+        )
+        .toList();
   }
 }

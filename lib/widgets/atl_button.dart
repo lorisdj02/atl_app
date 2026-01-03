@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ATLButtonSize {
-  small,
-  medium,
-  large,
-}
+enum ATLButtonSize { small, medium, large }
 
 class ATLButton extends StatelessWidget {
   final String text;
@@ -30,10 +26,10 @@ class ATLButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = isFilled 
-        ? (backgroundColor ?? color) 
+    final bgColor = isFilled
+        ? (backgroundColor ?? color)
         : (backgroundColor ?? Colors.transparent);
-    
+
     final fgColor = textColor ?? (isFilled ? Colors.white : color);
 
     final button = ElevatedButton(
@@ -46,11 +42,12 @@ class ATLButton extends StatelessWidget {
           vertical: _getVerticalPadding,
           horizontal: _getHorizontalPadding,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: isFilled ? 2 : 0,
-        minimumSize: Size(_getMinWidth, 0), // Larghezza minima in base alla size
+        minimumSize: Size(
+          _getMinWidth,
+          0,
+        ), // Larghezza minima in base alla size
       ),
       child: Text(
         text,
@@ -62,7 +59,7 @@ class ATLButton extends StatelessWidget {
       ),
     );
 
-    return fullWidth 
+    return fullWidth
         ? SizedBox(width: double.infinity, child: button)
         : Align(alignment: Alignment.center, child: button);
   }
@@ -103,7 +100,7 @@ class ATLButton extends StatelessWidget {
   /// Larghezza minima del bottone in base alla size
   double get _getMinWidth {
     if (fullWidth) return double.infinity;
-    
+
     switch (size) {
       case ATLButtonSize.small:
         return 120; // Bottone piccolo

@@ -29,9 +29,11 @@ class TeamRanksScreen extends StatelessWidget {
             return RanksTeamWidget(
               team: team,
               rankPts: points,
-              color: index == 0 ? ATLColors.getPrimaryColor(sportCategory)
-                     : index == 1 ? ATLColors.getSecondaryColor(sportCategory)
-                     : Colors.white,
+              color: index == 0
+                  ? ATLColors.getPrimaryColor(sportCategory)
+                  : index == 1
+                  ? ATLColors.getSecondaryColor(sportCategory)
+                  : Colors.white,
               sportCategory: sportCategory,
               imageUrl: team.imageUrl, // TODO: Replace with actual image URL
             );

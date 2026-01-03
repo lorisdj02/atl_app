@@ -26,7 +26,6 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   bool _requestLoaded = false;
   bool _isPlayerInTeam = false;
 
-
   @override
   void initState() {
     super.initState();
@@ -38,7 +37,10 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   int getTeamId() => widget.teamId;
 
   Future<void> _loadRequestStatus() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
       setState(() {
         _requestLoaded = true;
@@ -64,7 +66,10 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _checkPlayerInTeam() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
       setState(() {
         _requestLoaded = true;
@@ -91,7 +96,10 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _handleJoinTeam() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
       setState(() {
         _requestLoaded = true;
@@ -115,15 +123,18 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error sending request: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error sending request: $e')));
       }
     }
   }
 
   Future<void> _handleCancelRequest() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
       setState(() {
         _requestLoaded = true;
@@ -147,15 +158,15 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       }
       await _loadRequestStatus();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request cancelled')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Request cancelled')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error cancelling request: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error cancelling request: $e')));
       }
     }
   }
@@ -209,13 +220,10 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       body: TabBarView(
         controller: tabController,
         physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          buildPlayersTab(),
-          buildPalmaresTab(),
-          buildStatsTab(),
-        ],
+        children: [buildPlayersTab(), buildPalmaresTab(), buildStatsTab()],
       ),
-      floatingActionButton: (_requestLoaded && !_isPlayerInTeam && playerId != null)
+      floatingActionButton:
+          (_requestLoaded && !_isPlayerInTeam && playerId != null)
           ? ATLFloatingButton(
               heroTag: 'join_team_fab',
               onPressed: _existingRequest != null

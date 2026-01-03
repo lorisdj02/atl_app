@@ -3,7 +3,6 @@ import 'booking_status.dart';
 
 /// Modello PrivateBooking dal database
 
-
 class PrivateBooking {
   final int id;
   final int fieldId;
@@ -19,8 +18,8 @@ class PrivateBooking {
     required DateTime startTime,
     required DateTime finishTime,
     this.status = BookingStatus.booked,
-  })  : startTime = startTime.toUtc(),
-        finishTime = finishTime.toUtc();
+  }) : startTime = startTime.toUtc(),
+       finishTime = finishTime.toUtc();
 
   factory PrivateBooking.fromJson(Map<String, dynamic> json) {
     return PrivateBooking(
@@ -29,7 +28,9 @@ class PrivateBooking {
       playerId: json['player_id'],
       startTime: DateTime.parse(json['start_time']),
       finishTime: DateTime.parse(json['finish_time']),
-      status: BookingStatus.values.firstWhere((e) => e.toString() == 'BookingStatus.' + json['status']),
+      status: BookingStatus.values.firstWhere(
+        (e) => e.toString() == 'BookingStatus.' + json['status'],
+      ),
     );
   }
 

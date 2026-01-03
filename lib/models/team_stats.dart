@@ -30,12 +30,7 @@ class TeamStats {
     };
   }
 
-  TeamStats copyWith({
-    int? playerId,
-    int? teamId,
-    int? motm,
-    int? goals,
-  }) {
+  TeamStats copyWith({int? playerId, int? teamId, int? motm, int? goals}) {
     return TeamStats(
       playerId: playerId ?? this.playerId,
       teamId: teamId ?? this.teamId,

@@ -1,4 +1,3 @@
-
 enum FootballMatchEventType {
   redCard,
   yellowCard,
@@ -11,7 +10,7 @@ enum FootballMatchEventType {
   finish,
 }
 
-class FootballMatchEvent{
+class FootballMatchEvent {
   final int id;
   final FootballMatchEventType type;
   final int? playerId;
@@ -30,7 +29,8 @@ class FootballMatchEvent{
     return FootballMatchEvent(
       id: json['id'],
       type: FootballMatchEventType.values.firstWhere(
-          (e) => e.toString().split('.').last == json['type']),
+        (e) => e.toString().split('.').last == json['type'],
+      ),
       playerId: json['playerId'],
       minute: json['minute'],
       matchId: json['matchId'],

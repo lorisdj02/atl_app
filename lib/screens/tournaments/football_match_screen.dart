@@ -326,7 +326,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<Map<String, dynamic>> _loadPlayerAndTeam(int playerId) async {
     try {
-      final player = await DB.Players.getById(playerId);
+      final player = await DB.Players.getByUserId(playerId);
       if (player == null) {
         return {};
       }

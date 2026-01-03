@@ -12,6 +12,7 @@ class PalmaresWidget extends StatelessWidget {
   final SportCategory sportCategory;
   final Coordinator? coordinator;
   final Field? field;
+  final String? cityName;
 
   const PalmaresWidget({
     super.key,
@@ -20,12 +21,13 @@ class PalmaresWidget extends StatelessWidget {
     required this.sportCategory,
     this.coordinator,
     this.field,
+    this.cityName,
   });
 
   @override
   Widget build(BuildContext context) {
     final isWinner = palmares.position == PalmaresPosition.WINNER;
-    final bgColor = isWinner 
+    final bgColor = isWinner
         ? ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
         : Colors.white;
 
@@ -59,9 +61,9 @@ class PalmaresWidget extends StatelessWidget {
               size: 30,
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Info torneo
           Expanded(
             child: Column(
@@ -69,11 +71,7 @@ class PalmaresWidget extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.person,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    Icon(Icons.person, size: 14, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
                     Text(
                       coordinator?.username ?? 'Unknown',
@@ -83,11 +81,7 @@ class PalmaresWidget extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Icon(
-                      Icons.people,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    Icon(Icons.people, size: 14, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
                     Text(
                       '${tournament.numTeams}',
@@ -110,16 +104,12 @@ class PalmaresWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
+                    const Icon(Icons.location_on, size: 14, color: Colors.grey),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        field != null 
-                            ? '${field!.name}, ${tournament.city} (${field!.city.substring(0, 2).toUpperCase()})'
+                        field != null
+                            ? '${field!.name}, ${cityName ?? 'Unknown city'}'
                             : 'Unknown location',
                         style: TextStyle(
                           fontSize: 12,
@@ -133,7 +123,7 @@ class PalmaresWidget extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Badge posizione
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

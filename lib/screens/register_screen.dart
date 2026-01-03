@@ -33,7 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
   bool _obscurePassword = true;
-  
+
   // Profile image
   String? _profileImagePath;
 
@@ -63,14 +63,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _canProceedFromStep2() {
     return _nameController.text.trim().isNotEmpty &&
-           _surnameController.text.trim().isNotEmpty &&
-           _cityController.text.trim().isNotEmpty;
+        _surnameController.text.trim().isNotEmpty &&
+        _cityController.text.trim().isNotEmpty;
   }
 
   bool _canProceedFromStep3() {
     return _emailController.text.trim().isNotEmpty &&
-           _usernameController.text.trim().isNotEmpty &&
-           _passwordController.text.trim().isNotEmpty;
+        _usernameController.text.trim().isNotEmpty &&
+        _passwordController.text.trim().isNotEmpty;
   }
 
   void _goToNextStep() {
@@ -83,14 +83,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       return;
     }
-    
+
     if (_currentStep < 3) {
       setState(() {
         _currentStep++;
       });
     }
   }
-  
+
   Future<void> _selectBirthday() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -100,22 +100,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: ATLColors.darkBlue,
-            ),
+            colorScheme: const ColorScheme.light(primary: ATLColors.darkBlue),
           ),
           child: child!,
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
-        _birthdayController.text = '${picked.day}/${picked.month}/${picked.year}';
+        _birthdayController.text =
+            '${picked.day}/${picked.month}/${picked.year}';
       });
     }
   }
-  
+
   Future<void> _pickProfileImage() async {
     try {
       final ImageSource? source = await showDialog<ImageSource>(
@@ -207,12 +206,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       return;
     }
-    
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
-    
+
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+
     // TODO: Implement registration logic
 
-    
     print('Registrazione: ruolo=$_selectedRole');
     Navigator.of(context).pop();
   }
@@ -225,11 +226,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         children: [
           // Background color
           Container(
-            decoration: const BoxDecoration(
-              color: ATLColors.background,
-            ),
+            decoration: const BoxDecoration(color: ATLColors.background),
           ),
-          
+
           // Background image at the bottom
           Positioned(
             bottom: -100,
@@ -239,14 +238,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               'images/login_background.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 300,
-                  color: Colors.transparent,
-                );
+                return Container(height: 300, color: Colors.transparent);
               },
             ),
           ),
-          
+
           // Main content (scrollable)
           SafeArea(
             child: SingleChildScrollView(
@@ -255,7 +251,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 30),
-                    
+
                     // Logo
                     Image.asset(
                       'images/logo_vertical.png',
@@ -265,28 +261,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           height: 150,
                           width: 150,
                           color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported, size: 50),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                          ),
                         );
                       },
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Step indicator
-                    ATLStepIndicator(
-                      totalSteps: 3,
-                      currentStep: _currentStep,
-                    ),
-                    
+                    ATLStepIndicator(totalSteps: 3, currentStep: _currentStep),
+
                     const SizedBox(height: 30),
-                    
+
                     // Content based on current step
                     if (_currentStep == 1) _buildStep1(),
                     if (_currentStep == 2) _buildStep2(),
                     if (_currentStep == 3) _buildStep3(),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Bottom button (white/transparent)
                     if (_currentStep == 1 || _currentStep == 2)
                       ATLButton(
@@ -297,7 +293,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         textColor: Colors.black,
                         onPressed: _cancelAndGoBack,
                       ),
-                    
+
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -367,25 +363,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
           controller: _nameController,
           hintText: '${AppLocalizations.of(context).name} *',
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Surname *
         ATLTextField(
           controller: _surnameController,
           hintText: '${AppLocalizations.of(context).surname} *',
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // City * (TODO: make it a dropdown)
         ATLTextField(
           controller: _cityController,
           hintText: '${AppLocalizations.of(context).city} *',
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Birthday (date picker)
         GestureDetector(
           onTap: _selectBirthday,
@@ -396,9 +392,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 30),
-        
+
         // Continue button
         ATLButton(
           text: AppLocalizations.of(context).continueButton,
@@ -433,11 +429,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       : null,
                 ),
                 child: _profileImagePath == null
-                    ? const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.white,
-                      )
+                    ? const Icon(Icons.person, size: 60, color: Colors.white)
                     : null,
               ),
               Positioned(
@@ -459,26 +451,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 30),
-        
+
         // Email *
         ATLTextField(
           controller: _emailController,
           hintText: '${AppLocalizations.of(context).email} *',
           keyboardType: TextInputType.emailAddress,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Username *
         ATLTextField(
           controller: _usernameController,
           hintText: '${AppLocalizations.of(context).username} *',
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Password *
         ATLTextField(
           controller: _passwordController,
@@ -486,9 +478,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           obscureText: _obscurePassword,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscurePassword
-                  ? Icons.visibility_off
-                  : Icons.visibility,
+              _obscurePassword ? Icons.visibility_off : Icons.visibility,
               color: ATLColors.darkBlue,
             ),
             onPressed: () {
@@ -498,9 +488,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
         ),
-        
+
         const SizedBox(height: 30),
-        
+
         // Register button
         ATLButton(
           text: AppLocalizations.of(context).registerButton,
@@ -509,9 +499,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           color: ATLColors.darkBlue,
           onPressed: _register,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Undo button
         ATLButton(
           text: AppLocalizations.of(context).undo,

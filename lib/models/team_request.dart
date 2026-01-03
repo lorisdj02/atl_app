@@ -3,10 +3,7 @@ class TeamRequest {
   final int teamId;
   final int playerId;
 
-  TeamRequest({
-    required this.teamId,
-    required this.playerId,
-  });
+  TeamRequest({required this.teamId, required this.playerId});
 
   factory TeamRequest.fromJson(Map<String, dynamic> json) {
     return TeamRequest(
@@ -16,16 +13,10 @@ class TeamRequest {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'team_id': teamId,
-      'player_id': playerId,
-    };
+    return {'team_id': teamId, 'player_id': playerId};
   }
 
-  TeamRequest copyWith({
-    int? teamId,
-    int? playerId,
-  }) {
+  TeamRequest copyWith({int? teamId, int? playerId}) {
     return TeamRequest(
       teamId: teamId ?? this.teamId,
       playerId: playerId ?? this.playerId,

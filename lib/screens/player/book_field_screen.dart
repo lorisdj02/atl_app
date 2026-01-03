@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/field.dart';
+import '../../models/city.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/private_bookings.dart';
 import '../../models/booking_status.dart';
@@ -11,19 +12,16 @@ import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/atl_step_indicator.dart';
+import '../../widgets/field_size_alert_dialog.dart';
 import '../../models/sport_category.dart';
-
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
 enum BookingType { none, private, lobby }
 
 class BookFieldScreen extends StatefulWidget {
   final SportCategory sportCategory;
-  
-  const BookFieldScreen({
-    super.key,
-    required this.sportCategory,
-  });
+
+  const BookFieldScreen({super.key, required this.sportCategory});
 
   @override
   State<BookFieldScreen> createState() => _BookFieldScreenState();
@@ -32,35 +30,82 @@ class BookFieldScreen extends StatefulWidget {
 class _BookFieldScreenState extends State<BookFieldScreen> {
   int _currentStep = 1; // 1, 2, 3, 4
   BookingType _selectedBookingType = BookingType.none;
-  
+
   // Step 2 - Data input
-  String? _selectedCity;
+  int? _selectedCity; // cityId
   Field? _selectedField;
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
-  
+
   // Lobby specific
   int _maxPlayers = 10;
   int _ownerPaysFor = 1;
-  
+
   bool _isLoading = false;
   List<Field> _availableFields = [];
+  List<City> _availableCities = [];
 
   // Available player counts
   final List<int> _availablePlayerCounts = [];
 
+  String _getSportDisplayName(int maxPlayers) {
+    final playersPerSide = maxPlayers ~/ 2;
+    final sportName = widget.sportCategory.name.toUpperCase();
+    return '$sportName ${playersPerSide}v$playersPerSide';
+  }
+
+  bool _isFieldOversized(Field field) {
+    // Mostra warning solo per le lobby, non per le prenotazioni private
+    if (_selectedBookingType != BookingType.lobby) return false;
+    // _maxPlayers è il numero totale di giocatori, quindi minPlayers = _maxPlayers
+    return _maxPlayers < field.maxPlayers;
+  }
+
+  Future<void> _showOversizedFieldWarning(Field field) async {
+    return showDialog(
+      context: context,
+      builder: (context) => FieldSizeAlertDialog(
+        field: field,
+        onConfirm: () {
+          setState(() {
+            _selectedField = field;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   void initState() {
-    if(widget.sportCategory == SportCategory.football) {
+    super.initState();
+    if (widget.sportCategory == SportCategory.football) {
       _availablePlayerCounts.addAll([10, 14, 16, 18, 22]);
     }
-    super.initState();
+    _loadCities();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> _loadCities() async {
+    try {
+      final cities = await DB.Cities.getAll();
+      setState(() {
+        _availableCities = cities;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore nel caricamento delle città: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _goToNextStep() {
@@ -98,7 +143,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       setState(() {
         _currentStep++;
       });
-      
+
       if (_currentStep == 3) {
         _loadAvailableFields();
       }
@@ -118,11 +163,13 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   bool _canProceedFromStep2() {
-    if (_selectedCity == null || _selectedDate == null || 
-        _startTime == null || _endTime == null) {
+    if (_selectedCity == null ||
+        _selectedDate == null ||
+        _startTime == null ||
+        _endTime == null) {
       return false;
     }
-    
+
     // Validate minimum 1 hour booking
     if (_startTime != null && _endTime != null) {
       final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
@@ -131,13 +178,15 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         return false;
       }
     }
-    
+
     return true;
   }
 
   Future<void> _loadAvailableFields() async {
-    if (_selectedCity == null || _selectedDate == null || 
-        _startTime == null || _endTime == null) {
+    if (_selectedCity == null ||
+        _selectedDate == null ||
+        _startTime == null ||
+        _endTime == null) {
       return;
     }
 
@@ -145,8 +194,11 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
     try {
       // Get all fields in the selected city
-      final allFields = await DB.Fields.getByMaxPlayersAndCity(_maxPlayers, _selectedCity!);
-      
+      final allFields = await DB.Fields.getByMaxPlayersAndCity(
+        _maxPlayers,
+        _selectedCity!,
+      );
+
       // Create DateTime objects for the booking period
       final startDateTime = DateTime(
         _selectedDate!.year,
@@ -155,7 +207,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _startTime!.hour,
         _startTime!.minute,
       );
-      
+
       final endDateTime = DateTime(
         _selectedDate!.year,
         _selectedDate!.month,
@@ -179,7 +231,6 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             .where((field) => field.isOpenAt(startDateTime))
             .where((field) => field.isOpenAt(endDateTime))
             .toList();
-        
       });
     } catch (e) {
       if (mounted) {
@@ -196,41 +247,49 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   double _calculateCost() {
-    if (_selectedField == null || _startTime == null || _endTime == null) return 0.0;
-    
+    if (_selectedField == null || _startTime == null || _endTime == null)
+      return 0.0;
+
     // Calculate duration in hours (including fractions)
     final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
     final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
     final durationMinutes = endMinutes - startMinutes;
     final durationHours = durationMinutes / 60.0;
-    
+
     // Calculate base cost (hourly rate * duration)
     final baseCost = _selectedField!.hourlyCostPrivate * durationHours;
-    
+
     if (_selectedBookingType == BookingType.lobby) {
       return baseCost / _maxPlayers;
     }
-    
+
     return baseCost;
   }
 
   // Nuovo metodo per calcolare il costo totale da pagare
   double _calculateTotalToPay() {
-    if (_selectedField == null || _startTime == null || _endTime == null) return 0.0;
-    
+    if (_selectedField == null || _startTime == null || _endTime == null)
+      return 0.0;
+
     final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
     final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
     final durationMinutes = endMinutes - startMinutes;
     final durationHours = durationMinutes / 60.0;
-    
+
     final baseCost = _selectedField!.hourlyCostPrivate * durationHours;
-    
+
     if (_selectedBookingType == BookingType.lobby) {
       // Costo per giocatore * numero di giocatori che pago
       return (baseCost / _maxPlayers) * _ownerPaysFor;
     }
-    
+
     return baseCost;
+  }
+
+  Future<String> _getCityName() async {
+    if (_selectedCity == null) return '';
+    final city = await DB.Cities.getById(_selectedCity!);
+    return city?.name ?? '';
   }
 
   Future<void> _selectDate() async {
@@ -242,15 +301,13 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ATLColors.darkBlue,
-            ),
+            colorScheme: ColorScheme.light(primary: ATLColors.darkBlue),
           ),
           child: child!,
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
@@ -273,7 +330,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     // Generate available time slots (every 15 minutes)
     final List<TimeOfDay> timeSlots = [];
     final now = DateTime.now();
-    final isToday = _selectedDate != null &&
+    final isToday =
+        _selectedDate != null &&
         _selectedDate!.year == now.year &&
         _selectedDate!.month == now.month &&
         _selectedDate!.day == now.day;
@@ -281,7 +339,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     for (int hour = 0; hour < 24; hour++) {
       for (int minute in [0, 15, 30, 45]) {
         final time = TimeOfDay(hour: hour, minute: minute);
-        
+
         // Skip past times if selecting for today
         if (isStartTime && isToday) {
           final currentMinutes = now.hour * 60 + now.minute;
@@ -290,17 +348,17 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             continue; // Skip this time slot
           }
         }
-        
+
         // Skip invalid end times (less than 1 hour from start or in the past)
         if (!isStartTime && _startTime != null) {
           final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
           final timeMinutes = time.hour * 60 + time.minute;
-          
+
           // Must be at least 1 hour after start
           if (timeMinutes - startMinutes < 60) {
             continue;
           }
-          
+
           // Skip past times if today
           if (isToday) {
             final currentMinutes = now.hour * 60 + now.minute;
@@ -309,7 +367,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             }
           }
         }
-        
+
         timeSlots.add(time);
       }
     }
@@ -340,8 +398,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                     itemCount: timeSlots.length,
                     itemBuilder: (context, index) {
                       final time = timeSlots[index];
-                      final timeString = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-                      
+                      final timeString =
+                          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
                       return ListTile(
                         title: Text(
                           timeString,
@@ -359,14 +418,16 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Annulla',
-                style: TextStyle(color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                style: TextStyle(
+                  color: ATLColors.getPrimaryColor(widget.sportCategory),
+                ),
               ),
             ),
           ],
         );
       },
     );
-    
+
     if (picked != null) {
       setState(() {
         if (isStartTime) {
@@ -404,7 +465,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _startTime!.hour,
         _startTime!.minute,
       );
-      
+
       final endDateTime = DateTime(
         _selectedDate!.year,
         _selectedDate!.month,
@@ -422,14 +483,19 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           finishTime: endDateTime,
           status: BookingStatus.booked,
         );
-        
-        success = await DB.PrivateBookings.addPrivateBooking(newBooking.playerId, newBooking.fieldId, newBooking.startTime, newBooking.finishTime, newBooking.status);
-        
+
+        success = await DB.PrivateBookings.addPrivateBooking(
+          newBooking.playerId,
+          newBooking.fieldId,
+          newBooking.startTime,
+          newBooking.finishTime,
+          newBooking.status,
+        );
       } else {
         final baseCost = _selectedField!.costTournament;
         final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
         final playerToFind = _maxPlayers - _ownerPaysFor;
-        
+
         final newBooking = LobbyBooking(
           id: 0, // ID will be set by the database
           fieldId: _selectedField!.id,
@@ -441,7 +507,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           finishTime: endDateTime,
           status: BookingStatus.booked,
         );
-        
+
         success = await DB().createLobby(
           newBooking.fieldId,
           newBooking.ownerId,
@@ -465,10 +531,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Errore: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Errore: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -512,20 +575,22 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 30),
-                  
+
                   // Step indicator
                   ATLStepIndicator(
                     currentStep: _currentStep,
                     totalSteps: 4,
-                    activeColor: ATLColors.getPrimaryColor(widget.sportCategory),
+                    activeColor: ATLColors.getPrimaryColor(
+                      widget.sportCategory,
+                    ),
                     inactiveColor: ATLColors.darkBlue,
                   ),
-                  
+
                   const SizedBox(height: 30),
-                  
+
                   // Content
                   _buildCurrentStep(),
-                  
+
                   const SizedBox(height: 40),
                 ],
               ),
@@ -549,7 +614,6 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Widget _buildStep1() {
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -562,13 +626,14 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 40),
-        
+
         // Private Booking Option
         _BookingTypeCard(
           title: 'Prenotazione Privata',
-          description: 'Paghi tutto tu, è una prenotazione privata solo per te e i tuoi amici.',
+          description:
+              'Paghi tutto tu, è una prenotazione privata solo per te e i tuoi amici.',
           icon: Icons.lock_person,
           isSelected: _selectedBookingType == BookingType.private,
           categoryColor: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -578,13 +643,14 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             });
           },
         ),
-        
+
         const SizedBox(height: 20),
-        
+
         // Lobby Booking Option
         _BookingTypeCard(
           title: 'Lobby Pubblica',
-          description: 'Crea una lobby e dividi il costo con altri giocatori. Decidi quanti giocatori partecipano e quanti ne paghi tu.',
+          description:
+              'Crea una lobby e dividi il costo con altri giocatori. Decidi quanti giocatori partecipano e quanti ne paghi tu.',
           icon: Icons.groups,
           isSelected: _selectedBookingType == BookingType.lobby,
           categoryColor: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -594,34 +660,25 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             });
           },
         ),
-        
+
         const SizedBox(height: 40),
-        
+
         // Continue button
-        ElevatedButton(
-          onPressed: _selectedBookingType != BookingType.none ? _goToNextStep : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.sportCategory),
+          onPressed: _selectedBookingType != BookingType.none
+              ? _goToNextStep
+              : () {},
+          fullWidth: true,
         ),
       ],
     );
   }
 
   Widget _buildStep2() {
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -634,9 +691,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 32),
-        
+
         // City Dropdown
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -645,17 +702,14 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300),
           ),
-          child: DropdownButtonFormField<String>(
+          child: DropdownButtonFormField<int>(
             value: _selectedCity,
             decoration: const InputDecoration(
               border: InputBorder.none,
               hintText: 'Seleziona città *',
             ),
-            items: ['Milano', 'Roma', 'Taranto'].map((city) {
-              return DropdownMenuItem(
-                value: city,
-                child: Text(city),
-              );
+            items: _availableCities.map((city) {
+              return DropdownMenuItem(value: city.id, child: Text(city.name));
             }).toList(),
             onChanged: (value) {
               setState(() {
@@ -665,9 +719,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             },
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Date Picker
         GestureDetector(
           onTap: _selectDate,
@@ -680,7 +734,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.calendar_today, color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                Icon(
+                  Icons.calendar_today,
+                  color: ATLColors.getPrimaryColor(widget.sportCategory),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   _selectedDate == null
@@ -695,9 +752,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Start Time Picker
         GestureDetector(
           onTap: () => _selectTime(true),
@@ -710,7 +767,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.access_time, color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                Icon(
+                  Icons.access_time,
+                  color: ATLColors.getPrimaryColor(widget.sportCategory),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   _startTime == null
@@ -725,9 +785,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // End Time Picker
         GestureDetector(
           onTap: () => _selectTime(false),
@@ -740,7 +800,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ),
             child: Row(
               children: [
-                Icon(Icons.access_time, color: ATLColors.getPrimaryColor(widget.sportCategory)),
+                Icon(
+                  Icons.access_time,
+                  color: ATLColors.getPrimaryColor(widget.sportCategory),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   _endTime == null
@@ -755,11 +818,11 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ),
           ),
         ),
-        
+
         // Lobby specific fields
         if (_selectedBookingType == BookingType.lobby) ...[
           const SizedBox(height: 24),
-          
+
           Text(
             'Configurazione Lobby',
             style: TextStyle(
@@ -768,9 +831,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               color: ATLColors.getPrimaryColor(widget.sportCategory),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Max Players Dropdown (instead of slider)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -814,9 +877,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Owner Pays For Slider
           Container(
             padding: const EdgeInsets.all(16),
@@ -833,7 +896,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                   children: [
                     const Text(
                       'Quanti giocatori paghi tu',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     Text(
                       '$_ownerPaysFor',
@@ -859,43 +925,29 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                 ),
                 Text(
                   'Giocatori da trovare: ${_maxPlayers - _ownerPaysFor}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 ),
               ],
             ),
           ),
         ],
-        
+
         const SizedBox(height: 32),
-        
+
         // Continue button
-        ElevatedButton(
-          onPressed: _canProceedFromStep2() ? _goToNextStep : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.sportCategory),
+          onPressed: _canProceedFromStep2() ? _goToNextStep : () {},
+          fullWidth: true,
         ),
       ],
     );
   }
 
   Widget _buildStep3() {
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -908,9 +960,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 32),
-        
+
         if (_availableFields.isEmpty) ...[
           const Center(
             child: Text(
@@ -934,9 +986,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Available fields list
           ListView.builder(
             shrinkWrap: true,
@@ -945,12 +997,17 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             itemBuilder: (context, index) {
               final field = _availableFields[index];
               final isSelected = _selectedField?.id == field.id;
-              
+              final isOversized = _isFieldOversized(field);
+
               return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedField = field;
-                  });
+                onTap: () async {
+                  if (isOversized) {
+                    await _showOversizedFieldWarning(field);
+                  } else {
+                    setState(() {
+                      _selectedField = field;
+                    });
+                  }
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -959,89 +1016,128 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isSelected ? ATLColors.getPrimaryColor(widget.sportCategory) : Colors.grey.shade300,
+                      color: isSelected
+                          ? ATLColors.getPrimaryColor(widget.sportCategory)
+                          : isOversized
+                          ? Colors.orange
+                          : Colors.grey.shade300,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        isSelected ? Icons.check_circle : Icons.circle_outlined,
-                        color: isSelected ? ATLColors.getPrimaryColor(widget.sportCategory) : Colors.grey,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              field.name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              field.city,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
+                      Row(
+                        children: [
+                          Icon(
+                            isSelected
+                                ? Icons.check_circle
+                                : Icons.circle_outlined,
+                            color: isSelected
+                                ? ATLColors.getPrimaryColor(
+                                    widget.sportCategory,
+                                  )
+                                : Colors.grey,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.people,
-                                  size: 16,
-                                  color: Colors.grey.shade600,
-                                ),
-                                const SizedBox(width: 4),
                                 Text(
-                                  'Max ${field.maxPlayers} giocatori',
+                                  field.name,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Questo campo è per ${_getSportDisplayName(field.maxPlayers)}',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.grey.shade600,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            () {
-                              if (_startTime == null || _endTime == null) return '€0.00';
-                              
-                              final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-                              final endMinutes = _endTime!.hour * 60 + _endTime!.minute;
-                              final durationHours = (endMinutes - startMinutes) / 60.0;
-                              final cost = field.hourlyCostPrivate * durationHours;
-                              
-                              return _selectedBookingType == BookingType.private
-                                  ? '€${cost.toStringAsFixed(2)}'
-                                  : '€${(cost / _maxPlayers).toStringAsFixed(2)}';
-                            }(),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: ATLColors.getPrimaryColor(widget.sportCategory),
-                            ),
                           ),
-                          Text(
-                            _selectedBookingType == BookingType.private
-                                ? 'Totale'
-                                : 'Per giocatore',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                () {
+                                  if (_startTime == null || _endTime == null)
+                                    return '€0.00';
+
+                                  final startMinutes =
+                                      _startTime!.hour * 60 +
+                                      _startTime!.minute;
+                                  final endMinutes =
+                                      _endTime!.hour * 60 + _endTime!.minute;
+                                  final durationHours =
+                                      (endMinutes - startMinutes) / 60.0;
+                                  final cost =
+                                      field.hourlyCostPrivate * durationHours;
+
+                                  return _selectedBookingType ==
+                                          BookingType.private
+                                      ? '€${cost.toStringAsFixed(2)}'
+                                      : '€${(cost / _maxPlayers).toStringAsFixed(2)}';
+                                }(),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: ATLColors.getPrimaryColor(
+                                    widget.sportCategory,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                _selectedBookingType == BookingType.private
+                                    ? 'Totale'
+                                    : 'Per giocatore',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                      if (isOversized) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.orange.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Campo più grande del necessario - costo maggiore',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange.shade900,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -1049,27 +1145,17 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             },
           ),
         ],
-        
+
         const SizedBox(height: 32),
-        
+
         // Continue button
-        ElevatedButton(
-          onPressed: _selectedField != null ? _goToNextStep : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+        ATLButton(
+          text: 'Continua',
+          onPressed: _selectedField != null ? () => _goToNextStep() : () {},
+          size: ATLButtonSize.large,
+          isFilled: true,
+          fullWidth: true,
+          color: ATLColors.getPrimaryColor(widget.sportCategory),
         ),
       ],
     );
@@ -1078,7 +1164,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   Widget _buildStep4() {
     final totalCost = _calculateCost();
     final totalToPay = _calculateTotalToPay();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1091,9 +1177,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 32),
-        
+
         // Summary Card
         Container(
           padding: const EdgeInsets.all(20),
@@ -1118,39 +1204,40 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                     : 'Lobby Pubblica',
               ),
               const Divider(height: 24),
-              _SummaryRow(
-                label: 'Campo',
-                value: _selectedField?.name ?? '',
-              ),
+              _SummaryRow(label: 'Campo', value: _selectedField?.name ?? ''),
               const Divider(height: 24),
-              _SummaryRow(
-                label: 'Città',
-                value: _selectedCity ?? '',
+              FutureBuilder<String>(
+                future: _getCityName(),
+                builder: (context, snapshot) {
+                  return _SummaryRow(
+                    label: 'Città',
+                    value: snapshot.data ?? 'Caricamento...',
+                  );
+                },
               ),
               const Divider(height: 24),
               _SummaryRow(
                 label: 'Data',
-                value: '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                value:
+                    '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
               ),
               const Divider(height: 24),
               _SummaryRow(
                 label: 'Orario',
-                value: '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')} - ${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
+                value:
+                    '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')} - ${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
               ),
-              
+
               if (_selectedBookingType == BookingType.lobby) ...[
                 const Divider(height: 24),
-                _SummaryRow(
-                  label: 'Giocatori totali',
-                  value: '$_maxPlayers',
-                ),
+                _SummaryRow(label: 'Giocatori totali', value: '$_maxPlayers'),
                 const Divider(height: 24),
                 _SummaryRow(
                   label: 'Giocatori che paghi',
                   value: '$_ownerPaysFor',
                 ),
               ],
-              
+
               const Divider(height: 24),
               _SummaryRow(
                 label: _selectedBookingType == BookingType.private
@@ -1163,49 +1250,29 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: 32),
-        
+
         // Confirm button
-        ElevatedButton(
+        ATLButton(
+          text: 'Conferma Prenotazione - €${totalToPay.toStringAsFixed(2)}',
           onPressed: _createBooking,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Text(
-            'Conferma Prenotazione - €${totalToPay.toStringAsFixed(2)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          size: ATLButtonSize.large,
+          isFilled: true,
+          fullWidth: true,
+          color: ATLColors.getPrimaryColor(widget.sportCategory),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Back button
-        OutlinedButton(
+        ATLButton(
+          text: 'Indietro',
           onPressed: _goToPreviousStep,
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            side: BorderSide(color: ATLColors.getPrimaryColor(widget.sportCategory)),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Text(
-            'Indietro',
-            style: TextStyle(
-              color: ATLColors.getPrimaryColor(widget.sportCategory),
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          size: ATLButtonSize.large,
+          isFilled: false,
+          fullWidth: true,
+          color: ATLColors.getPrimaryColor(widget.sportCategory),
         ),
       ],
     );
@@ -1285,10 +1352,7 @@ class _BookingTypeCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -1337,7 +1401,9 @@ class _SummaryRow extends StatelessWidget {
           style: TextStyle(
             fontSize: isHighlighted ? 20 : 16,
             fontWeight: FontWeight.bold,
-            color: isHighlighted ? (highlightColor ?? ATLColors.darkBlue) : Colors.black,
+            color: isHighlighted
+                ? (highlightColor ?? ATLColors.darkBlue)
+                : Colors.black,
           ),
         ),
       ],

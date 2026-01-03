@@ -34,15 +34,17 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
 
   Future<void> _loadCallUps() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final List<CallUps> callUps = await DB.CallUps.getByTournamentAndTeam(
         widget.tournament.id,
         widget.teamId,
       );
 
-      print('ℹ️ Loaded ${callUps.length} call-ups for Tournament ${widget.tournament.id}, Team ${widget.teamId}');
-      
+      print(
+        'ℹ️ Loaded ${callUps.length} call-ups for Tournament ${widget.tournament.id}, Team ${widget.teamId}',
+      );
+
       final List<Player> players = [];
       for (final callUp in callUps) {
         print('ℹ️ Loading player with ID ${callUp.playerId}');
@@ -51,7 +53,7 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
       }
 
       print('ℹ️ Loaded ${players.length} players for call-ups');
-      
+
       if (mounted) {
         setState(() {
           _calledUpPlayers = players;
@@ -62,9 +64,9 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
       print('❌ Error loading call-ups: $e');
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading call-ups: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading call-ups: $e')));
       }
     }
   }
@@ -102,63 +104,63 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _calledUpPlayers.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.people_outline, size: 80, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        'No call-ups found',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.people_outline, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'No call-ups found',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _calledUpPlayers.length,
+              itemBuilder: (context, index) {
+                final player = _calledUpPlayers[index];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _calledUpPlayers.length,
-                  itemBuilder: (context, index) {
-                    final player = _calledUpPlayers[index];
-                    
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    leading: CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.grey[300],
+                      child: Icon(
+                        Icons.person,
+                        size: 35,
+                        color: Colors.grey[600],
                       ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        leading: CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.grey[300],
-                          child: Icon(
-                            Icons.person,
-                            size: 35,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        title: Text(
-                          player.username,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                    ),
+                    title: Text(
+                      player.username,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

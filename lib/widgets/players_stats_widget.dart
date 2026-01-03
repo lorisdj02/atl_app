@@ -35,7 +35,7 @@ class PlayersStatsWidget extends StatelessWidget {
         final bGoals = playerStats[b.id]?.goals ?? 0;
         return bGoals.compareTo(aGoals);
       });
-    
+
     // Ordina giocatori per MOTM
     final motmPlayers = List<Player>.from(players)
       ..sort((a, b) {
@@ -62,7 +62,7 @@ class PlayersStatsWidget extends StatelessWidget {
           ...goalScorers.map((player) {
             final goals = playerStats[player.id]?.goals ?? 0;
             final position = goalScorers.indexOf(player);
-            
+
             return _buildStatItem(
               position: position,
               player: player,
@@ -70,9 +70,9 @@ class PlayersStatsWidget extends StatelessWidget {
               sportCategory: sportCategory,
             );
           }),
-          
+
           const SizedBox(height: 24),
-          
+
           // MOTM Section
           const Text(
             'MOTM',
@@ -86,7 +86,7 @@ class PlayersStatsWidget extends StatelessWidget {
           ...motmPlayers.map((player) {
             final motm = playerStats[player.id]?.motm ?? 0;
             final position = motmPlayers.indexOf(player);
-            
+
             return _buildStatItem(
               position: position,
               player: player,
@@ -106,18 +106,22 @@ class PlayersStatsWidget extends StatelessWidget {
     required SportCategory sportCategory,
   }) {
     Color backgroundColor;
-    
+
     if (position == 0) {
       // Primo posto: colore primario dello sport
-      backgroundColor = ATLColors.getPrimaryColor(sportCategory).withOpacity(0.1);
+      backgroundColor = ATLColors.getPrimaryColor(
+        sportCategory,
+      ).withOpacity(0.1);
     } else if (position == 1) {
       // Secondo posto: colore secondario dello sport
-      backgroundColor = ATLColors.getSecondaryColor(sportCategory).withOpacity(0.1);
+      backgroundColor = ATLColors.getSecondaryColor(
+        sportCategory,
+      ).withOpacity(0.1);
     } else {
       // Altri: bianco
       backgroundColor = Colors.white;
     }
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -139,11 +143,11 @@ class PlayersStatsWidget extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: position == 0 
+              color: position == 0
                   ? ATLColors.getPrimaryColor(sportCategory)
                   : position == 1
-                      ? ATLColors.getSecondaryColor(sportCategory)
-                      : Colors.grey.shade400,
+                  ? ATLColors.getSecondaryColor(sportCategory)
+                  : Colors.grey.shade400,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
@@ -172,7 +176,11 @@ class PlayersStatsWidget extends StatelessWidget {
                       player.imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.person, color: Colors.white, size: 30);
+                        return const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 30,
+                        );
                       },
                     ),
                   )
@@ -199,8 +207,8 @@ class PlayersStatsWidget extends StatelessWidget {
               color: position == 0
                   ? ATLColors.getPrimaryColor(sportCategory)
                   : position == 1
-                      ? ATLColors.getSecondaryColor(sportCategory)
-                      : Colors.black87,
+                  ? ATLColors.getSecondaryColor(sportCategory)
+                  : Colors.black87,
             ),
           ),
         ],

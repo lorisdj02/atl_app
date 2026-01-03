@@ -29,7 +29,7 @@ class BookingWidget extends StatefulWidget {
     required this.currentSport,
     required this.bookingId,
     this.playerPaid = 0,
-    this.onBookingDeleted, // ← Aggiungi 
+    this.onBookingDeleted, // ← Aggiungi
     this.isDeletable = true,
   });
 
@@ -46,6 +46,8 @@ class _BookingWidgetState extends State<BookingWidget> {
   int _maxParticipants = 0;
   late Future<void> _loadDataFuture;
 
+  String? cityName;
+
   @override
   void initState() {
     super.initState();
@@ -55,29 +57,35 @@ class _BookingWidgetState extends State<BookingWidget> {
   Future<void> _loadData() async {
     try {
       final field = await DB.Fields.getById(widget.fieldId);
-      
+
       Player? owner;
       bool isParticipating = false;
       int currentParticipants = 0;
       int maxParticipants = 0;
 
-      
       if (widget.ownerId != null) {
         owner = await DB.Players.getByPlayerId(widget.ownerId!);
-        
+
         // Check if current user is participating
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         final playerId = userProvider.activeRoleId;
         isParticipating = await DB.LobbyBookingParticipations.isParticipating(
-              playerId!,
-              widget.bookingId,
-            );
-        
+          playerId!,
+          widget.bookingId,
+        );
+
         // Carica numero partecipanti
-        currentParticipants = await DB.LobbyBookingParticipations.getParticipantCount(widget.bookingId);
-        maxParticipants = await DB.LobbyBookings.getMaxParticipants(widget.bookingId);
+        currentParticipants = await DB
+            .LobbyBookingParticipations.getParticipantCount(widget.bookingId);
+        maxParticipants = await DB.LobbyBookings.getMaxParticipants(
+          widget.bookingId,
+        );
       }
-      
+
+      cityName = await DB.Cities.getById(
+        field.cityId,
+      ).then((city) => city?.name);
+
       if (mounted) {
         setState(() {
           _field = field;
@@ -161,7 +169,9 @@ class _BookingWidgetState extends State<BookingWidget> {
                                 ),
                               ),
                               Text(
-                                _field!.city,
+                                cityName != null
+                                    ? 'Location: $cityName'
+                                    : 'Location info not available',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: ATLColors.subtext,
@@ -172,7 +182,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 20),
                     const Divider(),
                     const SizedBox(height: 20),
@@ -180,7 +190,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                     // Data e orario
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, color: ATLColors.darkBlue, size: 20),
+                        Icon(
+                          Icons.calendar_today,
+                          color: ATLColors.darkBlue,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           dateFormat.format(widget.startTime),
@@ -192,12 +206,16 @@ class _BookingWidgetState extends State<BookingWidget> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 12),
 
                     Row(
                       children: [
-                        Icon(Icons.access_time, color: ATLColors.darkBlue, size: 20),
+                        Icon(
+                          Icons.access_time,
+                          color: ATLColors.darkBlue,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           '${timeFormat.format(widget.startTime)} - ${timeFormat.format(widget.finishTime)}',
@@ -215,7 +233,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(Icons.person, color: ATLColors.darkBlue, size: 20),
+                          Icon(
+                            Icons.person,
+                            color: ATLColors.darkBlue,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             'Owner: ${_owner!.username}',
@@ -234,7 +256,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(Icons.group, color: ATLColors.darkBlue, size: 20),
+                          Icon(
+                            Icons.group,
+                            color: ATLColors.darkBlue,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             '$_currentParticipants/$_maxParticipants',
@@ -247,7 +273,10 @@ class _BookingWidgetState extends State<BookingWidget> {
                           if (isFull) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(8),
@@ -271,7 +300,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Icon(Icons.payment, color: ATLColors.darkBlue, size: 20),
+                          Icon(
+                            Icons.payment,
+                            color: ATLColors.darkBlue,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             'You paid for ${widget.playerPaid} player${widget.playerPaid > 1 ? 's' : ''}',
@@ -295,7 +328,9 @@ class _BookingWidgetState extends State<BookingWidget> {
                           onPressed: () {
                             // TODO: Implementare chat
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Chat - Coming soon')),
+                              const SnackBar(
+                                content: Text('Chat - Coming soon'),
+                              ),
                             );
                           },
                           icon: const Icon(Icons.chat_bubble_outline),
@@ -308,7 +343,9 @@ class _BookingWidgetState extends State<BookingWidget> {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+                            backgroundColor: ATLColors.getPrimaryColor(
+                              widget.currentSport,
+                            ),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -319,96 +356,130 @@ class _BookingWidgetState extends State<BookingWidget> {
                     ],
 
                     // Pulsante DELETE
-                    if (widget.isDeletable)...[
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton.icon(
-                        onPressed: () async {
-                          // Determina il messaggio in base al tipo di azione
-                          String title;
-                          String message;
-                          
-                          if (isLobby) {
-                            if (isOwner) {
-                              title = 'Delete Lobby';
-                              message = 'Are you sure you want to delete this lobby? All participants will be removed.';
-                            } else {
-                              title = 'Leave Lobby';
-                              message = 'Are you sure you want to leave this lobby?';
-                            }
-                          } else {
-                            title = 'Delete Booking';
-                            message = 'Are you sure you want to delete this private booking?';
-                          }
+                    if (widget.isDeletable) ...[
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            // Determina il messaggio in base al tipo di azione
+                            String title;
+                            String message;
 
-                          // Mostra il dialogo di conferma
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text(title),
-                              content: Text(message),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(false),
-                                  child: const Text('CANCEL'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(true),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                  ),
-                                  child: const Text('CONFIRM'),
-                                ),
-                              ],
-                            ),
-                          );
-
-                          // Se l'utente conferma, procedi con l'eliminazione
-                          if (confirm == true) {
-                            bool success = false;
                             if (isLobby) {
-                              success = await DB().leaveLobby(widget.bookingId, playerId);
+                              if (isOwner) {
+                                title = 'Delete Lobby';
+                                message =
+                                    'Are you sure you want to delete this lobby? All participants will be removed.';
+                              } else {
+                                title = 'Leave Lobby';
+                                message =
+                                    'Are you sure you want to leave this lobby?';
+                              }
                             } else {
-                              success = await DB.PrivateBookings.deletePrivateBooking(widget.bookingId, playerId);
+                              title = 'Delete Booking';
+                              message =
+                                  'Are you sure you want to delete this private booking?';
                             }
 
-                            if (success) {
-                              widget.onBookingDeleted?.call(); // ← Chiama il callback
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(isLobby && isOwner ? 'Lobby deleted' : isLobby ? 'Lobby left' : 'Booking deleted')),
+                            // Mostra il dialogo di conferma
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text(title),
+                                content: Text(message),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text('CANCEL'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                    ),
+                                    child: const Text('CONFIRM'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            // Se l'utente conferma, procedi con l'eliminazione
+                            if (confirm == true) {
+                              bool success = false;
+                              if (isLobby) {
+                                success = await DB().leaveLobby(
+                                  widget.bookingId,
+                                  playerId,
                                 );
+                              } else {
+                                success =
+                                    await DB
+                                        .PrivateBookings.deletePrivateBooking(
+                                      widget.bookingId,
+                                      playerId,
+                                    );
                               }
-                            } else {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to delete ${isLobby && isOwner ? 'lobby' : isLobby ? 'lobby participation' : 'booking'}')),
-                                );
+
+                              if (success) {
+                                widget.onBookingDeleted
+                                    ?.call(); // ← Chiama il callback
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        isLobby && isOwner
+                                            ? 'Lobby deleted'
+                                            : isLobby
+                                            ? 'Lobby left'
+                                            : 'Booking deleted',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Failed to delete ${isLobby && isOwner
+                                            ? 'lobby'
+                                            : isLobby
+                                            ? 'lobby participation'
+                                            : 'booking'}',
+                                      ),
+                                    ),
+                                  );
+                                }
                               }
                             }
-                          }
-                        },
-                        icon: const Icon(Icons.delete_outline),
-                        label: Text(
-                          isLobby && isOwner ? 'DELETE LOBBY' : isLobby ? 'LEAVE LOBBY' : 'DELETE BOOKING',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
+                          },
+                          icon: const Icon(Icons.delete_outline),
+                          label: Text(
+                            isLobby && isOwner
+                                ? 'DELETE LOBBY'
+                                : isLobby
+                                ? 'LEAVE LOBBY'
+                                : 'DELETE BOOKING',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
                   ],
                 ),
               ),

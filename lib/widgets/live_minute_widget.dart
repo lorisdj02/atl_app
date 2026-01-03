@@ -83,7 +83,7 @@ class _LiveMinuteWidgetState extends State<LiveMinuteWidget> {
         if (widget.match.halfTime != null) {
           final diff = now.difference(widget.match.halfTime!);
           final totalSeconds = widget.minutesPerPause * 60 - diff.inSeconds;
-          
+
           if (totalSeconds <= 0) {
             // Tempo scaduto, resta a 0:00
             minute = 0;
@@ -124,7 +124,10 @@ class _LiveMinuteWidgetState extends State<LiveMinuteWidget> {
         minute = 0;
     }
 
-    if (mounted && (_currentMinute != minute || _additionalMinutes != additional || _remainingSeconds != remainingSeconds)) {
+    if (mounted &&
+        (_currentMinute != minute ||
+            _additionalMinutes != additional ||
+            _remainingSeconds != remainingSeconds)) {
       setState(() {
         _currentMinute = minute;
         _additionalMinutes = additional;
@@ -135,26 +138,30 @@ class _LiveMinuteWidgetState extends State<LiveMinuteWidget> {
 
   Color _getContainerColor() {
     // In corso con minuti aggiuntivi -> rosso
-    if ((widget.match.status == MatchStatus.started || widget.match.status == MatchStatus.startHalf) 
-        && _additionalMinutes > 0) {
+    if ((widget.match.status == MatchStatus.started ||
+            widget.match.status == MatchStatus.startHalf) &&
+        _additionalMinutes > 0) {
       return Colors.red.shade700;
     }
-    
+
     // Halftime a 0:00 -> rosso
-    if (widget.match.status == MatchStatus.halftime && _currentMinute == 0 && _remainingSeconds == 0) {
+    if (widget.match.status == MatchStatus.halftime &&
+        _currentMinute == 0 &&
+        _remainingSeconds == 0) {
       return Colors.red.shade700;
     }
-    
+
     // In corso senza minuti aggiuntivi -> colore primario dello sport
-    if (widget.match.status == MatchStatus.started || widget.match.status == MatchStatus.startHalf) {
+    if (widget.match.status == MatchStatus.started ||
+        widget.match.status == MatchStatus.startHalf) {
       return ATLColors.getPrimaryColor(widget.sportCategory);
     }
-    
+
     // Halftime countdown attivo -> arancione
     if (widget.match.status == MatchStatus.halftime) {
       return Colors.orange.shade700;
     }
-    
+
     // Altri casi (finished, ecc.) -> grigio
     return Colors.grey.shade600;
   }
@@ -162,7 +169,7 @@ class _LiveMinuteWidgetState extends State<LiveMinuteWidget> {
   @override
   Widget build(BuildContext context) {
     String displayText;
-    
+
     if (widget.match.status == MatchStatus.halftime) {
       // Durante halftime mostra mm:ss
       String seconds = _remainingSeconds.toString().padLeft(2, '0');

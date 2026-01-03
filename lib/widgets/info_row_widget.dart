@@ -5,11 +5,7 @@ class InfoRowWidget extends StatelessWidget {
   final String label;
   final String value;
 
-  const InfoRowWidget({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const InfoRowWidget({super.key, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +21,7 @@ class InfoRowWidget extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: ATLColors.subtext,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: ATLColors.subtext, fontSize: 14),
           ),
           Text(
             value,

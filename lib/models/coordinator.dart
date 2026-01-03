@@ -45,7 +45,7 @@ class Coordinator extends User {
       level: json['level'],
       passwordMD5: json['password_md5'],
       imageUrl: json['image_url'],
-      birthdate: DateTime.parse(json['birthdate'])
+      birthdate: DateTime.parse(json['birthdate']),
     );
   }
 

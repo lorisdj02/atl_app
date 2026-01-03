@@ -48,7 +48,9 @@ class HomeTeamWidget extends AbstractTeamWidget {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: color == ATLColors.getPrimaryColor(sportCategory) ? Colors.white : ATLColors.darkBlue,
+                  color: color == ATLColors.getPrimaryColor(sportCategory)
+                      ? Colors.white
+                      : ATLColors.darkBlue,
                 ),
               ),
             ),
@@ -62,7 +64,9 @@ class HomeTeamWidget extends AbstractTeamWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: color == ATLColors.getPrimaryColor(sportCategory) ? Colors.white : Colors.black,
+                  color: color == ATLColors.getPrimaryColor(sportCategory)
+                      ? Colors.white
+                      : Colors.black,
                   height: 1.2,
                 ),
               ),
@@ -74,7 +78,9 @@ class HomeTeamWidget extends AbstractTeamWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: color == ATLColors.getPrimaryColor(sportCategory) ? Colors.white : ATLColors.darkBlue,
+                  color: color == ATLColors.getPrimaryColor(sportCategory)
+                      ? Colors.white
+                      : ATLColors.darkBlue,
                 ),
               ),
           ],

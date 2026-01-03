@@ -44,7 +44,9 @@ class TeamRequestRepository extends BaseRepository<TeamRequest> {
 
   Future<TeamRequest?> getByTeamAndPlayer(int teamId, int playerId) async {
     if (AppConfig.isDebug) {
-      print("Searching for request with teamId: $teamId and playerId: $playerId");
+      print(
+        "Searching for request with teamId: $teamId and playerId: $playerId",
+      );
       try {
         return _mockdata.firstWhere(
           (request) => request.teamId == teamId && request.playerId == playerId,

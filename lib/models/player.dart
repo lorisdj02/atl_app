@@ -50,10 +50,7 @@ class Player extends User {
 
   @override
   Map<String, dynamic> toJson() {
-    return {
-      ...super.toJson(),
-      'player_id': playerId,
-    };
+    return {...super.toJson(), 'player_id': playerId};
   }
 
   String get fullName => '$name $surname';

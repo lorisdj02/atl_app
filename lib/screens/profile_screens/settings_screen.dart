@@ -10,10 +10,7 @@ import '../../widgets/atl_textfield.dart';
 class SettingsScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const SettingsScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const SettingsScreen({super.key, required this.currentSport});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -80,7 +77,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _emailNotifications = value);
                 },
-                activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
+                activeThumbColor: ATLColors.getPrimaryColor(
+                  widget.currentSport,
+                ),
               ),
             ),
             _SettingTile(
@@ -92,13 +91,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (value) {
                   setState(() => _pushNotifications = value);
                 },
-                activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
+                activeThumbColor: ATLColors.getPrimaryColor(
+                  widget.currentSport,
+                ),
               ),
             ),
           ],
-          
+
           const SizedBox(height: 24),
-          
+
           // Appearance Section
           const _SectionHeader(title: 'Appearance'),
           _SettingTile(
@@ -126,9 +127,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _showLanguageDialog();
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Privacy & Security Section
           const _SectionHeader(title: 'Privacy & Security'),
           _SettingTile(
@@ -155,9 +156,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // App Preferences Section
           const _SectionHeader(title: 'App Preferences'),
           _SettingTile(
@@ -172,9 +173,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // About Section
           const _SectionHeader(title: 'About'),
           _SettingTile(
@@ -207,9 +208,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Danger Zone
           const _SectionHeader(title: 'Danger Zone'),
           _SettingTile(
@@ -217,7 +218,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: 'Delete Account',
             subtitle: 'Permanently delete your account',
             titleColor: Colors.red,
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.red),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.red,
+            ),
             onTap: () async {
               final confirmed = await _showDeleteAccountDialog();
               if (confirmed && mounted) {
@@ -265,7 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<bool> _showDeleteAccountDialog() async {
     final passwordController = TextEditingController();
-    
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -309,7 +314,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           TextButton(
             onPressed: () {
               final password = passwordController.text;
-              
+
               if (password.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -319,15 +324,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
                 return;
               }
-              
-              final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+              final userProvider = Provider.of<UserProvider>(
+                context,
+                listen: false,
+              );
               final user = userProvider.activeUser;
-              
+
               if (user == null) {
                 Navigator.pop(context, false);
                 return;
               }
-              
+
               // Check if password matches
               if (user.passwordMD5 != password) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -338,7 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
                 return;
               }
-              
+
               // Password is correct, close dialog and confirm
               Navigator.pop(context, true);
             },
@@ -350,23 +358,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
-    
+
     return confirmed ?? false;
   }
 
   Future<void> _handleDeletion() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.activeUser;
-    
+
     if (user == null) return;
-    
+
     // Delete account
     final success = await DB().deleteAccount(user.id, user.passwordMD5!);
-    
+
     if (success) {
       // Logout user
       await userProvider.logout();
-      
+
       if (mounted) {
         // Navigate back to login
         Navigator.of(context).pushAndRemoveUntil(
@@ -384,7 +392,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to delete account. Check if your owned teams have Vice Captains assigned.'),
+            content: Text(
+              'Failed to delete account. Check if your owned teams have Vice Captains assigned.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -457,10 +467,7 @@ class _SettingTile extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(
-            color: ATLColors.subtext,
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: ATLColors.subtext, fontSize: 12),
         ),
         trailing: trailing,
         onTap: onTap,

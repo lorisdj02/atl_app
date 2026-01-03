@@ -7,10 +7,7 @@ import '../../widgets/atl_button.dart';
 class ContactUsScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const ContactUsScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const ContactUsScreen({super.key, required this.currentSport});
 
   @override
   State<ContactUsScreen> createState() => _ContactUsScreenState();
@@ -52,7 +49,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Message sent successfully! We will get back to you soon.'),
+            content: Text(
+              'Message sent successfully! We will get back to you soon.',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -61,7 +60,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         _subjectController.clear();
         _messageController.clear();
         setState(() => _selectedCategory = 'General Inquiry');
-        
+
         // Go back after a short delay
         await Future.delayed(const Duration(seconds: 1));
         if (mounted) Navigator.pop(context);
@@ -117,7 +116,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: ATLColors.getPrimaryColor(widget.currentSport).withOpacity(0.2),
+                      backgroundColor: ATLColors.getPrimaryColor(
+                        widget.currentSport,
+                      ).withOpacity(0.2),
                       child: Icon(
                         Icons.mail_outline,
                         color: ATLColors.getPrimaryColor(widget.currentSport),
@@ -137,10 +138,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     Text(
                       'We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: ATLColors.subtext,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                     ),
                   ],
                 ),
@@ -193,9 +191,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       horizontal: 20,
                       vertical: 18,
                     ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
                   ),
                   items: _categories.map((category) {
                     return DropdownMenuItem(
@@ -252,9 +248,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       color: Color(0xFFB0B0B0),
                       fontSize: 16,
                     ),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
+                    border: OutlineInputBorder(borderSide: BorderSide.none),
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 18,
@@ -349,10 +343,7 @@ class _QuickContactCard extends StatelessWidget {
           Text(
             value,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: ATLColors.subtext,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: ATLColors.subtext, fontSize: 12),
           ),
         ],
       ),

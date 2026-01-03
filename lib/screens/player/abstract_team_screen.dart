@@ -24,7 +24,8 @@ abstract class AbstractTeamScreen extends StatefulWidget {
 }
 
 abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
-    extends State<T> with SingleTickerProviderStateMixin {
+    extends State<T>
+    with SingleTickerProviderStateMixin {
   late TabController tabController;
   Team? team;
   late UserProvider userProvider;
@@ -125,9 +126,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading players: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
       }
     }
   }
@@ -166,9 +167,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading palmares: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading palmares: $e')));
       }
     }
   }
@@ -203,9 +204,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading stats: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading stats: $e')));
       }
     }
   }

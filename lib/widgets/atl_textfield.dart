@@ -32,13 +32,8 @@ class ATLTextField extends StatelessWidget {
         keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(
-            color: Color(0xFFB0B0B0),
-            fontSize: 16,
-          ),
-          border: const OutlineInputBorder(
-            borderSide: BorderSide.none,
-          ),
+          hintStyle: const TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
+          border: const OutlineInputBorder(borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 18,

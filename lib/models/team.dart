@@ -1,6 +1,6 @@
 class Team {
   final int id;
-  String? cityId;
+  int? cityId;
   final String name;
   final String alias;
   String? description;

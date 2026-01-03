@@ -10,9 +10,6 @@ import '../screens/home_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 
-  
-
-
 class NavigationHelper {
   /// Naviga alla sezione specificata dalla bottom bar
   static void navigateToSection({
@@ -26,32 +23,27 @@ class NavigationHelper {
       return;
     }
 
-    final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
     Widget targetScreen;
 
     switch (index) {
       case 0: // Shop
-        targetScreen = ShopScreen(
-          currentSport: currentSport,
-        );
+        targetScreen = ShopScreen(currentSport: currentSport);
         break;
       case 1: // Tournaments
-        targetScreen = AllTournamentsScreen(
-          currentSport: currentSport,
-        );
+        targetScreen = AllTournamentsScreen(currentSport: currentSport);
         break;
       case 2: // Team
-        targetScreen = TeamScreen(
-          currentSport: currentSport,
-        );
+        targetScreen = TeamScreen(currentSport: currentSport);
         break;
       case 3: // Profile
         if (userProvider.isGuest) {
           targetScreen = GuestProfileScreen(currentSport: currentSport);
         } else {
-          targetScreen = ProfileScreen(
-            currentSport: currentSport,
-          );
+          targetScreen = ProfileScreen(currentSport: currentSport);
         }
         break;
       case 4: // Home
@@ -65,7 +57,8 @@ class NavigationHelper {
         // Rimuovi tutte le schermate e vai alla home
         Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => targetScreen,
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                targetScreen,
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ),

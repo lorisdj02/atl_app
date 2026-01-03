@@ -70,14 +70,16 @@ class GuestProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Login button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -101,10 +103,7 @@ class GuestProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Login to access all features',
-              style: TextStyle(
-                color: ATLColors.subtext,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: ATLColors.subtext, fontSize: 14),
             ),
           ],
         ),

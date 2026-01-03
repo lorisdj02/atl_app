@@ -50,7 +50,6 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   List<dynamic> _bookings = [];
   bool _isLoading = true;
   int _currentPage = 0;
-  
 
   @override
   void initState() {
@@ -66,24 +65,34 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
     try {
       // Carica i booking
-      final List<PrivateBooking> privateBookings = await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
-      List<int> lobbyBookingsIds = (await DB.LobbyBookingParticipations.getByPlayerId(playerId)).map((p) => p.lobbyBookingId).toList();
+      final List<PrivateBooking> privateBookings =
+          await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
+      List<int> lobbyBookingsIds =
+          (await DB.LobbyBookingParticipations.getByPlayerId(
+            playerId,
+          )).map((p) => p.lobbyBookingId).toList();
       List<LobbyBooking> lobbyBookings = [];
       for (var lobbyBookingId in lobbyBookingsIds) {
         final lobbyBooking = await DB.LobbyBookings.getById(lobbyBookingId);
-        if (lobbyBooking != null){
+        if (lobbyBooking != null) {
           lobbyBookings.add(lobbyBooking);
         }
       }
-      print('Loaded ${privateBookings.length} private bookings and ${lobbyBookings.length} lobby bookings for player $playerId');
+      print(
+        'Loaded ${privateBookings.length} private bookings and ${lobbyBookings.length} lobby bookings for player $playerId',
+      );
       // Combina e ordina per startTime
       final allBookings = <dynamic>[...privateBookings, ...lobbyBookings];
       allBookings.sort((a, b) {
-        final aTime = a is PrivateBooking ? a.startTime : (a as LobbyBooking).startTime;
-        final bTime = b is PrivateBooking ? b.startTime : (b as LobbyBooking).startTime;
+        final aTime = a is PrivateBooking
+            ? a.startTime
+            : (a as LobbyBooking).startTime;
+        final bTime = b is PrivateBooking
+            ? b.startTime
+            : (b as LobbyBooking).startTime;
         return aTime.compareTo(bTime);
       });
-      
+
       _bookings = allBookings;
 
       // Load user's team using teamId from user
@@ -99,7 +108,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               teamId!,
             )).map((p) => p.tournamentId).toSet();
 
-        final activeTournaments = (await DB.Tournaments.getBySportCategory(_currentSport
+        final activeTournaments = (await DB.Tournaments.getBySportCategory(
+          _currentSport,
         )).where((t) => activeTournamentsId.contains(t.id)).toList();
 
         // Load matches and standings for each tournament
@@ -111,8 +121,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             tournament.id,
           );
 
-          final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(tournament.id);
-          final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(tournament.id);
+          final int minutesPerRound =
+              await DB.Tournaments.getMinutesPerRoundById(tournament.id);
+          final int minutesPerPause =
+              await DB.Tournaments.getMinutesPerPauseById(tournament.id);
 
           _minutesPerRound[tournament.id] = minutesPerRound;
           _minutesPerPause[tournament.id] = minutesPerPause;
@@ -248,8 +260,12 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     final tournamentsCount = _activeTournaments?.length ?? 0;
     final bookingsCount = _bookings.length;
     final hasBookings = bookingsCount > 0;
-    final totalPages = tournamentsCount + (hasBookings ? 1 : 0) + 1; // tornei + bookings page + need more
-    final isOnNeedMorePage = _currentPage >= (tournamentsCount + (hasBookings ? 1 : 0));
+    final totalPages =
+        tournamentsCount +
+        (hasBookings ? 1 : 0) +
+        1; // tornei + bookings page + need more
+    final isOnNeedMorePage =
+        _currentPage >= (tournamentsCount + (hasBookings ? 1 : 0));
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -265,10 +281,11 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   // Naviga a BookFieldScreen
                   final result = await Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => BookFieldScreen(sportCategory: _currentSport),
+                      builder: (context) =>
+                          BookFieldScreen(sportCategory: _currentSport),
                     ),
                   );
-                  
+
                   // Se è stata creata una prenotazione, ricarica i dati
                   if (result == true) {
                     _loadPlayerData();
@@ -343,7 +360,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     final tournamentsCount = _activeTournaments?.length ?? 0;
     final bookingsCount = _bookings.length;
     final hasBookings = bookingsCount > 0;
-    final totalPages = tournamentsCount + (hasBookings ? 1 : 0) + 1; // tornei + bookings page + need more
+    final totalPages =
+        tournamentsCount +
+        (hasBookings ? 1 : 0) +
+        1; // tornei + bookings page + need more
 
     return Column(
       children: [
@@ -398,16 +418,16 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                 final tournament = _activeTournaments![index];
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TournamentCardHome(
-                  tournament: tournament,
-                  matches: _tournamentMatches[tournament.id] ?? [],
-                  standings: _tournamentStandings[tournament.id] ?? [],
-                  teamsCache: _teamsCache,
-                  userTeam: _userTeam,
-                  sportCategory: _currentSport,
-                  minutesPerRound: _minutesPerRound[tournament.id]!,
-                  minutesPerPause: _minutesPerPause[tournament.id]!,
-                ),
+                  child: TournamentCardHome(
+                    tournament: tournament,
+                    matches: _tournamentMatches[tournament.id] ?? [],
+                    standings: _tournamentStandings[tournament.id] ?? [],
+                    teamsCache: _teamsCache,
+                    userTeam: _userTeam,
+                    sportCategory: _currentSport,
+                    minutesPerRound: _minutesPerRound[tournament.id]!,
+                    minutesPerPause: _minutesPerPause[tournament.id]!,
+                  ),
                 );
               } else if (hasBookings && index == tournamentsCount) {
                 // Pagina unica con tutti i bookings
@@ -427,7 +447,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     final tournamentsCount = _activeTournaments?.length ?? 0;
     final bookingsCount = _bookings.length;
     final hasBookings = bookingsCount > 0;
-    
+
     if (_currentPage < tournamentsCount) {
       return _activeTournaments![_currentPage].name.toUpperCase();
     } else if (hasBookings && _currentPage == tournamentsCount) {
@@ -446,12 +466,20 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         itemBuilder: (context, index) {
           final booking = _bookings[index];
           return BookingWidget(
-            fieldId: booking is PrivateBooking ? booking.fieldId : (booking as LobbyBooking).fieldId,
-            startTime: booking is PrivateBooking ? booking.startTime : (booking as LobbyBooking).startTime,
-            finishTime: booking is PrivateBooking ? booking.finishTime : (booking as LobbyBooking).finishTime,
+            fieldId: booking is PrivateBooking
+                ? booking.fieldId
+                : (booking as LobbyBooking).fieldId,
+            startTime: booking is PrivateBooking
+                ? booking.startTime
+                : (booking as LobbyBooking).startTime,
+            finishTime: booking is PrivateBooking
+                ? booking.finishTime
+                : (booking as LobbyBooking).finishTime,
             ownerId: booking is LobbyBooking ? booking.ownerId : null,
             currentSport: _currentSport,
-            bookingId: booking is PrivateBooking ? booking.id : (booking as LobbyBooking).id,
+            bookingId: booking is PrivateBooking
+                ? booking.id
+                : (booking as LobbyBooking).id,
             onBookingDeleted: () => _loadPlayerData(),
           );
         },
@@ -466,7 +494,11 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search, color: ATLColors.getPrimaryColor(_currentSport), size: 80),
+            Icon(
+              Icons.search,
+              color: ATLColors.getPrimaryColor(_currentSport),
+              size: 80,
+            ),
             const SizedBox(height: 24),
             const Text(
               'Looking for more passion?',
@@ -488,10 +520,11 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   // Naviga a BookFieldScreen
                   final result = await Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => BookFieldScreen(sportCategory: _currentSport),
+                      builder: (context) =>
+                          BookFieldScreen(sportCategory: _currentSport),
                     ),
                   );
-                  
+
                   // Se è stata creata una prenotazione, ricarica i dati
                   if (result == true) {
                     _loadPlayerData();
@@ -560,11 +593,14 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               height: 56,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => JoinLobbyScreen(sportCategory: _currentSport),
-                    ),
-                  ).then((_) => _loadPlayerData());
+                  Navigator.of(context)
+                      .push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              JoinLobbyScreen(sportCategory: _currentSport),
+                        ),
+                      )
+                      .then((_) => _loadPlayerData());
                 },
                 icon: const Icon(Icons.groups, size: 28),
                 label: const Text(
@@ -580,7 +616,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   foregroundColor: ATLColors.getPrimaryColor(_currentSport),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: ATLColors.getPrimaryColor(_currentSport), width: 2),
+                    side: BorderSide(
+                      color: ATLColors.getPrimaryColor(_currentSport),
+                      width: 2,
+                    ),
                   ),
                 ),
               ),

@@ -1,7 +1,7 @@
 import 'sport_category.dart';
 import 'booking_status.dart';
-/// Modello PrivateBooking dal database
 
+/// Modello PrivateBooking dal database
 
 class LobbyBooking {
   final int id;
@@ -10,7 +10,8 @@ class LobbyBooking {
   final DateTime startTime;
   final DateTime finishTime;
   BookingStatus status;
-  int playerToFind;     //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
+  int
+  playerToFind; //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
   final int maxPlayers; //numero di giocatori totali -> prezzo per giocatore
   final double feePerPlayer;
 
@@ -24,8 +25,8 @@ class LobbyBooking {
     required this.playerToFind,
     required this.maxPlayers,
     required this.feePerPlayer,
-  })  : startTime = startTime.toUtc(),
-        finishTime = finishTime.toUtc();
+  }) : startTime = startTime.toUtc(),
+       finishTime = finishTime.toUtc();
 
   factory LobbyBooking.fromJson(Map<String, dynamic> json) {
     return LobbyBooking(
@@ -34,7 +35,9 @@ class LobbyBooking {
       ownerId: json['owner_id'],
       startTime: DateTime.parse(json['start_time']),
       finishTime: DateTime.parse(json['finish_time']),
-      status: BookingStatus.values.firstWhere((e) => e.toString() == 'BookingStatus.' + json['status']),
+      status: BookingStatus.values.firstWhere(
+        (e) => e.toString() == 'BookingStatus.' + json['status'],
+      ),
       playerToFind: json['player_to_find'],
       maxPlayers: json['max_players'],
       feePerPlayer: json['fee_per_player'],

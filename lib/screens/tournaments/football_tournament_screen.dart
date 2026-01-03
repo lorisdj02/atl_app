@@ -146,7 +146,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen> wit
             _teamsCache[teamId] = team;
             
             // Load captain name
-            final captain = await DB.Players.getById(team.captainId);
+            final captain = await DB.Players.getByUserId(team.captainId);
             if (captain != null) {
               _captainNamesCache[teamId] = '${captain.name} ${captain.surname}';
             }

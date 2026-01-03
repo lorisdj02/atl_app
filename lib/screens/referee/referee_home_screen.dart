@@ -6,17 +6,17 @@ import '../../providers/user_provider.dart';
 import '../../models/user.dart';
 
 class RefereeHomeScreen extends StatefulWidget {
-
-  const RefereeHomeScreen({
-    super.key,
-  });
+  const RefereeHomeScreen({super.key});
 
   @override
   State<RefereeHomeScreen> createState() => _RefereeHomeScreenState();
 }
 
 class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+  late final UserProvider userProvider = Provider.of<UserProvider>(
+    context,
+    listen: false,
+  );
   late final User user = userProvider.activeUser!;
   late final SportCategory? sportCategory = userProvider.selectedSportCategory;
 
@@ -119,9 +119,9 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Upcoming assignments
           Text(
             'UPCOMING ASSIGNMENTS',
@@ -132,9 +132,9 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
@@ -158,26 +158,20 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'No assignments yet',
-                  style: TextStyle(
-                    color: ATLColors.subtext,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'You will be notified when assigned to a match',
-                  style: TextStyle(
-                    color: ATLColors.title,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: ATLColors.title, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Stats
           Text(
             'YOUR STATS',
@@ -188,18 +182,16 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               letterSpacing: 1.5,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
                 child: _buildStatCard('Matches', '0', Icons.sports_score),
               ),
               const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCard('Rating', '-', Icons.star),
-              ),
+              Expanded(child: _buildStatCard('Rating', '-', Icons.star)),
             ],
           ),
         ],
@@ -223,11 +215,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: ATLColors.darkBlue,
-            size: 32,
-          ),
+          Icon(icon, color: ATLColors.darkBlue, size: 32),
           const SizedBox(height: 8),
           Text(
             value,
@@ -237,13 +225,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          Text(
-            label,
-            style: TextStyle(
-              color: ATLColors.subtext,
-              fontSize: 12,
-            ),
-          ),
+          Text(label, style: TextStyle(color: ATLColors.subtext, fontSize: 12)),
         ],
       ),
     );

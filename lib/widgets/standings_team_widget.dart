@@ -48,7 +48,9 @@ class StandingsTeamWidget extends AbstractTeamWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: color == Colors.white ? ATLColors.darkBlue : Colors.white,
+                  color: color == Colors.white
+                      ? ATLColors.darkBlue
+                      : Colors.white,
                 ),
               ),
             ),
@@ -73,7 +75,9 @@ class StandingsTeamWidget extends AbstractTeamWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: color == Colors.white ? ATLColors.darkBlue : Colors.white,
+                  color: color == Colors.white
+                      ? ATLColors.darkBlue
+                      : Colors.white,
                 ),
               ),
           ],

@@ -30,10 +30,7 @@ class ATLStepIndicator extends StatelessWidget {
             decoration: BoxDecoration(
               color: isActive ? activeColor : Colors.transparent,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: inactiveColor,
-                width: 3,
-              ),
+              border: Border.all(color: inactiveColor, width: 3),
             ),
           ),
         );

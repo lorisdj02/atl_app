@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../models/sport.dart';
 import '../../models/field.dart';
+import '../../models/city.dart';
 import '../../models/sport_category.dart';
 import '../../models/tournament.dart';
 import '../../database/db_controller.dart';
@@ -10,7 +11,10 @@ import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/sport_selector_widget.dart';
-import '../../widgets/info_row_widget.dart';
+import '../../widgets/atl_button.dart';
+import '../../widgets/atl_textfield.dart';
+import '../../widgets/field_size_alert_dialog.dart';
+import '../../widgets/tournament_summary.dart';
 
 enum Round2Option {
   none,
@@ -51,7 +55,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   // Step 1 - Logistic details
   bool _prize1 = true;
   bool _prize2 = false;
-  String? _selectedCity;
+  int? _selectedCity; // cityId
   bool _isPublic = true;
   bool _hasProfit = true;
   String? _selectedMonth; // "now" or "YYYY-MM"
@@ -71,9 +75,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   bool _isLoading = false;
   List<Field> _availableFields = [];
+  List<City> _availableCities = [];
 
-  // Available options
-  final List<String> _cities = ['Milano', 'Taranto', 'Roma'];
+  @override
+  void initState() {
+    super.initState();
+    _loadCities();
+  }
 
   @override
   void dispose() {
@@ -150,6 +158,19 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     );
   }
 
+  Future<void> _loadCities() async {
+    try {
+      final cities = await DB.Cities.getAll();
+      setState(() {
+        _availableCities = cities;
+      });
+    } catch (e) {
+      if (mounted) {
+        _showError('Errore nel caricamento delle città: $e');
+      }
+    }
+  }
+
   Future<void> _loadAvailableFields() async {
     if (_selectedCity == null || _selectedSport == null) {
       return;
@@ -214,7 +235,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   Tournament _createFictitiousTournament() {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    if(userProvider.activeUser == null ||
+    if (userProvider.activeUser == null ||
         userProvider.activeRoleId == null ||
         userProvider.isCoordinator == false) {
       throw Exception('Coordinator not found');
@@ -235,7 +256,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       name: _nameController.text.trim(),
       coordinatorId: userProvider.activeRoleId!,
       fieldId: _selectedField!.id,
-      city: _selectedCity!,
+      cityId: _selectedCity!,
       startDate: startDate,
       sportId: _getSportId(),
       numTeams: _numTeams,
@@ -253,7 +274,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       fee: 0,
       prize1: 0,
       prize2: 0,
-      isPublic: _isPublic
+      isPublic: _isPublic,
     );
   }
 
@@ -325,7 +346,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         name: _nameController.text.trim(),
         coordinatorId: userProvider.activeRoleId!,
         fieldId: _selectedField!.id,
-        city: _selectedCity!,
+        cityId: _selectedCity!,
         startDate: startDate,
         sportId: _getSportId(),
         numTeams: _numTeams,
@@ -385,6 +406,38 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   int _getSportId() {
     return _selectedSport!.id;
+  }
+
+  String _getSportDisplayName([int? maxPlayers]) {
+    final sportName = _selectedSport!.category.name.toUpperCase();
+    final playersPerSide = maxPlayers != null
+        ? maxPlayers ~/ 2
+        : _selectedSport!.minPlayersPerTeam;
+    return '$sportName ${playersPerSide}v$playersPerSide';
+  }
+
+  bool _isFieldOversized(Field field) {
+    if (_selectedSport == null) return false;
+    final minPlayers = _selectedSport!.minPlayersPerTeam * 2;
+    return minPlayers < field.maxPlayers;
+  }
+
+  Future<void> _showOversizedFieldWarning(Field field) async {
+    return showDialog(
+      context: context,
+      builder: (context) => FieldSizeAlertDialog(
+        field: field,
+        customMessage:
+            'Il campo è pensato per più giocatori (${field.maxPlayers} totali). '
+            'Questo potrebbe significare una differente esperienza di gioco '
+            'ed una fee per squadra maggiore. Vuoi continuare?',
+        onConfirm: () {
+          setState(() {
+            _selectedField = field;
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -499,23 +552,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           subtitle: 'Scegli la categoria sportiva per il tuo torneo',
         ),
         const SizedBox(height: 32),
-        ElevatedButton(
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
           onPressed: _goToNextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          fullWidth: true,
         ),
       ],
     );
@@ -612,12 +655,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
+            child: DropdownButton<int>(
               isExpanded: true,
               value: _selectedCity,
               hint: const Text('Città'),
-              items: _cities.map((city) {
-                return DropdownMenuItem(value: city, child: Text(city));
+              items: _availableCities.map((city) {
+                return DropdownMenuItem(value: city.id, child: Text(city.name));
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -724,23 +767,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
         const SizedBox(height: 32),
 
-        ElevatedButton(
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
           onPressed: _goToNextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          fullWidth: true,
         ),
       ],
     );
@@ -936,23 +969,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
         const SizedBox(height: 32),
 
-        ElevatedButton(
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
           onPressed: _goToNextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          fullWidth: true,
         ),
       ],
     );
@@ -982,15 +1005,37 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             ),
           ),
         ] else ...[
+          // TODO: Implement map view here
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text(
+                'TODO: Mappa dei campi disponibili',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
           ..._availableFields.map((field) {
             final isSelected = _selectedField?.id == field.id;
+            final isOversized = _isFieldOversized(field);
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedField = field;
-                  });
+                onTap: () async {
+                  if (isOversized) {
+                    await _showOversizedFieldWarning(field);
+                  } else {
+                    setState(() {
+                      _selectedField = field;
+                    });
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(16),
@@ -1004,6 +1049,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
                     border: Border.all(
                       color: isSelected
                           ? ATLColors.getPrimaryColor(widget.currentSport)
+                          : isOversized
+                          ? Colors.orange
                           : Colors.grey.shade300,
                       width: isSelected ? 2 : 1,
                     ),
@@ -1039,12 +1086,52 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        field.address,
+                        'Questo campo è per ${_getSportDisplayName(field.maxPlayers)}',
                         style: TextStyle(
                           fontSize: 14,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        field.address,
+                        style: TextStyle(
+                          fontSize: 12,
                           color: ATLColors.subtext,
                         ),
                       ),
+                      if (isOversized) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange.shade300),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.orange.shade700,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Campo più grande del necessario',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange.shade900,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 8),
                     ],
                   ),
@@ -1056,23 +1143,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
         const SizedBox(height: 32),
 
-        ElevatedButton(
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
           onPressed: _goToNextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          fullWidth: true,
         ),
       ],
     );
@@ -1094,51 +1171,40 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         // Tournament name
-        TextField(
-          controller: _nameController,
-          decoration: InputDecoration(
-            labelText: 'Nome del torneo',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            filled: true,
-            fillColor: Colors.white,
-          ),
-        ),
+        ATLTextField(controller: _nameController, hintText: 'Nome del torneo'),
 
         const SizedBox(height: 16),
 
         // Tournament description
-        TextField(
-          controller: _descriptionController,
-          maxLines: 6,
-          decoration: InputDecoration(
-            labelText: 'Descrizione',
-            alignLabelWithHint: true,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            filled: true,
-            fillColor: Colors.white,
-            hintText: 'Inserisci le regole e i dettagli del torneo...',
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: TextField(
+            controller: _descriptionController,
+            maxLines: 6,
+            decoration: const InputDecoration(
+              hintText: 'Inserisci le regole e i dettagli del torneo...',
+              hintStyle: TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
+              border: OutlineInputBorder(borderSide: BorderSide.none),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 18,
+              ),
+            ),
           ),
         ),
 
         const SizedBox(height: 32),
 
-        ElevatedButton(
+        ATLButton(
+          text: 'Continua',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
           onPressed: _goToNextStep,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'Continua',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          fullWidth: true,
         ),
       ],
     );
@@ -1158,10 +1224,14 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     // Calculate prizes only if requested
     final prize1Value = _prize1
         ? await DB.Tournaments.calculatePrize1(fictitiousTournament)
-        : 0.0;
+        : null;
     final prize2Value = _prize2
         ? await DB.Tournaments.calculatePrize2(fictitiousTournament)
-        : 0.0;
+        : null;
+
+    // Get city name
+    final city = await DB.Cities.getById(_selectedCity!);
+    final cityName = city?.name ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1177,71 +1247,17 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         ),
         const SizedBox(height: 32),
 
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InfoRowWidget(label: 'Nome', value: _nameController.text),
-              InfoRowWidget(
-                label: '1° posto',
-                value: _prize1
-                    ? '🏆 €${prize1Value.toStringAsFixed(2)}'
-                    : '❌ No',
-              ),
-              InfoRowWidget(
-                label: '2° posto',
-                value: _prize2
-                    ? '💰 €${prize2Value.toStringAsFixed(2)}'
-                    : '❌ No',
-              ),
-              InfoRowWidget(
-                label: 'Quota per squadra',
-                value: '💵 €${fee.toStringAsFixed(2)}',
-              ),
-              InfoRowWidget(
-                label: 'Campo',
-                value: '${_selectedField!.name}, ${_selectedCity!}',
-              ),
-              InfoRowWidget(
-                label: 'Numero di giocatori',
-                value: _selectedSport!.maxPlayersPerTeam.toString(),
-              ),
-              InfoRowWidget(
-                label: 'Inizio',
-                value: _selectedMonth ?? 'Appena possibile',
-              ),
-              InfoRowWidget(
-                label: 'Squadre',
-                value: '$_numTeams  Gironi: $_numGroups  Qual: $_qualified',
-              ),
-              InfoRowWidget(
-                label: 'Partite totali',
-                value: _calculateTotalMatches().toString(),
-              ),
-              InfoRowWidget(
-                label: 'Andata e ritorno',
-                value: _round2Option.displayName,
-              ),
-              InfoRowWidget(
-                label: 'Descrizione',
-                value: _descriptionController.text.isNotEmpty
-                    ? _descriptionController.text
-                    : 'Nessuna descrizione fornita',
-              ),
-            ],
-          ),
+        TournamentSummary(
+          tournament: fictitiousTournament,
+          sport: _selectedSport!,
+          field: _selectedField!,
+          cityName: cityName,
+          fee: fee,
+          prize1Value: prize1Value,
+          prize2Value: prize2Value,
+          totalMatches: _calculateTotalMatches(),
+          round2Display: _round2Option.displayName,
+          primaryColor: ATLColors.getPrimaryColor(widget.currentSport),
         ),
 
         const SizedBox(height: 24),
@@ -1267,7 +1283,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '💵 €${coordinatorPay.toStringAsFixed(2)}',
+                '€${coordinatorPay.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -1280,23 +1296,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
         const SizedBox(height: 32),
 
-        ElevatedButton(
+        ATLButton(
+          text: 'CREA +',
+          size: ATLButtonSize.large,
+          isFilled: true,
+          color: ATLColors.getPrimaryColor(widget.currentSport),
           onPressed: _createTournament,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          child: const Text(
-            'CREA +',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+          fullWidth: true,
         ),
       ],
     );

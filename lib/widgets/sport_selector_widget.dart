@@ -74,10 +74,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
           padding: const EdgeInsets.all(32),
           child: Text(
             'Nessuno sport disponibile',
-            style: TextStyle(
-              fontSize: 16,
-              color: ATLColors.subtext,
-            ),
+            style: TextStyle(fontSize: 16, color: ATLColors.subtext),
           ),
         ),
       );
@@ -99,15 +96,12 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
           const SizedBox(height: 8),
           Text(
             widget.subtitle!,
-            style: const TextStyle(
-              fontSize: 14,
-              color: ATLColors.subtext,
-            ),
+            style: const TextStyle(fontSize: 14, color: ATLColors.subtext),
             textAlign: TextAlign.center,
           ),
         ],
         const SizedBox(height: 32),
-        
+
         // Sport cards
         ..._availableSports.map((sport) {
           return Padding(
@@ -139,7 +133,7 @@ class _SportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = ATLColors.getPrimaryColor(sport.category);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -182,9 +176,9 @@ class _SportCard extends StatelessWidget {
                 color: isSelected ? Colors.white : Colors.grey.shade600,
               ),
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             // Sport info
             Expanded(
               child: Column(
@@ -209,14 +203,10 @@ class _SportCard extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Selection indicator
             if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: primaryColor,
-                size: 28,
-              ),
+              Icon(Icons.check_circle, color: primaryColor, size: 28),
           ],
         ),
       ),

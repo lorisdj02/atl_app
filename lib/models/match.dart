@@ -7,7 +7,7 @@ enum MatchStatus {
   notScheduled,
   homeRetired,
   awayRetired,
-  canceled
+  canceled,
 }
 
 class Match {

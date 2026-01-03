@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../models/sport_category.dart';
+
 class UserProvider with ChangeNotifier {
   User? _activeUser;
   int? _currentTeamId;
@@ -31,7 +32,7 @@ class UserProvider with ChangeNotifier {
   }
 
   Future<void> setCurrentTeamId(int teamId) async {
-    if(teamId != -1){
+    if (teamId != -1) {
       _currentTeamId = teamId;
       notifyListeners();
     }
@@ -54,5 +55,4 @@ class UserProvider with ChangeNotifier {
   bool get isCoordinator => _activeUser?.role == UserRole.coordinator;
 
   bool get isOrganization => _activeUser?.role == UserRole.organization;
-
 }

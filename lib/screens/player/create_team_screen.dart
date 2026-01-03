@@ -5,6 +5,7 @@ import 'dart:io';
 
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
+import '../../models/city.dart';
 import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -13,10 +14,7 @@ import '../../utils/text_formatters.dart';
 class CreateTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
 
-  const CreateTeamScreen({
-    super.key,
-    required this.currentSport,
-  });
+  const CreateTeamScreen({super.key, required this.currentSport});
 
   @override
   State<CreateTeamScreen> createState() => _CreateTeamScreenState();
@@ -27,14 +25,38 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
   final _nameController = TextEditingController();
   final _aliasController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
-  String? _selectedCity;
+
+  int? _selectedCity;
+  List<City> _availableCities = [];
   bool _isVip = false;
   bool _visibility = true; // Public by default
   File? _imageFile;
   bool _isLoading = false;
 
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCities();
+  }
+
+  Future<void> _loadCities() async {
+    try {
+      final cities = await DB.Cities.getAll();
+      if (mounted) {
+        setState(() {
+          _availableCities = cities;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore nel caricamento città: $e')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -52,7 +74,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         maxHeight: 512,
         imageQuality: 85,
       );
-      
+
       if (image != null) {
         setState(() {
           _imageFile = File(image.path);
@@ -102,7 +124,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         cityId: _selectedCity,
         name: _nameController.text.trim(),
         alias: _aliasController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
         captainId: captainId, // Usa playerId dell'utente corrente
         catId: widget.currentSport.id,
         imageUrl: imageUrl,
@@ -111,21 +135,27 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         visibility: _visibility,
       );
 
-      if((await DB().createTeam(
-        newTeam.cityId,
-        newTeam.name,
-        newTeam.alias,
-        newTeam.description,
-        newTeam.captainId,
-        newTeam.catId,
-        newTeam.imageUrl,
-        newTeam.vip,
-        newTeam.visibility,
-      )) == false) {
+      if ((await DB().createTeam(
+            newTeam.cityId,
+            newTeam.name,
+            newTeam.alias,
+            newTeam.description,
+            newTeam.captainId,
+            newTeam.catId,
+            newTeam.imageUrl,
+            newTeam.vip,
+            newTeam.visibility,
+          )) ==
+          false) {
         throw Exception('Failed to create team');
       }
 
-      final int newTeamId = (await DB.PlaysAt.getByPlayerIdAndCategory(currentUser.id, widget.currentSport))?.teamId ?? -1;
+      final int newTeamId =
+          (await DB.PlaysAt.getByPlayerIdAndCategory(
+            currentUser.id,
+            widget.currentSport,
+          ))?.teamId ??
+          -1;
       if (newTeamId == -1) {
         throw Exception('Failed to retrieve new team ID');
       }
@@ -147,10 +177,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Errore: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Errore: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -244,9 +271,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Nome Team
                     TextFormField(
                       controller: _nameController,
@@ -270,15 +297,13 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Alias Team (opzionale)
                     TextFormField(
                       controller: _aliasController,
-                      inputFormatters: [
-                        UpperCaseTextFormatter(),
-                      ],
+                      inputFormatters: [UpperCaseTextFormatter()],
                       decoration: InputDecoration(
                         hintText: 'Team alias',
                         filled: true,
@@ -301,9 +326,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       maxLength: 3,
                       textCapitalization: TextCapitalization.characters,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Descrizione (opzionale)
                     TextFormField(
                       controller: _descriptionController,
@@ -320,9 +345,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       maxLines: 3,
                       maxLength: 200,
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Città
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -330,26 +355,20 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: DropdownButtonFormField<String>(
+                      child: DropdownButtonFormField<int>(
                         value: _selectedCity,
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Select city',
                         ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: '1',
-                            child: Text('Milano'),
-                          ),
-                          DropdownMenuItem(
-                            value: '2',
-                            child: Text('Taranto'),
-                          ),
-                          DropdownMenuItem(
-                            value: '3',
-                            child: Text('Roma'),
-                          ),
-                        ],
+                        items: _availableCities
+                            .map(
+                              (city) => DropdownMenuItem<int>(
+                                value: city.id,
+                                child: Text(city.name),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (value) {
                           setState(() {
                             _selectedCity = value;
@@ -363,9 +382,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         },
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Visibility (Public/Private)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -380,10 +399,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                           hintText: 'Visibility (Public/Private)',
                         ),
                         items: const [
-                          DropdownMenuItem(
-                            value: true,
-                            child: Text('Public'),
-                          ),
+                          DropdownMenuItem(value: true, child: Text('Public')),
                           DropdownMenuItem(
                             value: false,
                             child: Text('Private'),
@@ -398,12 +414,14 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                     ),
 
                     const SizedBox(height: 32),
-                    
+
                     // Create Button
                     ElevatedButton(
                       onPressed: _isLoading ? null : _createTeam,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+                        backgroundColor: ATLColors.getPrimaryColor(
+                          widget.currentSport,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),

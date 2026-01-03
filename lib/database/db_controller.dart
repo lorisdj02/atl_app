@@ -21,6 +21,7 @@ import 'repositories/lobby_bookings_repository.dart';
 import 'repositories/lobby_booking_participation_repository.dart';
 import 'repositories/football_match_event_repository.dart';
 import 'repositories/sport_repository.dart';
+import 'repositories/city_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -57,6 +58,7 @@ class DB {
   LobbyBookingParticipations;
   static late final FootballMatchEventRepository FootballMatchEvents;
   static late final SportRepository Sports;
+  static late final CityRepository Cities;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -80,6 +82,7 @@ class DB {
     LobbyBookingParticipations = LobbyBookingParticipationRepository();
     FootballMatchEvents = FootballMatchEventRepository();
     Sports = SportRepository();
+    Cities = CityRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -96,7 +99,7 @@ class DB {
   }
 
   Future<bool> createTeam(
-    String? cityId,
+    int? cityId,
     String name,
     String alias,
     String? description,
@@ -393,12 +396,12 @@ class DB {
 
   Future<bool> deleteAccount(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
-      if ((await Users.getById(id))?.passwordMD5 != passwordMD5) {
+      if ((await Users.getByUserId(id))?.passwordMD5 != passwordMD5) {
         return false;
       }
 
-      if ((await Users.getById(id))!.isPlayer) {
-        final playerId = (await Players.getById(id))!.playerId;
+      if ((await Users.getByUserId(id))!.isPlayer) {
+        final playerId = (await Players.getByUserId(id))!.playerId;
         final List<int> teamIds = await PlaysAt.getByPlayerId(
           playerId,
         ).then((playsAtList) => playsAtList!.map((pa) => pa.teamId).toList());
@@ -434,18 +437,24 @@ class DB {
     }
   }
 
-  Future<bool> updatePayment(int tournamentId, int teamId, double newToPay) async {
+  Future<bool> updatePayment(
+    int tournamentId,
+    int teamId,
+    double newToPay,
+  ) async {
     if (AppConfig.isDebug) {
-      if(await TournamentPartecipations.updatePayment(
-                tournamentId,
-                teamId,
-                newToPay,
-      ) == false){
+      if (await TournamentPartecipations.updatePayment(
+            tournamentId,
+            teamId,
+            newToPay,
+          ) ==
+          false) {
         return false;
-        }
-        if(newToPay == 0 && (await Tournaments.incrementPaidTeams(tournamentId)) == false){
-          return false;
-        }
+      }
+      if (newToPay == 0 &&
+          (await Tournaments.incrementPaidTeams(tournamentId)) == false) {
+        return false;
+      }
 
       return true;
     } else {
@@ -454,17 +463,16 @@ class DB {
   }
 
   Future<bool> deleteCallups(int tournamentId, int teamId) async {
-    if (AppConfig.isDebug){
-      if(await DB.CallUps.deleteByTournamentAndTeam(
-                      tournamentId,
-                      teamId,
-                    ) == false){
+    if (AppConfig.isDebug) {
+      if (await DB.CallUps.deleteByTournamentAndTeam(tournamentId, teamId) ==
+          false) {
         return false;
       }
-      if(await DB.TournamentPartecipations.deletePartecipation(
-                      tournamentId,
-                      teamId,
-                    ) == false){
+      if (await DB.TournamentPartecipations.deletePartecipation(
+            tournamentId,
+            teamId,
+          ) ==
+          false) {
         return false;
       }
       return true;

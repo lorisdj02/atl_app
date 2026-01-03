@@ -14,33 +14,42 @@ class PlayerRepository extends BaseRepository<Player> {
   @override
   Map<String, dynamic> toJson(Player item) => item.toJson();
 
-
   @override
   List<Player> get mockData => DB.Users.mockData.whereType<Player>().toList();
+
+  Future<Player?> getByUserId(int id) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((player) => player.id == id);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
   Future<List<Player>> getByTeam(int teamId) async {
     final List playerIds = await DB.PlaysAt.getPlayersIdinTeam(teamId);
     List<Player> players = [];
-    for(final playerId in playerIds){
+    for (final playerId in playerIds) {
       players.add(await getByPlayerId(playerId));
     }
     return players;
   }
 
   Future<Player> getByPlayerId(int playerId) async {
-    if(AppConfig.isDebug) {
+    if (AppConfig.isDebug) {
       return mockData.firstWhere((player) => player.playerId == playerId);
-    }
-    else{
+    } else {
       throw UnimplementedError();
     }
   }
 
-  Future<bool> joinTeam (int playerId, int teamId) async {
-    if((await DB.PlaysAt.addPlaysAt(teamId, playerId)) == false) {
+  Future<bool> joinTeam(int playerId, int teamId) async {
+    if ((await DB.PlaysAt.addPlaysAt(teamId, playerId)) == false) {
       return false;
     }
     return true;
   }
-
 }
