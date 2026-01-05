@@ -1,3 +1,4 @@
+import 'package:atl_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/football_match.dart';
@@ -10,9 +11,10 @@ import '../../widgets/football_match_widget.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/match_event_card.dart';
+import '../../widgets/match_event_dialog.dart';
+import '../../widgets/football_motm_selector_dialog.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
-import '../../models/match.dart';
 
 class FootballMatchScreen extends StatefulWidget {
   final int matchId;
@@ -30,13 +32,39 @@ class FootballMatchScreen extends StatefulWidget {
 
 class _FootballMatchScreenState extends State<FootballMatchScreen> {
   FootballMatch? _match;
-  late final Team _homeTeam;
-  late final Team _awayTeam;
+  late Team _homeTeam;
+  late Team _awayTeam;
   List<FootballMatchEvent> _events = [];
   bool _isLoading = true;
-  bool _isScheduled = false;
-  late final int _minutesPerRound;
-  late final int _minutesPerPause;
+  late int _minutesPerRound;
+  late int _minutesPerPause;
+  int? _coordinatorId;
+  int? _tournamentId;
+
+  bool get _isNotScheduled =>
+      _match != null && _match!.status == MatchStatus.notScheduled;
+
+  bool get _isScheduled =>
+      _match != null && _match!.status == MatchStatus.scheduled;
+
+  bool get _canStartMatch {
+    if (!_isScheduled || _match?.scheduledStart == null) return false;
+    final difference = _match!.scheduledStart!.difference(DateTime.now());
+    return difference.inMinutes < 60;
+  }
+
+  bool get _isInProgress =>
+      _match != null &&
+      (_match!.status == MatchStatus.started ||
+          _match!.status == MatchStatus.startHalf);
+
+  bool get _isHalftime =>
+      _match != null && _match!.status == MatchStatus.halftime;
+
+  bool get _isFinished =>
+      _match != null && _match!.status == MatchStatus.finished;
+
+  bool get _needsMotm => _isFinished && _match?.motmPlayerId == null;
 
   @override
   void initState() {
@@ -49,7 +77,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     try {
       // Carica la partita dal database
-      final FootballMatch? match = await DB.FootballMatches.getById(widget.matchId);
+      final FootballMatch? match = await DB.FootballMatches.getById(
+        widget.matchId,
+      );
 
       if (match == null) {
         setState(() => _isLoading = false);
@@ -65,15 +95,30 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         return;
       }
 
+      // Carica il coordinatore della partita
+      int tournamentId = match.tournamentId;
+      final int? coordinatorId = (await DB.Tournaments.getById(
+        tournamentId,
+      ))?.coordinatorId;
+
+      if (coordinatorId == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
       // Carica gli eventi della partita
       final List<FootballMatchEvent> events =
           await DB.FootballMatchEvents.getByMatchId(widget.matchId);
 
-      // Determina se la partita è schedulata
-      final isScheduled = match.status != MatchStatus.notScheduled;
+      // Ordina gli eventi per eventTime in senso decrescente (più recenti in alto)
+      events.sort((a, b) => b.eventTime.compareTo(a.eventTime));
 
-      final minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(match.tournamentId);
-      final minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(match.tournamentId);
+      final minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
+        match.tournamentId,
+      );
+      final minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
+        match.tournamentId,
+      );
 
       if (minutesPerRound == 0 || minutesPerPause == 0) {
         setState(() => _isLoading = false);
@@ -85,10 +130,11 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         _homeTeam = homeTeam;
         _awayTeam = awayTeam;
         _events = events;
-        _isScheduled = isScheduled;
         _isLoading = false;
         _minutesPerRound = minutesPerRound;
         _minutesPerPause = minutesPerPause;
+        _coordinatorId = coordinatorId;
+        _tournamentId = tournamentId;
       });
     } catch (e) {
       print('Error loading match data: $e');
@@ -96,26 +142,264 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
   }
 
-  Future<void> _loadNewEvents() async {
-    // TODO: In futuro, questa funzione sarà chiamata automaticamente tramite webhook
-    // quando ci sono nuovi eventi nella partita. Il webhook aggiornerà la pagina in tempo reale.
+  Future<void> _showScheduleDialog() async {
+    // TODO: Implementare UI per selezionare orario disponibile
+    final DateTime? selectedTime = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
 
-    try {
-      // Ricarica solo gli eventi senza mostrare il loading
-      final List<FootballMatchEvent> events =
-          await DB.FootballMatchEvents.getByMatchId(widget.matchId);
+    if (selectedTime == null) return;
 
-      // Ricarica anche la partita per aggiornare il punteggio
-      final FootballMatch? match = await DB.FootballMatches.getById(widget.matchId);
+    final TimeOfDay? selectedTimeOfDay = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
 
-      if (match != null) {
-        setState(() {
-          _events = events;
-          _match = match;
-        });
+    if (selectedTimeOfDay == null) return;
+
+    final DateTime scheduledStart = DateTime(
+      selectedTime.year,
+      selectedTime.month,
+      selectedTime.day,
+      selectedTimeOfDay.hour,
+      selectedTimeOfDay.minute,
+    );
+
+    if (!mounted) return;
+
+    final success = await DB().scheduleMatch(
+      widget.matchId,
+      scheduledStart,
+      _coordinatorId!,
+    );
+
+    if (success) {
+      _loadMatchData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Match scheduled successfully')),
+        );
       }
-    } catch (e) {
-      print('Error loading new events: $e');
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to schedule match')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleMatchAction(String action) async {
+    if (_coordinatorId == null) return;
+
+    bool success = false;
+
+    switch (action) {
+      case 'start':
+        success = await DB().insertEventMatch(
+          widget.matchId,
+          'start',
+          _coordinatorId!,
+        );
+        break;
+      case 'halftime':
+        success = await DB().insertEventMatch(
+          widget.matchId,
+          'halftime',
+          _coordinatorId!,
+        );
+        break;
+      case 'startHalf':
+        success = await DB().insertEventMatch(
+          widget.matchId,
+          'startHalf',
+          _coordinatorId!,
+        );
+        break;
+      case 'finish':
+        success = await DB().insertEventMatch(
+          widget.matchId,
+          'finish',
+          _coordinatorId!,
+        );
+        break;
+    }
+
+    if (success) {
+      _loadMatchData();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Match ${action} successfully')));
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to ${action} match')));
+      }
+    }
+  }
+
+  Future<void> _showMatchActionsMenu() async {
+    List<String> actions = [];
+
+    if (_isNotScheduled || _isScheduled) {
+      actions.add('Schedule Match');
+      if (_canStartMatch) {
+        actions.add('Start Match');
+      }
+    } else if (_isInProgress) {
+      // Go to Halftime solo se il match è in stato 'started' (primo tempo)
+      if (_match?.status == MatchStatus.started) {
+        actions.add('Go to Halftime');
+      }
+      actions.add('Add Player Event');
+      actions.add('Finish Match');
+    } else if (_isHalftime) {
+      actions.add('Start Second Half');
+    }
+
+    if (actions.isEmpty) return;
+
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: actions.map((action) {
+              IconData icon;
+              switch (action) {
+                case 'Schedule Match':
+                  icon = Icons.schedule;
+                  break;
+                case 'Start Match':
+                  icon = Icons.play_arrow;
+                  break;
+                case 'Go to Halftime':
+                  icon = Icons.pause;
+                  break;
+                case 'Start Second Half':
+                  icon = Icons.play_arrow;
+                  break;
+                case 'Add Player Event':
+                  icon = Icons.add;
+                  break;
+                case 'Finish Match':
+                  icon = Icons.stop;
+                  break;
+                default:
+                  icon = Icons.circle;
+              }
+
+              return ListTile(
+                leading: Icon(
+                  icon,
+                  color: ATLColors.getPrimaryColor(widget.currentSport),
+                ),
+                title: Text(action),
+                onTap: () => Navigator.pop(context, action),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    switch (result) {
+      case 'Schedule Match':
+        _showScheduleDialog();
+        break;
+      case 'Start Match':
+        _handleMatchAction('start');
+        break;
+      case 'Go to Halftime':
+        _handleMatchAction('halftime');
+        break;
+      case 'Start Second Half':
+        _handleMatchAction('startHalf');
+        break;
+      case 'Add Player Event':
+        _showPlayerEventDialog();
+        break;
+      case 'Finish Match':
+        _handleMatchAction('finish');
+        break;
+    }
+  }
+
+  Future<void> _showPlayerEventDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => MatchEventDialog(
+        homeTeam: _homeTeam,
+        awayTeam: _awayTeam,
+        tournamentId: _tournamentId!,
+        matchId: widget.matchId,
+        sportCategory: widget.currentSport,
+        coordinatorId: _coordinatorId!,
+      ),
+    );
+
+    if (result == true) {
+      _loadMatchData();
+    }
+  }
+
+  Future<void> _showMotmDialog() async {
+    if (!mounted) return;
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => FootballMotmSelectorDialog(
+        homeTeam: _homeTeam,
+        awayTeam: _awayTeam,
+        tournamentId: _tournamentId!,
+        matchId: widget.matchId,
+        sportCategory: widget.currentSport,
+      ),
+    );
+
+    if (result == null) return;
+
+    final Player selectedPlayer = result['player'];
+    final int teamId = result['teamId'];
+
+    print(
+      "Assigning MOTM to player ${selectedPlayer.playerId} in match ${widget.matchId}",
+    );
+
+    final success = await DB().addFootballMotm(
+      widget.matchId,
+      selectedPlayer.playerId,
+      teamId,
+      _tournamentId!,
+      _coordinatorId!,
+    );
+
+    if (success) {
+      _loadMatchData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('MOTM added successfully')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to add MOTM')));
+      }
     }
   }
 
@@ -238,20 +522,72 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                 ),
               ),
             ),
-      floatingActionButton: isCoordinator && _match != null
-          ? ATLFloatingButton(
-              onPressed: () {
-                // TODO: inserisci logica di funzionamento
-                print('Button pressed: ${_isScheduled ? "Edit" : "New event"}');
-              },
-              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-              icon: _isScheduled ? Icons.edit : Icons.add,
-              label: _isScheduled ? 'Edit' : 'New event',
-              heroTag: 'soccerMatchFAB',
-            )
+      floatingActionButton:
+          isCoordinator &&
+              _match != null &&
+              _coordinatorId == userProvider.activeRoleId
+          ? _buildFloatingActionButton()
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  Widget? _buildFloatingActionButton() {
+    // Se ha bisogno del MOTM, mostra solo quello
+    if (_needsMotm) {
+      return ATLFloatingButton(
+        onPressed: _showMotmDialog,
+        backgroundColor: Colors.orange,
+        icon: Icons.star,
+        label: 'Select MOTM',
+        heroTag: 'soccerMatchFAB',
+      );
+    }
+
+    // Se è not scheduled o scheduled, mostra il pulsante appropriato
+    if (_isNotScheduled) {
+      return ATLFloatingButton(
+        onPressed: _showMatchActionsMenu,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+        icon: Icons.schedule,
+        label: 'Schedule Match',
+        heroTag: 'soccerMatchFAB',
+      );
+    }
+
+    if (_isScheduled) {
+      return ATLFloatingButton(
+        onPressed: _showMatchActionsMenu,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+        icon: Icons.edit,
+        label: 'Manage Match',
+        heroTag: 'soccerMatchFAB',
+      );
+    }
+
+    // Se è in progress, mostra gestione eventi
+    if (_isInProgress) {
+      return ATLFloatingButton(
+        onPressed: _showMatchActionsMenu,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+        icon: Icons.add,
+        label: 'Manage Match',
+        heroTag: 'soccerMatchFAB',
+      );
+    }
+
+    // Se è halftime, mostra solo start second half
+    if (_isHalftime) {
+      return ATLFloatingButton(
+        onPressed: _showMatchActionsMenu,
+        backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+        icon: Icons.play_arrow,
+        label: 'Start Second Half',
+        heroTag: 'soccerMatchFAB',
+      );
+    }
+
+    return null;
   }
 
   Widget _buildEventCard(FootballMatchEvent event) {
@@ -275,37 +611,39 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       return MatchEventCard(
         eventType: event.type,
         minute: event.minute,
+        additionalMinute: event.additionalMinute,
         playerName: eventName,
         source: source,
       );
     }
 
-    // Eventi con giocatore - determina se è home o away
-    if (event.playerId != null) {
-      // Carica il giocatore e determina il team attraverso PlaysAt
-      return FutureBuilder<Map<String, dynamic>>(
-        future: _loadPlayerAndTeam(event.playerId!),
+    // Eventi con giocatore - usa il teamId dall'evento per determinare home/away
+    if (event.playerId != null && event.teamId != null) {
+      // Determina se l'evento appartiene all'home team o all'away team usando teamId
+      if (_match!.homeTeamId == event.teamId) {
+        source = EventSource.home;
+      } else if (_match!.awayTeamId == event.teamId) {
+        source = EventSource.away;
+      } else {
+        return const SizedBox.shrink();
+      }
+
+      // Per gli own goal, inverti il source (mostra dalla parte opposta)
+      if (event.type == FootballMatchEventType.ownGoal) {
+        source = source == EventSource.home
+            ? EventSource.away
+            : EventSource.home;
+      }
+
+      // Carica solo il giocatore per il nome
+      return FutureBuilder<Player?>(
+        future: DB.Players.getByUserId(event.playerId!),
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.data == null) {
             return const SizedBox.shrink();
           }
 
-          final data = snapshot.data!;
-          final player = data['player'] as Player?;
-          final teamId = data['teamId'] as int?;
-
-          if (player == null || teamId == null) {
-            return const SizedBox.shrink();
-          }
-
-          // Determina se il giocatore appartiene all'home team o all'away team
-          if (_match!.homeTeamId == teamId) {
-            source = EventSource.home;
-          } else if (_match!.awayTeamId == teamId) {
-            source = EventSource.away;
-          } else {
-            return const SizedBox.shrink();
-          }
+          final player = snapshot.data!;
 
           // Formatta il nome: nome puntato e cognome esteso
           final String formattedName = _formatPlayerName(player);
@@ -313,6 +651,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           return MatchEventCard(
             eventType: event.type,
             minute: event.minute,
+            additionalMinute: event.additionalMinute,
             playerName: formattedName,
             source: source,
           );
@@ -322,31 +661,6 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     // Fallback se non c'è playerId
     return const SizedBox.shrink();
-  }
-
-  Future<Map<String, dynamic>> _loadPlayerAndTeam(int playerId) async {
-    try {
-      final player = await DB.Players.getByUserId(playerId);
-      if (player == null) {
-        return {};
-      }
-
-      // Carica le associazioni PlaysAt per il giocatore
-      final playsAtList = await DB.PlaysAt.getByPlayerId(playerId);
-      if (playsAtList == null || playsAtList.isEmpty) {
-        return {'player': player};
-      }
-
-      // Trova il team corrispondente alla categoria della partita (assumiamo football)
-      // O semplicemente prendi il primo team se ce n'è solo uno
-      // Per ora prendiamo il primo team disponibile
-      final teamId = playsAtList.first.teamId;
-
-      return {'player': player, 'teamId': teamId};
-    } catch (e) {
-      print('Error loading player and team: $e');
-      return {};
-    }
   }
 
   String _formatPlayerName(Player player) {

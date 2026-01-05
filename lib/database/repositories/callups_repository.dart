@@ -68,6 +68,18 @@ class CallUpsRepository extends BaseRepository<CallUps> {
     }
   }
 
+  Future<List<int>> getPlayersInTeamInTournament(int tournamentId, int teamId) async {
+    if (AppConfig.isDebug) {
+      final callups = _mockData.where(
+        (callup) =>
+            callup.tournamentId == tournamentId && callup.teamId == teamId,
+      );
+      return callups.map((c) => c.playerId).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<List<CallUps>> getByPlayerAndTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug) {
       return Future.value(

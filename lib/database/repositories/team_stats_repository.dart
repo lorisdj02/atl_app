@@ -6,8 +6,6 @@ import '../api_client.dart';
 import 'base_repository.dart';
 
 class TeamStatsRepository extends BaseRepository<TeamStats> {
-  final Dio _dio = ApiClient.instance;
-
   @override
   String get endpoint => 'team_stats';
 
@@ -34,6 +32,38 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
   Future<List<TeamStats>> getByTeamId(int teamId) async {
     if (AppConfig.isDebug) {
       return mockData.where((stats) => stats.teamId == teamId).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> incrementStats(
+    int playerId,
+    int teamId, {
+    int goalsIncrement = 0,
+    int motmIncrement = 0,
+  }) async {
+    if (AppConfig.isDebug) {
+      final int index = _mockData.indexWhere(
+        (s) => s.playerId == playerId && s.teamId == teamId,
+      );
+
+      if (index == -1) {
+        // Non esiste, crealo
+        _mockData.add(
+          TeamStats(
+            playerId: playerId,
+            teamId: teamId,
+            goals: goalsIncrement,
+            motm: motmIncrement,
+          ),
+        );
+      } else {
+        // Esiste, aggiornalo usando copyWith
+        _mockData[index].goals += goalsIncrement;
+        _mockData[index].motm += motmIncrement;
+      }
+      return true;
     } else {
       throw UnimplementedError();
     }

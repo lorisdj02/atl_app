@@ -153,6 +153,7 @@ class _TeamScreenState extends State<TeamScreen>
       for (var team in teams) {
         if (!_teamCache.containsKey(team.id)) {
           final captain = await DB.Players.getByPlayerId(team.captainId);
+          if (captain == null) continue;
           _teamCache[team.id] = {'team': team, 'captainName': captain.username};
         } else {
           // Aggiorna solo il team se già in cache, mantieni il captainName

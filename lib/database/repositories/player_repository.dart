@@ -33,12 +33,15 @@ class PlayerRepository extends BaseRepository<Player> {
     final List playerIds = await DB.PlaysAt.getPlayersIdinTeam(teamId);
     List<Player> players = [];
     for (final playerId in playerIds) {
-      players.add(await getByPlayerId(playerId));
+      final player = await getByPlayerId(playerId);
+      if (player != null) {
+        players.add(player);
+      }
     }
     return players;
   }
 
-  Future<Player> getByPlayerId(int playerId) async {
+  Future<Player?> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
       return mockData.firstWhere((player) => player.playerId == playerId);
     } else {

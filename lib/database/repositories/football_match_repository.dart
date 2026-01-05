@@ -17,7 +17,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   @override
   Map<String, dynamic> toJson(FootballMatch item) => item.toJson();
 
-  List<FootballMatch> _mockdata = [
+  List<FootballMatch> _mockData = [
     FootballMatch(
       id: 1,
       homeTeamId: 1,
@@ -30,7 +30,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       scoreAway: 0,
       startMatch: DateTime.now().subtract(const Duration(minutes: 23)),
       halfTime: DateTime.now().subtract(const Duration(minutes: 3)),
-      startHalf: DateTime.now().subtract(const Duration(minutes: 0)),
+      startHalf: DateTime.now(),
     ),
     FootballMatch(
       id: 2,
@@ -102,7 +102,250 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   ];
 
   @override
-  List<FootballMatch> get mockData => _mockdata;
+  List<FootballMatch> get mockData => _mockData;
+
+  Future<bool> insertMatch(int homeTeamId, int awayTeamId,
+      int tournamentId, String group, int day) async {
+    if (AppConfig.isDebug) {
+      final int newId = _mockData.length + 1;
+      final FootballMatch newMatch = FootballMatch(
+        id: newId,
+        homeTeamId: homeTeamId,
+        awayTeamId: awayTeamId,
+        status: MatchStatus.notScheduled,
+        tournamentId: tournamentId,
+        group: group,
+        day: day,
+      );
+      _mockData.add(newMatch);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> scheduleMatch(int matchId, DateTime scheduledStart) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        match.scheduledStart = scheduledStart;
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> cancelMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        match.status = MatchStatus.canceled;
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> setMotmPlayer(int matchId, int playerId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        match.motmPlayerId = playerId;
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> homeRetire(int matchId, int teamId) async{
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        if (match.homeTeamId != teamId) {
+          return false;
+        }
+        match.status = MatchStatus.homeRetired;
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> awayRetire(int matchId, int teamId) async{
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        if (match.homeTeamId != teamId) {
+          return false;
+        }
+        match.status = MatchStatus.awayRetired;
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> startMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        match.status = MatchStatus.started;
+        match.startMatch = DateTime.now();
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> halftimeMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        match.status = MatchStatus.halftime;
+        match.halfTime = DateTime.now();
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> startHalfMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        match.status = MatchStatus.startHalf;
+        match.startHalf = DateTime.now();
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+Future<bool> finishMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match =
+            mockData.firstWhere((match) => match.id == matchId);
+        match.status = MatchStatus.finished;
+        match.endMatch = DateTime.now();
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> updateScore(int matchId, {required bool isHome}) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+        if (isHome) {
+          match.scoreHome = (match.scoreHome ?? 0) + 1;
+        } else {
+          match.scoreAway = (match.scoreAway ?? 0) + 1;
+        }
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
   Future<FootballMatch?> getById(int matchId) async {
     if (AppConfig.isDebug) {

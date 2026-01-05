@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
+import '../models/football_match.dart';
 import 'abstract_football_match_widget.dart';
 import '../screens/tournaments/football_match_screen.dart';
 
 class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
   final SportCategory currentSport;
+  final VoidCallback? onMatchUpdated;
 
   const SmallFootballMatchWidget({
     super.key,
@@ -14,6 +16,7 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
     required this.currentSport,
     required super.minutesPerRound,
     required super.minutesPerPause,
+    this.onMatchUpdated,
   }) : super(sportCategory: currentSport);
 
   @override
@@ -48,9 +51,13 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Verifica se il match è finito e manca il MOTM
+    final needsMotm =
+        match.status == MatchStatus.finished && match.motmPlayerId == null;
+
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => FootballMatchScreen(
@@ -59,6 +66,10 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
             ),
           ),
         );
+        // Callback to parent to reload data after returning
+        if (onMatchUpdated != null) {
+          onMatchUpdated!();
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
@@ -66,6 +77,7 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
+          border: needsMotm ? Border.all(color: Colors.orange, width: 3) : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
@@ -74,7 +86,40 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
             ),
           ],
         ),
-        child: buildContent(),
+        child: Column(
+          children: [
+            if (needsMotm)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.orange.shade300),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.warning,
+                      color: Colors.orange.shade700,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Warning: MOTM missing',
+                      style: TextStyle(
+                        color: Colors.orange.shade700,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            buildContent(),
+          ],
+        ),
       ),
     );
   }

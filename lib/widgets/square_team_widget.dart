@@ -6,17 +6,20 @@ import '../utils/atl_colors.dart';
 
 /// Widget quadrato per visualizzare un team in formato compatto
 class SquareTeamWidget extends AbstractTeamWidget {
+  final bool isClickable;
+
   const SquareTeamWidget({
     super.key,
     required super.team,
     required super.sportCategory,
     super.imageUrl,
+    this.isClickable = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => handleTeamTap(context),
+      onTap: isClickable ? () => handleTeamTap(context) : null,
       child: Container(
         width: 80,
         height: 80,

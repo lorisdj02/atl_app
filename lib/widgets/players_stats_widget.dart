@@ -3,27 +3,39 @@ import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../models/sport_category.dart';
 import '../models/team_stats.dart';
+import '../models/team.dart';
 import '../utils/atl_colors.dart';
 
 class PlayersStatsWidget extends StatelessWidget {
   final List<Player> players;
   final SportCategory sportCategory;
   final Map<int, TeamStats?> playerStats;
+  final bool inTournament;
+  final Map<int, Team>? teamsCache;
 
   const PlayersStatsWidget({
     super.key,
     required this.players,
     required this.sportCategory,
     required this.playerStats,
+    this.inTournament = false,
+    this.teamsCache,
   });
 
   @override
   Widget build(BuildContext context) {
     if (players.isEmpty) {
       return const Center(
-        child: Text(
-          'No stats available',
-          style: TextStyle(fontSize: 16, color: ATLColors.subtext),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.bar_chart, size: 80, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'No stats available. Keep playing!',
+              style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+            ),
+          ],
         ),
       );
     }
@@ -31,18 +43,19 @@ class PlayersStatsWidget extends StatelessWidget {
     // Ordina giocatori per gol
     final goalScorers = List<Player>.from(players)
       ..sort((a, b) {
-        final aGoals = playerStats[a.id]?.goals ?? 0;
-        final bGoals = playerStats[b.id]?.goals ?? 0;
+        final aGoals = playerStats[a.playerId]?.goals ?? 0;
+        final bGoals = playerStats[b.playerId]?.goals ?? 0;
         return bGoals.compareTo(aGoals);
       });
 
     // Ordina giocatori per MOTM
     final motmPlayers = List<Player>.from(players)
       ..sort((a, b) {
-        final aMotm = playerStats[a.id]?.motm ?? 0;
-        final bMotm = playerStats[b.id]?.motm ?? 0;
+        final aMotm = playerStats[a.playerId]?.motm ?? 0;
+        final bMotm = playerStats[b.playerId]?.motm ?? 0;
         return bMotm.compareTo(aMotm);
       });
+
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -60,7 +73,7 @@ class PlayersStatsWidget extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ...goalScorers.map((player) {
-            final goals = playerStats[player.id]?.goals ?? 0;
+            final goals = playerStats[player.playerId]?.goals ?? 0;
             final position = goalScorers.indexOf(player);
 
             return _buildStatItem(
@@ -84,7 +97,7 @@ class PlayersStatsWidget extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ...motmPlayers.map((player) {
-            final motm = playerStats[player.id]?.motm ?? 0;
+            final motm = playerStats[player.playerId]?.motm ?? 0;
             final position = motmPlayers.indexOf(player);
 
             return _buildStatItem(
@@ -121,6 +134,12 @@ class PlayersStatsWidget extends StatelessWidget {
       // Altri: bianco
       backgroundColor = Colors.white;
     }
+
+    // Recupera il team dal player stats se siamo in un torneo
+    final teamId = inTournament ? playerStats[player.playerId]?.teamId : null;
+    final team = (inTournament && teamId != null && teamsCache != null)
+        ? teamsCache![teamId]
+        : null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -187,15 +206,31 @@ class PlayersStatsWidget extends StatelessWidget {
                 : const Icon(Icons.person, color: Colors.white, size: 30),
           ),
           const SizedBox(width: 16),
-          // Player name
+          // Player name and team name (if in tournament)
           Expanded(
-            child: Text(
-              player.username,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  player.username,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (inTournament && team != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    team.name,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           // Value

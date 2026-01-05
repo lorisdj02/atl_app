@@ -108,7 +108,9 @@ class _CallupsScreenState extends State<CallupsScreen> {
 
       for (final playerId in playerIds) {
         final player = await DB.Players.getByPlayerId(playerId);
-        players.add(player);
+        if (player != null) {
+          players.add(player);
+        }
       }
 
       if (mounted) {

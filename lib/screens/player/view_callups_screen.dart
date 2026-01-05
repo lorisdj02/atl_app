@@ -48,7 +48,10 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
       final List<Player> players = [];
       for (final callUp in callUps) {
         print('ℹ️ Loading player with ID ${callUp.playerId}');
-        final Player player = await DB.Players.getByPlayerId(callUp.playerId);
+        final Player? player = await DB.Players.getByPlayerId(callUp.playerId);
+        if (player == null) {
+          continue;
+        }
         players.add(player);
       }
 

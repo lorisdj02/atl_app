@@ -2,8 +2,8 @@
 class TeamStats {
   final int playerId;
   final int teamId;
-  final int motm;
-  final int goals;
+  int motm;
+  int goals;
 
   TeamStats({
     required this.playerId,

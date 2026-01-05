@@ -259,4 +259,12 @@ class Tournament {
       isParticipating: isParticipating ?? this.isParticipating,
     );
   }
+
+  bool get isGroupStage {
+    return phase == TournamentPhase.group;
+  }
+
+  bool get isFinalStage {
+    return phase != TournamentPhase.group;
+  }
 }

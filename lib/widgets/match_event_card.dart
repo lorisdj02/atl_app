@@ -7,6 +7,7 @@ enum EventSource { home, away, match }
 class MatchEventCard extends StatelessWidget {
   final FootballMatchEventType eventType;
   final int minute;
+  final int additionalMinute;
   final String playerName; // Nome puntato e cognome esteso, o username
   final EventSource source;
 
@@ -14,6 +15,7 @@ class MatchEventCard extends StatelessWidget {
     super.key,
     required this.eventType,
     required this.minute,
+    this.additionalMinute = 0,
     required this.playerName,
     required this.source,
   });
@@ -63,6 +65,13 @@ class MatchEventCard extends StatelessWidget {
     }
   }
 
+  String _formatMinute() {
+    if (additionalMinute > 0) {
+      return "$minute+$additionalMinute'";
+    }
+    return "$minute'";
+  }
+
   @override
   Widget build(BuildContext context) {
     final icon = _getEventIcon();
@@ -85,7 +94,7 @@ class MatchEventCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              "$minute'",
+              _formatMinute(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -131,7 +140,7 @@ class MatchEventCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              "$minute'",
+              _formatMinute(),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -159,7 +168,7 @@ class MatchEventCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              "$minute'",
+              _formatMinute(),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,

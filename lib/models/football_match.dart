@@ -18,7 +18,7 @@ class FootballMatch extends Match {
   final int awayTeamId;
   DateTime? halfTime;
   DateTime? startHalf;
-  final MatchStatus status;
+  MatchStatus status;
 
   FootballMatch({
     required super.id,
@@ -35,41 +35,50 @@ class FootballMatch extends Match {
     this.startHalf,
     super.endMatch,
     this.status = MatchStatus.notScheduled,
+    super.scheduledStart,
     super.coordinatorStatus = PresenceStatus.assigned,
+    super.motmPlayerId,
   });
 
   factory FootballMatch.fromJson(Map<String, dynamic> json) {
     return FootballMatch(
       id: json['id'],
-      homeTeamId: json['homeTeamId'],
-      awayTeamId: json['awayTeamId'],
-      matchDate: json['matchDate'] != null
-          ? DateTime.parse(json['matchDate'])
-          : null,
-      status: MatchStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
-        orElse: () => MatchStatus.notScheduled,
-      ),
+      matchDate:
+          json['matchDate'] != null ? DateTime.parse(json['matchDate']) : null,
       scoreHome: json['scoreHome'],
       scoreAway: json['scoreAway'],
       tournamentId: json['tournamentId'],
       group: json['group'],
       day: json['day'],
+      scheduledStart: json['scheduledStart'] != null
+          ? DateTime.parse(json['scheduledStart'])
+          : null,
+      homeTeamId: json['homeTeamId'],
+      awayTeamId: json['awayTeamId'],
+      status: MatchStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == json['status'],
+        orElse: () => MatchStatus.notScheduled,
+      ),
+      halfTime: json['halfTime'] != null
+          ? DateTime.parse(json['halfTime'])
+          : null,
+      startHalf: json['startHalf'] != null
+          ? DateTime.parse(json['startHalf'])
+          : null, 
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      ...super.toJson(),
       'homeTeamId': homeTeamId,
       'awayTeamId': awayTeamId,
-      'matchDate': matchDate?.toIso8601String(),
       'status': status.toString().split('.').last,
-      'scoreHome': scoreHome,
-      'scoreAway': scoreAway,
-      'tournamentId': tournamentId,
-      'group': group,
-      'day': day,
+      'halfTime': halfTime?.toIso8601String(),
+      'startHalf': startHalf?.toIso8601String(),
+      'coordinatorStatus': coordinatorStatus.toString().split('.').last,
+      'motmPlayerId': motmPlayerId,
     };
   }
 }

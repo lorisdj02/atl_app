@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:atl_app/models/sport_category.dart';
+
 import '../config/app_config.dart';
 import 'repositories/user_repository.dart';
 import 'repositories/tournament_repository.dart';
@@ -22,6 +24,8 @@ import 'repositories/lobby_booking_participation_repository.dart';
 import 'repositories/football_match_event_repository.dart';
 import 'repositories/sport_repository.dart';
 import 'repositories/city_repository.dart';
+import 'repositories/football_tournament_stats_repository.dart';
+import 'repositories/personal_stats_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -59,6 +63,8 @@ class DB {
   static late final FootballMatchEventRepository FootballMatchEvents;
   static late final SportRepository Sports;
   static late final CityRepository Cities;
+  static late final FootballTournamentStatsRepository FootballTournamentStats;
+  static late final PersonalStatsRepository PersonalStats;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -83,6 +89,8 @@ class DB {
     FootballMatchEvents = FootballMatchEventRepository();
     Sports = SportRepository();
     Cities = CityRepository();
+    FootballTournamentStats = FootballTournamentStatsRepository();
+    PersonalStats = PersonalStatsRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -365,6 +373,18 @@ class DB {
         return false;
       }
 
+      List<int> activeTournamentsId = (await Tournaments.getActive()).map((t) => t.id).toList();
+
+      for (final tournamentId in activeTournamentsId) {
+        if (await CallUps.getPlayersInTeamInTournament(
+              tournamentId,
+              teamId,
+            ).then((players) => players.contains(playerId)) ==
+            true) {
+          return false;
+        }
+      }
+
       if ((await Teams.isCaptain(teamId, playerId) == true)) {
         if (await Teams.assignCaptain(teamId) == false) {
           return false;
@@ -416,7 +436,7 @@ class DB {
         final List<int> lobbyIds =
             await LobbyBookingParticipations.getByPlayerId(playerId).then(
               (participations) =>
-                  participations!.map((p) => p.lobbyBookingId).toList(),
+                  participations.map((p) => p.lobbyBookingId).toList(),
             );
 
         for (final lobbyId in lobbyIds) {
@@ -473,6 +493,631 @@ class DB {
             teamId,
           ) ==
           false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> homeRetire(
+    int matchId,
+    int teamId,
+    int playerRequestingId,
+  ) async {
+    if (AppConfig.isDebug) {
+      try {
+        if ((await Teams.isCaptainOrVice(teamId, playerRequestingId)) ==
+            false) {
+          return false;
+        }
+        return FootballMatches.homeRetire(matchId, teamId);
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> awayRetire(
+    int matchId,
+    int teamId,
+    int playerRequestingId,
+  ) async {
+    if (AppConfig.isDebug) {
+      try {
+        if ((await Teams.isCaptainOrVice(teamId, playerRequestingId)) ==
+            false) {
+          return false;
+        }
+        return FootballMatches.awayRetire(matchId, teamId);
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> scheduleMatch(
+    int matchId,
+    DateTime scheduledStart,
+    int coordinatorId,
+  ) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int tournamentId = (await FootballMatches.getById(
+          matchId,
+        ))!.tournamentId;
+        if (coordinatorId !=
+            (await Tournaments.getById(tournamentId))!.coordinatorId) {
+          return false;
+        }
+        return await FootballMatches.scheduleMatch(matchId, scheduledStart);
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> insertEventMatch(
+    int matchId,
+    String type,
+    int coordinatorId, {
+    int? playerId,
+    int teamId = 0,
+  }) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int tournamentId = (await FootballMatches.getById(
+          matchId,
+        ))!.tournamentId;
+
+        if (coordinatorId !=
+            (await Tournaments.getById(tournamentId))!.coordinatorId) {
+          return false;
+        }
+
+        final int sportId = (await Tournaments.getById(tournamentId))!.sportId;
+
+        final int minutesPerRound = (await Sports.getById(
+          sportId,
+        ))!.minutesPerRound;
+
+        final bool isGroupStage = (await Tournaments.getById(
+          tournamentId,
+        ))!.isGroupStage;
+
+        final SportCategory sportCategory = (await Sports.getById(
+          sportId,
+        ))!.category;
+
+        if (sportCategory == SportCategory.football) {
+          return await _handleFootballEvent(
+            matchId,
+            type,
+            coordinatorId,
+            minutesPerRound,
+            isGroupStage,
+            tournamentId,
+            playerId: playerId,
+            teamId: teamId,
+          );
+        } else {
+          return false;
+        }
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> _handleFootballEvent(
+    int matchId,
+    String type,
+    int coordinatorId,
+    int minutesPerRound,
+    bool isGroupStage,
+    int tournamentId, {
+    int? playerId,
+    int teamId = 0,
+  }) async {
+    if (AppConfig.isDebug == true) {
+      /* EVENT TYPES:
+        redCard,
+        yellowCard,
+        redYellowCard,
+        -------------
+        goal,
+        penalty,
+        ownGoal,
+        -------------
+        start,
+        halftime,
+        startHalf,
+        finish,
+  */
+      final bool isStart = type == 'start';
+      final bool isStartHalf = type == 'startHalf';
+      final DateTime eventTime = DateTime.now();
+
+      DateTime? startTime;
+      final bool matchStarted = await FootballMatchEvents.isMatchStarted(
+        matchId,
+      );
+      final bool matchHalfStarted =
+          await FootballMatchEvents.isMatchHalfStarted(matchId);
+
+      if (matchHalfStarted) {
+        startTime = await FootballMatchEvents.getMatchStartHalf(matchId);
+      } else if (matchStarted) {
+        startTime = await FootballMatchEvents.getMatchStartTime(matchId);
+      }
+
+      int minute = 0;
+      int additionalMinute = 0;
+      if (isStart) {
+        minute = 0;
+      } else if (isStartHalf) {
+        minute = minutesPerRound;
+      } else if (startTime != null) {
+        minute = eventTime.difference(startTime).inMinutes;
+        additionalMinute = max(0, minute - minutesPerRound);
+        if (matchHalfStarted) {
+          minute += minutesPerRound;
+        }
+      } else {
+        return false;
+      }
+
+      if (playerId != null &&
+          await FootballMatchEvents.isPlayerSentOff(matchId, playerId)) {
+        return false; // Non inserire l'evento se il giocatore è già stato espulso
+      }
+
+      if (playerId != null &&
+          await FootballMatchEvents.isPlayerWarned(matchId, playerId)) {
+        type = 'redYellowCard';
+      }
+
+      if (await FootballMatchEvents.insertEvent(
+            matchId,
+            type,
+            minute,
+            eventTime,
+            additionalMinute: additionalMinute,
+            playerId: playerId,
+            teamId: teamId,
+          ) ==
+          false) {
+        return false;
+      }
+
+      final int? numberGroups = isGroupStage
+          ? (await Tournaments.getById(tournamentId))!.numGroups
+          : null;
+
+      final int? numberQualified = isGroupStage
+          ? (await Tournaments.getById(tournamentId))!.qualified : null;
+
+      final int? homeTeam = (await FootballMatches.getById(
+        matchId,
+      ))?.homeTeamId;
+      final int? awayTeam = (await FootballMatches.getById(
+        matchId,
+      ))?.awayTeamId;
+
+      if (homeTeam == null || awayTeam == null) {
+        return false;
+      }
+
+      if (type == 'start') {
+        if (await FootballMatches.startMatch(matchId) == false) {
+          return false;
+        }
+        if (isGroupStage &&
+            await FootballStandings.updatePtsGoal(
+              tournamentId,
+              homeTeam,
+              points: 1,
+            ) &&
+            await FootballStandings.updatePtsGoal(
+                  tournamentId,
+                  awayTeam,
+                  points: 1,
+                ) ==
+                false &&
+            (await FootballStandings.updateGames(
+                  tournamentId,
+                  homeTeam,
+                  drawn: 1,
+                )) ==
+                false &&
+            (await FootballStandings.updateGames(
+                  tournamentId,
+                  awayTeam,
+                  drawn: 1,
+                )) ==
+                false) {
+          return false;
+        }
+      } else if (type == 'halftime') {
+        if (await FootballMatches.halftimeMatch(matchId) == false) {
+          return false;
+        }
+      } else if (type == 'startHalf') {
+        if (await FootballMatches.startHalfMatch(matchId) == false) {
+          return false;
+        }
+      } else if (type == 'finish') {
+        if (await FootballMatches.finishMatch(matchId) == false) {
+          return false;
+        }
+      } else if ((type == 'goal' || type == 'penalty' || type == 'ownGoal')) {
+        if (playerId == null ||
+            await _handleGoalCase(
+                  playerId,
+                  teamId,
+                  type,
+                  matchId,
+                  tournamentId,
+                  isGroupStage,
+                  homeTeam,
+                  awayTeam,
+                  numberGroups,
+                  numberQualified,
+                ) ==
+                false) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> _handleGoalCase(
+    int playerId,
+    int teamId,
+    String type,
+    int matchId,
+    int tournamentId,
+    bool isGroupStage,
+    int homeTeam,
+    int awayTeam,
+    int? numberGroups,
+    int? numberQualified,
+  ) async {
+    if (AppConfig.isDebug == true) {
+      if (await Players.getByPlayerId(playerId) == null) {
+        return false;
+      }
+
+      final bool isPlayerInHome = teamId == homeTeam;
+
+      final bool isGoalForHome = (type == 'ownGoal')
+          ? !isPlayerInHome
+          : isPlayerInHome;
+
+      final int? currentHomeScore = (await FootballMatches.getById(
+        matchId,
+      ))!.scoreHome;
+      final int? currentAwayScore = (await FootballMatches.getById(
+        matchId,
+      ))!.scoreAway;
+
+      if (currentHomeScore == null || currentAwayScore == null) {
+        return false;
+      }
+
+      if (await FootballMatches.updateScore(matchId, isHome: isGoalForHome) ==
+          false) {
+        return false;
+      }
+
+      if (isGroupStage) {
+        if (isGoalForHome && currentHomeScore > currentAwayScore) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalScored: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalConceded: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (!isGoalForHome && currentAwayScore > currentHomeScore) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalScored: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalConceded: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (isGoalForHome && currentHomeScore == currentAwayScore) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalScored: 1,
+                points: 2,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalConceded: 1,
+                points: -1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                homeTeam,
+                drawn: -1,
+                won: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                awayTeam,
+                drawn: -1,
+                lost: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (!isGoalForHome && currentAwayScore == currentHomeScore) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalScored: 1,
+                points: 2,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalConceded: 1,
+                points: -1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                awayTeam,
+                drawn: -1,
+                won: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                homeTeam,
+                drawn: -1,
+                lost: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (isGoalForHome && currentHomeScore == currentAwayScore - 1) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalScored: 1,
+                points: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalConceded: 1,
+                points: -2,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                homeTeam,
+                lost: -1,
+                drawn: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                awayTeam,
+                won: -1,
+                drawn: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (!isGoalForHome && currentAwayScore == currentHomeScore - 1) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalScored: 1,
+                points: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalConceded: 1,
+                points: -2,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                awayTeam,
+                lost: -1,
+                drawn: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updateGames(
+                tournamentId,
+                homeTeam,
+                won: -1,
+                drawn: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (isGoalForHome && currentHomeScore < currentAwayScore - 1) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalScored: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalConceded: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        } else if (!isGoalForHome && currentAwayScore < currentHomeScore - 1) {
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                awayTeam,
+                goalScored: 1,
+              ) ==
+              false) {
+            return false;
+          }
+          if (await FootballStandings.updatePtsGoal(
+                tournamentId,
+                homeTeam,
+                goalConceded: 1,
+              ) ==
+              false) {
+            return false;
+          }
+        }
+        if (await FootballStandings.updateTeamsQualified(
+              tournamentId,
+              numberQualified!,
+              numberGroups!,
+            ) ==
+            false) {
+          return false;
+        }
+      }
+      if (type != 'ownGoal') {
+        if (await TeamStats.incrementStats(
+              playerId,
+              teamId,
+              goalsIncrement: 1,
+            ) ==
+            false) {
+          return false;
+        }
+        if (await FootballTournamentStats.incrementStatsInTournament(
+              playerId,
+              teamId,
+              tournamentId,
+              goalsIncrement: 1,
+            ) ==
+            false) {
+          return false;
+        }
+        if (await PersonalStats.incrementStats(playerId, goalsIncrement: 1) ==
+            false) {
+          return false;
+        }
+      }
+
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> addFootballMotm(
+    int matchId,
+    int playerId,
+    int teamId,
+    int tournamentId,
+    int coordinatorId,
+  ) async {
+    if (AppConfig.isDebug) {
+      if (await FootballMatches.getById(matchId) == null) {
+        return false;
+      }
+
+      final int? tourCoordinatorId = (await Tournaments.getById(
+        tournamentId,
+      ))?.coordinatorId;
+
+      if (tourCoordinatorId == null || tourCoordinatorId != coordinatorId) {
+        return false;
+      }
+
+      if (await FootballTournamentStats.incrementStatsInTournament(
+            playerId,
+            teamId,
+            tournamentId,
+            motmIncrement: 1,
+          ) ==
+          false) {
+        return false;
+      }
+      if (await PersonalStats.incrementStats(playerId, motmIncrement: 1) ==
+          false) {
+        return false;
+      }
+      if (await TeamStats.incrementStats(playerId, teamId, motmIncrement: 1) ==
+          false) {
+        return false;
+      }
+
+      if (await FootballMatches.setMotmPlayer(matchId, playerId) == false) {
         return false;
       }
       return true;
