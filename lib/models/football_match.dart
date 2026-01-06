@@ -11,7 +11,10 @@ enum MatchStatus {
   homeRetired,
   awayRetired,
   canceled,
+  penalty,
 }
+
+//TODO: implementare la fase penalty e anche la fine del match per le fasi finali
 
 class FootballMatch extends Match {
   int? homeTeamId;
@@ -29,7 +32,7 @@ class FootballMatch extends Match {
     super.scoreAway,
     required super.tournamentId,
     super.day,
-    super.group,
+    required super.group,
     super.startMatch,
     this.halfTime,
     this.startHalf,

@@ -13,7 +13,7 @@ class Match {
   DateTime? endMatch;
   DateTime? scheduledStart;
   final int? day;
-  final String? group;
+  final String group;
   int? motmPlayerId;
 
   PresenceStatus coordinatorStatus;
@@ -25,7 +25,7 @@ class Match {
     this.scoreAway,
     required this.tournamentId,
     this.day,
-    this.group,
+    required this.group,
     this.startMatch,
     this.endMatch,
     this.scheduledStart,

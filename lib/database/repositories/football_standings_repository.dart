@@ -142,9 +142,23 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     int tournamentId,
     int numberQualified,
     int numberGroups,
+    {bool toBeOrdered = false}
   ) async {
     if (AppConfig.isDebug) {
       try {
+
+        if (toBeOrdered){
+          for(int i = 0; i < numberGroups; i++) {
+            final String groupLetter = String.fromCharCode(
+              65 + i,
+            ); // 'A' = 65 in ASCII
+            bool success = await orderRanksInTournamentByGroup(tournamentId, groupLetter);
+            if (!success) {
+              return false;
+            }
+          }
+        }
+
         final int qualifiedPerGroup = numberQualified ~/ numberGroups;
         List<int> qualifiedTeams = [];
         for (int groupIndex = 0; groupIndex < numberGroups; groupIndex++) {
@@ -245,6 +259,25 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     }
   }
 
+  Future<bool> areInTheSameGroup(int tournamentId, int teamAId, int teamBId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final FootballStanding standingA = mockData.firstWhere(
+          (s) => s.tournamentId == tournamentId && s.teamId == teamAId,
+        );
+        final FootballStanding standingB = mockData.firstWhere(
+          (s) => s.tournamentId == tournamentId && s.teamId == teamBId,
+        );
+
+        return standingA.group == standingB.group;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> updateGames(
     int tournamentId,
     int teamId, {
@@ -270,10 +303,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         standing.lost += lost;
         _mockData[index] = standing;
 
-        return await orderRanksInTournamentByGroup(
-          tournamentId,
-          standing.group,
-        );
+        return true;
       } catch (e) {
         return false;
       }
@@ -327,8 +357,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         standing.goalsConceded += goalConceded;
         _mockData[index] = standing;
 
-        await orderRanksInTournamentByGroup(tournamentId, standing.group);
-        return true;
+        return await orderRanksInTournamentByGroup(tournamentId, standing.group);
       } catch (e) {
         return false;
       }

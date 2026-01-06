@@ -170,14 +170,14 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   List<FootballMatch> get mockData => _mockData;
 
   Future<bool> insertMatch(
-    int homeTeamId,
-    int awayTeamId,
+    int? homeTeamId,
+    int? awayTeamId,
     int tournamentId,
-    String group,
-    int day,
-  ) async {
+    String group, {
+    int? day,
+  }) async {
     if (AppConfig.isDebug) {
-      final int newId = _mockData.length + 1;
+      final int newId = _mockData.isEmpty ? 1 : _mockData.last.id + 1;
       final FootballMatch newMatch = FootballMatch(
         id: newId,
         homeTeamId: homeTeamId,
@@ -197,7 +197,9 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     int tournamentId,
     List<int> teamIds,
     int numGroups,
+    int qualified,
     bool round2GroupStage,
+    bool round2FinalStage,
   ) async {
     if (AppConfig.isDebug) {
       final List<int> shuffledTeams = List.from(teamIds)..shuffle();
@@ -220,7 +222,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
                   groupTeams[j],
                   tournamentId,
                   groupName,
-                  day,
+                  day: day,
                 ) ==
                 false) {
               return false;
@@ -238,7 +240,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
                     groupTeams[i],
                     tournamentId,
                     groupName,
-                    day,
+                    day: day,
                   ) ==
                   false) {
                 return false;
@@ -260,10 +262,326 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           }
         }
       }
+
+      // Definisci la struttura delle fasi eliminatorie
+      final List<Map<String, dynamic>> knockoutPhases = [
+        {'qualified': 16, 'prefix': 'OF', 'matches': 8},
+        {'qualified': 8, 'prefix': 'QF', 'matches': 4},
+        {'qualified': 4, 'prefix': 'SF', 'matches': 2},
+        {'qualified': 2, 'prefix': 'FI', 'matches': 1},
+      ];
+
+      for (var phase in knockoutPhases) {
+        final int phaseQualified = phase['qualified'] as int;
+        final String phasePrefix = phase['prefix'] as String;
+        final int phaseMatches = phase['matches'] as int;
+
+        if (qualified >= phaseQualified) {
+          for (int i = 1; i <= phaseMatches; i++) {
+            String matchGroup = phaseMatches == 1
+                ? phasePrefix
+                : '$phasePrefix$i';
+
+            if (await DB.FootballMatches.insertMatch(
+                  null,
+                  null,
+                  tournamentId,
+                  matchGroup,
+                ) ==
+                false) {
+              return false;
+            }
+
+            if (round2FinalStage && phaseQualified > 2) {
+              if (await DB.FootballMatches.insertMatch(
+                    null,
+                    null,
+                    tournamentId,
+                    matchGroup,
+                  ) ==
+                  false) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+
       return true;
     } else {
       throw UnimplementedError();
     }
+  }
+
+  Future<bool> updateKnockOutMatch(
+    int tournamentId,
+    String group,
+    bool round2FinalStage, {
+    int? homeTeamId,
+    int? awayTeamId,
+  }) async {
+    if (AppConfig.isDebug) {
+      try {
+        // Trova le partite corrispondenti
+        final List<int> ids = [];
+
+        for (final match in mockData) {
+          if (match.tournamentId == tournamentId && match.group == group) {
+            ids.add(match.id);
+          }
+        }
+
+        if (ids.isEmpty ||
+            (ids.length != 2 && round2FinalStage) ||
+            (round2FinalStage == false && ids.length != 1)) {
+          return false;
+        }
+
+        // Aggiorna le partite trovate
+        for (final id in ids) {
+          final int index = mockData.indexWhere((match) => match.id == id);
+          _mockData[index].homeTeamId = homeTeamId;
+          _mockData[index].awayTeamId = awayTeamId;
+        }
+
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // Controlla se, nella fase finale, esiste una seconda partita per lo stesso gruppo (round 2)
+  Future<bool> isThereRound2Final(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        final bool isRound2 =
+            mockData
+                .where(
+                  (m) =>
+                      m.tournamentId == match.tournamentId &&
+                      m.group == match.group,
+                )
+                .length ==
+            2;
+
+        return isRound2;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isSecondLegFinalStage(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        final bool isRound2 = await isThereRound2Final(matchId);
+
+        if (!isRound2) {
+          return false;
+        }
+
+        List<FootballMatch> matches = mockData
+            .where(
+              (m) =>
+                  m.tournamentId == match.tournamentId &&
+                  m.group == match.group,
+            )
+            .toList();
+
+        matches.remove(match);
+
+        return matches[0].status == MatchStatus.finished;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<FootballMatch?> getOtherLegFinalPhase(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        final bool isRound2 = await isThereRound2Final(matchId);
+
+        if (!isRound2) {
+          return null;
+        }
+
+        List<FootballMatch> matches = mockData
+            .where(
+              (m) =>
+                  m.tournamentId == match.tournamentId &&
+                  m.group == match.group,
+            )
+            .toList();
+
+        matches.remove(match);
+
+        return matches[0];
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // Gestisce il goal segnato nella fase finali e calcola il vincitore per la fase successiva
+  Future<bool> handleGoalInFinalStage(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        // Siamo in finale, non c'è partita successiva da aggiornare
+        if (match.group == 'FI') {
+          return true;
+        }
+
+        final bool isRound2 = await isThereRound2Final(matchId);
+        // bool isSecondLeg = await isSecondLegFinalStage(matchId);
+
+        /*
+        // Devo gestire SOLO il risultato aggregato se c'è il ritorno
+        if (isRound2 && isSecondLeg) {
+          return true;
+        }
+        */
+
+        // Trova la partita successiva
+        String nextGroup;
+        if (match.group.startsWith('OF')) {
+          nextGroup =
+              'QF${((int.parse(match.group.substring(2)) + 1) / 2).ceil()}';
+        } else if (match.group.startsWith('QF')) {
+          nextGroup =
+              'SF${((int.parse(match.group.substring(2)) + 1) / 2).ceil()}';
+        } else if (match.group.startsWith('SF')) {
+          nextGroup = 'FI';
+        } else {
+          return false;
+        }
+
+        int aggregateScoreHome = match.scoreHome ?? 0;
+        int aggregateScoreAway = match.scoreAway ?? 0;
+        final bool willBeHome = (int.parse(match.group.substring(2))) % 2 == 1;
+
+        if (isRound2) {
+          final FootballMatch otherLeg = (await getOtherLegFinalPhase(
+            matchId,
+          ))!;
+          aggregateScoreHome += (otherLeg.scoreHome ?? 0);
+          aggregateScoreAway += (otherLeg.scoreAway ?? 0);
+        }
+
+        List<FootballMatch> nextMatches = await getMatchesByGroup(
+          match.tournamentId,
+          nextGroup,
+        );
+
+        if (aggregateScoreAway == aggregateScoreHome) {
+          // Pareggio, imposto a null i match successivi
+          if (willBeHome) {
+            updateKnockOutMatch(
+              match.tournamentId,
+              nextGroup,
+              isRound2,
+              homeTeamId: null,
+              awayTeamId: nextMatches[0].awayTeamId,
+            );
+          } else {
+            updateKnockOutMatch(
+              match.tournamentId,
+              nextGroup,
+              isRound2,
+              homeTeamId: nextMatches[0].homeTeamId,
+              awayTeamId: null,
+            );
+          }
+        } else if (aggregateScoreHome > aggregateScoreAway) {
+          // Passa la squadra di casa
+          if (willBeHome) {
+            updateKnockOutMatch(
+              match.tournamentId,
+              nextGroup,
+              isRound2,
+              homeTeamId: match.homeTeamId,
+              awayTeamId: nextMatches[0].awayTeamId,
+            );
+          } else {
+            updateKnockOutMatch(
+              match.tournamentId,
+              nextGroup,
+              isRound2,
+              homeTeamId: nextMatches[0].homeTeamId,
+              awayTeamId: match.homeTeamId,
+            );
+          }
+        } else if (aggregateScoreAway > aggregateScoreHome) {
+          // Passa la squadra ospite
+          if (willBeHome) {
+            updateKnockOutMatch(
+              match.tournamentId,
+              nextGroup,
+              isRound2,
+              homeTeamId: match.awayTeamId,
+              awayTeamId: nextMatches[0].awayTeamId,
+            );
+          } else {
+            updateKnockOutMatch(
+              match.tournamentId,
+              nextGroup,
+              isRound2,
+              homeTeamId: nextMatches[0].homeTeamId,
+              awayTeamId: match.awayTeamId,
+            );
+          }
+        }
+
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+    /// ✅ AGGIUNGI questo metodo helper
+  Future<bool> areAllMatchesFinished(int tournamentId, String prefix) async {
+    final matches = await getMatchesByTournament(tournamentId);
+    final phaseMatches = matches.where((m) => m.group.startsWith(prefix)).toList();
+    
+    if (phaseMatches.isEmpty) {
+      return false; // Nessun match trovato
+    }
+    
+    for (var match in phaseMatches) {
+      if (match.status != MatchStatus.finished) {
+        return false; // C'è ancora un match non finito
+      }
+    }
+    
+    return true; // Tutti i match sono finiti
   }
 
   Future<bool> scheduleMatch(int matchId, DateTime scheduledStart) async {
@@ -273,11 +591,16 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         if (index == -1) {
           return false;
         }
-        final FootballMatch match = mockData.firstWhere(
-          (match) => match.id == matchId,
-        );
-        match.scheduledStart = scheduledStart;
-        _mockData[index] = match;
+
+        if (_mockData[index].status != MatchStatus.notScheduled &&
+            (_mockData[index].status != MatchStatus.scheduled &&
+                _mockData[index].scheduledStart!.isAfter(
+                  DateTime.now().subtract(const Duration(minutes: 42)),
+                ))) {
+          return false;
+        }
+
+        _mockData[index].scheduledStart = scheduledStart;
         return true;
       } catch (e) {
         return false;
