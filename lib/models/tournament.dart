@@ -28,7 +28,6 @@ enum TournamentStatus {
 /// Enum per la fase del torneo
 enum TournamentPhase {
   group,
-  ro32,
   ro16,
   ro8,
   quarter,
@@ -40,8 +39,6 @@ enum TournamentPhase {
     switch (this) {
       case TournamentPhase.group:
         return l10n.phaseGroupStage;
-      case TournamentPhase.ro32:
-        return l10n.phaseRoundOf32;
       case TournamentPhase.ro16:
         return l10n.phaseRoundOf16;
       case TournamentPhase.ro8:
@@ -74,12 +71,12 @@ class Tournament {
   final String description;
   final double payCoordinator;
   final bool isPublic;
-  final TournamentStatus status;
+  TournamentStatus status;
   final double fee;
   final double prize1;
   final double prize2;
   final bool isATL;
-  final TournamentPhase phase;
+  TournamentPhase phase;
   final String? photoURL;
 
   bool? isFavorite;
@@ -214,8 +211,6 @@ class Tournament {
     switch (phase.toUpperCase()) {
       case 'GROUP':
         return TournamentPhase.group;
-      case 'RO32':
-        return TournamentPhase.ro32;
       case 'RO16':
         return TournamentPhase.ro16;
       case 'RO8':

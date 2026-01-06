@@ -12,7 +12,7 @@ import '../../models/field.dart';
 import '../../providers/user_provider.dart';
 import '../../models/player.dart';
 import '../../models/coordinator.dart';
-import '../../models/tournament_partecipation.dart';
+import '../../models/tournament_participation.dart';
 import '../../widgets/tournament_info_dialog.dart';
 import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
@@ -40,8 +40,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Player? _currentPlayer;
   Team? _playerTeam;
   Coordinator? _tournamentCoordinator;
-  bool _isTeamPartecipating = false;
-  TournamentPartecipation? _teamPartecipation;
+  bool _isTeamParticipating = false;
+  TournamentParticipation? _teamParticipation;
 
   @override
   void initState() {
@@ -84,16 +84,16 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     print("Checking partecipation for team: ${_playerTeam?.name}");
     if (_playerTeam == null) return;
     try {
-      final partecipation =
-          await DB.TournamentPartecipations.getByTournamentAndTeam(
+      final participation =
+          await DB.TournamentParticipations.getByTournamentAndTeam(
             widget.tournament.id,
             _playerTeam?.id ?? -1,
           );
       setState(() {
-        _isTeamPartecipating = partecipation != null;
-        _teamPartecipation = partecipation;
+        _isTeamParticipating = participation != null;
+        _teamParticipation = participation;
       });
-      print("Is team participating: $_isTeamPartecipating");
+      print("Is team participating: $_isTeamParticipating");
     } catch (e) {
       print('Error checking partecipation: $e');
     }
@@ -145,7 +145,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
       // Carica le partecipazioni del torneo
       final partecipations = await DB
-          .TournamentPartecipations.getPaidByTournamentId(widget.tournament.id);
+          .TournamentParticipations.getPaidByTournamentId(widget.tournament.id);
 
       // Carica i team corrispondenti
       final teams = <Team>[];
@@ -814,10 +814,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       );
     }
 
-    final bool isFullyPaid = (_teamPartecipation?.toPay ?? 0) == 0;
+    final bool isFullyPaid = (_teamParticipation?.toPay ?? 0) == 0;
     final bool canManage = _canManageCallUps();
 
-    if (_isTeamPartecipating && !canManage) {
+    if (_isTeamParticipating && !canManage) {
       // Giocatore normale in team partecipante - può solo visualizzare
       return SizedBox(
         width: double.infinity,
@@ -882,7 +882,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       );
     } else {
       // Capitano o vicecapitano
-      if (!_isTeamPartecipating) {
+      if (!_isTeamParticipating) {
         // Team non partecipante - mostra pulsante per selezionare call-ups
         return SizedBox(
           width: double.infinity,

@@ -41,7 +41,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (teamId == null) return;
 
-      final participations = await DB.TournamentPartecipations.getByTeamId(
+      final participations = await DB.TournamentParticipations.getByTeamId(
         teamId,
       );
       final pendingCount = participations

@@ -13,7 +13,7 @@ import 'repositories/palmares_repository.dart';
 import 'repositories/team_request_repository.dart';
 import 'repositories/team_stats_repository.dart';
 import 'repositories/plays_at_repository.dart';
-import 'repositories/tournament_partecipation_repository.dart';
+import 'repositories/tournament_participation_repository.dart';
 import 'repositories/callups_repository.dart';
 import 'repositories/favorite_tournaments_repository.dart';
 import 'repositories/football_match_repository.dart';
@@ -51,7 +51,7 @@ class DB {
   static late final TeamRequestRepository TeamRequests;
   static late final TeamStatsRepository TeamStats;
   static late final PlaysAtRepository PlaysAt;
-  static late final TournamentPartecipationRepository TournamentPartecipations;
+  static late final TournamentParticipationRepository TournamentParticipations;
   static late final CallUpsRepository CallUps;
   static late final FavoriteTournamentsRepository FavoriteTournaments;
   static late final FootballMatchRepository FootballMatches;
@@ -78,7 +78,7 @@ class DB {
     TeamRequests = TeamRequestRepository();
     TeamStats = TeamStatsRepository();
     PlaysAt = PlaysAtRepository();
-    TournamentPartecipations = TournamentPartecipationRepository();
+    TournamentParticipations = TournamentParticipationRepository();
     CallUps = CallUpsRepository();
     FavoriteTournaments = FavoriteTournamentsRepository();
     FootballMatches = FootballMatchRepository();
@@ -171,6 +171,23 @@ class DB {
         return false;
       }
 
+      final int sportId = (await Tournaments.getById(tournamentId))!.sportId;
+      final int maxPlayers = (await Sports.getById(sportId))!.maxPlayersPerTeam;
+      final int minPlayers = (await Sports.getById(sportId))!.minPlayersPerTeam;
+
+      if (selectedPlayerIds.length < minPlayers ||
+          selectedPlayerIds.length > maxPlayers) {
+        return false;
+      }
+
+      if (await Tournaments.isFull(tournamentId)) {
+        return false;
+      }
+
+      if (await Teams.getById(teamId) == null) {
+        return false;
+      }
+
       for (int playerId in selectedPlayerIds) {
         if ((await CallUps.addCallUp(tournamentId, teamId, playerId)) ==
             false) {
@@ -179,7 +196,7 @@ class DB {
         }
       }
 
-      if ((await TournamentPartecipations.addPartecipation(
+      if ((await TournamentParticipations.addParticipation(
             tournamentId,
             teamId,
             tournamentFee,
@@ -373,7 +390,9 @@ class DB {
         return false;
       }
 
-      List<int> activeTournamentsId = (await Tournaments.getActive()).map((t) => t.id).toList();
+      List<int> activeTournamentsId = (await Tournaments.getActive())
+          .map((t) => t.id)
+          .toList();
 
       for (final tournamentId in activeTournamentsId) {
         if (await CallUps.getPlayersInTeamInTournament(
@@ -463,7 +482,7 @@ class DB {
     double newToPay,
   ) async {
     if (AppConfig.isDebug) {
-      if (await TournamentPartecipations.updatePayment(
+      if (await TournamentParticipations.updatePayment(
             tournamentId,
             teamId,
             newToPay,
@@ -488,7 +507,7 @@ class DB {
           false) {
         return false;
       }
-      if (await DB.TournamentPartecipations.deletePartecipation(
+      if (await DB.TournamentParticipations.deleteParticipation(
             tournamentId,
             teamId,
           ) ==
@@ -704,7 +723,8 @@ class DB {
           : null;
 
       final int? numberQualified = isGroupStage
-          ? (await Tournaments.getById(tournamentId))!.qualified : null;
+          ? (await Tournaments.getById(tournamentId))!.qualified
+          : null;
 
       final int? homeTeam = (await FootballMatches.getById(
         matchId,
@@ -1120,6 +1140,31 @@ class DB {
       if (await FootballMatches.setMotmPlayer(matchId, playerId) == false) {
         return false;
       }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> startTournament(int tournamentId) async {
+    if (AppConfig.isDebug) {
+
+      if(await Tournaments.getById(tournamentId) == null){
+        return false;
+      }
+
+      Map<int, double> refundPerTeams = await TournamentParticipations.getRefundPerTeamsInTournament(tournamentId);
+
+      //TODO: implementare il rimborso (i pagamenti in generale)
+
+      if(await TournamentParticipations.removeRefundedTeams(tournamentId) == false){
+        return false;
+      }
+
+      if(await Tournaments.startTournament(tournamentId) == false){
+        return false;
+      }
+
       return true;
     } else {
       throw UnimplementedError();

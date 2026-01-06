@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../database/db_controller.dart';
 import '../../models/tournament.dart';
-import '../../models/tournament_partecipation.dart';
+import '../../models/tournament_participation.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
@@ -22,7 +22,7 @@ class PayParticipationScreen extends StatefulWidget {
 }
 
 class _PayParticipationScreenState extends State<PayParticipationScreen> {
-  List<TournamentPartecipation>? _participations;
+  List<TournamentParticipation>? _participations;
   final Map<int, Tournament?> _tournamentCache = {};
   bool _isLoading = true;
 
@@ -34,7 +34,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
 
   Future<void> _loadParticipations() async {
     try {
-      final participations = await DB.TournamentPartecipations.getByTeamId(
+      final participations = await DB.TournamentParticipations.getByTeamId(
         widget.teamId,
       );
       final pendingPayments = participations
@@ -113,7 +113,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
   }
 
   Widget _buildParticipationCard(
-    TournamentPartecipation participation,
+    TournamentParticipation participation,
     Tournament? tournament,
   ) {
     final double toPay = participation.toPay ?? 0;
@@ -208,7 +208,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
   }
 
   void _showPaymentDialog(
-    TournamentPartecipation participation,
+    TournamentParticipation participation,
     Tournament? tournament,
   ) {
     final toPay = participation.toPay ?? 0;

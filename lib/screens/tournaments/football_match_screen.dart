@@ -32,8 +32,8 @@ class FootballMatchScreen extends StatefulWidget {
 
 class _FootballMatchScreenState extends State<FootballMatchScreen> {
   FootballMatch? _match;
-  late Team _homeTeam;
-  late Team _awayTeam;
+  Team? _homeTeam;
+  Team? _awayTeam;
   List<FootballMatchEvent> _events = [];
   bool _isLoading = true;
   late int _minutesPerRound;
@@ -86,13 +86,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         return;
       }
 
-      // Carica i team
-      final Team? homeTeam = await DB.Teams.getById(match.homeTeamId);
-      final Team? awayTeam = await DB.Teams.getById(match.awayTeamId);
+      // Carica i team (possono essere null se TBD)
+      Team? homeTeam;
+      if (match.homeTeamId != null) {
+        homeTeam = await DB.Teams.getById(match.homeTeamId!);
+      }
 
-      if (homeTeam == null || awayTeam == null) {
-        setState(() => _isLoading = false);
-        return;
+      Team? awayTeam;
+      if (match.awayTeamId != null) {
+        awayTeam = await DB.Teams.getById(match.awayTeamId!);
       }
 
       // Carica il coordinatore della partita
@@ -339,11 +341,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   }
 
   Future<void> _showPlayerEventDialog() async {
+    if (!mounted) return;
+    if (_homeTeam == null || _awayTeam == null) {
+      return;
+    }
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => MatchEventDialog(
-        homeTeam: _homeTeam,
-        awayTeam: _awayTeam,
+        homeTeam: _homeTeam!,
+        awayTeam: _awayTeam!,
         tournamentId: _tournamentId!,
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
@@ -358,12 +364,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<void> _showMotmDialog() async {
     if (!mounted) return;
+    if (_homeTeam == null || _awayTeam == null) return;
 
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => FootballMotmSelectorDialog(
-        homeTeam: _homeTeam,
-        awayTeam: _awayTeam,
+        homeTeam: _homeTeam!,
+        awayTeam: _awayTeam!,
         tournamentId: _tournamentId!,
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
@@ -473,7 +480,35 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          if (_events.isEmpty)
+                          if (_homeTeam == null || _awayTeam == null)
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 48,
+                                      color: ATLColors.subtext,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      _homeTeam == null && _awayTeam == null
+                                          ? 'Both teams must be determined from previous phase results. Keep playing!'
+                                          : _homeTeam == null
+                                          ? 'Home team must be determined from previous phase results. Keep playing!'
+                                          : 'Away team must be determined from previous phase results. Keep playing!',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: ATLColors.subtext,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          else if (_events.isEmpty)
                             const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(16.0),
@@ -620,9 +655,10 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     // Eventi con giocatore - usa il teamId dall'evento per determinare home/away
     if (event.playerId != null && event.teamId != null) {
       // Determina se l'evento appartiene all'home team o all'away team usando teamId
-      if (_match!.homeTeamId == event.teamId) {
+      if (_match!.homeTeamId != null && _match!.homeTeamId == event.teamId) {
         source = EventSource.home;
-      } else if (_match!.awayTeamId == event.teamId) {
+      } else if (_match!.awayTeamId != null &&
+          _match!.awayTeamId == event.teamId) {
         source = EventSource.away;
       } else {
         return const SizedBox.shrink();

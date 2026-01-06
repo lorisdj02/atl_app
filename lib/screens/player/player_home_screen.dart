@@ -104,7 +104,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         //final activeTournaments = allTournaments.where((t) => t.status == TournamentStatus.scheduled).toList();
 
         final activeTournamentsId =
-            (await DB.TournamentPartecipations.getPaidByTeamId(
+            (await DB.TournamentParticipations.getPaidByTeamId(
               teamId!,
             )).map((p) => p.tournamentId).toSet();
 
@@ -134,8 +134,12 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
           // Cache teams
           final teamIds = <int>{};
           for (var match in matches) {
-            teamIds.add(match.homeTeamId);
-            teamIds.add(match.awayTeamId);
+            if (match.homeTeamId != null){
+              teamIds.add(match.homeTeamId!);
+            }
+            if (match.awayTeamId != null){
+              teamIds.add(match.awayTeamId!);
+            }
           }
           for (var standing in standings) {
             teamIds.add(standing.teamId);

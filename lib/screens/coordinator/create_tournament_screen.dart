@@ -214,22 +214,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   List<int> _getValidQualifiedCounts() {
     if (_numGroups == null) return [];
 
-    List<int> validCounts = [];
-
-    // Find the next power of 2 >= numGroups
-    int minQualified = 1;
-    while (minQualified < _numGroups!) {
-      minQualified *= 2;
-    }
-
-    // Add all valid powers of 2 less than numTeams
-    int current = minQualified;
-    while (current < _numTeams) {
-      validCounts.add(current);
-      current *= 2;
-    }
-
-    return validCounts;
+    // Valori fissi: 2, 4, 8, 16
+    List<int> fixedValues = [2, 4, 8, 16];
+    
+    // Filtra solo i valori che sono:
+    // 1. >= numGroups
+    // 2. < numTeams
+    return fixedValues.where((value) => value >= _numGroups! && value < _numTeams).toList();
   }
 
   Tournament _createFictitiousTournament() {
@@ -342,7 +333,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         startDate = DateTime(year, month, 1);
       }
 
-      final success = await DB.Tournaments.newTournament(
+      final success = await DB.Tournaments.insertTournament(
         name: _nameController.text.trim(),
         coordinatorId: userProvider.activeRoleId!,
         fieldId: _selectedField!.id,
@@ -841,16 +832,11 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
                 // Recalculate valid qualified counts if numGroups is still set
                 if (_numGroups != null) {
-                  List<int> newValidQualified = [];
-                  int minQualified = 1;
-                  while (minQualified < _numGroups!) {
-                    minQualified *= 2;
-                  }
-                  int current = minQualified;
-                  while (current < newValue) {
-                    newValidQualified.add(current);
-                    current *= 2;
-                  }
+                  // Valori fissi: 2, 4, 8, 16
+                  List<int> fixedValues = [2, 4, 8, 16];
+                  List<int> newValidQualified = fixedValues
+                      .where((value) => value >= _numGroups! && value < newValue)
+                      .toList();
 
                   // Reset qualified only if it's no longer valid
                   if (_qualified != null &&

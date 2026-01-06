@@ -1,8 +1,7 @@
 import 'package:atl_app/config/app_config.dart';
-
 import 'base_repository.dart';
 import '../../models/football_match.dart';
-import '../../models/match.dart';
+import '../db_controller.dart';
 
 /// Repository per la gestione delle partite di calcio
 
@@ -99,25 +98,168 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       group: 'B',
       day: 2,
     ),
+    FootballMatch(
+      id: 9,
+      homeTeamId: 1,
+      awayTeamId: 7,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'A',
+      day: 3,
+    ),
+    FootballMatch(
+      id: 10,
+      homeTeamId: 5,
+      awayTeamId: 6,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'A',
+      day: 3,
+    ),
+    FootballMatch(
+      id: 11,
+      homeTeamId: 8,
+      awayTeamId: 11,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'B',
+      day: 3,
+    ),
+    FootballMatch(
+      id: 12,
+      homeTeamId: 9,
+      awayTeamId: 10,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'B',
+      day: 3,
+    ),
+    FootballMatch(
+      id: 14,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'SF1',
+    ),
+    FootballMatch(
+      id: 15,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'SF1',
+    ),
+    FootballMatch(
+      id: 16,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'SF2',
+    ),
+    FootballMatch(
+      id: 17,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'SF2',
+    ),
+    FootballMatch(
+      id: 18,
+      status: MatchStatus.notScheduled,
+      tournamentId: 8,
+      group: 'FI',
+    ),
   ];
 
   @override
   List<FootballMatch> get mockData => _mockData;
 
-  Future<bool> insertMatch(int homeTeamId, int awayTeamId,
-      int tournamentId, String group, int day) async {
+  Future<bool> insertMatch(
+    int homeTeamId,
+    int awayTeamId,
+    int tournamentId,
+    String group,
+    int day,
+  ) async {
     if (AppConfig.isDebug) {
       final int newId = _mockData.length + 1;
       final FootballMatch newMatch = FootballMatch(
         id: newId,
         homeTeamId: homeTeamId,
         awayTeamId: awayTeamId,
-        status: MatchStatus.notScheduled,
         tournamentId: tournamentId,
         group: group,
         day: day,
       );
       _mockData.add(newMatch);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> generateMatches(
+    int tournamentId,
+    List<int> teamIds,
+    int numGroups,
+    bool round2GroupStage,
+  ) async {
+    if (AppConfig.isDebug) {
+      final List<int> shuffledTeams = List.from(teamIds)..shuffle();
+      final int teamsPerGroup = teamIds.length ~/ numGroups;
+
+      for (int groupIndex = 0; groupIndex < numGroups; groupIndex++) {
+        final String groupName = String.fromCharCode(
+          65 + groupIndex,
+        ); // 'A', 'B', 'C', ...
+        final List<int> groupTeams = shuffledTeams
+            .skip(groupIndex * teamsPerGroup)
+            .take(teamsPerGroup)
+            .toList();
+
+        int day = 1;
+        for (int i = 0; i < groupTeams.length; i++) {
+          for (int j = i + 1; j < groupTeams.length; j++) {
+            if (await insertMatch(
+                  groupTeams[i],
+                  groupTeams[j],
+                  tournamentId,
+                  groupName,
+                  day,
+                ) ==
+                false) {
+              return false;
+            }
+            day++;
+          }
+        }
+
+        day = teamsPerGroup;
+        if (round2GroupStage) {
+          for (int i = 0; i < groupTeams.length; i++) {
+            for (int j = i + 1; j < groupTeams.length; j++) {
+              if (await insertMatch(
+                    groupTeams[j],
+                    groupTeams[i],
+                    tournamentId,
+                    groupName,
+                    day,
+                  ) ==
+                  false) {
+                return false;
+              }
+              day++;
+            }
+          }
+        }
+
+        for (int i = 0; i < groupTeams.length; i++) {
+          if (await DB.FootballStandings.insertStandings(
+                tournamentId,
+                groupTeams[i],
+                groupName,
+                0,
+              ) ==
+              false) {
+            return false;
+          }
+        }
+      }
       return true;
     } else {
       throw UnimplementedError();
@@ -187,7 +329,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-  Future<bool> homeRetire(int matchId, int teamId) async{
+  Future<bool> homeRetire(int matchId, int teamId) async {
     if (AppConfig.isDebug) {
       try {
         final int index = mockData.indexWhere((match) => match.id == matchId);
@@ -211,7 +353,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-  Future<bool> awayRetire(int matchId, int teamId) async{
+  Future<bool> awayRetire(int matchId, int teamId) async {
     if (AppConfig.isDebug) {
       try {
         final int index = mockData.indexWhere((match) => match.id == matchId);
@@ -301,15 +443,16 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-Future<bool> finishMatch(int matchId) async {
+  Future<bool> finishMatch(int matchId) async {
     if (AppConfig.isDebug) {
       try {
         final int index = mockData.indexWhere((match) => match.id == matchId);
         if (index == -1) {
           return false;
         }
-        final FootballMatch match =
-            mockData.firstWhere((match) => match.id == matchId);
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
         match.status = MatchStatus.finished;
         match.endMatch = DateTime.now();
         _mockData[index] = match;

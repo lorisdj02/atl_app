@@ -14,16 +14,16 @@ enum MatchStatus {
 }
 
 class FootballMatch extends Match {
-  final int homeTeamId;
-  final int awayTeamId;
+  int? homeTeamId;
+  int? awayTeamId;
   DateTime? halfTime;
   DateTime? startHalf;
   MatchStatus status;
 
   FootballMatch({
     required super.id,
-    required this.homeTeamId,
-    required this.awayTeamId,
+    this.homeTeamId,
+    this.awayTeamId,
     super.matchDate,
     super.scoreHome,
     super.scoreAway,

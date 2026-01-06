@@ -1,16 +1,16 @@
-class TournamentPartecipation {
+class TournamentParticipation {
   final int tournamentId;
   final int teamId;
   double? toPay;
 
-  TournamentPartecipation({
+  TournamentParticipation({
     required this.tournamentId,
     required this.teamId,
     this.toPay,
   });
 
-  factory TournamentPartecipation.fromJson(Map<String, dynamic> json) {
-    return TournamentPartecipation(
+  factory TournamentParticipation.fromJson(Map<String, dynamic> json) {
+    return TournamentParticipation(
       tournamentId: json['tournamentId'],
       teamId: json['teamId'],
       toPay: json['toPay'],

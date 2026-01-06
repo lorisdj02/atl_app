@@ -13,7 +13,7 @@ class FootballStanding {
 
   FootballStanding({
     required this.teamId,
-    required this.points,
+    this.points = 0,
     this.won = 0,
     this.drawn = 0,
     this.lost = 0,

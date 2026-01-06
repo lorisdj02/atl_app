@@ -182,8 +182,8 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fee: 75.0,
       prize1: 2200.0,
       prize2: 1100.0,
-      round2GroupStage: true,
-      round2FinalStage: false,
+      round2GroupStage: false,
+      round2FinalStage: true,
     ),
   ];
 
@@ -484,7 +484,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
-  Future<bool> newTournament({
+  Future<bool> insertTournament({
     required String name,
     required int coordinatorId,
     required int fieldId,
@@ -503,6 +503,10 @@ class TournamentRepository extends BaseRepository<Tournament> {
     required bool isPublic,
   }) async {
     if (AppConfig.isDebug) {
+      if (qualified >= numTeams) {
+        return false;
+      }
+
       final Tournament mockTournament = Tournament(
         id: _mockData.length + 1,
         name: name,
@@ -574,6 +578,82 @@ class TournamentRepository extends BaseRepository<Tournament> {
         '🔧 [DEBUG] Created new tournament: ${newTournament.name} with fee: ${newTournament.fee}, prize1: ${newTournament.prize1}, prize2: ${newTournament.prize2}, payCoordinator: ${newTournament.payCoordinator}',
       );
       print('🔧 [DEBUG] Sport ID: ${newTournament.sportId}');
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isFull(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final tournament = _mockData.firstWhere((t) => t.id == tournamentId);
+        return tournament.paidTeams >= tournament.numTeams;
+      } catch (e) {
+        throw Exception('Tournament not found');
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> goNextPhase(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      Tournament? tournament;
+      try {
+        tournament = _mockData.firstWhere((t) => t.id == tournamentId);
+      } catch (e) {
+        return false;
+      }
+
+      if (tournament.phase == TournamentPhase.group) {
+        if (tournament.qualified == 16) {
+          tournament.phase = TournamentPhase.ro16;
+        } else if (tournament.qualified == 8) {
+          tournament.phase = TournamentPhase.ro8;
+        } else if (tournament.qualified == 4) {
+          tournament.phase = TournamentPhase.semi;
+        } else if (tournament.qualified == 2) {
+          tournament.phase = TournamentPhase.final_;
+        }
+
+        //TODO FAI CAPRONE
+
+        return true;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> startTournament(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final index = _mockData.indexWhere((t) => t.id == tournamentId);
+      if (index == -1) {
+        return false;
+      }
+      if (_mockData[index].status == TournamentStatus.created &&
+          _mockData[index].paidTeams == _mockData[index].numTeams) {
+        _mockData[index].status = TournamentStatus.scheduled;
+        _mockData[index].phase = TournamentPhase.group;
+      } else {
+        return false;
+      }
+
+      final Tournament tournament = _mockData[index];
+      final List<int> teamIds = await DB
+          .TournamentParticipations.getTeamIdsByTournamentId(tournament.id);
+
+      if (await DB.FootballMatches.generateMatches(
+            tournament.id,
+            teamIds,
+            tournament.numGroups,
+            tournament.round2GroupStage,
+          ) ==
+          false) {
+        return false;
+      }
+
       return true;
     } else {
       throw UnimplementedError();

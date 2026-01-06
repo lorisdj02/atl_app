@@ -258,14 +258,6 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   }
 
   Widget buildTeam(Team? team, {required bool isHome}) {
-    if (team == null) {
-      return Text(
-        'Loading...',
-        textAlign: TextAlign.center,
-        style: TextStyle(fontSize: teamNameFontSize, color: ATLColors.subtext),
-      );
-    }
-
     return Column(
       children: [
         Container(
@@ -287,14 +279,14 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
         ),
         SizedBox(height: teamIconSize * 0.114),
         Text(
-          team.name,
+          team?.name ?? 'TBD',
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: teamNameFontSize,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: team == null ? ATLColors.subtext : Colors.black,
           ),
         ),
       ],

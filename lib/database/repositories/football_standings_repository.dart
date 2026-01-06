@@ -1,3 +1,4 @@
+import 'dart:math';
 import '../../models/football_standing.dart';
 import 'base_repository.dart';
 import '../../config/app_config.dart';
@@ -121,24 +122,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         List<FootballStanding> standingsInGroup = mockData
             .where((s) => s.tournamentId == tournamentId && s.group == group)
             .toList();
-        standingsInGroup.sort((a, b) {
-          if (b.points != a.points) {
-            return b.points.compareTo(a.points);
-          } else if ((b.goalsScored - b.goalsConceded) !=
-              (a.goalsScored - a.goalsConceded)) {
-            final int goalDifferenceA = a.goalsScored - a.goalsConceded;
-            final int goalDifferenceB = b.goalsScored - b.goalsConceded;
-            if (goalDifferenceB != goalDifferenceA) {
-              return goalDifferenceB.compareTo(goalDifferenceA);
-            } else {
-              return b.goalsScored.compareTo(a.goalsScored);
-            }
-          } else if (b.goalsScored != a.goalsScored) {
-            return b.goalsScored.compareTo(a.goalsScored);
-          } else {
-            return b.goalsConceded.compareTo(a.goalsConceded);
-          }
-        });
+        standingsInGroup.sort(_standingSort);
 
         // Aggiorna i rank nella lista ordinata
         for (int i = 0; i < standingsInGroup.length; i++) {
@@ -184,6 +168,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
 
         final int remainingQualified = numberQualified % numberGroups;
         if (remainingQualified > 0) {
+          // Ottieni tutti i non qualificati
           List<FootballStanding> nonQualifiedStandings = mockData
               .where(
                 (s) =>
@@ -192,31 +177,31 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
               )
               .toList();
 
-          nonQualifiedStandings.sort((a, b) {
-            if (b.points != a.points) {
-              return b.points.compareTo(a.points);
-            } else if ((b.goalsScored - b.goalsConceded) !=
-                (a.goalsScored - a.goalsConceded)) {
-              final int goalDifferenceA = a.goalsScored - a.goalsConceded;
-              final int goalDifferenceB = b.goalsScored - b.goalsConceded;
-              if (goalDifferenceB != goalDifferenceA) {
-                return goalDifferenceB.compareTo(goalDifferenceA);
-              } else {
-                return b.goalsScored.compareTo(a.goalsScored);
-              }
-            } else if (b.goalsScored != a.goalsScored) {
-              return b.goalsScored.compareTo(a.goalsScored);
-            } else {
-              return b.goalsConceded.compareTo(a.goalsConceded);
+          // Raggruppa per rank (seconde, terze, quarte, ecc.)
+          Map<int, List<FootballStanding>> standingsByRank = {};
+          for (var standing in nonQualifiedStandings) {
+            if (!standingsByRank.containsKey(standing.rank)) {
+              standingsByRank[standing.rank] = [];
             }
+            standingsByRank[standing.rank]!.add(standing);
+          }
+
+          // Ordina ogni gruppo di rank
+          standingsByRank.forEach((rank, standings) {
+            standings.sort(_standingSort);
           });
 
-          for (
-            int i = 0;
-            i < remainingQualified && i < nonQualifiedStandings.length;
-            i++
-          ) {
-            qualifiedTeams.add(nonQualifiedStandings[i].teamId);
+          // Seleziona i migliori partendo dai rank più bassi
+          for (int rank in standingsByRank.keys.toList()..sort()) {
+            final standings = standingsByRank[rank]!;
+            for (
+              int i = 0;
+              i < standings.length && qualifiedTeams.length < numberQualified;
+              i++
+            ) {
+              qualifiedTeams.add(standings[i].teamId);
+            }
+            if (qualifiedTeams.length >= numberQualified) break;
           }
         }
 
@@ -231,6 +216,29 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         return true;
       } catch (e) {
         return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<int>> getQualifiedTeamsByTournamentAndRank(
+    int tournamentId,
+    int rank,
+  ) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData
+            .where(
+              (s) =>
+                  s.tournamentId == tournamentId &&
+                  s.qualified == true &&
+                  s.rank == rank,
+            )
+            .map((s) => s.teamId)
+            .toList();
+      } catch (e) {
+        return [];
       }
     } else {
       throw UnimplementedError();
@@ -269,6 +277,26 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       } catch (e) {
         return false;
       }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> insertStandings(
+    int tournamentId,
+    int teamId,
+    String group,
+    int rank,
+  ) async {
+    if (AppConfig.isDebug) {
+      FootballStanding newStanding = FootballStanding(
+        tournamentId: tournamentId,
+        teamId: teamId,
+        group: group,
+        rank: rank,
+      );
+      _mockData.add(newStanding);
+      return true;
     } else {
       throw UnimplementedError();
     }
@@ -340,5 +368,31 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     } else {
       throw UnimplementedError();
     }
+  }
+
+  int _standingSort(FootballStanding a, FootballStanding b) {
+    // Ordina per punti
+    if (b.points != a.points) {
+      return b.points.compareTo(a.points);
+    }
+
+    // Ordina per differenza reti
+    final int goalDifferenceA = a.goalsScored - a.goalsConceded;
+    final int goalDifferenceB = b.goalsScored - b.goalsConceded;
+    if (goalDifferenceB != goalDifferenceA) {
+      return goalDifferenceB.compareTo(goalDifferenceA);
+    }
+
+    // Ordina per gol fatti
+    if (b.goalsScored != a.goalsScored) {
+      return b.goalsScored.compareTo(a.goalsScored);
+    }
+
+    // Ordina per gol subiti (meno è meglio)
+    if (a.goalsConceded != b.goalsConceded) {
+      return a.goalsConceded.compareTo(b.goalsConceded);
+    }
+
+    return Random().nextBool() ? 1 : -1; // Caso di parità completa
   }
 }

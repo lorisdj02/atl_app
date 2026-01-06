@@ -1,4 +1,4 @@
-import 'package:atl_app/utils/ATL_colors.dart';
+import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
