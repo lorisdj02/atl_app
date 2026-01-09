@@ -64,6 +64,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   bool get _isFinished =>
       _match != null && _match!.status == MatchStatus.finished;
 
+  bool get _isPenaltyShootOut =>
+      _match != null && _match!.status == MatchStatus.penaltyShootOut;
+
   bool get _needsMotm => _isFinished && _match?.motmPlayerId == null;
 
   @override
@@ -260,9 +263,29 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         actions.add('Go to Halftime');
       }
       actions.add('Add Player Event');
-      actions.add('Finish Match');
+      
+      // Se siamo nel secondo tempo (startHalf), controlla se il match può finire
+      if (_match?.status == MatchStatus.startHalf) {
+        final canFinish = await DB.FootballMatches.canMatchFinish(widget.matchId);
+        if (canFinish) {
+          actions.add('Finish Match');
+        } else {
+          actions.add('Start Penalty ShootOut');
+        }
+      } else {
+        // Nel primo tempo può sempre finire
+        actions.add('Finish Match');
+      }
     } else if (_isHalftime) {
       actions.add('Start Second Half');
+    } else if (_isPenaltyShootOut) {
+      // Durante i rigori, verifica se il match può finire
+      final canFinish = await DB.FootballMatches.canMatchFinish(widget.matchId);
+      if (canFinish) {
+        actions.add('Finish Match');
+      } else {
+        actions.add('Insert Penalty');
+      }
     }
 
     if (actions.isEmpty) return;
@@ -294,6 +317,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                   break;
                 case 'Add Player Event':
                   icon = Icons.add;
+                  break;
+                case 'Insert Penalty':
+                  icon = Icons.sports_soccer;
+                  break;
+                case 'Start Penalty ShootOut':
+                  icon = Icons.sports;
                   break;
                 case 'Finish Match':
                   icon = Icons.stop;
@@ -334,13 +363,19 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       case 'Add Player Event':
         _showPlayerEventDialog();
         break;
+      case 'Insert Penalty':
+        _showPlayerEventDialog(penaltyMode: true);
+        break;
+      case 'Start Penalty ShootOut':
+        _startPenaltyShootOut();
+        break;
       case 'Finish Match':
         _handleMatchAction('finish');
         break;
     }
   }
 
-  Future<void> _showPlayerEventDialog() async {
+  Future<void> _showPlayerEventDialog({bool penaltyMode = false}) async {
     if (!mounted) return;
     if (_homeTeam == null || _awayTeam == null) {
       return;
@@ -354,11 +389,35 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
         coordinatorId: _coordinatorId!,
+        penaltyMode: penaltyMode,
       ),
     );
 
     if (result == true) {
       _loadMatchData();
+    }
+  }
+
+  Future<void> _startPenaltyShootOut() async {
+    if (_coordinatorId == null) return;
+
+    final success = await DB.FootballMatches.startPenaltyShootOut(
+      widget.matchId,
+    );
+
+    if (success) {
+      _loadMatchData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Penalty shootout started')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to start penalty shootout')),
+        );
+      }
     }
   }
 
@@ -622,12 +681,57 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       );
     }
 
+    // Se è in penalty shootout, mostra il pulsante appropriato
+    if (_isPenaltyShootOut) {
+      return FutureBuilder<bool>(
+        future: DB.FootballMatches.canMatchFinish(widget.matchId),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return ATLFloatingButton(
+              onPressed: () {},
+              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+              icon: Icons.sports_soccer,
+              label: 'Loading...',
+              heroTag: 'soccerMatchFAB',
+            );
+          }
+
+          final canFinish = snapshot.data!;
+
+          if (canFinish) {
+            return ATLFloatingButton(
+              onPressed: () => _handleMatchAction('finish'),
+              backgroundColor: Colors.green,
+              icon: Icons.stop,
+              label: 'End Match',
+              heroTag: 'soccerMatchFAB',
+            );
+          } else {
+            return ATLFloatingButton(
+              onPressed: () => _showPlayerEventDialog(penaltyMode: true),
+              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+              icon: Icons.sports_soccer,
+              label: 'Insert Penalty',
+              heroTag: 'soccerMatchFAB',
+            );
+          }
+        },
+      );
+    }
+
     return null;
   }
 
   Widget _buildEventCard(FootballMatchEvent event) {
     // Determina la fonte dell'evento (home, away, match)
     EventSource source;
+
+    // Verifica se l'evento è durante penalty shootout (non mostrare minuti)
+    final bool isInPenaltyShootOut = event.type == FootballMatchEventType.penaltyShootOut ||
+        (event.type == FootballMatchEventType.penalty ||
+         event.type == FootballMatchEventType.missedPenalty ||
+         event.type == FootballMatchEventType.finish) &&
+        _isPenaltyShootOut;
 
     // Eventi del match (start, half, finish, penaltyShootOut, startHalf)
     if (event.type == FootballMatchEventType.start ||
@@ -651,8 +755,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
       return MatchEventCard(
         eventType: event.type,
-        minute: event.minute,
-        additionalMinute: event.additionalMinute,
+        minute: isInPenaltyShootOut ? null : event.minute,
+        additionalMinute: isInPenaltyShootOut ? null : event.additionalMinute,
         playerName: eventName,
         source: source,
       );
@@ -690,10 +794,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           // Formatta il nome: nome puntato e cognome esteso
           final String formattedName = _formatPlayerName(player);
 
+          // Verifica se l'evento è durante penalty shootout
+          final bool isInPenaltyShootOut = _isPenaltyShootOut &&
+              (event.type == FootballMatchEventType.penalty ||
+               event.type == FootballMatchEventType.missedPenalty);
+
           return MatchEventCard(
             eventType: event.type,
-            minute: event.minute,
-            additionalMinute: event.additionalMinute,
+            minute: isInPenaltyShootOut ? null : event.minute,
+            additionalMinute: isInPenaltyShootOut ? null : event.additionalMinute,
             playerName: formattedName,
             source: source,
           );

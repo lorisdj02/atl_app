@@ -6,16 +6,16 @@ enum EventSource { home, away, match }
 
 class MatchEventCard extends StatelessWidget {
   final FootballMatchEventType eventType;
-  final int minute;
-  final int additionalMinute;
+  final int? minute;
+  final int? additionalMinute;
   final String playerName; // Nome puntato e cognome esteso, o username
   final EventSource source;
 
   const MatchEventCard({
     super.key,
     required this.eventType,
-    required this.minute,
-    this.additionalMinute = 0,
+    this.minute,
+    this.additionalMinute,
     required this.playerName,
     required this.source,
   });
@@ -72,8 +72,9 @@ class MatchEventCard extends StatelessWidget {
     }
   }
 
-  String _formatMinute() {
-    if (additionalMinute > 0) {
+  String? _formatMinute() {
+    if (minute == null) return null;
+    if (additionalMinute != null && additionalMinute! > 0) {
       return "$minute+$additionalMinute'";
     }
     return "$minute'";
@@ -99,15 +100,17 @@ class MatchEventCard extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(width: 12),
-            Text(
-              _formatMinute(),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: color,
+            if (_formatMinute() != null) ...[
+              const SizedBox(width: 12),
+              Text(
+                _formatMinute()!,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
+            ],
             const SizedBox(width: 12),
             Text(
               playerName,
@@ -145,15 +148,17 @@ class MatchEventCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              _formatMinute(),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: color,
+            if (_formatMinute() != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                _formatMinute()!,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
+            ],
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.all(6),
@@ -173,15 +178,17 @@ class MatchEventCard extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(width: 8),
-            Text(
-              _formatMinute(),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: color,
+            if (_formatMinute() != null) ...[
+              const SizedBox(width: 8),
+              Text(
+                _formatMinute()!,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
-            ),
+            ],
             const SizedBox(width: 8),
             Flexible(
               child: Text(

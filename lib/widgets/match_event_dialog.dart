@@ -8,10 +8,11 @@ import 'square_team_widget.dart';
 import '../config/app_config.dart';
 import 'abstract_team_dialog.dart';
 
-enum EventType { goal, penalty, ownGoal, yellowCard, redCard, redYellowCard }
+enum EventType { goal, penalty, missedPenalty, ownGoal, yellowCard, redCard, redYellowCard }
 
 class MatchEventDialog extends AbstractTeamDialog {
   final int coordinatorId;
+  final bool penaltyMode;
 
   const MatchEventDialog({
     super.key,
@@ -21,6 +22,7 @@ class MatchEventDialog extends AbstractTeamDialog {
     required super.matchId,
     required super.sportCategory,
     required this.coordinatorId,
+    this.penaltyMode = false,
   });
 
   @override
@@ -39,6 +41,8 @@ class _MatchEventDialogState extends State<MatchEventDialog>
         return 'Goal';
       case EventType.penalty:
         return 'Penalty';
+      case EventType.missedPenalty:
+        return 'Missed Penalty';
       case EventType.ownGoal:
         return 'Own Goal';
       case EventType.yellowCard:
@@ -56,6 +60,8 @@ class _MatchEventDialogState extends State<MatchEventDialog>
         return 'goal';
       case EventType.penalty:
         return 'penalty';
+      case EventType.missedPenalty:
+        return 'missedPenalty';
       case EventType.ownGoal:
         return 'ownGoal';
       case EventType.yellowCard:
@@ -171,7 +177,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            buildDialogHeader(title: 'Add Event'),
+            buildDialogHeader(title: widget.penaltyMode ? 'Insert Penalty' : 'Add Event'),
             const SizedBox(height: 24),
 
             // Teams
@@ -209,7 +215,18 @@ class _MatchEventDialogState extends State<MatchEventDialog>
                 ),
                 hint: const Text('Select event type'),
                 items: EventType.values
-                    .where((type) => type != EventType.redYellowCard)
+                    .where((type) {
+                      // Filtra redYellowCard sempre
+                      if (type == EventType.redYellowCard) return false;
+                      
+                      // Se siamo in penalty mode, mostra solo penalty e missedPenalty
+                      if (widget.penaltyMode) {
+                        return type == EventType.penalty || type == EventType.missedPenalty;
+                      }
+                      
+                      // Altrimenti mostra tutti gli eventi
+                      return true;
+                    })
                     .map((type) {
                       return DropdownMenuItem(
                         value: type,
