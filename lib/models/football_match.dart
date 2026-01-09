@@ -11,7 +11,7 @@ enum MatchStatus {
   homeRetired,
   awayRetired,
   canceled,
-  penalty,
+  penaltyShootOut,
 }
 
 //TODO: implementare la fase penalty e anche la fine del match per le fasi finali
@@ -22,6 +22,10 @@ class FootballMatch extends Match {
   DateTime? halfTime;
   DateTime? startHalf;
   MatchStatus status;
+  int? penaltyScoreHome;
+  int? missedPenaltyHome;
+  int? penaltyScoreAway;
+  int? missedPenaltyAway;
 
   FootballMatch({
     required super.id,
@@ -41,6 +45,10 @@ class FootballMatch extends Match {
     super.scheduledStart,
     super.coordinatorStatus = PresenceStatus.assigned,
     super.motmPlayerId,
+    this.penaltyScoreHome,
+    this.missedPenaltyHome,
+    this.penaltyScoreAway,
+    this.missedPenaltyAway,
   });
 
   factory FootballMatch.fromJson(Map<String, dynamic> json) {

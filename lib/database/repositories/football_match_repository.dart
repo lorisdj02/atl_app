@@ -444,8 +444,177 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
+  Future<bool> startPenaltyShootOut(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+
+        if (await canMatchFinish(matchId)) {
+          return false;
+        }
+
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        match.status = MatchStatus.penaltyShootOut;
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  bool _handlePenaltyScore(FootballMatch match) {
+    final int penaltyScoredHome = match.penaltyScoreHome ?? 0;
+    final int penaltyScoredAway = match.penaltyScoreAway ?? 0;
+    final int penaltyMissedHome = match.missedPenaltyHome ?? 0;
+    final int penaltyMissedAway = match.missedPenaltyAway ?? 0;
+
+    // Calcola i rigori totali calciati per squadra
+    final int totalPenaltiesHome = penaltyScoredHome + penaltyMissedHome;
+    final int totalPenaltiesAway = penaltyScoredAway + penaltyMissedAway;
+
+    // Calcola i rigori rimanenti per squadra
+    final int remainingHome = 5 - totalPenaltiesHome;
+    final int remainingAway = 5 - totalPenaltiesAway;
+
+    // Se siamo ancora nei primi 5 rigori
+    if (totalPenaltiesHome <= 5 || totalPenaltiesAway <= 5) {
+      // Calcola il massimo di rigori che ogni squadra può ancora segnare
+      final int maxPossibleHome = penaltyScoredHome + remainingHome;
+      final int maxPossibleAway = penaltyScoredAway + remainingAway;
+
+      // Se una squadra non può più pareggiare, il match può finire
+      if (penaltyScoredHome > maxPossibleAway ||
+          penaltyScoredAway > maxPossibleHome) {
+        return true;
+      }
+
+      // Altrimenti può finire solo se entrambe hanno calciato 5 rigori e non è parità
+      if (totalPenaltiesHome >= 5 && totalPenaltiesAway >= 5) {
+        return penaltyScoredHome != penaltyScoredAway;
+      }
+
+      return false;
+    } else {
+      // Fase ad oltranza: può finire solo se c'è differenza e hanno calciato lo stesso numero
+      return penaltyScoredHome != penaltyScoredAway &&
+          totalPenaltiesHome == totalPenaltiesAway;
+    }
+  }
+
+  Future<bool> canMatchFinish(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        if (match.status != MatchStatus.startHalf &&
+            match.status != MatchStatus.penaltyShootOut) {
+          return false;
+        }
+
+        if (match.group.length <= 2 && match.status == MatchStatus.startHalf) {
+          // Fase a gironi
+          return true;
+        }
+
+        final bool isRound2 = await isThereRound2Final(matchId);
+        final bool isSecondLeg = await isSecondLegFinalStage(matchId);
+
+        if (!isRound2) {
+          // Non è andata e ritorno, devo ritornare vero se non è in parità
+          if (match.status == MatchStatus.penaltyShootOut) {
+            return _handlePenaltyScore(match);
+          } else {
+            return match.scoreHome != match.scoreAway;
+          }
+        } else {
+          if (!isSecondLeg) {
+            // Andata e ritorno, non è ancora la seconda partita
+            return true;
+          } else {
+            // Andata e ritorno, seconda partita, controllo il risultato aggregato
+            // Round 2 e seconda partita, posso finire solo se il risultato aggregato non è in parità
+            if(match.status == MatchStatus.penaltyShootOut) {
+              return _handlePenaltyScore(match);
+            }
+            
+            FootballMatch otherLeg = (await getOtherLegFinalPhase(matchId))!;
+
+            int aggregateScoreHome = match.scoreHome ?? 0;
+            int aggregateScoreAway = match.scoreAway ?? 0;
+            aggregateScoreHome += (otherLeg.scoreHome ?? 0);
+            aggregateScoreAway += (otherLeg.scoreAway ?? 0);
+
+            return aggregateScoreHome != aggregateScoreAway;
+          }
+        }
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isPenaltyShootOut(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        return match.status == MatchStatus.penaltyShootOut;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> addMissedPenalty(int matchId, int teamId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final int index = mockData.indexWhere((match) => match.id == matchId);
+        if (index == -1) {
+          return false;
+        }
+
+        final FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        if (match.status != MatchStatus.penaltyShootOut) {
+          return false;
+        }
+
+        if (match.homeTeamId == teamId) {
+          match.missedPenaltyHome = (match.missedPenaltyHome ?? 0) + 1;
+        } else if (match.awayTeamId == teamId) {
+          match.missedPenaltyAway = (match.missedPenaltyAway ?? 0) + 1;
+        }
+        _mockData[index] = match;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   // Gestisce il goal segnato nella fase finali e calcola il vincitore per la fase successiva
-  Future<bool> handleGoalInFinalStage(int matchId) async {
+  Future<bool> handleGoalInFinalStage(int matchId, bool isGoalForHome) async {
     if (AppConfig.isDebug) {
       try {
         FootballMatch match = mockData.firstWhere(
@@ -458,14 +627,6 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         }
 
         final bool isRound2 = await isThereRound2Final(matchId);
-        // bool isSecondLeg = await isSecondLegFinalStage(matchId);
-
-        /*
-        // Devo gestire SOLO il risultato aggregato se c'è il ritorno
-        if (isRound2 && isSecondLeg) {
-          return true;
-        }
-        */
 
         // Trova la partita successiva
         String nextGroup;
@@ -483,22 +644,30 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
         int aggregateScoreHome = match.scoreHome ?? 0;
         int aggregateScoreAway = match.scoreAway ?? 0;
+
         final bool willBeHome = (int.parse(match.group.substring(2))) % 2 == 1;
-
-        if (isRound2) {
-          final FootballMatch otherLeg = (await getOtherLegFinalPhase(
-            matchId,
-          ))!;
-          aggregateScoreHome += (otherLeg.scoreHome ?? 0);
-          aggregateScoreAway += (otherLeg.scoreAway ?? 0);
-        }
-
         List<FootballMatch> nextMatches = await getMatchesByGroup(
           match.tournamentId,
           nextGroup,
         );
 
-        if (aggregateScoreAway == aggregateScoreHome) {
+        if (match.status != MatchStatus.penaltyShootOut) {
+          if (isRound2) {
+            final FootballMatch otherLeg = (await getOtherLegFinalPhase(
+              matchId,
+            ))!;
+            aggregateScoreHome += (otherLeg.scoreHome ?? 0);
+            aggregateScoreAway += (otherLeg.scoreAway ?? 0);
+          }
+        } else {
+          match.penaltyScoreHome = (match.penaltyScoreHome ?? 0) + (isGoalForHome ? 1 : 0);
+          match.penaltyScoreAway = (match.penaltyScoreAway ?? 0) + (isGoalForHome ? 0 : 1);
+        }
+
+        if ((aggregateScoreAway == aggregateScoreHome &&
+                match.status == MatchStatus.penaltyShootOut) ||
+            (match.penaltyScoreHome == match.missedPenaltyAway &&
+                match.status == MatchStatus.penaltyShootOut)) {
           // Pareggio, imposto a null i match successivi
           if (willBeHome) {
             updateKnockOutMatch(
@@ -566,21 +735,23 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-    /// ✅ AGGIUNGI questo metodo helper
+  /// ✅ AGGIUNGI questo metodo helper
   Future<bool> areAllMatchesFinished(int tournamentId, String prefix) async {
     final matches = await getMatchesByTournament(tournamentId);
-    final phaseMatches = matches.where((m) => m.group.startsWith(prefix)).toList();
-    
+    final phaseMatches = matches
+        .where((m) => m.group.startsWith(prefix))
+        .toList();
+
     if (phaseMatches.isEmpty) {
       return false; // Nessun match trovato
     }
-    
+
     for (var match in phaseMatches) {
       if (match.status != MatchStatus.finished) {
         return false; // C'è ancora un match non finito
       }
     }
-    
+
     return true; // Tutti i match sono finiti
   }
 

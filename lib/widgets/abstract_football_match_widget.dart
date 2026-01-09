@@ -163,6 +163,33 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
+      case MatchStatus.penaltyShootOut:
+        return Container(
+          padding: statusPadding,
+          decoration: BoxDecoration(
+            color: Colors.purple.shade100,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.sports_soccer,
+                size: statusIconSize,
+                color: Colors.purple.shade700,
+              ),
+              SizedBox(width: statusIconSize * 0.33),
+              Text(
+                'Penalty shoot-out',
+                style: TextStyle(
+                  fontSize: statusFontSize,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple.shade700,
+                ),
+              ),
+            ],
+          ),
+        );
       case MatchStatus.finished:
         return Text(
           'Full-time',
@@ -297,7 +324,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
     if (match.status == MatchStatus.finished ||
         match.status == MatchStatus.started ||
         match.status == MatchStatus.halftime ||
-        match.status == MatchStatus.startHalf) {
+        match.status == MatchStatus.startHalf ||
+        match.status == MatchStatus.penaltyShootOut) {
       return Padding(
         padding: scoreHorizontalPadding,
         child: Column(
@@ -332,9 +360,23 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
                 ),
               ],
             ),
+            if (match.status == MatchStatus.penaltyShootOut &&
+                (match.penaltyScoreHome != null || match.penaltyScoreAway != null))
+              Padding(
+                padding: EdgeInsets.only(top: scoreFontSize * 0.167),
+                child: Text(
+                  '(${(match.scoreHome ?? 0) + (match.penaltyScoreHome ?? 0)}-${(match.scoreAway ?? 0) + (match.penaltyScoreAway ?? 0)} PSO)',
+                  style: TextStyle(
+                    fontSize: scoreFontSize * 0.67,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.purple.shade700,
+                  ),
+                ),
+              ),
             if (match.status == MatchStatus.started ||
                 match.status == MatchStatus.halftime ||
-                match.status == MatchStatus.startHalf)
+                match.status == MatchStatus.startHalf ||
+                match.status == MatchStatus.penaltyShootOut)
               FootballLiveMinuteWidget(
                 minutesPerPause: minutesPerPause,
                 minutesPerRound: minutesPerRound,

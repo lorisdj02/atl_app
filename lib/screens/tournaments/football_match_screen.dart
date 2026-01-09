@@ -629,18 +629,24 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     // Determina la fonte dell'evento (home, away, match)
     EventSource source;
 
-    // Eventi del match (start, half, finish)
+    // Eventi del match (start, half, finish, penaltyShootOut, startHalf)
     if (event.type == FootballMatchEventType.start ||
         event.type == FootballMatchEventType.halftime ||
-        event.type == FootballMatchEventType.finish) {
+        event.type == FootballMatchEventType.startHalf ||
+        event.type == FootballMatchEventType.finish ||
+        event.type == FootballMatchEventType.penaltyShootOut) {
       source = EventSource.match;
       String eventName = '';
       if (event.type == FootballMatchEventType.start) {
         eventName = 'Match started';
       } else if (event.type == FootballMatchEventType.halftime) {
         eventName = 'Halftime';
+      } else if (event.type == FootballMatchEventType.startHalf) {
+        eventName = 'Second half started';
       } else if (event.type == FootballMatchEventType.finish) {
         eventName = 'Full time';
+      } else if (event.type == FootballMatchEventType.penaltyShootOut) {
+        eventName = 'Penalty Shootout';
       }
 
       return MatchEventCard(

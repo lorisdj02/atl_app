@@ -4,10 +4,12 @@ enum FootballMatchEventType {
   redYellowCard,
   goal,
   penalty,
+  missedPenalty,
   ownGoal,
   start,
   halftime,
   startHalf,
+  penaltyShootOut,
   finish,
 }
 

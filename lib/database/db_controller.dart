@@ -656,6 +656,7 @@ class DB {
         goal,
         penalty,
         ownGoal,
+        missedPenalty,
         -------------
         start,
         halftime,
@@ -665,6 +666,13 @@ class DB {
       final bool isStart = type == 'start';
       final bool isStartHalf = type == 'startHalf';
       final DateTime eventTime = DateTime.now();
+
+      if (await FootballMatches.isPenaltyShootOut(matchId) &&
+          ((await FootballMatches.canMatchFinish(matchId) &&
+                  type != 'finish') ||
+              (type != 'penalty' && type != 'missedPenalty'))) {
+        return false;
+      }
 
       DateTime? startTime;
       final bool matchStarted = await FootballMatchEvents.isMatchStarted(
@@ -775,11 +783,18 @@ class DB {
         if (await FootballMatches.startHalfMatch(matchId) == false) {
           return false;
         }
+      } else if (type == 'penaltyShootOut') {
+        if (await FootballMatches.startPenaltyShootOut(matchId) == false) {
+          return false;
+        }
       } else if (type == 'finish') {
         if (await FootballMatches.finishMatch(matchId) == false) {
           return false;
         }
-      } else if ((type == 'goal' || type == 'penalty' || type == 'ownGoal')) {
+      } else if ((type == 'goal' ||
+          type == 'penalty' ||
+          type == 'ownGoal' ||
+          type == 'missedPenalty')) {
         if (playerId == null ||
             await _handleGoalCase(
                   playerId,
@@ -837,9 +852,11 @@ class DB {
         return false;
       }
 
-      if (await FootballMatches.updateScore(matchId, isHome: isGoalForHome) ==
-          false) {
-        return false;
+      if (await FootballMatches.isPenaltyShootOut(matchId) == false) {
+        if (await FootballMatches.updateScore(matchId, isHome: isGoalForHome) ==
+            false) {
+          return false;
+        }
       }
 
       if (isGroupStage) {
@@ -857,11 +874,18 @@ class DB {
           return false;
         }
       } else {
-        if (await FootballMatches.handleGoalInFinalStage(matchId) == false) {
+        if (type == 'missedPenalty' &&
+            await FootballMatches.isPenaltyShootOut(matchId) &&
+            await FootballMatches.addMissedPenalty(matchId, teamId)) {
+          return false;
+        } else if (await FootballMatches.handleGoalInFinalStage(matchId, isGoalForHome) ==
+            false) {
           return false;
         }
       }
-      if (type != 'ownGoal') {
+      if (type != 'ownGoal' &&
+          type != 'missedPenalty' &&
+          await FootballMatches.isPenaltyShootOut(matchId) == false) {
         if (await TeamStats.incrementStats(
               playerId,
               teamId,
