@@ -444,6 +444,31 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
+  Future<int> getMatchWinner(int matchId) async{
+    if(AppConfig.isDebug){
+      try{
+        FootballMatch match = mockData.firstWhere(
+          (match) => match.id == matchId,
+        );
+
+        if(match.status != MatchStatus.finished){
+          return -1;
+        }
+
+        if(match.penaltyScoreHome != null && match.penaltyScoreAway != null){
+          return match.penaltyScoreHome! > match.penaltyScoreAway! ? match.homeTeamId! : match.awayTeamId!;
+        }
+        else{
+          return match.scoreHome! > match.scoreAway! ? match.homeTeamId! : match.awayTeamId!;
+        }
+      } catch(e){
+        return -1;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> startPenaltyShootOut(int matchId) async {
     if (AppConfig.isDebug) {
       try {

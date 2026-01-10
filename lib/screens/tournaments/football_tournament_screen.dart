@@ -13,6 +13,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/small_football_match_widget.dart';
 import '../../widgets/football_standings_team_widget.dart';
 import '../../widgets/players_stats_widget.dart';
+import '../../widgets/road_to_victory_widget.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
   final Tournament tournament;
@@ -918,44 +919,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   }
 
   Widget _buildRoadToVictoryView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.emoji_events,
-              size: 100,
-              color: ATLColors.getPrimaryColor(widget.sportCategory),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Road to Victory',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: ATLColors.darkBlue,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'The tournament bracket will be displayed here',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: ATLColors.subtext),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Coming soon!',
-              style: TextStyle(
-                fontSize: 14,
-                color: ATLColors.subtext,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return RoadToVictoryWidget(
+      tournamentId: widget.tournament.id,
+      sportCategory: widget.sportCategory,
     );
   }
 
