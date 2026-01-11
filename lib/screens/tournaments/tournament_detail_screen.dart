@@ -16,6 +16,7 @@ import '../../models/tournament_participation.dart';
 import '../../widgets/tournament_info_dialog.dart';
 import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
+import './football_tournament_screen.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
   final Tournament tournament;
@@ -134,6 +135,19 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     return _currentPlayer!.id == _playerTeam!.captainId ||
         _currentPlayer!.id == _playerTeam!.vice1Id ||
         _currentPlayer!.id == _playerTeam!.vice2Id;
+  }
+
+  bool _canStartTournament() {
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+
+    // Check if user is coordinator and tournament is full
+    return userProvider.isCoordinator &&
+        userProvider.activeRoleId == widget.tournament.coordinatorId &&
+        widget.tournament.paidTeams >= widget.tournament.numTeams &&
+        widget.tournament.status == TournamentStatus.created;
   }
 
   Future<void> _loadParticipatingTeams() async {
@@ -573,9 +587,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                 Icons.calendar_today,
                                 'Date',
                                 widget.tournament.startDate != null
-                                    ? DateFormat('MMMM yyyy').format(
-                                        widget.tournament.startDate!,
-                                      )
+                                    ? DateFormat(
+                                        'MMMM yyyy',
+                                      ).format(widget.tournament.startDate!)
                                     : 'TBA',
                               ),
                               const SizedBox(height: 12),
@@ -714,6 +728,12 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
                         const SizedBox(height: 24),
 
+                        // Start Tournament Button for Coordinator
+                        if (_canStartTournament())
+                          _buildStartTournamentButton(),
+
+                        if (_canStartTournament()) const SizedBox(height: 24),
+
                         // Call-ups Button o messaggi informativi
                         if (isPlayer && !isGuest)
                           _buildCallUpsSection()
@@ -754,6 +774,114 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               ),
             ),
     );
+  }
+
+  Widget _buildStartTournamentButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _handleStartTournament,
+        icon: const Icon(Icons.play_arrow, color: Colors.white, size: 28),
+        label: const Text(
+          'START TOURNAMENT',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 4,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleStartTournament() async {
+    final UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Start Tournament'),
+        content: const Text(
+          'Are you sure you want to start this tournament? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Start'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // Show loading indicator
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: LoadingATL()),
+    );
+
+    try {
+      final success = await DB().startTournament(
+        widget.tournament.id,
+        userProvider.activeRoleId!,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // Remove loading dialog
+
+      if (success) {
+        // Update tournament status locally
+        widget.tournament.status = TournamentStatus.scheduled;
+
+        // Navigate to tournament screen and remove this page from stack
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FootballTournamentScreen(
+              tournament: widget.tournament,
+              sportCategory: widget.currentSport,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to start tournament. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Remove loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   Widget _buildCallUpsSection() {

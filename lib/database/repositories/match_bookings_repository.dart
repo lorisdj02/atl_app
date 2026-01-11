@@ -15,7 +15,17 @@ class MatchBookingsRepository extends BaseRepository<MatchBooking> {
   @override
   Map<String, dynamic> toJson(MatchBooking item) => item.toJson();
 
-  List<MatchBooking> _mockData = [];
+  List<MatchBooking> _mockData = [
+    MatchBooking(
+      id: 1,
+      coordinatorId: 1,
+      matchId: 1,
+      fieldId: 1,
+      startTime: DateTime.now().subtract(const Duration(hours: 1)),
+      finishTime: DateTime.now().add(const Duration(hours: 2)),
+      status: BookingStatus.inProgress,
+    )
+  ];
 
   @override
   List<MatchBooking> get mockData => _mockData;
@@ -26,6 +36,36 @@ class MatchBookingsRepository extends BaseRepository<MatchBooking> {
       return _mockData
           .where((booking) => booking.coordinatorId == coordinatorId)
           .toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> startMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final booking =
+            _mockData.firstWhere((booking) => booking.matchId == matchId);
+        booking.status = BookingStatus.inProgress;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> finishMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final booking =
+            _mockData.firstWhere((booking) => booking.matchId == matchId);
+        booking.status = BookingStatus.finished;
+        return true;
+      } catch (e) {
+        return false;
+      }
     } else {
       throw UnimplementedError();
     }

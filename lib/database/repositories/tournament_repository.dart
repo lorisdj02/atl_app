@@ -1,12 +1,8 @@
 import 'package:atl_app/config/app_config.dart';
 import 'package:atl_app/models/sport_category.dart';
-
 import '../db_controller.dart';
 import '../../models/tournament.dart';
 import 'base_repository.dart';
-import '../../models/field.dart';
-import '../../models/coordinator.dart';
-import '../../models/favorite_tournaments.dart';
 
 class TournamentRepository extends BaseRepository<Tournament> {
   @override
@@ -172,13 +168,34 @@ class TournamentRepository extends BaseRepository<Tournament> {
       fieldId: 1,
       cityId: 1,
       sportId: 1,
-      startDate: DateTime.now().add(const Duration(days: 40)),
+      startDate: DateTime.now().subtract(const Duration(days: 40)),
       numTeams: 8,
       paidTeams: 8,
       numGroups: 2,
       qualified: 4,
       payCoordinator: 130,
       status: TournamentStatus.scheduled,
+      fee: 75.0,
+      prize1: 2200.0,
+      prize2: 1100.0,
+      round2GroupStage: false,
+      round2FinalStage: true,
+    ),
+    Tournament(
+      id: 9,
+      name: 'Torneo da cominciare',
+      description: 'Prova del torneo da cominciare',
+      coordinatorId: 1,
+      fieldId: 1,
+      cityId: 1,
+      sportId: 1,
+      startDate: DateTime.now().subtract(const Duration(days: 40)),
+      numTeams: 8,
+      paidTeams: 7,
+      numGroups: 2,
+      qualified: 4,
+      payCoordinator: 130,
+      status: TournamentStatus.created,
       fee: 75.0,
       prize1: 2200.0,
       prize2: 1100.0,

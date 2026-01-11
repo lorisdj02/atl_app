@@ -27,6 +27,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       day: 1,
       scoreHome: 1,
       scoreAway: 0,
+      scheduledStart: DateTime.now().subtract(const Duration(minutes: 23)),
       startMatch: DateTime.now().subtract(const Duration(minutes: 23)),
       halfTime: DateTime.now().subtract(const Duration(minutes: 3)),
       startHalf: DateTime.now(),
@@ -215,24 +216,18 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
             .toList();
 
         int day = 1;
+
+        //aggiusta generazione gironi
         for (int i = 0; i < groupTeams.length; i++) {
-          for (int j = i + 1; j < groupTeams.length; j++) {
-            if (await insertMatch(
-                  groupTeams[i],
-                  groupTeams[j],
-                  tournamentId,
-                  groupName,
-                  day: day,
-                ) ==
-                false) {
-              return false;
-            }
+          for (int j = 1; j < groupTeams.length; j++) {
+            
             day++;
           }
         }
 
         day = teamsPerGroup;
         if (round2GroupStage) {
+          day = teamsPerGroup;
           for (int i = 0; i < groupTeams.length; i++) {
             for (int j = i + 1; j < groupTeams.length; j++) {
               if (await insertMatch(
@@ -444,24 +439,27 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-  Future<int> getMatchWinner(int matchId) async{
-    if(AppConfig.isDebug){
-      try{
+  Future<int> getMatchWinner(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
         FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
 
-        if(match.status != MatchStatus.finished){
+        if (match.status != MatchStatus.finished) {
           return -1;
         }
 
-        if(match.penaltyScoreHome != null && match.penaltyScoreAway != null){
-          return match.penaltyScoreHome! > match.penaltyScoreAway! ? match.homeTeamId! : match.awayTeamId!;
+        if (match.penaltyScoreHome != null && match.penaltyScoreAway != null) {
+          return match.penaltyScoreHome! > match.penaltyScoreAway!
+              ? match.homeTeamId!
+              : match.awayTeamId!;
+        } else {
+          return match.scoreHome! > match.scoreAway!
+              ? match.homeTeamId!
+              : match.awayTeamId!;
         }
-        else{
-          return match.scoreHome! > match.scoreAway! ? match.homeTeamId! : match.awayTeamId!;
-        }
-      } catch(e){
+      } catch (e) {
         return -1;
       }
     } else {
@@ -569,10 +567,10 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           } else {
             // Andata e ritorno, seconda partita, controllo il risultato aggregato
             // Round 2 e seconda partita, posso finire solo se il risultato aggregato non è in parità
-            if(match.status == MatchStatus.penaltyShootOut) {
+            if (match.status == MatchStatus.penaltyShootOut) {
               return _handlePenaltyScore(match);
             }
-            
+
             FootballMatch otherLeg = (await getOtherLegFinalPhase(matchId))!;
 
             int aggregateScoreHome = match.scoreHome ?? 0;
@@ -685,8 +683,10 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
             aggregateScoreAway += (otherLeg.scoreAway ?? 0);
           }
         } else {
-          match.penaltyScoreHome = (match.penaltyScoreHome ?? 0) + (isGoalForHome ? 1 : 0);
-          match.penaltyScoreAway = (match.penaltyScoreAway ?? 0) + (isGoalForHome ? 0 : 1);
+          match.penaltyScoreHome =
+              (match.penaltyScoreHome ?? 0) + (isGoalForHome ? 1 : 0);
+          match.penaltyScoreAway =
+              (match.penaltyScoreAway ?? 0) + (isGoalForHome ? 0 : 1);
         }
 
         if ((aggregateScoreAway == aggregateScoreHome &&

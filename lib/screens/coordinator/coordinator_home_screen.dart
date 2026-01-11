@@ -25,7 +25,7 @@ class CoordinatorHomeScreen extends StatefulWidget {
 
 class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   late final SportCategory _currentSport = SportCategory.football;
-  
+
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
   List<Tournament> _tournaments = [];
@@ -33,11 +33,55 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   Map<int, Team> _teamsCache = {};
   Map<int, int?> _minutesPerRoundCache = {};
   Map<int, int?> _minutesPerPauseCache = {};
+  final ScrollController _dayScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelectedDay();
+    });
+  }
+
+  @override
+  void dispose() {
+    _dayScrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToSelectedDay() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_dayScrollController.hasClients) return;
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final selectedDateOnly = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      );
+      final daysDifference = selectedDateOnly.difference(today).inDays;
+
+      // Calculate the position to center the selected day
+      // Each item is 74 pixels wide (70 + 4 margin on each side)
+      // +1 accounts for the first "..." button
+      final targetIndex = 5 + daysDifference + 1;
+
+      // Center the item by offsetting by half screen width minus half item width
+      final screenWidth = MediaQuery.of(context).size.width;
+      final itemCenter = (targetIndex * 74.0) + 37.0;
+      final scrollPosition = itemCenter - (screenWidth / 2);
+
+      _dayScrollController.animateTo(
+        scrollPosition.clamp(
+          0.0,
+          _dayScrollController.position.maxScrollExtent,
+        ),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   Future<void> _loadData() async {
@@ -53,18 +97,20 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       }
 
       // Load tournaments where user is coordinator
-      final tournaments = await DB.Tournaments.getByCoordinatorId(coordinatorId);
+      final tournaments = await DB.Tournaments.getByCoordinator(coordinatorId);
 
       // Load matches for selected date for each tournament
       final matchesByTournament = <int, List<FootballMatch>>{};
-      
+
       for (var tournament in tournaments) {
-        final matches = await DB.FootballMatches.getMatchesByTournament(tournament.id);
-        
+        final matches = await DB.FootballMatches.getMatchesByTournament(
+          tournament.id,
+        );
+
         // Filter matches for selected date
         final filteredMatches = matches.where((match) {
           if (match.scheduledStart == null) return false;
-          
+
           final matchDate = DateTime(
             match.scheduledStart!.year,
             match.scheduledStart!.month,
@@ -75,20 +121,22 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
             _selectedDate.month,
             _selectedDate.day,
           );
-          
+
           return matchDate.isAtSameMomentAs(selectedDateOnly);
         }).toList();
 
         if (filteredMatches.isNotEmpty) {
           matchesByTournament[tournament.id] = filteredMatches;
-          
+
           // Load teams for these matches
           for (var match in filteredMatches) {
-            if (match.homeTeamId != null && !_teamsCache.containsKey(match.homeTeamId)) {
+            if (match.homeTeamId != null &&
+                !_teamsCache.containsKey(match.homeTeamId)) {
               final team = await DB.Teams.getById(match.homeTeamId!);
               if (team != null) _teamsCache[match.homeTeamId!] = team;
             }
-            if (match.awayTeamId != null && !_teamsCache.containsKey(match.awayTeamId)) {
+            if (match.awayTeamId != null &&
+                !_teamsCache.containsKey(match.awayTeamId)) {
               final team = await DB.Teams.getById(match.awayTeamId!);
               if (team != null) _teamsCache[match.awayTeamId!] = team;
             }
@@ -96,8 +144,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         }
 
         // Load minutes per round and pause
-        _minutesPerRoundCache[tournament.id] = await DB.Tournaments.getMinutesPerRoundById(tournament.id);
-        _minutesPerPauseCache[tournament.id] = await DB.Tournaments.getMinutesPerPauseById(tournament.id);
+        _minutesPerRoundCache[tournament.id] =
+            await DB.Tournaments.getMinutesPerRoundById(tournament.id);
+        _minutesPerPauseCache[tournament.id] =
+            await DB.Tournaments.getMinutesPerPauseById(tournament.id);
       }
 
       if (mounted) {
@@ -119,13 +169,13 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
-    
+
     final difference = dateOnly.difference(today).inDays;
-    
+
     if (difference == 0) return 'Today';
     if (difference == 1) return 'Tomorrow';
     if (difference == -1) return 'Yesterday';
-    
+
     return DateFormat('EEE d').format(date);
   }
 
@@ -203,50 +253,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(
-      context,
-      listen: false,
-    );
-    final user = userProvider.activeUser!;
-
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
         backgroundColor: ATLColors.background,
         elevation: 0,
         automaticallyImplyLeading: false,
-        leadingWidth: 90,
-        leading: GestureDetector(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Manage fields - Coming soon')),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-              color: ATLColors.darkBlue,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.edit_calendar, color: Colors.white, size: 18),
-                SizedBox(height: 2),
-                Text(
-                  'Manage fields',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    height: 1.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
         centerTitle: true,
         title: const Text(
           'HOME',
@@ -286,206 +298,287 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   }
 
   Widget _buildCoordinatorHomeContent() {
-    final UserProvider userProvider = Provider.of<UserProvider>(
-      context,
-      listen: false,
+    if (_isLoading) {
+      return const Center(child: LoadingATL());
+    }
+
+    return Column(
+      children: [
+        // Day selector
+        _buildDaySelector(),
+        // Matches list
+        Expanded(child: _buildMatchesList()),
+      ],
     );
-    final user = userProvider.activeUser!;
+  }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Card info utente
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+  Widget _buildDaySelector() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Calculate visible days: 5 before and 5 after today (fixed)
+    final visibleDays = <DateTime>[];
+    for (int i = -5; i <= 5; i++) {
+      visibleDays.add(today.add(Duration(days: i)));
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      height: 60,
+      child: ListView.builder(
+        controller: _dayScrollController,
+        scrollDirection: Axis.horizontal,
+        itemCount: visibleDays.length + 2, // +2 for the "more" buttons
+        itemBuilder: (context, index) {
+          // First item: "previous days" button
+          if (index == 0) {
+            return GestureDetector(
+              onTap: () => _showDatePicker(isBefore: true),
+              child: Container(
+                width: 50,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: ATLColors.subtext.withOpacity(0.3)),
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: ATLColors.getPrimaryColor(
-                    _currentSport,
-                  ).withOpacity(0.2),
-                  child: Icon(
-                    Icons.admin_panel_settings,
-                    color: ATLColors.getPrimaryColor(_currentSport),
-                    size: 32,
-                  ),
+                child: Icon(Icons.more_horiz, color: ATLColors.darkBlue),
+              ),
+            );
+          }
+
+          // Last item: "next days" button
+          if (index == visibleDays.length + 1) {
+            return GestureDetector(
+              onTap: () => _showDatePicker(isBefore: false),
+              child: Container(
+                width: 50,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: ATLColors.subtext.withOpacity(0.3)),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.username,
-                        style: const TextStyle(
-                          color: ATLColors.darkBlue,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user.roleDisplayName,
-                        style: TextStyle(
-                          color: ATLColors.getPrimaryColor(_currentSport),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                child: Icon(Icons.more_horiz, color: ATLColors.darkBlue),
+              ),
+            );
+          }
+
+          // Day items
+          final day = visibleDays[index - 1];
+          final dayOnly = DateTime(day.year, day.month, day.day);
+          final isSelected = dayOnly.isAtSameMomentAs(
+            DateTime(
+              _selectedDate.year,
+              _selectedDate.month,
+              _selectedDate.day,
             ),
-          ),
+          );
 
-          const SizedBox(height: 24),
-
-          // Quick actions for coordinator
-          Text(
-            'COORDINATOR TOOLS',
-            style: TextStyle(
-              color: ATLColors.subtext,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 1.5,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  'Create Tournament',
-                  Icons.add_circle_outline,
-                  () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Coming soon')),
-                    );
-                  },
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                _selectedDate = day;
+              });
+              _loadData();
+              _scrollToSelectedDay();
+            },
+            child: Container(
+              width: 70,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? ATLColors.getPrimaryColor(_currentSport)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSelected
+                      ? ATLColors.getPrimaryColor(_currentSport)
+                      : ATLColors.subtext.withOpacity(0.3),
+                  width: 2,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActionCard('Manage Teams', Icons.group, () {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Coming soon')));
-                }),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _getDateLabel(day),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : ATLColors.darkBlue,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    DateFormat('d MMM').format(day),
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : ATLColors.darkBlue,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Upcoming tournaments
-          Text(
-            'UPCOMING TOURNAMENTS',
-            style: TextStyle(
-              color: ATLColors.subtext,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 1.5,
             ),
-          ),
-
-          const SizedBox(height: 16),
-
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  _currentSport.icon,
-                  color: ATLColors.getPrimaryColor(_currentSport),
-                  size: 64,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No tournaments scheduled',
-                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Create a tournament to get started!',
-                  style: TextStyle(color: ATLColors.title, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildActionCard(String label, IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: ATLColors.getPrimaryColor(_currentSport),
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+  void _showDatePicker({required bool isBefore}) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: isBefore
+          ? (today.subtract(const Duration(days: 6)))
+          : (today.add(const Duration(days: 6))),
+      firstDate: isBefore ? DateTime(2020) : today.add(const Duration(days: 6)),
+      lastDate: isBefore
+          ? today.subtract(const Duration(days: 6))
+          : DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: ATLColors.getPrimaryColor(_currentSport),
+              onPrimary: Colors.white,
+              onSurface: ATLColors.darkBlue,
             ),
-          ],
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+      _loadData();
+      _scrollToSelectedDay();
+    }
+  }
+
+  Widget _buildMatchesList() {
+    if (_tournaments.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.event_busy, size: 64, color: ATLColors.subtext),
+              const SizedBox(height: 16),
+              Text(
+                'No tournaments',
+                style: TextStyle(
+                  color: ATLColors.darkBlue,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You are not coordinating any tournaments yet',
+                style: TextStyle(color: ATLColors.subtext, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
-        child: Column(
+      );
+    }
+
+    // Check if there are any matches for the selected date
+    final hasMatches = _matchesByTournament.isNotEmpty;
+
+    if (!hasMatches) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
+              const SizedBox(height: 16),
+              Text(
+                'No matches scheduled',
+                style: TextStyle(
+                  color: ATLColors.darkBlue,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'No matches on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
+                style: TextStyle(color: ATLColors.subtext, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _tournaments.length,
+      itemBuilder: (context, index) {
+        final tournament = _tournaments[index];
+        final matches = _matchesByTournament[tournament.id] ?? [];
+
+        if (matches.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: ATLColors.getPrimaryColor(_currentSport),
-              size: 32,
+            // Tournament header
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    _currentSport.icon,
+                    color: ATLColors.getPrimaryColor(_currentSport),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      tournament.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: ATLColors.darkBlue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Matches for this tournament
+            ...matches.map(
+              (match) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: FootballMatchWidget(
+                  match: match,
+                  homeTeam: _teamsCache[match.homeTeamId],
+                  awayTeam: _teamsCache[match.awayTeamId],
+                  currentSport: _currentSport,
+                  minutesPerRound: _minutesPerRoundCache[tournament.id] ?? 0,
+                  minutesPerPause: _minutesPerPauseCache[tournament.id] ?? 0,
+                ),
+              ),
             ),
             const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: ATLColors.darkBlue,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

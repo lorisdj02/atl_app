@@ -573,7 +573,7 @@ class DB {
     int coordinatorId,
   ) async {
     if (AppConfig.isDebug) {
-      if(scheduledStart.isBefore(DateTime.now().add(Duration(hours: 1)))) {
+      if (scheduledStart.isBefore(DateTime.now().add(Duration(hours: 1)))) {
         return false; // Non si può schedulare una partita con meno di 1 ora di anticipo
       }
       try {
@@ -822,30 +822,34 @@ class DB {
         if (await FootballMatches.startMatch(matchId) == false) {
           return false;
         }
+        if (await MatchBookings.startMatch(matchId) == false) {
+          return false;
+        }
         if (isGroupStage &&
-            await FootballStandings.updatePtsGoal(
-              tournamentId,
-              homeTeam,
-              points: 1,
-            ) &&
-            await FootballStandings.updatePtsGoal(
-                  tournamentId,
-                  awayTeam,
-                  points: 1,
-                ) ==
-                false &&
-            (await FootballStandings.updateGames(
-                  tournamentId,
-                  homeTeam,
-                  drawn: 1,
-                )) ==
-                false &&
-            (await FootballStandings.updateGames(
-                  tournamentId,
-                  awayTeam,
-                  drawn: 1,
-                )) ==
-                false) {
+            (await FootballStandings.updatePtsGoal(
+                      tournamentId,
+                      homeTeam,
+                      points: 1,
+                    ) ==
+                    false ||
+                await FootballStandings.updatePtsGoal(
+                      tournamentId,
+                      awayTeam,
+                      points: 1,
+                    ) ==
+                    false ||
+                (await FootballStandings.updateGames(
+                      tournamentId,
+                      homeTeam,
+                      drawn: 1,
+                    )) ==
+                    false ||
+                (await FootballStandings.updateGames(
+                      tournamentId,
+                      awayTeam,
+                      drawn: 1,
+                    )) ==
+                    false)) {
           return false;
         }
       } else if (type == 'halftime') {
@@ -862,6 +866,9 @@ class DB {
         }
       } else if (type == 'finish') {
         if (await FootballMatches.finishMatch(matchId) == false) {
+          return false;
+        }
+        if (await MatchBookings.finishMatch(matchId) == false) {
           return false;
         }
       } else if ((type == 'goal' ||
@@ -949,7 +956,7 @@ class DB {
       } else {
         if (type == 'missedPenalty' &&
             await FootballMatches.isPenaltyShootOut(matchId) &&
-            await FootballMatches.addMissedPenalty(matchId, teamId)) {
+            await FootballMatches.addMissedPenalty(matchId, teamId) == false) {
           return false;
         } else if (await FootballMatches.handleGoalInFinalStage(
               matchId,
@@ -1275,9 +1282,17 @@ class DB {
     }
   }
 
-  Future<bool> startTournament(int tournamentId) async {
+  Future<bool> startTournament(int tournamentId, int coordinatorId) async {
     if (AppConfig.isDebug) {
       if (await Tournaments.getById(tournamentId) == null) {
+        return false;
+      }
+
+      final int? tourCoordinatorId = (await Tournaments.getById(
+        tournamentId,
+      ))?.coordinatorId;
+
+      if (tourCoordinatorId == null || tourCoordinatorId != coordinatorId) {
         return false;
       }
 

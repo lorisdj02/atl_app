@@ -29,6 +29,14 @@ class TournamentParticipationRepository
     TournamentParticipation(tournamentId: 8, teamId: 9, toPay: 0),
     TournamentParticipation(tournamentId: 8, teamId: 10, toPay: 0),
     TournamentParticipation(tournamentId: 8, teamId: 11, toPay: 0),
+    
+    TournamentParticipation(tournamentId: 9, teamId: 5, toPay: 0),
+    TournamentParticipation(tournamentId: 9, teamId: 6, toPay: 0),
+    TournamentParticipation(tournamentId: 9, teamId: 7, toPay: 0),
+    TournamentParticipation(tournamentId: 9, teamId: 8, toPay: 0),
+    TournamentParticipation(tournamentId: 9, teamId: 9, toPay: 0),
+    TournamentParticipation(tournamentId: 9, teamId: 10, toPay: 0),
+    TournamentParticipation(tournamentId: 9, teamId: 11, toPay: 0),
   ];
 
   @override
