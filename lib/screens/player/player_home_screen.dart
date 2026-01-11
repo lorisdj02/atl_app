@@ -469,22 +469,29 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         separatorBuilder: (context, index) => const SizedBox(height: 16),
         itemBuilder: (context, index) {
           final booking = _bookings[index];
+          final isPrivate = booking is PrivateBooking;
+          final bookingId = isPrivate ? booking.id : (booking as LobbyBooking).id;
           return BookingWidget(
-            fieldId: booking is PrivateBooking
+            key: ValueKey('${isPrivate ? 'private' : 'lobby'}_$bookingId'),
+            fieldId: isPrivate
                 ? booking.fieldId
                 : (booking as LobbyBooking).fieldId,
-            startTime: booking is PrivateBooking
+            startTime: isPrivate
                 ? booking.startTime
                 : (booking as LobbyBooking).startTime,
-            finishTime: booking is PrivateBooking
+            finishTime: isPrivate
                 ? booking.finishTime
                 : (booking as LobbyBooking).finishTime,
             ownerId: booking is LobbyBooking ? booking.ownerId : null,
             currentSport: _currentSport,
-            bookingId: booking is PrivateBooking
-                ? booking.id
-                : (booking as LobbyBooking).id,
-            onBookingDeleted: () => _loadPlayerData(),
+            bookingId: bookingId,
+            onBookingDeleted: () {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _loadPlayerData();
+                }
+              });
+            },
           );
         },
       ),

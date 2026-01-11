@@ -1,32 +1,25 @@
-import 'sport_category.dart';
-import 'booking_status.dart';
+import 'booking.dart';
 
 /// Modello PrivateBooking dal database
 
-class LobbyBooking {
-  final int id;
-  final int fieldId;
+class LobbyBooking extends Booking {
   final int ownerId;
-  final DateTime startTime;
-  final DateTime finishTime;
-  BookingStatus status;
   int
   playerToFind; //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
   final int maxPlayers; //numero di giocatori totali -> prezzo per giocatore
   final double feePerPlayer;
 
   LobbyBooking({
-    required this.id,
-    required this.fieldId,
+    required super.id,
+    required super.fieldId,
     required this.ownerId,
     required DateTime startTime,
     required DateTime finishTime,
-    this.status = BookingStatus.booked,
+    super.status = BookingStatus.booked,
     required this.playerToFind,
     required this.maxPlayers,
     required this.feePerPlayer,
-  }) : startTime = startTime.toUtc(),
-       finishTime = finishTime.toUtc();
+  }) : super(startTime: startTime, finishTime: finishTime);
 
   factory LobbyBooking.fromJson(Map<String, dynamic> json) {
     return LobbyBooking(
@@ -42,6 +35,7 @@ class LobbyBooking {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,

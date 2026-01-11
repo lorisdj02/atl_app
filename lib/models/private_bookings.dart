@@ -1,25 +1,20 @@
-import 'sport_category.dart';
-import 'booking_status.dart';
+import 'booking.dart';
 
 /// Modello PrivateBooking dal database
 
-class PrivateBooking {
-  final int id;
-  final int fieldId;
+class PrivateBooking extends Booking {
   final int playerId;
-  final DateTime startTime;
-  final DateTime finishTime;
-  BookingStatus status;
+  final double cost;
 
   PrivateBooking({
-    required this.id,
-    required this.fieldId,
+    required super.id,
+    required super.fieldId,
     required this.playerId,
     required DateTime startTime,
     required DateTime finishTime,
-    this.status = BookingStatus.booked,
-  }) : startTime = startTime.toUtc(),
-       finishTime = finishTime.toUtc();
+    required this.cost,
+    super.status = BookingStatus.booked,
+  }) : super(startTime: startTime, finishTime: finishTime);
 
   factory PrivateBooking.fromJson(Map<String, dynamic> json) {
     return PrivateBooking(
@@ -29,9 +24,11 @@ class PrivateBooking {
       startTime: DateTime.parse(json['start_time']),
       finishTime: DateTime.parse(json['finish_time']),
       status: BookingStatusExtension.fromString(json['status']),
+      cost: json['cost'],
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -40,6 +37,7 @@ class PrivateBooking {
       'start_time': startTime.toIso8601String(),
       'finish_time': finishTime.toIso8601String(),
       'status': status.toShortString(),
+      'cost': cost,
     };
   }
 }

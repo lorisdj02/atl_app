@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/sport_category.dart';
 
 import '../config/app_config.dart';
@@ -26,6 +27,8 @@ import 'repositories/sport_repository.dart';
 import 'repositories/city_repository.dart';
 import 'repositories/football_tournament_stats_repository.dart';
 import 'repositories/personal_stats_repository.dart';
+import 'repositories/match_bookings_repository.dart';
+import 'repositories/bookings_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -65,6 +68,8 @@ class DB {
   static late final CityRepository Cities;
   static late final FootballTournamentStatsRepository FootballTournamentStats;
   static late final PersonalStatsRepository PersonalStats;
+  static late final MatchBookingsRepository MatchBookings;
+  static late final BookingsRepository Bookings;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -91,6 +96,8 @@ class DB {
     Cities = CityRepository();
     FootballTournamentStats = FootballTournamentStatsRepository();
     PersonalStats = PersonalStatsRepository();
+    MatchBookings = MatchBookingsRepository();
+    Bookings = BookingsRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -566,15 +573,81 @@ class DB {
     int coordinatorId,
   ) async {
     if (AppConfig.isDebug) {
+      if(scheduledStart.isBefore(DateTime.now().add(Duration(hours: 1)))) {
+        return false; // Non si può schedulare una partita con meno di 1 ora di anticipo
+      }
       try {
         final int tournamentId = (await FootballMatches.getById(
           matchId,
         ))!.tournamentId;
+        final int fieldId = (await Tournaments.getById(matchId))!.fieldId;
+        final sportId = await Tournaments.getById(
+          tournamentId,
+        ).then((t) => t!.sportId);
+        final int minutesPerRound = (await Sports.getById(
+          sportId,
+        ))!.minutesPerRound;
+
+        final int minutesPerPause = (await Sports.getById(
+          sportId,
+        ))!.minutesPerPause;
+
+        final String sportCategory = (await Sports.getById(
+          sportId,
+        ))!.category.toString().split('.').last;
+
+        final DateTime startTime = scheduledStart.subtract(
+          Duration(minutes: 15), // buffer di 15 minuti prima
+        );
+        final DateTime finishTime = scheduledStart.add(
+          Duration(
+            minutes: (minutesPerRound * 2) + minutesPerPause + 15,
+          ), // buffer di 30 minuti
+        );
         if (coordinatorId !=
             (await Tournaments.getById(tournamentId))!.coordinatorId) {
           return false;
         }
-        return await FootballMatches.scheduleMatch(matchId, scheduledStart);
+
+        String status = (await FootballMatches.getById(
+          matchId,
+        ))!.status.toString().split('.').last;
+
+        if (status == 'scheduled') {
+          final DateTime oldStartTime = (await MatchBookings.getByMatchId(
+            matchId,
+          ))!.startTime;
+
+          if (oldStartTime == startTime) {
+            return true; // Nessuna modifica necessaria
+          } else if (oldStartTime.difference(startTime).inHours < 24) {
+            return false; // Non si può modificare con meno di 24 ore di anticipo
+          }
+
+          await MatchBookings.deleteByMatchId(matchId);
+          status = 'notScheduled';
+        }
+
+        if (status != 'notScheduled') {
+          return false;
+        }
+
+        if (await MatchBookings.addMatchBooking(
+              coordinatorId,
+              matchId,
+              fieldId,
+              startTime,
+              finishTime,
+            ) ==
+            false) {
+          return false;
+        }
+
+        if (sportCategory == 'football' || sportCategory == 'FOOTBALL') {
+          return await FootballMatches.scheduleMatch(matchId, scheduledStart);
+        } else {
+          return false;
+        }
       } catch (e) {
         return false;
       }
@@ -878,7 +951,10 @@ class DB {
             await FootballMatches.isPenaltyShootOut(matchId) &&
             await FootballMatches.addMissedPenalty(matchId, teamId)) {
           return false;
-        } else if (await FootballMatches.handleGoalInFinalStage(matchId, isGoalForHome) ==
+        } else if (await FootballMatches.handleGoalInFinalStage(
+              matchId,
+              isGoalForHome,
+            ) ==
             false) {
           return false;
         }

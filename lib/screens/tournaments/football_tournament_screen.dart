@@ -14,6 +14,7 @@ import '../../widgets/small_football_match_widget.dart';
 import '../../widgets/football_standings_team_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../widgets/road_to_victory_widget.dart';
+import '../../widgets/tournament_info_dialog.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
   final Tournament tournament;
@@ -265,6 +266,20 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     ); // A, B, C...
   }
 
+  void _showFullInfoDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.7),
+      builder: (BuildContext context) {
+        return TournamentInfoDialog(
+          tournament: widget.tournament,
+          sportCategory: widget.sportCategory,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -286,12 +301,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.dark_mode, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
-              );
-            },
+            icon: const Icon(Icons.info_outline, color: Colors.white),
+            onPressed: _showFullInfoDialog,
           ),
         ],
         bottom: PreferredSize(

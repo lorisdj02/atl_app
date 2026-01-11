@@ -134,6 +134,33 @@ class _MatchEventDialogState extends State<MatchEventDialog>
       return;
     }
 
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Event'),
+        content: Text(
+          'Are you sure you want to add ${_getEventTypeName(_selectedEventType!)} for ${_selectedPlayer!.name} ${_selectedPlayer!.surname}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
     setState(() => isLoading = true);
 
     try {

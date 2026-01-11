@@ -331,6 +331,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+              foregroundColor: Colors.white,
             ),
             child: const Text('Pay'),
           ),

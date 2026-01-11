@@ -1,10 +1,16 @@
-import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
+import '../../models/tournament.dart';
+import '../../models/football_match.dart';
+import '../../models/team.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
+import '../../database/db_controller.dart';
+import '../../widgets/loading_atl.dart';
+import '../../widgets/football_match_widget.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
@@ -18,12 +24,110 @@ class CoordinatorHomeScreen extends StatefulWidget {
 }
 
 class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(
-    context,
-    listen: false,
-  );
-  late final SportCategory _currentSport =
-      userProvider.selectedSportCategory ?? SportCategory.football;
+  late final SportCategory _currentSport = SportCategory.football;
+  
+  DateTime _selectedDate = DateTime.now();
+  bool _isLoading = true;
+  List<Tournament> _tournaments = [];
+  Map<int, List<FootballMatch>> _matchesByTournament = {};
+  Map<int, Team> _teamsCache = {};
+  Map<int, int?> _minutesPerRoundCache = {};
+  Map<int, int?> _minutesPerPauseCache = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final coordinatorId = userProvider.activeRoleId;
+
+      if (coordinatorId == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Load tournaments where user is coordinator
+      final tournaments = await DB.Tournaments.getByCoordinatorId(coordinatorId);
+
+      // Load matches for selected date for each tournament
+      final matchesByTournament = <int, List<FootballMatch>>{};
+      
+      for (var tournament in tournaments) {
+        final matches = await DB.FootballMatches.getMatchesByTournament(tournament.id);
+        
+        // Filter matches for selected date
+        final filteredMatches = matches.where((match) {
+          if (match.scheduledStart == null) return false;
+          
+          final matchDate = DateTime(
+            match.scheduledStart!.year,
+            match.scheduledStart!.month,
+            match.scheduledStart!.day,
+          );
+          final selectedDateOnly = DateTime(
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+          );
+          
+          return matchDate.isAtSameMomentAs(selectedDateOnly);
+        }).toList();
+
+        if (filteredMatches.isNotEmpty) {
+          matchesByTournament[tournament.id] = filteredMatches;
+          
+          // Load teams for these matches
+          for (var match in filteredMatches) {
+            if (match.homeTeamId != null && !_teamsCache.containsKey(match.homeTeamId)) {
+              final team = await DB.Teams.getById(match.homeTeamId!);
+              if (team != null) _teamsCache[match.homeTeamId!] = team;
+            }
+            if (match.awayTeamId != null && !_teamsCache.containsKey(match.awayTeamId)) {
+              final team = await DB.Teams.getById(match.awayTeamId!);
+              if (team != null) _teamsCache[match.awayTeamId!] = team;
+            }
+          }
+        }
+
+        // Load minutes per round and pause
+        _minutesPerRoundCache[tournament.id] = await DB.Tournaments.getMinutesPerRoundById(tournament.id);
+        _minutesPerPauseCache[tournament.id] = await DB.Tournaments.getMinutesPerPauseById(tournament.id);
+      }
+
+      if (mounted) {
+        setState(() {
+          _tournaments = tournaments;
+          _matchesByTournament = matchesByTournament;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading coordinator data: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  String _getDateLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dateOnly = DateTime(date.year, date.month, date.day);
+    
+    final difference = dateOnly.difference(today).inDays;
+    
+    if (difference == 0) return 'Today';
+    if (difference == 1) return 'Tomorrow';
+    if (difference == -1) return 'Yesterday';
+    
+    return DateFormat('EEE d').format(date);
+  }
 
   void _onNavTap(int index) {
     if (index == 4) {

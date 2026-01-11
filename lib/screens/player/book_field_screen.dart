@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-
+import '../../models/booking.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/private_bookings.dart';
-import '../../models/booking_status.dart';
+import '../../models/booking.dart';
 import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -481,15 +481,16 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           playerId: userProvider.activeRoleId!,
           startTime: startDateTime,
           finishTime: endDateTime,
+          cost: _calculateTotalToPay(),
           status: BookingStatus.booked,
         );
 
         success = await DB.PrivateBookings.addPrivateBooking(
           newBooking.playerId,
           newBooking.fieldId,
+          newBooking.cost,
           newBooking.startTime,
           newBooking.finishTime,
-          newBooking.status,
         );
       } else {
         final baseCost = _selectedField!.costTournament;

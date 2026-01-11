@@ -1,6 +1,7 @@
 import 'package:atl_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
@@ -13,6 +14,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/match_event_card.dart';
 import '../../widgets/match_event_dialog.dart';
 import '../../widgets/football_motm_selector_dialog.dart';
+import '../../widgets/schedule_match_dialog.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
 
@@ -40,6 +42,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   late int _minutesPerPause;
   int? _coordinatorId;
   int? _tournamentId;
+  bool _isMatchInfoExpanded = true;
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -47,10 +50,19 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   bool get _isScheduled =>
       _match != null && _match!.status == MatchStatus.scheduled;
 
+  // TODO: DEBUG - Rimuovere questa logica in produzione!
+  // In produzione, deve essere: return difference.inMinutes < 60;
   bool get _canStartMatch {
     if (!_isScheduled || _match?.scheduledStart == null) return false;
     final difference = _match!.scheduledStart!.difference(DateTime.now());
-    return difference.inMinutes < 60;
+    // DEBUG: Permette di avviare quando non è più possibile rischedulare (< 24h)
+    return difference.inHours < 24;
+  }
+
+  bool get _canReschedule {
+    if (!_isScheduled || _match?.scheduledStart == null) return true;
+    final difference = _match!.scheduledStart!.difference(DateTime.now());
+    return difference.inHours >= 24;
   }
 
   bool get _isInProgress =>
@@ -148,32 +160,22 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   }
 
   Future<void> _showScheduleDialog() async {
-    // TODO: Implementare UI per selezionare orario disponibile
-    final DateTime? selectedTime = await showDatePicker(
+    if (_tournamentId == null) return;
+
+    final fieldId = (await DB.Tournaments.getById(_tournamentId!))?.fieldId;
+    if (fieldId == null) return;
+
+    final DateTime? scheduledStart = await showDialog<DateTime>(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context) => ScheduleMatchDialog(
+        tournamentId: _tournamentId!,
+        fieldId: fieldId,
+        currentSport: widget.currentSport,
+        currentScheduledStart: _match?.scheduledStart,
+      ),
     );
 
-    if (selectedTime == null) return;
-
-    final TimeOfDay? selectedTimeOfDay = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-
-    if (selectedTimeOfDay == null) return;
-
-    final DateTime scheduledStart = DateTime(
-      selectedTime.year,
-      selectedTime.month,
-      selectedTime.day,
-      selectedTimeOfDay.hour,
-      selectedTimeOfDay.minute,
-    );
-
-    if (!mounted) return;
+    if (scheduledStart == null || !mounted) return;
 
     final success = await DB().scheduleMatch(
       widget.matchId,
@@ -185,20 +187,82 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Match scheduled successfully')),
+          SnackBar(
+            content: Text(
+              _match?.status == MatchStatus.scheduled
+                  ? 'Match rescheduled successfully'
+                  : 'Match scheduled successfully',
+            ),
+          ),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to schedule match')),
+          SnackBar(
+            content: Text(
+              _canReschedule
+                  ? 'Failed to schedule match. The field might not be available.'
+                  : 'Cannot reschedule match within 24 hours of start time',
+            ),
+          ),
         );
       }
     }
   }
 
+  Future<bool> _showConfirmationDialog(String title, String message) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('CANCEL'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('CONFIRM'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
   Future<void> _handleMatchAction(String action) async {
     if (_coordinatorId == null) return;
+
+    // Mostra dialog di conferma
+    String title = '';
+    String message = '';
+    
+    switch (action) {
+      case 'start':
+        title = 'Start Match';
+        message = 'Are you sure you want to start the match?';
+        break;
+      case 'halftime':
+        title = 'Go to Halftime';
+        message = 'Are you sure you want to end the first half?';
+        break;
+      case 'startHalf':
+        title = 'Start Second Half';
+        message = 'Are you sure you want to start the second half?';
+        break;
+      case 'finish':
+        title = 'Finish Match';
+        message = 'Are you sure you want to finish the match? This action cannot be undone.';
+        break;
+    }
+
+    final confirmed = await _showConfirmationDialog(title, message);
+    if (!confirmed) return;
 
     bool success = false;
 
@@ -252,8 +316,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   Future<void> _showMatchActionsMenu() async {
     List<String> actions = [];
 
-    if (_isNotScheduled || _isScheduled) {
+    if (_isNotScheduled) {
       actions.add('Schedule Match');
+    } else if (_isScheduled) {
+      if (_canReschedule) {
+        actions.add('Reschedule Match');
+      }
       if (_canStartMatch) {
         actions.add('Start Match');
       }
@@ -263,19 +331,19 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         actions.add('Go to Halftime');
       }
       actions.add('Add Player Event');
-      
+
       // Se siamo nel secondo tempo (startHalf), controlla se il match può finire
       if (_match?.status == MatchStatus.startHalf) {
-        final canFinish = await DB.FootballMatches.canMatchFinish(widget.matchId);
+        final canFinish = await DB.FootballMatches.canMatchFinish(
+          widget.matchId,
+        );
         if (canFinish) {
           actions.add('Finish Match');
         } else {
           actions.add('Start Penalty ShootOut');
         }
-      } else {
-        // Nel primo tempo può sempre finire
-        actions.add('Finish Match');
       }
+      // Nel primo tempo NON può finire
     } else if (_isHalftime) {
       actions.add('Start Second Half');
     } else if (_isPenaltyShootOut) {
@@ -305,6 +373,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
               switch (action) {
                 case 'Schedule Match':
                   icon = Icons.schedule;
+                  break;
+                case 'Reschedule Match':
+                  icon = Icons.update;
                   break;
                 case 'Start Match':
                   icon = Icons.play_arrow;
@@ -349,6 +420,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     switch (result) {
       case 'Schedule Match':
+      case 'Reschedule Match':
         _showScheduleDialog();
         break;
       case 'Start Match':
@@ -400,6 +472,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<void> _startPenaltyShootOut() async {
     if (_coordinatorId == null) return;
+
+    final confirmed = await _showConfirmationDialog(
+      'Start Penalty Shootout',
+      'Are you sure you want to start the penalty shootout?',
+    );
+    if (!confirmed) return;
 
     final success = await DB.FootballMatches.startPenaltyShootOut(
       widget.matchId,
@@ -512,6 +590,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                       minutesPerRound: _minutesPerRound,
                       minutesPerPause: _minutesPerPause,
                     ),
+                    const SizedBox(height: 16),
+                    // Match Info Section
+                    _buildMatchInfoSection(),
                     const SizedBox(height: 16),
                     // Sezione Eventi
                     Container(
@@ -650,11 +731,27 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     if (_isScheduled) {
+      // Se manca meno di 1 giorno, mostra solo "Start Match" se possibile
+      if (!_canReschedule) {
+        if (_canStartMatch) {
+          return ATLFloatingButton(
+            onPressed: () => _handleMatchAction('start'),
+            backgroundColor: Colors.orange,
+            icon: Icons.play_arrow,
+            label: 'DEBUG - Start Match',
+            heroTag: 'soccerMatchFAB',
+          );
+        }
+        // Se non può ancora iniziare, non mostrare nulla
+        return null;
+      }
+
+      // Altrimenti mostra Reschedule Match
       return ATLFloatingButton(
         onPressed: _showMatchActionsMenu,
         backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-        icon: Icons.edit,
-        label: 'Manage Match',
+        icon: Icons.update,
+        label: 'Reschedule Match',
         heroTag: 'soccerMatchFAB',
       );
     }
@@ -722,16 +819,189 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     return null;
   }
 
+  Widget _buildMatchInfoSection() {
+    // Permetti di collassare solo se il match non è notScheduled o scheduled
+    final bool canCollapse = !_isNotScheduled && !_isScheduled;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: canCollapse
+                ? () {
+                    setState(() {
+                      _isMatchInfoExpanded = !_isMatchInfoExpanded;
+                    });
+                  }
+                : null,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: ATLColors.getPrimaryColor(widget.currentSport),
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'MATCH INFO',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: ATLColors.darkBlue,
+                    ),
+                  ),
+                ),
+                if (canCollapse)
+                  Icon(
+                    _isMatchInfoExpanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    color: ATLColors.darkBlue,
+                  ),
+              ],
+            ),
+          ),
+          if (_isMatchInfoExpanded) ...[
+            const SizedBox(height: 16),
+            if (_match?.scheduledStart == null)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_outlined,
+                      color: Colors.grey.shade600,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'When the match is scheduled, you will find the necessary information here',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade700,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                    Icons.calendar_today,
+                    'Scheduled Start',
+                    DateFormat(
+                      'EEEE, MMMM dd, yyyy \'at\' HH:mm',
+                    ).format(_match!.scheduledStart!),
+                    ATLColors.getPrimaryColor(widget.currentSport),
+                  ),
+                  const Divider(height: 24),
+                  _buildInfoRow(
+                    Icons.login,
+                    'Arrive From',
+                    DateFormat('HH:mm').format(
+                      _match!.scheduledStart!.subtract(
+                        const Duration(minutes: 15),
+                      ),
+                    ),
+                    Colors.green,
+                  ),
+                  const Divider(height: 24),
+                  _buildInfoRow(
+                    Icons.logout,
+                    'Field Must Be Cleared By',
+                    DateFormat('HH:mm').format(
+                      _match!.scheduledStart!.add(
+                        Duration(
+                          minutes:
+                              (_minutesPerRound * 2) + _minutesPerPause + 15,
+                        ),
+                      ),
+                    ),
+                    Colors.orange,
+                  ),
+                ],
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: ATLColors.darkBlue,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEventCard(FootballMatchEvent event) {
     // Determina la fonte dell'evento (home, away, match)
     EventSource source;
 
     // Verifica se l'evento è durante penalty shootout (non mostrare minuti)
-    final bool isInPenaltyShootOut = event.type == FootballMatchEventType.penaltyShootOut ||
+    final bool isInPenaltyShootOut =
+        event.type == FootballMatchEventType.penaltyShootOut ||
         (event.type == FootballMatchEventType.penalty ||
-         event.type == FootballMatchEventType.missedPenalty ||
-         event.type == FootballMatchEventType.finish) &&
-        _isPenaltyShootOut;
+                event.type == FootballMatchEventType.missedPenalty ||
+                event.type == FootballMatchEventType.finish) &&
+            _isPenaltyShootOut;
 
     // Eventi del match (start, half, finish, penaltyShootOut, startHalf)
     if (event.type == FootballMatchEventType.start ||
@@ -795,14 +1065,17 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           final String formattedName = _formatPlayerName(player);
 
           // Verifica se l'evento è durante penalty shootout
-          final bool isInPenaltyShootOut = _isPenaltyShootOut &&
+          final bool isInPenaltyShootOut =
+              _isPenaltyShootOut &&
               (event.type == FootballMatchEventType.penalty ||
-               event.type == FootballMatchEventType.missedPenalty);
+                  event.type == FootballMatchEventType.missedPenalty);
 
           return MatchEventCard(
             eventType: event.type,
             minute: isInPenaltyShootOut ? null : event.minute,
-            additionalMinute: isInPenaltyShootOut ? null : event.additionalMinute,
+            additionalMinute: isInPenaltyShootOut
+                ? null
+                : event.additionalMinute,
             playerName: formattedName,
             source: source,
           );

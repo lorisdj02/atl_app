@@ -2,7 +2,7 @@ import 'package:atl_app/config/app_config.dart';
 import 'base_repository.dart';
 import '../../models/lobby_booking.dart';
 import '../db_controller.dart';
-import '../../models/booking_status.dart';
+import '../../models/booking.dart';
 
 /// Repository per gestire le PrivateBooking nel database
 
@@ -62,15 +62,26 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     double feePerPlayer,
   ) async {
     if (AppConfig.isDebug) {
+      List<int> freeFieldIds =
+          await DB.Bookings.getFreeFieldIds(startTime, finishTime, [fieldId]) ??
+          [];
+
+      if (!freeFieldIds.contains(fieldId)) {
+        return -1; // Il campo non è libero in quel periodo
+      }
+
+      final double baseCost = (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
+          finishTime.difference(startTime).inHours;
+
       LobbyBooking newLobbyBooking = LobbyBooking(
-        id: _mockData.length + 1,
+        id: DB.Bookings.mockGetNextId(),
         ownerId: ownerId,
         fieldId: fieldId,
         startTime: startTime,
         finishTime: finishTime,
         maxPlayers: maxPlayers,
         playerToFind: playerToFind,
-        feePerPlayer: feePerPlayer,
+        feePerPlayer: (baseCost / maxPlayers * 100).ceil() / 100,
         status: BookingStatus.booked,
       );
       _mockData.add(newLobbyBooking);
@@ -89,27 +100,6 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-  Future<bool> isFieldBooked(
-    int fieldId,
-    DateTime startTime,
-    DateTime finishTime,
-  ) async {
-    if (AppConfig.isDebug) {
-      for (var booking in _mockData) {
-        if (booking.fieldId == fieldId) {
-          // Controlla se gli orari si sovrappongono
-          if (!(finishTime.isBefore(booking.startTime) ||
-              startTime.isAfter(booking.finishTime))) {
-            return true;
-          }
-        }
-      }
-      return false;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
   Future<List<LobbyBooking>?> getByStatus(BookingStatus status) async {
     if (AppConfig.isDebug) {
       return _mockData.where((booking) => booking.status == status).toList();
@@ -118,67 +108,13 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-  //TODO: devi controllare la data
-  bool _isOverlapping(
-    DateTime start1,
-    DateTime end1,
-    DateTime start2,
-    DateTime end2,
-  ) {
-    // Due intervalli si sovrappongono se:
-    // start1 < end2 AND start2 < end1
-    // Questo copre tutti i casi di sovrapposizione possibili
-    return start1.isBefore(end2) && start2.isBefore(end1);
-  }
-
   Future<List<int>?> getFreeFieldIds(
     DateTime startTime,
     DateTime finishTime,
-    List<int> allFieldIds, {
-    bool checkPrivate = true,
-  }) async {
+    List<int> allFieldIds,
+  ) async {
     if (AppConfig.isDebug) {
-      List<int> bookedFieldIds = [];
-      List<LobbyBooking> bookings =
-          await getByStatus(BookingStatus.booked) ?? [];
-      List<LobbyBooking> inProgressBookings =
-          await getByStatus(BookingStatus.inProgress) ?? [];
-      List<LobbyBooking> allBookings = [];
-
-      allBookings.addAll(bookings);
-      allBookings.addAll(inProgressBookings);
-
-      for (var booking in allBookings) {
-        // Controlla se gli orari si sovrappongono
-        if (_isOverlapping(
-              startTime,
-              finishTime,
-              booking.startTime,
-              booking.finishTime,
-            ) &&
-            !bookedFieldIds.contains(booking.fieldId)) {
-          bookedFieldIds.add(booking.fieldId);
-        }
-      }
-
-      if (!checkPrivate) {
-        return allFieldIds.where((id) => !bookedFieldIds.contains(id)).toList();
-      }
-      List<int> freePrivateBookingsFieldIds =
-          (await DB.PrivateBookings.getFreeFieldIds(
-            startTime,
-            finishTime,
-            allFieldIds,
-            checkLobby: false,
-          )) ??
-          [];
-      List<int> freeLobbyFieldIds = allFieldIds
-          .where((id) => !bookedFieldIds.contains(id))
-          .toList();
-      // Restituisci solo i campi liberi in ENTRAMBI
-      return freeLobbyFieldIds
-          .where((id) => freePrivateBookingsFieldIds.contains(id))
-          .toList();
+      return DB.Bookings.getFreeFieldIds(startTime, finishTime, allFieldIds);
     } else {
       throw UnimplementedError();
     }

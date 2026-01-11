@@ -788,15 +788,8 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           return false;
         }
 
-        if (_mockData[index].status != MatchStatus.notScheduled &&
-            (_mockData[index].status != MatchStatus.scheduled &&
-                _mockData[index].scheduledStart!.isAfter(
-                  DateTime.now().subtract(const Duration(minutes: 42)),
-                ))) {
-          return false;
-        }
-
         _mockData[index].scheduledStart = scheduledStart;
+        _mockData[index].status = MatchStatus.scheduled;
         return true;
       } catch (e) {
         return false;
