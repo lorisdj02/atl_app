@@ -177,11 +177,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (scheduledStart == null || !mounted) return;
 
+    
     final success = await DB().scheduleMatch(
       widget.matchId,
       scheduledStart,
       _coordinatorId!,
     );
+
 
     if (success) {
       _loadMatchData();

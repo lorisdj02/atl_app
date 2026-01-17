@@ -580,10 +580,12 @@ class DB {
         final int tournamentId = (await FootballMatches.getById(
           matchId,
         ))!.tournamentId;
-        final int fieldId = (await Tournaments.getById(matchId))!.fieldId;
-        final sportId = await Tournaments.getById(
+        final int fieldId = (await Tournaments.getById(tournamentId))!.fieldId;
+
+        final int sportId = await Tournaments.getById(
           tournamentId,
         ).then((t) => t!.sportId);
+
         final int minutesPerRound = (await Sports.getById(
           sportId,
         ))!.minutesPerRound;
@@ -599,11 +601,13 @@ class DB {
         final DateTime startTime = scheduledStart.subtract(
           Duration(minutes: 15), // buffer di 15 minuti prima
         );
+
         final DateTime finishTime = scheduledStart.add(
           Duration(
             minutes: (minutesPerRound * 2) + minutesPerPause + 15,
           ), // buffer di 30 minuti
         );
+
         if (coordinatorId !=
             (await Tournaments.getById(tournamentId))!.coordinatorId) {
           return false;
@@ -932,7 +936,8 @@ class DB {
         return false;
       }
 
-      if (await FootballMatches.isPenaltyShootOut(matchId) == false) {
+      if (await FootballMatches.isPenaltyShootOut(matchId) == false &&
+          type != 'missedPenalty') {
         if (await FootballMatches.updateScore(matchId, isHome: isGoalForHome) ==
             false) {
           return false;
@@ -940,18 +945,20 @@ class DB {
       }
 
       if (isGroupStage) {
-        bool success = await _handleFootballGroupStageGoal(
-          isGoalForHome,
-          currentHomeScore,
-          currentAwayScore,
-          tournamentId,
-          homeTeam,
-          awayTeam,
-          numberGroups!,
-          numberQualified!,
-        );
-        if (success == false) {
-          return false;
+        if (type != 'missedPenalty') {
+          bool success = await _handleFootballGroupStageGoal(
+            isGoalForHome,
+            currentHomeScore,
+            currentAwayScore,
+            tournamentId,
+            homeTeam,
+            awayTeam,
+            numberGroups!,
+            numberQualified!,
+          );
+          if (success == false) {
+            return false;
+          }
         }
       } else {
         if (type == 'missedPenalty' &&

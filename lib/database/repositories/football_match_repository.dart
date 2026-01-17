@@ -2,6 +2,7 @@ import 'package:atl_app/config/app_config.dart';
 import 'base_repository.dart';
 import '../../models/football_match.dart';
 import '../db_controller.dart';
+import 'dart:math';
 
 /// Repository per la gestione delle partite di calcio
 
@@ -186,6 +187,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         tournamentId: tournamentId,
         group: group,
         day: day,
+        status: MatchStatus.notScheduled,
       );
       _mockData.add(newMatch);
       return true;
@@ -215,45 +217,72 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
             .take(teamsPerGroup)
             .toList();
 
-        int day = 1;
-
-        //aggiusta generazione gironi
-        for (int i = 0; i < groupTeams.length; i++) {
-          for (int j = 1; j < groupTeams.length; j++) {
-            
-            day++;
-          }
+        if (groupTeams.length % 2 != 0) {
+          groupTeams.add(
+            -1,
+          ); // Aggiungi un team fittizio (chi affronterà il bye riposerà)
         }
 
-        day = teamsPerGroup;
-        if (round2GroupStage) {
-          day = teamsPerGroup;
-          for (int i = 0; i < groupTeams.length; i++) {
-            for (int j = i + 1; j < groupTeams.length; j++) {
-              if (await insertMatch(
-                    groupTeams[j],
-                    groupTeams[i],
+        final int n = groupTeams.length;
+        final int numDays = n - 1;
+        final int matchesPerDay = n ~/ 2;
+
+        for (int day = 0; day < numDays; day++) {
+          for (int match = 0; match < matchesPerDay; match++) {
+            int home = (day + match) % (n - 1);
+            int away = (n - 1 - match + day) % (n - 1);
+
+            if (match == 0) {
+              away = n - 1;
+            }
+
+            final bool random = Random().nextBool();
+
+            if (random){
+              final int temp = home;
+              home = away;
+              away = temp;
+            }
+
+            if (groupTeams[home] != -1 && groupTeams[away] != -1) {
+              if (await DB.FootballMatches.insertMatch(
+                    groupTeams[home],
+                    groupTeams[away],
                     tournamentId,
                     groupName,
-                    day: day,
+                    day: day + 1,
                   ) ==
                   false) {
                 return false;
               }
-              day++;
+
+              if (round2GroupStage) {
+                if (await DB.FootballMatches.insertMatch(
+                      groupTeams[away],
+                      groupTeams[home],
+                      tournamentId,
+                      groupName,
+                      day: day + 1 + numDays,
+                    ) ==
+                    false) {
+                  return false;
+                }
+              }
             }
           }
         }
 
         for (int i = 0; i < groupTeams.length; i++) {
-          if (await DB.FootballStandings.insertStandings(
-                tournamentId,
-                groupTeams[i],
-                groupName,
-                0,
-              ) ==
-              false) {
-            return false;
+          if (groupTeams[i] != -1) {
+            if (await DB.FootballStandings.insertStandings(
+                  tournamentId,
+                  groupTeams[i],
+                  groupName,
+                  0,
+                ) ==
+                false) {
+              return false;
+            }
           }
         }
       }
@@ -300,6 +329,16 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
             }
           }
         }
+      }
+
+      if (await DB.FootballStandings.updateTeamsQualified(
+            tournamentId,
+            qualified,
+            numGroups,
+            toBeOrdered: true,
+          ) ==
+          false) {
+        return false;
       }
 
       return true;

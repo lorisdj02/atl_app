@@ -196,7 +196,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       qualified: 4,
       payCoordinator: 130,
       status: TournamentStatus.created,
-      fee: 75.0,
+      fee: 50,
       prize1: 2200.0,
       prize2: 1100.0,
       round2GroupStage: false,
