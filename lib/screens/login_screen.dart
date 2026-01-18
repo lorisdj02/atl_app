@@ -10,6 +10,10 @@ import 'register_screen.dart';
 import 'home_router.dart';
 import '../providers/user_provider.dart';
 import '../database/db_controller.dart';
+import '../models/coordinator.dart';
+import '../models/player.dart';
+import '../models/referee.dart';
+import '../models/organization.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -73,14 +77,33 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     switch (user.role) {
+      case UserRole.referee:
+        // Fetch and set referee-specific data if needed
+        final int? roleId = await DB.Users.getRoleId(user.id);
+        if (roleId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).invalidCredentials),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        userProvider.setActiveUser(user, roleId: roleId);
+        break;
       case UserRole.coordinator:
         // Fetch and set coordinator-specific data if needed
-        userProvider.setActiveUser(
-          user,
-          roleId: await DB.Coordinators.getByUserId(
-            user.id,
-          ).then((c) => c!.coordinatorId),
-        );
+        final int? roleId = await DB.Users.getRoleId(user.id);
+        if (roleId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).invalidCredentials),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        userProvider.setActiveUser(user, roleId: roleId);
         break;
       case UserRole.organization:
         // Fetch and set organization-specific data if needed
@@ -88,12 +111,18 @@ class _LoginScreenState extends State<LoginScreen> {
         //userProvider.setActiveUser(user, roleId: await DB.Organizations.getById(user.id).then((o) => o!.organizationId));
         break;
       case UserRole.player:
-        userProvider.setActiveUser(
-          user,
-          roleId: await DB.Players.getByUserId(
-            user.id,
-          ).then((p) => p!.playerId),
-        );
+        // Fetch and set player-specific data
+        final int? roleId = await DB.Users.getRoleId(user.id);
+        if (roleId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).invalidCredentials),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        userProvider.setActiveUser(user, roleId: roleId);
         try {
           userProvider.setCurrentTeamId(
             await DB.PlaysAt.getTeamIdByPlayerId(userProvider.activeRoleId!),

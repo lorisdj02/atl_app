@@ -14,6 +14,7 @@ class PlayerRepository extends BaseRepository<Player> {
   @override
   Map<String, dynamic> toJson(Player item) => item.toJson();
 
+  // 2 cifre -> players
   List<Player> _mockData = [
     Player(
       id: 1,
@@ -46,7 +47,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 6,
+      id: 3,
       username: 'player_mike',
       email: 'mike@example.com',
       firebaseUid: 'firebase_uid_player_1',
@@ -61,7 +62,7 @@ class PlayerRepository extends BaseRepository<Player> {
       //teamId: 1,
     ),
     Player(
-      id: 7,
+      id: 4,
       username: 'asia',
       email: 'asia@example.com',
       firebaseUid: 'firebase_uid_player_2',
@@ -75,7 +76,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 8,
+      id: 5,
       username: 'player_david',
       email: 'david@example.com',
       firebaseUid: 'firebase_uid_player_3',
@@ -89,7 +90,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 9,
+      id: 6,
       username: 'player_emma',
       email: 'emma@example.com',
       firebaseUid: 'firebase_uid_player_4',
@@ -103,7 +104,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 10,
+      id: 7,
       username: 'player_sophia',
       email: 'sophia@example.com',
       firebaseUid: 'firebase_uid_player_5',
@@ -117,7 +118,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 11,
+      id: 8,
       username: 'player_james',
       email: 'james@example.com',
       firebaseUid: 'firebase_uid_player_6',
@@ -131,7 +132,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 12,
+      id: 9,
       username: 'player_olivia',
       email: 'olivia@example.com',
       firebaseUid: 'firebase_uid_player_7',
@@ -145,7 +146,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 13,
+      id: 10,
       username: 'player_benjamin',
       email: 'benjamin@example.com',
       firebaseUid: 'firebase_uid_player_8',
@@ -159,7 +160,7 @@ class PlayerRepository extends BaseRepository<Player> {
       passwordMD5: 'a',
     ),
     Player(
-      id: 14,
+      id: 11,
       username: 'leone',
       email: 'leone@example.com',
       firebaseUid: 'firebase_uid_player_9',
@@ -186,6 +187,19 @@ class PlayerRepository extends BaseRepository<Player> {
 
       _mockData.removeAt(index);
       return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> getPlayerIdByUserId(int userId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final player = _mockData.firstWhere((player) => player.id == userId);
+        return player.playerId;
+      } catch (e) {
+        return -1;
+      }
     } else {
       throw UnimplementedError();
     }

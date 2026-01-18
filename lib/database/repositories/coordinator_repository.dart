@@ -13,9 +13,10 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
   @override
   Map<String, dynamic> toJson(Coordinator item) => item.toJson();
 
+  // 3 cifre -> coordinators
   List<Coordinator> _mockData = [
     Coordinator(
-      id: 3,
+      id: 100,
       username: 'giuseppe',
       email: 'giuseppe@example.com',
       firebaseUid: 'firebase_uid_coord_1',
@@ -30,7 +31,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       birthdate: DateTime(1988, 2, 14),
     ),
     Coordinator(
-      id: 4,
+      id: 101,
       username: 'coordinator_lucy',
       email: 'lucy@example.com',
       firebaseUid: 'firebase_uid_coord_2',
@@ -45,7 +46,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       birthdate: DateTime(1985, 1, 1),
     ),
     Coordinator(
-      id: 5,
+      id: 102,
       username: 'coordinator_alex',
       email: 'alex@example.com',
       firebaseUid: 'firebase_uid_coord_3',
@@ -64,10 +65,27 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
   @override
   List<Coordinator> get mockData => _mockData;
 
+  Future<int> getCoordinatorIdByUserId(int userId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final coordinator = mockData.firstWhere(
+          (coordinator) => coordinator.id == userId,
+        );
+        return coordinator.coordinatorId;
+      } catch (e) {
+        return -1;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> deleteCoordinator(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
-      final index =
-          _mockData.indexWhere((coordinator) => coordinator.id == id && coordinator.passwordMD5 == passwordMD5);
+      final index = _mockData.indexWhere(
+        (coordinator) =>
+            coordinator.id == id && coordinator.passwordMD5 == passwordMD5,
+      );
       if (index == -1) return false;
 
       _mockData.removeAt(index);

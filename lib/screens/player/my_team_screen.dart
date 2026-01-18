@@ -88,6 +88,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
             builder: (context) => PayParticipationScreen(
               teamId: teamId,
               sportCategory: widget.currentSport,
+              playerId: playerId!,
             ),
           ),
         )

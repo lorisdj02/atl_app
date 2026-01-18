@@ -107,4 +107,17 @@ class SportRepository extends BaseRepository<Sport> {
       throw UnimplementedError();
     }
   }
+
+  Future<List<String>> getRefereeRolesById(int sportId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final sport = mockData.firstWhere((sport) => sport.id == sportId);
+        return sport.refereeRoles;
+      } catch (e) {
+        return [];
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

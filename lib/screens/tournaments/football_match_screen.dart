@@ -13,6 +13,7 @@ import '../../widgets/atl_floating_button.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/match_event_card.dart';
 import '../../widgets/match_event_dialog.dart';
+import '../../widgets/match_info_card.dart';
 import '../../widgets/football_motm_selector_dialog.dart';
 import '../../widgets/schedule_match_dialog.dart';
 import '../../providers/user_provider.dart';
@@ -42,7 +43,6 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   late int _minutesPerPause;
   int? _coordinatorId;
   int? _tournamentId;
-  bool _isMatchInfoExpanded = true;
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -594,7 +594,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                     ),
                     const SizedBox(height: 16),
                     // Match Info Section
-                    _buildMatchInfoSection(),
+                    MatchInfoCard(
+                      match: _match!,
+                      isNotScheduled: _isNotScheduled,
+                      isScheduled: _isScheduled,
+                      sportCategory: widget.currentSport,
+                    ),
                     const SizedBox(height: 16),
                     // Sezione Eventi
                     Container(
@@ -819,178 +824,6 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     return null;
-  }
-
-  Widget _buildMatchInfoSection() {
-    // Permetti di collassare solo se il match non è notScheduled o scheduled
-    final bool canCollapse = !_isNotScheduled && !_isScheduled;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          InkWell(
-            onTap: canCollapse
-                ? () {
-                    setState(() {
-                      _isMatchInfoExpanded = !_isMatchInfoExpanded;
-                    });
-                  }
-                : null,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: ATLColors.getPrimaryColor(widget.currentSport),
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'MATCH INFO',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: ATLColors.darkBlue,
-                    ),
-                  ),
-                ),
-                if (canCollapse)
-                  Icon(
-                    _isMatchInfoExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: ATLColors.darkBlue,
-                  ),
-              ],
-            ),
-          ),
-          if (_isMatchInfoExpanded) ...[
-            const SizedBox(height: 16),
-            if (_match?.scheduledStart == null)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.schedule_outlined,
-                      color: Colors.grey.shade600,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'When the match is scheduled, you will find the necessary information here',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade700,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(
-                    Icons.calendar_today,
-                    'Scheduled Start',
-                    DateFormat(
-                      'EEEE, MMMM dd, yyyy \'at\' HH:mm',
-                    ).format(_match!.scheduledStart!),
-                    ATLColors.getPrimaryColor(widget.currentSport),
-                  ),
-                  const Divider(height: 24),
-                  _buildInfoRow(
-                    Icons.login,
-                    'Arrive From',
-                    DateFormat('HH:mm').format(
-                      _match!.scheduledStart!.subtract(
-                        const Duration(minutes: 15),
-                      ),
-                    ),
-                    Colors.green,
-                  ),
-                  const Divider(height: 24),
-                  _buildInfoRow(
-                    Icons.logout,
-                    'Field Must Be Cleared By',
-                    DateFormat('HH:mm').format(
-                      _match!.scheduledStart!.add(
-                        Duration(
-                          minutes:
-                              (_minutesPerRound * 2) + _minutesPerPause + 15,
-                        ),
-                      ),
-                    ),
-                    Colors.orange,
-                  ),
-                ],
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: ATLColors.darkBlue,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildEventCard(FootballMatchEvent event) {

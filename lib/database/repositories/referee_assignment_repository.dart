@@ -13,7 +13,13 @@ class RefereeAssignmentRepository extends BaseRepository<RefereeAssignment> {
   @override
   Map<String, dynamic> toJson(RefereeAssignment item) => item.toJson();
 
-  List<RefereeAssignment> _mockData = [];
+  List<RefereeAssignment> _mockData = [
+    RefereeAssignment(
+      matchId: 1,
+      refereeId: 1,
+      role: 'MAIN',
+    ),
+  ];
 
   @override
   List<RefereeAssignment> get mockData => _mockData;

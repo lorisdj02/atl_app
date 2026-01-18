@@ -204,6 +204,30 @@ class TournamentRepository extends BaseRepository<Tournament> {
     ),
   ];
 
+  Future<int?> getSportId(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      try {
+        return _mockData.firstWhere((t) => t.id == tournamentId).sportId;
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int?> getFieldId(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      try {
+        return _mockData.firstWhere((t) => t.id == tournamentId).fieldId;
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<Tournament?> getById(int tournamentId) async {
     if (AppConfig.isDebug) {
       try {

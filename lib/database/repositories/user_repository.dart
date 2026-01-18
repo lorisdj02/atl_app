@@ -20,12 +20,39 @@ class UserRepository extends BaseRepository<User> {
   List<User> get mockData => [
     ...DB.Players.mockData,
     ...DB.Coordinators.mockData,
+    ...DB.Referees.mockData,
   ];
 
-  Future<User?> getByUserId(int id) async {
+  Future<T?> getByUserId<T extends User>(int id) async {
     if (AppConfig.isDebug) {
       try {
-        return mockData.firstWhere((user) => user.id == id);
+        final user = mockData.firstWhere((user) => user.id == id);
+        if (user is T) {
+          return user as T;
+        } else {
+          return null;
+        }
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int?> getRoleId(int userId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final user = mockData.firstWhere((user) => user.id == userId);
+        if (user.role == UserRole.player) {
+          return DB.Players.getPlayerIdByUserId(user.id);
+        } else if (user.role == UserRole.coordinator) {
+          return DB.Coordinators.getCoordinatorIdByUserId(user.id);
+        } else if (user.role == UserRole.referee) {
+          return DB.Referees.getRefereeIdByUserId(user.id);
+        } else {
+          return null;
+        }
       } catch (e) {
         return null;
       }

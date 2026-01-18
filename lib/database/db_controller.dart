@@ -29,6 +29,8 @@ import 'repositories/football_tournament_stats_repository.dart';
 import 'repositories/personal_stats_repository.dart';
 import 'repositories/match_bookings_repository.dart';
 import 'repositories/bookings_repository.dart';
+import 'repositories/referee_assignment_repository.dart';
+import 'repositories/referee_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -70,6 +72,8 @@ class DB {
   static late final PersonalStatsRepository PersonalStats;
   static late final MatchBookingsRepository MatchBookings;
   static late final BookingsRepository Bookings;
+  static late final RefereeRepository Referees;
+  static late final RefereeAssignmentRepository RefereeAssignments;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -98,6 +102,8 @@ class DB {
     PersonalStats = PersonalStatsRepository();
     MatchBookings = MatchBookingsRepository();
     Bookings = BookingsRepository();
+    Referees = RefereeRepository();
+    RefereeAssignments = RefereeAssignmentRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -486,9 +492,22 @@ class DB {
   Future<bool> updatePayment(
     int tournamentId,
     int teamId,
-    double newToPay,
+    double amount,
   ) async {
     if (AppConfig.isDebug) {
+      double newToPay =
+          ((await TournamentParticipations.getByTournamentAndTeam(
+                tournamentId,
+                teamId,
+              ))?.toPay ??
+              0);
+
+      newToPay -= amount;
+
+      if (newToPay < 0) {
+        return false;
+      }
+
       if (await TournamentParticipations.updatePayment(
             tournamentId,
             teamId,

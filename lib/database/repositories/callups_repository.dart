@@ -37,6 +37,19 @@ class CallUpsRepository extends BaseRepository<CallUps> {
     }
   }
 
+  Future<bool> isPlayerInCallup(int playerId, int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final callups = _mockData.where(
+        (callup) =>
+            callup.playerId == playerId &&
+            callup.tournamentId == tournamentId,
+      );
+      return callups.isNotEmpty;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Ottieni convocazioni per team
   Future<List<CallUps>> getByTeam(int teamId) async {
     if (AppConfig.isDebug) {
