@@ -46,7 +46,7 @@ class Match {
     };
   }
 
-  fromJson(Map<String, dynamic> json) {
+  factory Match.fromJson(Map<String, dynamic> json) {
     return Match(
       id: json['id'],
       matchDate:

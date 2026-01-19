@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import '../widgets/referee_bottom_bar.dart';
 import '../providers/user_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../models/sport_category.dart';
@@ -121,19 +121,35 @@ class ShopScreen extends StatelessWidget {
             ),
         ],
       ),
-      bottomNavigationBar: PlayerCoordinatorBottomBar(
-        currentIndex: 0,
-        onTap: (index) {
-          NavigationHelper.navigateToSection(
-            context: context,
-            index: index,
-            currentSport: currentSport,
-            currentIndex: 0,
-          );
-        },
-        currentSport: currentSport,
-        isHome: false,
-      ),
+      bottomNavigationBar: userProvider.isCoordinator || userProvider.isPlayer
+          ? PlayerCoordinatorBottomBar(
+              currentIndex: 0,
+              onTap: (index) {
+                NavigationHelper.navigateToSection(
+                  context: context,
+                  index: index,
+                  currentSport: currentSport,
+                  currentIndex: 0,
+                );
+              },
+              currentSport: currentSport,
+              isHome: false,
+            )
+          : userProvider.isReferee
+          ? RefereeBottomBar(
+              currentIndex: 0,
+              onTap: (index) {
+                NavigationHelper.navigateToSection(
+                  context: context,
+                  index: index,
+                  currentSport: currentSport,
+                  currentIndex: 0,
+                );
+              },
+              currentSport: currentSport,
+              isHome: false,
+            )
+          : null,
     );
   }
 }

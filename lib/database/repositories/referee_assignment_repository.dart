@@ -1,6 +1,7 @@
 import 'base_repository.dart';
 import '../../config/app_config.dart';
 import '../../models/referee_assignment.dart';
+import '../db_controller.dart';
 
 class RefereeAssignmentRepository extends BaseRepository<RefereeAssignment> {
   @override
@@ -23,6 +24,20 @@ class RefereeAssignmentRepository extends BaseRepository<RefereeAssignment> {
 
   @override
   List<RefereeAssignment> get mockData => _mockData;
+
+  Future<bool> insertAssignment(int matchId, int refereeId, String role) async {
+    if (AppConfig.isDebug) {
+      final newAssignment = RefereeAssignment(
+        matchId: matchId,
+        refereeId: refereeId,
+        role: role,
+      );
+      _mockData.add(newAssignment);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
   Future<RefereeAssignment?> getByMatchIdAndRefereeId(
     int matchId,
@@ -59,6 +74,16 @@ class RefereeAssignmentRepository extends BaseRepository<RefereeAssignment> {
       return _mockData
           .where((assignment) => assignment.refereeId == refereeId)
           .toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> countRefereesPerMatch(int matchId) async {
+    if (AppConfig.isDebug) {
+      return _mockData
+          .where((assignment) => assignment.matchId == matchId)
+          .length;
     } else {
       throw UnimplementedError();
     }

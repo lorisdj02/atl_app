@@ -67,6 +67,9 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
       final List<TimeOfDay> slots = [];
       final now = DateTime.now();
 
+      // Load existing bookings for this field
+      final existingBookings = await DB.Bookings.getByFieldId(widget.fieldId);
+
       // Generate time slots from 00:00 to 23:45 in 15-minute intervals
       for (int hour = 0; hour < 24; hour++) {
         for (int minute = 0; minute < 60; minute += 15) {
@@ -98,15 +101,30 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
               Duration(minutes: _totalBookingDuration),
             );
 
-            // Check if field is available
-            final freeFields = await DB.Bookings.getFreeFieldIds(
-              startTime,
-              finishTime,
-              [widget.fieldId],
-            );
+            // Check if this time slot conflicts with existing bookings
+            bool hasConflict = false;
+            for (var booking in existingBookings) {
+              // Check if there's any overlap between the proposed booking and existing booking
+              // Overlap occurs if: startTime < booking.finishTime AND finishTime > booking.startTime
+              if (startTime.isBefore(booking.finishTime) &&
+                  finishTime.isAfter(booking.startTime)) {
+                hasConflict = true;
+                break;
+              }
+            }
 
-            if (freeFields != null && freeFields.contains(widget.fieldId)) {
-              slots.add(slot);
+            // Only add the slot if there's no conflict
+            if (!hasConflict) {
+              // Also check if field is available via the existing method
+              final freeFields = await DB.Bookings.getFreeFieldIds(
+                startTime,
+                finishTime,
+                [widget.fieldId],
+              );
+
+              if (freeFields != null && freeFields.contains(widget.fieldId)) {
+                slots.add(slot);
+              }
             }
           }
         }

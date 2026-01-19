@@ -31,6 +31,7 @@ import 'repositories/match_bookings_repository.dart';
 import 'repositories/bookings_repository.dart';
 import 'repositories/referee_assignment_repository.dart';
 import 'repositories/referee_repository.dart';
+import 'repositories/match_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -74,6 +75,7 @@ class DB {
   static late final BookingsRepository Bookings;
   static late final RefereeRepository Referees;
   static late final RefereeAssignmentRepository RefereeAssignments;
+  static late final MatchRepository Matches;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -104,6 +106,7 @@ class DB {
     Bookings = BookingsRepository();
     Referees = RefereeRepository();
     RefereeAssignments = RefereeAssignmentRepository();
+    Matches = MatchRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -497,10 +500,10 @@ class DB {
     if (AppConfig.isDebug) {
       double newToPay =
           ((await TournamentParticipations.getByTournamentAndTeam(
-                tournamentId,
-                teamId,
-              ))?.toPay ??
-              0);
+            tournamentId,
+            teamId,
+          ))?.toPay ??
+          0);
 
       newToPay -= amount;
 
@@ -627,6 +630,11 @@ class DB {
           ), // buffer di 30 minuti
         );
 
+        if (await Bookings.isFieldFree(fieldId, startTime, finishTime) ==
+            false) {
+          return false; // Il campo non è libero in quel lasso di tempo
+        }
+
         if (coordinatorId !=
             (await Tournaments.getById(tournamentId))!.coordinatorId) {
           return false;
@@ -699,6 +707,22 @@ class DB {
 
         final int sportId = (await Tournaments.getById(tournamentId))!.sportId;
 
+        final int numReferees = await RefereeAssignments.countRefereesPerMatch(
+          matchId,
+        );
+
+        if (numReferees != 1 &&
+            (sportId == 1 || sportId == 2 || sportId == 3)) {
+          // 1 arbitro per football 5, 7, 8
+          return false;
+        } else if (numReferees != 3 && sportId == 4) {
+          // 3 arbitri per football 11
+          return false;
+        } else if (sportId > 4) {
+          // Aggiungi altre condizioni per altri sport se necessario
+          return false;
+        }
+
         final int minutesPerRound = (await Sports.getById(
           sportId,
         ))!.minutesPerRound;
@@ -759,6 +783,7 @@ class DB {
         startHalf,
         finish,
   */
+
       final bool isStart = type == 'start';
       final bool isStartHalf = type == 'startHalf';
       final DateTime eventTime = DateTime.now();
@@ -1338,6 +1363,43 @@ class DB {
         return false;
       }
 
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> insertAssignment(int matchId, int refereeId, String role) async {
+    if (AppConfig.isDebug) {
+      final int sportId = (await Tournaments.getById(
+        (await FootballMatches.getById(matchId))!.tournamentId,
+      ))!.sportId;
+
+      final int numReferees = await RefereeAssignments.countRefereesPerMatch(
+        matchId,
+      );
+
+      if (numReferees == 1 &&
+          (sportId == 1 || sportId == 2 || sportId == 3)) {
+        // 1 arbitro per football 5, 7, 8
+        return false;
+      } else if (numReferees == 3 && sportId == 4) {
+        // 3 arbitri per football 11
+        return false;
+      } else if (sportId > 4) {
+        // Aggiungi altre condizioni per altri sport se necessario
+        return false;
+      }
+
+      if (await Sports.checkRole(sportId, role) == false) {
+        return false;
+      }
+
+
+      if (await RefereeAssignments.insertAssignment(matchId, refereeId, role) ==
+          false) {
+        return false;
+      }
       return true;
     } else {
       throw UnimplementedError();

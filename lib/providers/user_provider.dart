@@ -55,4 +55,6 @@ class UserProvider with ChangeNotifier {
   bool get isCoordinator => _activeUser?.role == UserRole.coordinator;
 
   bool get isOrganization => _activeUser?.role == UserRole.organization;
+
+  bool get isReferee => _activeUser?.role == UserRole.referee;
 }

@@ -238,7 +238,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
             final bool random = Random().nextBool();
 
-            if (random){
+            if (random) {
               final int temp = home;
               home = away;
               away = temp;
@@ -1054,19 +1054,44 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   }
 
   Future<List<FootballMatch>> getMatchesByTournament(int tournamentId) async {
-    return mockData
-        .where((match) => match.tournamentId == tournamentId)
-        .toList();
+    if (AppConfig.isDebug) {
+      return mockData
+          .where((match) => match.tournamentId == tournamentId)
+          .toList();
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   Future<List<FootballMatch>> getMatchesByGroup(
     int tournamentId,
     String group,
   ) async {
-    return mockData
-        .where(
-          (match) => match.tournamentId == tournamentId && match.group == group,
-        )
-        .toList();
+    if (AppConfig.isDebug) {
+      return mockData
+          .where(
+            (match) =>
+                match.tournamentId == tournamentId && match.group == group,
+          )
+          .toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<FootballMatch>> getScheduledMatchesByTournament(
+    int tournamentId,
+  ) async {
+    if (AppConfig.isDebug) {
+      return mockData
+          .where(
+            (match) =>
+                match.tournamentId == tournamentId &&
+                (match.status == MatchStatus.scheduled),
+          )
+          .toList();
+    } else {
+      throw UnimplementedError();
+    }
   }
 }

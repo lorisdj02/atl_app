@@ -9,6 +9,8 @@ import '../screens/guest/guest_home_screen.dart';
 import '../screens/home_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
+import '../screens/referee/available_matches_screen.dart';
+import '../screens/referee/past_assigned_matches_screen.dart';
 
 class NavigationHelper {
   /// Naviga alla sezione specificata dalla bottom bar
@@ -33,10 +35,18 @@ class NavigationHelper {
       case 0: // Shop
         targetScreen = ShopScreen(currentSport: currentSport);
         break;
-      case 1: // Tournaments
+      case 1: // Tournaments or Matches
+        if (userProvider.isReferee) {
+          targetScreen = AvailableMatchesScreen(currentSport: currentSport);
+          break;
+        }
         targetScreen = AllTournamentsScreen(currentSport: currentSport);
         break;
-      case 2: // Team
+      case 2: // Team or History
+        if (userProvider.isReferee) {
+          targetScreen = PastAssignedMatchesScreen(currentSport: currentSport);
+          break;
+        }
         targetScreen = TeamScreen(currentSport: currentSport);
         break;
       case 3: // Profile

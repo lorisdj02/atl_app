@@ -1,0 +1,10 @@
+Sports:
+    1: Football5v5      Roles: ['MAIN']
+    2: Football7v7      Roles: ['MAIN']
+    3: Football8v8      Roles: ['MAIN']
+    4: Football11v11    Roles: ['MAIN', 'ASSISTANT1', 'ASSISTANT2']
+
+SportCategory sempre maiuscolo:
+    FOOTBALL
+
+

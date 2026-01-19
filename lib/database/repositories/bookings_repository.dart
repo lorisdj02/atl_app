@@ -103,4 +103,31 @@ class BookingsRepository extends BaseRepository<Booking> {
       throw UnimplementedError();
     }
   }
+
+  Future<List<Booking>> getByFieldId(int fieldId) async {
+    if (AppConfig.isDebug) {
+      return mockData.where((booking) => booking.fieldId == fieldId).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isFieldFree(int fieldId, DateTime startTime, DateTime finishTime) async {
+    if (AppConfig.isDebug) {
+      List<Booking> bookings = await getByFieldId(fieldId);
+      for (var booking in bookings) {
+        if (isTimeOverlapping(
+              startTime,
+              finishTime,
+              booking.startTime,
+              booking.finishTime,
+            )) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

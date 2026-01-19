@@ -16,8 +16,10 @@ import '../../widgets/match_event_dialog.dart';
 import '../../widgets/match_info_card.dart';
 import '../../widgets/football_motm_selector_dialog.dart';
 import '../../widgets/schedule_match_dialog.dart';
+import '../../widgets/referee_match_dialog.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
+import '../../models/referee_assignment.dart';
 
 class FootballMatchScreen extends StatefulWidget {
   final int matchId;
@@ -43,6 +45,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   late int _minutesPerPause;
   int? _coordinatorId;
   int? _tournamentId;
+  int? _numReferees;
+  int? _sportId;
+  bool? _refereeCheck;
+  List<String> _availableRefereeRoles = [];
+  bool _isLoadingRefereeRoles = true;
+  int _matchInfoKey = 0; // Counter to force MatchInfoCard rebuild
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -55,8 +63,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   bool get _canStartMatch {
     if (!_isScheduled || _match?.scheduledStart == null) return false;
     final difference = _match!.scheduledStart!.difference(DateTime.now());
+
     // DEBUG: Permette di avviare quando non è più possibile rischedulare (< 24h)
-    return difference.inHours < 24;
+    return _refereeCheck!;
   }
 
   bool get _canReschedule {
@@ -142,6 +151,25 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         return;
       }
 
+      final int numReferees = await DB.RefereeAssignments.countRefereesPerMatch(
+        widget.matchId,
+      );
+
+      final int sportId = await DB.Tournaments.getSportId(tournamentId) ?? 0;
+
+      if (sportId == 0) {
+        return;
+      }
+
+      final bool refereeCheck =
+          _numReferees != null &&
+          ((_numReferees == 1 &&
+                  (_sportId == 1 || _sportId == 2 || _sportId == 3)) ||
+              (_numReferees == 3 && _sportId == 4));
+
+      // Load available referee roles
+      await _loadAvailableRefereeRoles(sportId);
+
       setState(() {
         _match = match;
         _homeTeam = homeTeam;
@@ -152,10 +180,112 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         _minutesPerPause = minutesPerPause;
         _coordinatorId = coordinatorId;
         _tournamentId = tournamentId;
+        _numReferees = numReferees;
+        _sportId = sportId;
+        _refereeCheck = refereeCheck;
       });
     } catch (e) {
       print('Error loading match data: $e');
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadAvailableRefereeRoles(int sportId) async {
+    setState(() => _isLoadingRefereeRoles = true);
+
+    try {
+      // Get all required roles for this sport (hardcoded)
+      List<String> requiredRoles = [];
+      if (sportId == 1 || sportId == 2 || sportId == 3) {
+        requiredRoles = ['MAIN'];
+      } else if (sportId == 4) {
+        requiredRoles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
+      }
+
+      // Get existing assignments for this match
+      final assignments = await DB.RefereeAssignments.getByMatchId(
+        widget.matchId,
+      );
+      final assignedRoles = assignments.map((a) => a.role).toSet();
+
+      // Find available roles (required roles that are not yet assigned)
+      final availableRoles = requiredRoles
+          .where((role) => !assignedRoles.contains(role))
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _availableRefereeRoles = availableRoles;
+          _isLoadingRefereeRoles = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading available referee roles: $e');
+      if (mounted) {
+        setState(() {
+          _availableRefereeRoles = [];
+          _isLoadingRefereeRoles = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _showRefereeMatchDialog() async {
+    if (_availableRefereeRoles.isEmpty) return;
+
+    final String? selectedRole = await showDialog<String>(
+      context: context,
+      builder: (context) => RefereeMatchDialog(
+        availableRoles: _availableRefereeRoles,
+        sportCategory: widget.currentSport,
+      ),
+    );
+
+    if (selectedRole == null || !mounted) return;
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final refereeId = userProvider.activeRoleId;
+
+    if (refereeId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Referee ID not found')),
+        );
+      }
+      return;
+    }
+
+    try {
+      final success = await DB().insertAssignment(
+        widget.matchId,
+        refereeId,
+        selectedRole,
+      );
+
+      if (success) {
+        setState(() {
+          _matchInfoKey++; // Increment to force MatchInfoCard rebuild
+        });
+        _loadMatchData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Assignment created successfully')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to create assignment')),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error creating assignment: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error creating assignment')),
+        );
+      }
     }
   }
 
@@ -177,13 +307,11 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (scheduledStart == null || !mounted) return;
 
-    
     final success = await DB().scheduleMatch(
       widget.matchId,
       scheduledStart,
       _coordinatorId!,
     );
-
 
     if (success) {
       _loadMatchData();
@@ -215,26 +343,29 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<bool> _showConfirmationDialog(String title, String message) async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCEL'),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(title),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('CANCEL'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ATLColors.getPrimaryColor(
+                    widget.currentSport,
+                  ),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('CONFIRM'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('CONFIRM'),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Future<void> _handleMatchAction(String action) async {
@@ -243,7 +374,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     // Mostra dialog di conferma
     String title = '';
     String message = '';
-    
+
     switch (action) {
       case 'start':
         title = 'Start Match';
@@ -259,7 +390,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         break;
       case 'finish':
         title = 'Finish Match';
-        message = 'Are you sure you want to finish the match? This action cannot be undone.';
+        message =
+            'Are you sure you want to finish the match? This action cannot be undone.';
         break;
     }
 
@@ -553,6 +685,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     final isCoordinator = userProvider.isCoordinator;
+    final isReferee = userProvider.isReferee;
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -595,6 +728,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                     const SizedBox(height: 16),
                     // Match Info Section
                     MatchInfoCard(
+                      key: ValueKey(_matchInfoKey),
                       match: _match!,
                       isNotScheduled: _isNotScheduled,
                       isScheduled: _isScheduled,
@@ -704,11 +838,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                 ),
               ),
             ),
-      floatingActionButton:
-          isCoordinator &&
-              _match != null &&
-              _coordinatorId == userProvider.activeRoleId
-          ? _buildFloatingActionButton()
+      floatingActionButton: _match != null
+          ? (isCoordinator && _coordinatorId == userProvider.activeRoleId
+                ? _buildFloatingActionButton()
+                : isReferee &&
+                      !_isLoadingRefereeRoles &&
+                      _availableRefereeRoles.isNotEmpty &&
+                      _isScheduled
+                ? _buildRefereeFloatingActionButton()
+                : null)
           : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -936,5 +1074,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     return 'Unknown Player';
+  }
+
+  Widget _buildRefereeFloatingActionButton() {
+    return ATLFloatingButton(
+      onPressed: _showRefereeMatchDialog,
+      backgroundColor: Colors.blue,
+      icon: Icons.sports,
+      label: 'Referee the Match',
+      heroTag: 'refereeMatchFAB',
+    );
   }
 }

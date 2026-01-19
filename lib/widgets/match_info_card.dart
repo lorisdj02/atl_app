@@ -49,8 +49,9 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
 
   Future<void> _loadFieldInfo() async {
     try {
-      final int fieldId = await DB.Tournaments.getFieldId(widget.match.tournamentId) ?? 0;
-      
+      final int fieldId =
+          await DB.Tournaments.getFieldId(widget.match.tournamentId) ?? 0;
+
       if (fieldId == 0) {
         setState(() {
           _isLoadingField = false;
@@ -59,14 +60,6 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
       }
 
       final field = await DB.Fields.getById(fieldId);
-      
-      if (field == null) {
-        setState(() {
-          _fieldId = fieldId;
-          _isLoadingField = false;
-        });
-        return;
-      }
 
       final city = await DB.Cities.getById(field.cityId);
 
@@ -89,11 +82,12 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
 
   Future<void> _loadRefereeRoles() async {
     try {
+      final int sportId =
+          await DB.Tournaments.getSportId(widget.match.tournamentId) ?? 0;
+      final int fieldId =
+          await DB.Tournaments.getFieldId(widget.match.tournamentId) ?? 0;
 
-      final int sportId = await DB.Tournaments.getSportId(widget.match.tournamentId) ?? 0;
-      final int fieldId = await DB.Tournaments.getFieldId(widget.match.tournamentId) ?? 0;
-
-      if(sportId == 0 || fieldId == 0) {
+      if (sportId == 0 || fieldId == 0) {
         setState(() {
           _refereeRoles = [];
           _refereeAssignments = [];
@@ -102,20 +96,31 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
         });
         return;
       }
+      List<String> roles = [];
+      if (sportId == 1 || sportId == 2 || sportId == 3) {
+        // Football 5, Football 7, Football 8
+        roles = ['MAIN'];
+      } else if (sportId == 4) {
+        // Football 11
+        roles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
+      } else {
+        // Other sports can be added here with their respective roles
+        roles = [];
+      }
+      final assignments = await DB.RefereeAssignments.getByMatchId(
+        widget.match.id,
+      );
 
-      final roles = await DB.Sports.getRefereeRolesById(sportId);
-      final assignments = await DB.RefereeAssignments.getByMatchId(widget.match.id);
-      
       // Build referees map
       final Map<String, String> refereesMap = {};
       for (var assignment in assignments) {
         final referee = await DB.Referees.getByRefereeId(assignment.refereeId);
         if (referee != null) {
           final refereeName = '${referee.name} ${referee.surname}';
-          refereesMap[refereeName] = assignment.role;
+          refereesMap[assignment.role] = refereeName;
         }
       }
-      
+
       if (mounted) {
         setState(() {
           _refereeRoles = roles;
@@ -225,14 +230,18 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                   InfoRowWithIcon(
                     icon: Icons.calendar_today,
                     label: 'Date',
-                    value: DateFormat('EEEE, MMMM d, y').format(widget.match.scheduledStart!),
+                    value: DateFormat(
+                      'EEEE, MMMM d, y',
+                    ).format(widget.match.scheduledStart!),
                     color: ATLColors.getPrimaryColor(widget.sportCategory),
                   ),
                   const Divider(height: 24),
                   InfoRowWithIcon(
                     icon: Icons.access_time,
                     label: 'Time',
-                    value: DateFormat('HH:mm').format(widget.match.scheduledStart!),
+                    value: DateFormat(
+                      'HH:mm',
+                    ).format(widget.match.scheduledStart!),
                     color: Colors.green,
                   ),
                   const Divider(height: 24),
@@ -251,29 +260,27 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                               : 'Field #$_fieldId',
                           color: Colors.orange,
                         ),
-                  if (_isLoadingReferees || (_refereesMap != null && _refereesMap!.isNotEmpty)) ...[
-                    const Divider(height: 24),
-                    _isLoadingReferees
-                        ? const InfoRowWithIcon(
-                            icon: Icons.sports,
-                            label: 'Referees',
-                            value: 'Loading...',
-                            color: Colors.blue,
-                          )
-                        : (_refereesMap == null || _refereesMap!.isEmpty)
-                            ? const InfoRowWithIcon(
-                                icon: Icons.sports,
-                                label: 'Referees',
-                                value: 'No referees assigned',
-                                color: Colors.blue,
-                              )
-                            : InfoRowWithIcon(
-                                icon: Icons.sports,
-                                label: 'Referees',
-                                multipleValues: _refereesMap,
-                                color: Colors.blue,
-                              ),
-                  ],
+                  const Divider(height: 24),
+                  _isLoadingReferees
+                      ? const InfoRowWithIcon(
+                          icon: Icons.sports,
+                          label: 'Referees',
+                          value: 'Loading...',
+                          color: Colors.blue,
+                        )
+                      : (_refereesMap == null || _refereesMap!.isEmpty)
+                      ? const InfoRowWithIcon(
+                          icon: Icons.sports,
+                          label: 'Referees',
+                          value: 'No referees assigned',
+                          color: Colors.blue,
+                        )
+                      : InfoRowWithIcon(
+                          icon: Icons.sports,
+                          label: 'Referees',
+                          multipleValues: _refereesMap,
+                          color: Colors.blue,
+                        ),
                 ],
               ),
           ],

@@ -15,6 +15,7 @@ import 'profile_screens/orders_screen.dart';
 import 'profile_screens/stats_screen.dart';
 import 'profile_screens/settings_screen.dart';
 import 'profile_screens/contact_us_screen.dart';
+import '../widgets/referee_bottom_bar.dart';
 
 class ProfileScreen extends StatelessWidget {
   final SportCategory currentSport;
@@ -28,7 +29,8 @@ class ProfileScreen extends StatelessWidget {
     // e rimuove tutte le route precedenti dallo stack
     Navigator.of(context).pushAndRemoveUntil(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LoginScreen(),
         transitionDuration: Duration.zero, // Nessuna animazione
         reverseTransitionDuration: Duration.zero,
       ),
@@ -38,7 +40,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).activeUser;
+    final UserProvider userProvider = Provider.of<UserProvider>(context);
+    final user = userProvider.activeUser;
 
     // Add null check
     if (user == null) {
@@ -246,19 +249,35 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: PlayerCoordinatorBottomBar(
-        currentIndex: 3,
-        onTap: (index) {
-          NavigationHelper.navigateToSection(
-            context: context,
-            index: index,
-            currentSport: currentSport,
-            currentIndex: 3,
-          );
-        },
-        currentSport: currentSport,
-        isHome: false,
-      ),
+      bottomNavigationBar: userProvider.isCoordinator || userProvider.isPlayer
+          ? PlayerCoordinatorBottomBar(
+              currentIndex: 3,
+              onTap: (index) {
+                NavigationHelper.navigateToSection(
+                  context: context,
+                  index: index,
+                  currentSport: currentSport,
+                  currentIndex: 3,
+                );
+              },
+              currentSport: currentSport,
+              isHome: false,
+            )
+          : userProvider.isReferee
+          ? RefereeBottomBar(
+              currentIndex: 3,
+              onTap: (index) {
+                NavigationHelper.navigateToSection(
+                  context: context,
+                  index: index,
+                  currentSport: currentSport,
+                  currentIndex: 3,
+                );
+              },
+              currentSport: currentSport,
+              isHome: false,
+            )
+          : null,
     );
   }
 }
