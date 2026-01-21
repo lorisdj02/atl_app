@@ -1,4 +1,5 @@
 import 'package:atl_app/config/app_config.dart';
+import 'package:atl_app/widgets/booking_widget.dart';
 
 import '../../models/football_match_event.dart';
 import 'base_repository.dart';
@@ -71,6 +72,34 @@ class FootballMatchEventRepository extends BaseRepository<FootballMatchEvent> {
 
   @override
   List<FootballMatchEvent> get mockData => _mockData;
+
+  Future<bool> updateModifiedTables(int id, String modifiedTables) async{
+    if (AppConfig.isDebug) {
+      final eventIndex = _mockData.indexWhere((event) => event.id == id);
+      if (eventIndex != -1) {
+        _mockData[eventIndex].modifiedTables = modifiedTables;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteEvent(int id) async{
+    if (AppConfig.isDebug) {
+      final eventIndex = _mockData.indexWhere((event) => event.id == id);
+      if (eventIndex != -1) {
+        _mockData.removeAt(eventIndex);
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
   Future<List<FootballMatchEvent>> getByMatchId(int matchId) async {
     if (AppConfig.isDebug) {

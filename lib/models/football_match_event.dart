@@ -22,6 +22,7 @@ class FootballMatchEvent {
   final int additionalMinute;
   final int matchId;
   final DateTime eventTime;
+  String modifiedTables;
 
   FootballMatchEvent({
     required this.id,
@@ -32,6 +33,7 @@ class FootballMatchEvent {
     required this.eventTime,
     this.additionalMinute = 0,
     this.teamId,
+    this.modifiedTables = '',
   });
 
   factory FootballMatchEvent.fromJson(Map<String, dynamic> json) {
@@ -46,6 +48,7 @@ class FootballMatchEvent {
       eventTime: DateTime.parse(json['eventTime']),
       additionalMinute: json['additionalMinute'] ?? 0,
       teamId: json['teamId'],
+      modifiedTables: json['modifiedTables'] ?? '',
     );
   }
 
@@ -59,7 +62,7 @@ class FootballMatchEvent {
       'eventTime': eventTime.toIso8601String(),
       'additionalMinute': additionalMinute,
       'teamId': teamId,
+      'modifiedTables': modifiedTables,
     };
   }
-
 }

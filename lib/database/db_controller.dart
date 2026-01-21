@@ -1,8 +1,6 @@
 import 'dart:math';
-
-import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/sport_category.dart';
-
+import 'dart:convert';
 import '../config/app_config.dart';
 import 'repositories/user_repository.dart';
 import 'repositories/tournament_repository.dart';
@@ -874,30 +872,20 @@ class DB {
           return false;
         }
         if (isGroupStage &&
-            (await FootballStandings.updatePtsGoal(
+            (await FootballStandings.updateStanding(
                       tournamentId,
                       homeTeam,
                       points: 1,
+                      drawn: 1,
                     ) ==
-                    false ||
-                await FootballStandings.updatePtsGoal(
+                    {} ||
+                await FootballStandings.updateStanding(
                       tournamentId,
                       awayTeam,
                       points: 1,
+                      drawn: 1,
                     ) ==
-                    false ||
-                (await FootballStandings.updateGames(
-                      tournamentId,
-                      homeTeam,
-                      drawn: 1,
-                    )) ==
-                    false ||
-                (await FootballStandings.updateGames(
-                      tournamentId,
-                      awayTeam,
-                      drawn: 1,
-                    )) ==
-                    false)) {
+                    {})) {
           return false;
         }
       } else if (type == 'halftime') {
@@ -980,67 +968,133 @@ class DB {
         return false;
       }
 
+      List<Map<String, dynamic>> modifiedTables = [];
+      Map<String, dynamic> result = {};
+
       if (await FootballMatches.isPenaltyShootOut(matchId) == false &&
           type != 'missedPenalty') {
-        if (await FootballMatches.updateScore(matchId, isHome: isGoalForHome) ==
-            false) {
+        result = await FootballMatches.updateScore(
+          matchId,
+          isHome: isGoalForHome,
+        );
+        if (result == {}) {
           return false;
+        } else {
+          modifiedTables.add(result);
         }
       }
 
       if (isGroupStage) {
         if (type != 'missedPenalty') {
-          bool success = await _handleFootballGroupStageGoal(
-            isGoalForHome,
-            currentHomeScore,
-            currentAwayScore,
-            tournamentId,
-            homeTeam,
-            awayTeam,
-            numberGroups!,
-            numberQualified!,
-          );
-          if (success == false) {
+          final List<Map<String, dynamic>> resultList =
+              await _handleFootballGroupStageGoal(
+                isGoalForHome,
+                currentHomeScore,
+                currentAwayScore,
+                tournamentId,
+                homeTeam,
+                awayTeam,
+                numberGroups!,
+                numberQualified!,
+              );
+          if (resultList == []) {
             return false;
           }
+          modifiedTables.addAll(resultList);
         }
       } else {
         if (type == 'missedPenalty' &&
-            await FootballMatches.isPenaltyShootOut(matchId) &&
-            await FootballMatches.addMissedPenalty(matchId, teamId) == false) {
-          return false;
-        } else if (await FootballMatches.handleGoalInFinalStage(
-              matchId,
-              isGoalForHome,
-            ) ==
-            false) {
-          return false;
+            await FootballMatches.isPenaltyShootOut(matchId)) {
+          result = await FootballMatches.addMissedPenalty(matchId, teamId);
+          if (result == {}) {
+            return false;
+          }
+          modifiedTables.add(result);
+        } else {
+          final resultList = await FootballMatches.handleGoalInFinalStage(
+            matchId,
+            isGoalForHome,
+          );
+          if (result == {}) {
+            return false;
+          }
+          modifiedTables.addAll(resultList);
         }
       }
       if (type != 'ownGoal' &&
           type != 'missedPenalty' &&
           await FootballMatches.isPenaltyShootOut(matchId) == false) {
-        if (await TeamStats.incrementStats(
-              playerId,
-              teamId,
-              goalsIncrement: 1,
-            ) ==
-            false) {
+        result = await TeamStats.incrementStats(
+          playerId,
+          teamId,
+          goalsIncrement: 1,
+        );
+        if (result == {}) {
           return false;
+        } else {
+          modifiedTables.add(result);
         }
-        if (await FootballTournamentStats.incrementStatsInTournament(
-              playerId,
-              teamId,
-              tournamentId,
-              goalsIncrement: 1,
-            ) ==
-            false) {
+
+        result = await FootballTournamentStats.incrementStatsInTournament(
+          playerId,
+          teamId,
+          tournamentId,
+          goalsIncrement: 1,
+        );
+        if (result == {}) {
           return false;
+        } else {
+          modifiedTables.add(result);
         }
-        if (await PersonalStats.incrementStats(playerId, goalsIncrement: 1) ==
-            false) {
+
+        result = await PersonalStats.incrementStats(
+          playerId,
+          goalsIncrement: 1,
+        );
+        if (result == {}) {
           return false;
+        } else {
+          modifiedTables.add(result);
         }
+      }
+
+      // Unifica le entry per tabella
+      Map<String, List<Map<String, dynamic>>> groupedTables = {};
+
+      for (var entry in modifiedTables) {
+        final String table = entry['table'];
+        final List<dynamic> changes = entry['changes'];
+
+        if (!groupedTables.containsKey(table)) {
+          groupedTables[table] = [];
+        }
+
+        // Aggiungi i changes di questa entry
+        groupedTables[table]!.addAll(changes.cast<Map<String, dynamic>>());
+      }
+
+      // Ricostruisci modifiedTables unificato
+      List<Map<String, dynamic>> unifiedTables = [];
+      groupedTables.forEach((table, changes) {
+        unifiedTables.add({'table': table, 'changes': changes});
+      });
+
+      // Usa unifiedTables invece di modifiedTables
+      final String jsonString = jsonEncode({"changes": unifiedTables});
+      // Stampa la stringa in chunk di 800 caratteri
+      final int chunkSize = 800;
+      for (int i = 0; i < jsonString.length; i += chunkSize) {
+        final int end = (i + chunkSize < jsonString.length)
+            ? i + chunkSize
+            : jsonString.length;
+        print(
+          'Modified tables part ${i ~/ chunkSize + 1}: ${jsonString.substring(i, end)}',
+        );
+      }
+
+      if (await FootballMatchEvents.updateModifiedTables(matchId, jsonString) ==
+          false) {
+        return false;
       }
       return true;
     } else {
@@ -1048,7 +1102,7 @@ class DB {
     }
   }
 
-  Future<bool> _handleFootballGroupStageGoal(
+  Future<List<Map<String, dynamic>>> _handleFootballGroupStageGoal(
     bool isGoalForHome,
     int currentHomeScore,
     int currentAwayScore,
@@ -1058,221 +1112,207 @@ class DB {
     int numberGroups,
     int numberQualified,
   ) async {
+    List<Map<String, dynamic>> cumulativeResult = [];
+    Map<String, dynamic> result = {};
     if (isGoalForHome && currentHomeScore > currentAwayScore) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalScored: 1,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalScored: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalConceded: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalConceded: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (!isGoalForHome && currentAwayScore > currentHomeScore) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalScored: 1,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalScored: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalConceded: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalConceded: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (isGoalForHome && currentHomeScore == currentAwayScore) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalScored: 1,
-            points: 2,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalScored: 1,
+        points: 2,
+        drawn: -1,
+        won: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalConceded: 1,
-            points: -1,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            homeTeam,
-            drawn: -1,
-            won: 1,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            awayTeam,
-            drawn: -1,
-            lost: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalConceded: 1,
+        points: -1,
+        lost: 1,
+        drawn: -1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (!isGoalForHome && currentAwayScore == currentHomeScore) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalScored: 1,
-            points: 2,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalScored: 1,
+        points: 2,
+        drawn: -1,
+        won: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalConceded: 1,
-            points: -1,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            awayTeam,
-            drawn: -1,
-            won: 1,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            homeTeam,
-            drawn: -1,
-            lost: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalConceded: 1,
+        points: -1,
+        lost: 1,
+        drawn: -1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (isGoalForHome && currentHomeScore == currentAwayScore - 1) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalScored: 1,
-            points: 1,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalScored: 1,
+        points: 1,
+        lost: -1,
+        drawn: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalConceded: 1,
-            points: -2,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            homeTeam,
-            lost: -1,
-            drawn: 1,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            awayTeam,
-            won: -1,
-            drawn: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalConceded: 1,
+        points: -2,
+        won: -1,
+        drawn: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (!isGoalForHome && currentAwayScore == currentHomeScore - 1) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalScored: 1,
-            points: 1,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalScored: 1,
+        points: 1,
+        lost: -1,
+        drawn: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalConceded: 1,
-            points: -2,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            awayTeam,
-            lost: -1,
-            drawn: 1,
-          ) ==
-          false) {
-        return false;
-      }
-      if (await FootballStandings.updateGames(
-            tournamentId,
-            homeTeam,
-            won: -1,
-            drawn: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalConceded: 1,
+        points: -2,
+        won: -1,
+        drawn: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (isGoalForHome && currentHomeScore < currentAwayScore - 1) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalScored: 1,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalScored: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalConceded: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalConceded: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     } else if (!isGoalForHome && currentAwayScore < currentHomeScore - 1) {
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            awayTeam,
-            goalScored: 1,
-          ) ==
-          false) {
-        return false;
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        awayTeam,
+        goalScored: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
-      if (await FootballStandings.updatePtsGoal(
-            tournamentId,
-            homeTeam,
-            goalConceded: 1,
-          ) ==
-          false) {
-        return false;
+
+      result = await FootballStandings.updateStanding(
+        tournamentId,
+        homeTeam,
+        goalConceded: 1,
+      );
+      if (result == {}) {
+        return [];
+      } else {
+        cumulativeResult.add(result);
       }
     }
     if (await FootballStandings.updateTeamsQualified(
@@ -1281,9 +1321,9 @@ class DB {
           numberGroups,
         ) ==
         false) {
-      return false;
+      return [];
     }
-    return true;
+    return cumulativeResult;
   }
 
   Future<bool> addFootballMotm(
@@ -1379,8 +1419,7 @@ class DB {
         matchId,
       );
 
-      if (numReferees == 1 &&
-          (sportId == 1 || sportId == 2 || sportId == 3)) {
+      if (numReferees == 1 && (sportId == 1 || sportId == 2 || sportId == 3)) {
         // 1 arbitro per football 5, 7, 8
         return false;
       } else if (numReferees == 3 && sportId == 4) {
@@ -1394,7 +1433,6 @@ class DB {
       if (await Sports.checkRole(sportId, role) == false) {
         return false;
       }
-
 
       if (await RefereeAssignments.insertAssignment(matchId, refereeId, role) ==
           false) {

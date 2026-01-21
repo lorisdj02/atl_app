@@ -141,18 +141,20 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
   Future<bool> updateTeamsQualified(
     int tournamentId,
     int numberQualified,
-    int numberGroups,
-    {bool toBeOrdered = false}
-  ) async {
+    int numberGroups, {
+    bool toBeOrdered = false,
+  }) async {
     if (AppConfig.isDebug) {
       try {
-
-        if (toBeOrdered){
-          for(int i = 0; i < numberGroups; i++) {
+        if (toBeOrdered) {
+          for (int i = 0; i < numberGroups; i++) {
             final String groupLetter = String.fromCharCode(
               65 + i,
             ); // 'A' = 65 in ASCII
-            bool success = await orderRanksInTournamentByGroup(tournamentId, groupLetter);
+            bool success = await orderRanksInTournamentByGroup(
+              tournamentId,
+              groupLetter,
+            );
             if (!success) {
               return false;
             }
@@ -259,7 +261,11 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     }
   }
 
-  Future<bool> areInTheSameGroup(int tournamentId, int teamAId, int teamBId) async {
+  Future<bool> areInTheSameGroup(
+    int tournamentId,
+    int teamAId,
+    int teamBId,
+  ) async {
     if (AppConfig.isDebug) {
       try {
         final FootballStanding standingA = mockData.firstWhere(
@@ -270,40 +276,6 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         );
 
         return standingA.group == standingB.group;
-      } catch (e) {
-        return false;
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  Future<bool> updateGames(
-    int tournamentId,
-    int teamId, {
-    int won = 0,
-    int drawn = 0,
-    int lost = 0,
-  }) async {
-    if (AppConfig.isDebug) {
-      try {
-        final int index = mockData.indexWhere(
-          (s) => s.tournamentId == tournamentId && s.teamId == teamId,
-        );
-
-        if (index == -1) {
-          return false;
-        }
-
-        final FootballStanding standing = mockData.firstWhere(
-          (s) => s.tournamentId == tournamentId && s.teamId == teamId,
-        );
-        standing.won += won;
-        standing.drawn += drawn;
-        standing.lost += lost;
-        _mockData[index] = standing;
-
-        return true;
       } catch (e) {
         return false;
       }
@@ -332,12 +304,15 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     }
   }
 
-  Future<bool> updatePtsGoal(
+  Future<Map<String, dynamic>> updateStanding(
     int tournamentId,
     int teamId, {
     int points = 0,
     int goalScored = 0,
     int goalConceded = 0,
+    int won = 0,
+    int drawn = 0,
+    int lost = 0,
   }) async {
     if (AppConfig.isDebug) {
       try {
@@ -346,20 +321,27 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         );
 
         if (index == -1) {
-          return false;
+          return {};
         }
 
         final FootballStanding standing = mockData.firstWhere(
           (s) => s.tournamentId == tournamentId && s.teamId == teamId,
         );
+        Map<String, dynamic> result = {
+          'table': "FootballStandings",
+          'changes': [standing.toJson()],
+        };
         standing.points += points;
         standing.goalsScored += goalScored;
         standing.goalsConceded += goalConceded;
+        standing.won += won;
+        standing.drawn += drawn;
+        standing.lost += lost;
         _mockData[index] = standing;
-
-        return await orderRanksInTournamentByGroup(tournamentId, standing.group);
+        await orderRanksInTournamentByGroup(tournamentId, standing.group);
+        return result;
       } catch (e) {
-        return false;
+        return {};
       }
     } else {
       throw UnimplementedError();

@@ -43,7 +43,7 @@ class FootballTournamentStatsRepository
     }
   }
 
-  Future<bool> incrementStatsInTournament(
+  Future<Map<String, dynamic>> incrementStatsInTournament(
     int playerId,
     int teamId,
     int tournamentId, {
@@ -64,6 +64,8 @@ class FootballTournamentStatsRepository
           goals: 0,
         ),
       );
+
+      Map<String, dynamic> result = {"table": "FootballTournamentStats", "changes": [stats.toJson()]};
       stats.goals += goalsIncrement;
       stats.motm += motmIncrement;
       final int index = mockData.indexWhere(
@@ -75,11 +77,10 @@ class FootballTournamentStatsRepository
 
       if (index == -1) {
         _mockData.add(stats);
-        return true;
+        return result;
       }
       _mockData[index] = stats;
-      print('Updated stats: ${_mockData[index]}');
-      return true;
+      return result;
     } else {
       throw UnimplementedError();
     }

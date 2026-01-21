@@ -48,6 +48,8 @@ class FootballStanding {
       'lost': lost,
       'tournamentId': tournamentId,
       'group': group,
+      'rank': rank,
+      'qualified': qualified,
     };
   }
 }

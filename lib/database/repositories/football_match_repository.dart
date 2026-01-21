@@ -347,7 +347,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-  Future<bool> updateKnockOutMatch(
+  Future<Map<String, dynamic>> updateKnockOutMatch(
     int tournamentId,
     String group,
     bool round2FinalStage, {
@@ -368,19 +368,27 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         if (ids.isEmpty ||
             (ids.length != 2 && round2FinalStage) ||
             (round2FinalStage == false && ids.length != 1)) {
-          return false;
+          return {};
         }
 
+        Map<String, dynamic> result = {};
         // Aggiorna le partite trovate
         for (final id in ids) {
           final int index = mockData.indexWhere((match) => match.id == id);
+          if (index == -1) {
+            return {};
+          }
+          result = {
+            'table': "FootballMatch",
+            'changes': [_mockData[index].toJson()],
+          };
           _mockData[index].homeTeamId = homeTeamId;
           _mockData[index].awayTeamId = awayTeamId;
         }
 
-        return true;
+        return result;
       } catch (e) {
-        return false;
+        return {};
       }
     } else {
       throw UnimplementedError();
@@ -644,12 +652,12 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-  Future<bool> addMissedPenalty(int matchId, int teamId) async {
+  Future<Map<String, dynamic>> addMissedPenalty(int matchId, int teamId) async {
     if (AppConfig.isDebug) {
       try {
         final int index = mockData.indexWhere((match) => match.id == matchId);
         if (index == -1) {
-          return false;
+          return {};
         }
 
         final FootballMatch match = mockData.firstWhere(
@@ -657,8 +665,13 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         );
 
         if (match.status != MatchStatus.penaltyShootOut) {
-          return false;
+          return {};
         }
+
+        Map<String, dynamic> result = {
+          'table': "FootballMatch",
+          'changes': [match.toJson()],
+        };
 
         if (match.homeTeamId == teamId) {
           match.missedPenaltyHome = (match.missedPenaltyHome ?? 0) + 1;
@@ -666,9 +679,9 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           match.missedPenaltyAway = (match.missedPenaltyAway ?? 0) + 1;
         }
         _mockData[index] = match;
-        return true;
+        return result;
       } catch (e) {
-        return false;
+        return {};
       }
     } else {
       throw UnimplementedError();
@@ -676,7 +689,10 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   }
 
   // Gestisce il goal segnato nella fase finali e calcola il vincitore per la fase successiva
-  Future<bool> handleGoalInFinalStage(int matchId, bool isGoalForHome) async {
+  Future<List<Map<String, dynamic>>> handleGoalInFinalStage(
+    int matchId,
+    bool isGoalForHome,
+  ) async {
     if (AppConfig.isDebug) {
       try {
         FootballMatch match = mockData.firstWhere(
@@ -685,7 +701,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
         // Siamo in finale, non c'è partita successiva da aggiornare
         if (match.group == 'FI') {
-          return true;
+          return [];
         }
 
         final bool isRound2 = await isThereRound2Final(matchId);
@@ -701,7 +717,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         } else if (match.group.startsWith('SF')) {
           nextGroup = 'FI';
         } else {
-          return false;
+          return [];
         }
 
         int aggregateScoreHome = match.scoreHome ?? 0;
@@ -728,71 +744,90 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
               (match.penaltyScoreAway ?? 0) + (isGoalForHome ? 0 : 1);
         }
 
+        List<Map<String, dynamic>> result = [
+          {
+            'table': "FootballMatch",
+            'changes': [match.toJson()],
+          },
+        ];
+
         if ((aggregateScoreAway == aggregateScoreHome &&
                 match.status == MatchStatus.penaltyShootOut) ||
             (match.penaltyScoreHome == match.missedPenaltyAway &&
                 match.status == MatchStatus.penaltyShootOut)) {
           // Pareggio, imposto a null i match successivi
           if (willBeHome) {
-            updateKnockOutMatch(
-              match.tournamentId,
-              nextGroup,
-              isRound2,
-              homeTeamId: null,
-              awayTeamId: nextMatches[0].awayTeamId,
+            result.add(
+              await updateKnockOutMatch(
+                match.tournamentId,
+                nextGroup,
+                isRound2,
+                homeTeamId: null,
+                awayTeamId: nextMatches[0].awayTeamId,
+              ),
             );
           } else {
-            updateKnockOutMatch(
-              match.tournamentId,
-              nextGroup,
-              isRound2,
-              homeTeamId: nextMatches[0].homeTeamId,
-              awayTeamId: null,
+            result.add(
+              await updateKnockOutMatch(
+                match.tournamentId,
+                nextGroup,
+                isRound2,
+                homeTeamId: nextMatches[0].homeTeamId,
+                awayTeamId: null,
+              ),
             );
           }
         } else if (aggregateScoreHome > aggregateScoreAway) {
           // Passa la squadra di casa
           if (willBeHome) {
-            updateKnockOutMatch(
-              match.tournamentId,
-              nextGroup,
-              isRound2,
-              homeTeamId: match.homeTeamId,
-              awayTeamId: nextMatches[0].awayTeamId,
+            result.add(
+              await updateKnockOutMatch(
+                match.tournamentId,
+                nextGroup,
+                isRound2,
+                homeTeamId: match.homeTeamId,
+                awayTeamId: nextMatches[0].awayTeamId,
+              ),
             );
           } else {
-            updateKnockOutMatch(
-              match.tournamentId,
-              nextGroup,
-              isRound2,
-              homeTeamId: nextMatches[0].homeTeamId,
-              awayTeamId: match.homeTeamId,
+            result.add(
+              await updateKnockOutMatch(
+                match.tournamentId,
+                nextGroup,
+                isRound2,
+                homeTeamId: nextMatches[0].homeTeamId,
+                awayTeamId: match.homeTeamId,
+              ),
             );
           }
         } else if (aggregateScoreAway > aggregateScoreHome) {
           // Passa la squadra ospite
           if (willBeHome) {
-            updateKnockOutMatch(
-              match.tournamentId,
-              nextGroup,
-              isRound2,
-              homeTeamId: match.awayTeamId,
-              awayTeamId: nextMatches[0].awayTeamId,
+            result.add(
+              await updateKnockOutMatch(
+                match.tournamentId,
+                nextGroup,
+                isRound2,
+                homeTeamId: match.awayTeamId,
+                awayTeamId: nextMatches[0].awayTeamId,
+              ),
             );
           } else {
-            updateKnockOutMatch(
-              match.tournamentId,
-              nextGroup,
-              isRound2,
-              homeTeamId: nextMatches[0].homeTeamId,
-              awayTeamId: match.awayTeamId,
+            result.add(
+              await updateKnockOutMatch(
+                match.tournamentId,
+                nextGroup,
+                isRound2,
+                homeTeamId: nextMatches[0].homeTeamId,
+                awayTeamId: match.awayTeamId,
+              ),
             );
           }
         }
 
-        return true;
+        return result;
       } catch (e) {
-        return false;
+        return [];
       }
     } else {
       throw UnimplementedError();
@@ -1016,25 +1051,34 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
-  Future<bool> updateScore(int matchId, {required bool isHome}) async {
+  Future<Map<String, dynamic>> updateScore(
+    int matchId, {
+    required bool isHome,
+  }) async {
     if (AppConfig.isDebug) {
       try {
         final int index = mockData.indexWhere((match) => match.id == matchId);
         if (index == -1) {
-          return false;
+          return {};
         }
         final FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
+
+        Map<String, dynamic> result = {
+          'table': "FootballMatch",
+          'changes': [match.toJson()],
+        };
+
         if (isHome) {
           match.scoreHome = (match.scoreHome ?? 0) + 1;
         } else {
           match.scoreAway = (match.scoreAway ?? 0) + 1;
         }
         _mockData[index] = match;
-        return true;
+        return result;
       } catch (e) {
-        return false;
+        return {};
       }
     } else {
       throw UnimplementedError();

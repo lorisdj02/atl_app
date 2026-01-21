@@ -37,7 +37,7 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     }
   }
 
-  Future<bool> incrementStats(
+  Future<Map<String, dynamic>> incrementStats(
     int playerId,
     int teamId, {
     int goalsIncrement = 0,
@@ -48,22 +48,27 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
         (s) => s.playerId == playerId && s.teamId == teamId,
       );
 
+      Map<String, dynamic> result;
+
       if (index == -1) {
         // Non esiste, crealo
-        _mockData.add(
-          TeamStats(
-            playerId: playerId,
-            teamId: teamId,
-            goals: goalsIncrement,
-            motm: motmIncrement,
-          ),
+        TeamStats newStats = TeamStats(
+          playerId: playerId,
+          teamId: teamId,
+          goals: goalsIncrement,
+          motm: motmIncrement,
         );
+
+        _mockData.add(newStats);
+
+        result = {"table": "TeamStats", "changes": [newStats.toJson()]};
       } else {
         // Esiste, aggiornalo usando copyWith
+        result = {"table": "TeamStats", "changes": [_mockData[index].toJson()]};
         _mockData[index].goals += goalsIncrement;
         _mockData[index].motm += motmIncrement;
       }
-      return true;
+      return result;
     } else {
       throw UnimplementedError();
     }
