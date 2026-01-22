@@ -36,6 +36,8 @@ class FootballStanding {
       group: json['group'],
       rank: json['rank'],
       qualified: json['qualified'],
+      goalsScored: json['goalsScored'] ?? 0,
+      goalsConceded: json['goalsConceded'] ?? 0,
     );
   }
 
@@ -44,12 +46,14 @@ class FootballStanding {
       'teamId': teamId,
       'points': points,
       'won': won,
-      'draw': drawn,
+      'drawn': drawn,
       'lost': lost,
       'tournamentId': tournamentId,
       'group': group,
       'rank': rank,
       'qualified': qualified,
+      'goalsScored': goalsScored,
+      'goalsConceded': goalsConceded,
     };
   }
 }

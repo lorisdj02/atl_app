@@ -304,6 +304,32 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     }
   }
 
+  Future<bool> rollbackByJson(List<dynamic> jsonList) async {
+    if (AppConfig.isDebug) {
+      try {
+        for (var json in jsonList) {
+          FootballStanding standing = FootballStanding.fromJson(json);
+          final int index = mockData.indexWhere(
+            (s) =>
+                s.tournamentId == standing.tournamentId &&
+                s.teamId == standing.teamId,
+          );
+
+          if (index != -1) {
+            _mockData[index] = standing;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<Map<String, dynamic>> updateStanding(
     int tournamentId,
     int teamId, {

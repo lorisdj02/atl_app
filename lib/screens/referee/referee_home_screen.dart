@@ -468,6 +468,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
             currentSport: _currentSport,
             minutesPerRound: _minutesPerRoundCache[match.tournamentId] ?? 0,
             minutesPerPause: _minutesPerPauseCache[match.tournamentId] ?? 0,
+            onMatchUpdated: _loadData,
           ),
         );
       },

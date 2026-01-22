@@ -45,6 +45,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   bool _fixturesLoaded = false;
   bool _tablesLoaded = false;
   bool _statsLoaded = false;
+  bool _isInitialized = false;
 
   int _selectedDay = 1;
   String _selectedPhase = 'day_1'; // Format: 'day_1', 'of', 'qf', 'sf', 'fi'
@@ -60,8 +61,35 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
-    _loadTabData(0);
+    _loadTabData(0).then((_) {
+      if (mounted) {
+        _isInitialized = true;
+      }
+    });
     _loadMinutes();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh data when returning to this screen (but not on first load)
+    if (_isInitialized) {
+      _refreshCurrentTab();
+    }
+  }
+
+  void _refreshCurrentTab() {
+    final currentTab = _tabController.index;
+    // Reset loaded flags to force reload
+    if (currentTab == 0) {
+      _fixturesLoaded = false;
+    } else if (currentTab == 1) {
+      _tablesLoaded = false;
+    } else if (currentTab == 2) {
+      _statsLoaded = false;
+      _playerStatsCache.clear(); // Clear cache to get fresh data
+    }
+    _loadTabData(currentTab);
   }
 
   Future<void> _loadMinutes() async {
@@ -164,6 +192,31 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       _fixturesLoaded = false;
     });
     await _loadFixtures();
+  }
+
+  Future<void> _reloadAllLoadedData() async {
+    // Reload fixtures
+    setState(() {
+      _fixturesLoaded = false;
+    });
+    await _loadFixtures();
+
+    // Reload standings if they were already loaded
+    if (_tablesLoaded) {
+      setState(() {
+        _tablesLoaded = false;
+      });
+      await _loadTables();
+    }
+
+    // Reload stats if they were already loaded
+    if (_statsLoaded) {
+      setState(() {
+        _statsLoaded = false;
+        _playerStatsCache.clear();
+      });
+      await _loadStats();
+    }
   }
 
   Future<void> _loadTables() async {
@@ -621,7 +674,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                 currentSport: widget.sportCategory,
                 minutesPerRound: _minutesPerRound!,
                 minutesPerPause: _minutesPerPause!,
-                onMatchUpdated: () => _reloadFixtures(),
+                onMatchUpdated: _reloadAllLoadedData,
               ),
             ),
             const SizedBox(height: 16),
@@ -706,7 +759,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                 currentSport: widget.sportCategory,
                 minutesPerRound: _minutesPerRound!,
                 minutesPerPause: _minutesPerPause!,
-                onMatchUpdated: () => _reloadFixtures(),
+                onMatchUpdated: _reloadAllLoadedData,
               ),
             ),
             const SizedBox(height: 16),

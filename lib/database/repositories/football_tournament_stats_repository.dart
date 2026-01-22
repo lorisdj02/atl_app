@@ -86,6 +86,34 @@ class FootballTournamentStatsRepository
     }
   }
 
+  Future<bool> rollbackByJson(List<dynamic> jsonList) async {
+    if (AppConfig.isDebug) {
+      try {
+        for (var json in jsonList) {
+          FootballTournamentStats stats =
+              FootballTournamentStats.fromJson(json);
+          int index = _mockData.indexWhere(
+            (s) =>
+                s.playerId == stats.playerId &&
+                s.teamId == stats.teamId &&
+                s.tournamentId == stats.tournamentId,
+          );
+
+          if (index != -1) {
+            _mockData[index] = stats;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<List<FootballTournamentStats>> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
       return mockData.where((stats) => stats.playerId == playerId).toList();

@@ -649,7 +649,7 @@ class DB {
 
           if (oldStartTime == startTime) {
             return true; // Nessuna modifica necessaria
-          } else if (oldStartTime.difference(startTime).inHours < 24) {
+          } else if (oldStartTime.difference(DateTime.now()).inHours < 24) {
             return false; // Non si può modificare con meno di 24 ore di anticipo
           }
 
@@ -687,8 +687,7 @@ class DB {
 
   Future<bool> insertEventMatch(
     int matchId,
-    String type,
-    int coordinatorId, {
+    String type, {
     int? playerId,
     int teamId = 0,
   }) async {
@@ -697,11 +696,6 @@ class DB {
         final int tournamentId = (await FootballMatches.getById(
           matchId,
         ))!.tournamentId;
-
-        if (coordinatorId !=
-            (await Tournaments.getById(tournamentId))!.coordinatorId) {
-          return false;
-        }
 
         final int sportId = (await Tournaments.getById(tournamentId))!.sportId;
 
@@ -737,7 +731,6 @@ class DB {
           return await _handleFootballEvent(
             matchId,
             type,
-            coordinatorId,
             minutesPerRound,
             isGroupStage,
             tournamentId,
@@ -758,7 +751,6 @@ class DB {
   Future<bool> _handleFootballEvent(
     int matchId,
     String type,
-    int coordinatorId,
     int minutesPerRound,
     bool isGroupStage,
     int tournamentId, {
@@ -832,16 +824,17 @@ class DB {
         type = 'redYellowCard';
       }
 
-      if (await FootballMatchEvents.insertEvent(
-            matchId,
-            type,
-            minute,
-            eventTime,
-            additionalMinute: additionalMinute,
-            playerId: playerId,
-            teamId: teamId,
-          ) ==
-          false) {
+      final int? eventId = await FootballMatchEvents.insertEvent(
+        matchId,
+        type,
+        minute,
+        eventTime,
+        additionalMinute: additionalMinute,
+        playerId: playerId,
+        teamId: teamId,
+      );
+
+      if (eventId == null) {
         return false;
       }
 
@@ -921,6 +914,7 @@ class DB {
                   isGroupStage,
                   homeTeam,
                   awayTeam,
+                  eventId,
                   numberGroups,
                   numberQualified,
                 ) ==
@@ -943,6 +937,7 @@ class DB {
     bool isGroupStage,
     int homeTeam,
     int awayTeam,
+    int eventId,
     int? numberGroups,
     int? numberQualified,
   ) async {
@@ -1081,6 +1076,7 @@ class DB {
 
       // Usa unifiedTables invece di modifiedTables
       final String jsonString = jsonEncode({"changes": unifiedTables});
+      /*
       // Stampa la stringa in chunk di 800 caratteri
       final int chunkSize = 800;
       for (int i = 0; i < jsonString.length; i += chunkSize) {
@@ -1091,8 +1087,9 @@ class DB {
           'Modified tables part ${i ~/ chunkSize + 1}: ${jsonString.substring(i, end)}',
         );
       }
+      */
 
-      if (await FootballMatchEvents.updateModifiedTables(matchId, jsonString) ==
+      if (await FootballMatchEvents.updateModifiedTables(eventId, jsonString) ==
           false) {
         return false;
       }
@@ -1439,6 +1436,115 @@ class DB {
         return false;
       }
       return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteMatchEvent(int matchId, int eventId) async {
+    if (AppConfig.isDebug) {
+      if (await FootballMatches.getById(matchId) == null) {
+        return false;
+      }
+
+      int? tournamentId = (await FootballMatches.getById(
+        matchId,
+      ))?.tournamentId;
+
+      if (tournamentId == null) {
+        return false;
+      }
+
+      int? sportId = (await Tournaments.getById(tournamentId))?.sportId;
+
+      if (sportId == null) {
+        return false;
+      }
+
+      SportCategory sportCategory = (await Sports.getById(sportId))!.category;
+
+      if (sportCategory == SportCategory.football) {
+        return await deleteFootballMatchEvents(matchId, tournamentId, eventId);
+      }
+
+      return false;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteFootballMatchEvents(
+    int matchId,
+    int tournamentId,
+    int eventId,
+  ) async {
+    if (AppConfig.isDebug) {
+      if (await FootballMatchEvents.canBeDeleted(eventId) == false) {
+        return false;
+      }
+
+      final String modifiedTablesJson =
+          await FootballMatchEvents.getModifiedTables(eventId);
+
+      if (modifiedTablesJson.isEmpty) {
+        return await FootballMatchEvents.deleteEvent(eventId);
+      }
+
+      try {
+        final Map<String, dynamic> data = jsonDecode(modifiedTablesJson);
+        final List<dynamic> changes = data['changes'] ?? [];
+
+        // Itera su ogni tabella modificata
+        for (var tableChange in changes) {
+          final String tableName = tableChange['table'];
+          final List<dynamic> tableChanges = tableChange['changes'];
+
+          // Chiama la funzione di rollback appropriata per ogni tabella
+          bool success = false;
+          switch (tableName) {
+            case 'FootballMatch':
+              success = await FootballMatches.rollbackByJson(tableChanges);
+              break;
+            case 'FootballStandings':
+              success = await FootballStandings.rollbackByJson(tableChanges);
+              break;
+            case 'TeamStats':
+              success = await TeamStats.rollbackByJson(tableChanges);
+              break;
+            case 'FootballTournamentStats':
+              success = await FootballTournamentStats.rollbackByJson(
+                tableChanges,
+              );
+              break;
+            case 'PersonalStats':
+              success = await PersonalStats.rollbackByJson(tableChanges);
+              break;
+            default:
+              return false; // Tabella non riconosciuta
+          }
+
+          if (!success) {
+            return false; // Se una tabella fallisce, interrompi
+          }
+        }
+
+        final bool isGroupStage = (await Tournaments.getById(
+          tournamentId,
+        ))!.isGroupStage;
+
+        if (isGroupStage) {
+          await FootballStandings.updateTeamsQualified(
+            tournamentId,
+            (await Tournaments.getById(tournamentId))!.qualified,
+            (await Tournaments.getById(tournamentId))!.numGroups,
+          );
+        }
+        // Dopo aver fatto il rollback di tutte le tabelle, elimina l'evento
+        return await FootballMatchEvents.deleteEvent(eventId);
+      } catch (e) {
+        print('Error parsing modifiedTables JSON: $e');
+        return false;
+      }
     } else {
       throw UnimplementedError();
     }

@@ -61,14 +61,44 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
 
         _mockData.add(newStats);
 
-        result = {"table": "TeamStats", "changes": [newStats.toJson()]};
+        result = {
+          "table": "TeamStats",
+          "changes": [newStats.toJson()],
+        };
       } else {
         // Esiste, aggiornalo usando copyWith
-        result = {"table": "TeamStats", "changes": [_mockData[index].toJson()]};
+        result = {
+          "table": "TeamStats",
+          "changes": [_mockData[index].toJson()],
+        };
         _mockData[index].goals += goalsIncrement;
         _mockData[index].motm += motmIncrement;
       }
       return result;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> rollbackByJson(List<dynamic> jsonList) async {
+    if (AppConfig.isDebug) {
+      try {
+        for (var json in jsonList) {
+          TeamStats stats = TeamStats.fromJson(json);
+          int index = _mockData.indexWhere(
+            (s) => s.playerId == stats.playerId && s.teamId == stats.teamId,
+          );
+
+          if (index != -1) {
+            _mockData[index] = stats;
+          } else {
+            _mockData.add(stats);
+          }
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
     } else {
       throw UnimplementedError();
     }

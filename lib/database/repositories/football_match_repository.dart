@@ -688,6 +688,28 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
   }
 
+  Future<bool> rollbackByJson(List<dynamic> jsonList) async {
+    if (AppConfig.isDebug) {
+      try {
+        for (var json in jsonList) {
+          final int index = mockData.indexWhere(
+            (match) => match.id == json['id'],
+          );
+          if (index != -1) {
+            _mockData[index] = FootballMatch.fromJson(json);
+          } else {
+            return false;
+          }
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   // Gestisce il goal segnato nella fase finali e calcola il vincitore per la fase successiva
   Future<List<Map<String, dynamic>>> handleGoalInFinalStage(
     int matchId,

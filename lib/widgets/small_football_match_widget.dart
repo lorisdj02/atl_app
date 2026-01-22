@@ -2,21 +2,17 @@ import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import '../models/football_match.dart';
 import 'abstract_football_match_widget.dart';
-import '../screens/tournaments/football_match_screen.dart';
 
 class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
-  final SportCategory currentSport;
-  final VoidCallback? onMatchUpdated;
-
   const SmallFootballMatchWidget({
     super.key,
     required super.match,
     super.homeTeam,
     super.awayTeam,
-    required this.currentSport,
+    required SportCategory currentSport,
     required super.minutesPerRound,
     required super.minutesPerPause,
-    this.onMatchUpdated,
+    super.onMatchUpdated,
   }) : super(sportCategory: currentSport);
 
   @override
@@ -51,26 +47,8 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Verifica se il match è finito e manca il MOTM
-    final needsMotm =
-        match.status == MatchStatus.finished && match.motmPlayerId == null;
-
     return GestureDetector(
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FootballMatchScreen(
-              matchId: match.id,
-              currentSport: currentSport,
-            ),
-          ),
-        );
-        // Callback to parent to reload data after returning
-        if (onMatchUpdated != null) {
-          onMatchUpdated!();
-        }
-      },
+      onTap: clickable ? () => handleMatchTap(context) : null,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -89,33 +67,11 @@ class SmallFootballMatchWidget extends AbstractFootballMatchWidget {
         child: Column(
           children: [
             if (needsMotm)
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
+              buildMotmWarning(
+                fontSize: 10,
+                iconSize: 14,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade100,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.orange.shade300),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.warning,
-                      color: Colors.orange.shade700,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Warning: MOTM missing',
-                      style: TextStyle(
-                        color: Colors.orange.shade700,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                margin: const EdgeInsets.only(bottom: 8),
               ),
             buildContent(),
           ],

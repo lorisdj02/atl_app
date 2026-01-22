@@ -167,7 +167,6 @@ class _MatchEventDialogState extends State<MatchEventDialog>
       final success = await DB().insertEventMatch(
         widget.matchId,
         _getEventTypeValue(_selectedEventType!),
-        widget.coordinatorId,
         playerId: _selectedPlayer!.playerId,
         teamId: selectedTeam!.id,
       );

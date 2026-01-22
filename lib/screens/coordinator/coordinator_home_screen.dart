@@ -572,6 +572,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                   currentSport: _currentSport,
                   minutesPerRound: _minutesPerRoundCache[tournament.id] ?? 0,
                   minutesPerPause: _minutesPerPauseCache[tournament.id] ?? 0,
+                  onMatchUpdated: _loadData,
                 ),
               ),
             ),

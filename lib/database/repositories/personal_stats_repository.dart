@@ -64,4 +64,26 @@ class PersonalStatsRepository extends BaseRepository<PersonalStats> {
       throw UnimplementedError();
     }
   }
+
+  Future<bool> rollbackByJson(List<dynamic> jsonList) async {
+    if (AppConfig.isDebug) {
+      try {
+        for (var json in jsonList) {
+          PersonalStats stats = PersonalStats.fromJson(json);
+          final int index =
+              _mockData.indexWhere((s) => s.playerId == stats.playerId);
+          if (index != -1) {
+            _mockData[index] = stats;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

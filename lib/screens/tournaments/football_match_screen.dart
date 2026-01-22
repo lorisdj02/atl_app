@@ -1,7 +1,5 @@
-import 'package:atl_app/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
@@ -19,7 +17,6 @@ import '../../widgets/schedule_match_dialog.dart';
 import '../../widgets/referee_match_dialog.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
-import '../../models/referee_assignment.dart';
 
 class FootballMatchScreen extends StatefulWidget {
   final int matchId;
@@ -51,6 +48,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   List<String> _availableRefereeRoles = [];
   bool _isLoadingRefereeRoles = true;
   int _matchInfoKey = 0; // Counter to force MatchInfoCard rebuild
+  bool _hasChanges = false; // Track if any changes were made
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -295,6 +293,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     final fieldId = (await DB.Tournaments.getById(_tournamentId!))?.fieldId;
     if (fieldId == null) return;
 
+    final wasScheduled = _match?.status == MatchStatus.scheduled;
+
     final DateTime? scheduledStart = await showDialog<DateTime>(
       context: context,
       builder: (context) => ScheduleMatchDialog(
@@ -314,12 +314,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     );
 
     if (success) {
+      setState(() {
+        _hasChanges = true;
+      });
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              _match?.status == MatchStatus.scheduled
+              wasScheduled
                   ? 'Match rescheduled successfully'
                   : 'Match scheduled successfully',
             ),
@@ -402,36 +405,23 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     switch (action) {
       case 'start':
-        success = await DB().insertEventMatch(
-          widget.matchId,
-          'start',
-          _coordinatorId!,
-        );
+        success = await DB().insertEventMatch(widget.matchId, 'start');
         break;
       case 'halftime':
-        success = await DB().insertEventMatch(
-          widget.matchId,
-          'halftime',
-          _coordinatorId!,
-        );
+        success = await DB().insertEventMatch(widget.matchId, 'halftime');
         break;
       case 'startHalf':
-        success = await DB().insertEventMatch(
-          widget.matchId,
-          'startHalf',
-          _coordinatorId!,
-        );
+        success = await DB().insertEventMatch(widget.matchId, 'startHalf');
         break;
       case 'finish':
-        success = await DB().insertEventMatch(
-          widget.matchId,
-          'finish',
-          _coordinatorId!,
-        );
+        success = await DB().insertEventMatch(widget.matchId, 'finish');
         break;
     }
 
     if (success) {
+      setState(() {
+        _hasChanges = true;
+      });
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(
@@ -600,6 +590,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     );
 
     if (result == true) {
+      setState(() {
+        _hasChanges = true;
+      });
       _loadMatchData();
     }
   }
@@ -618,6 +611,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     );
 
     if (success) {
+      setState(() {
+        _hasChanges = true;
+      });
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -666,6 +662,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     );
 
     if (success) {
+      setState(() {
+        _hasChanges = true;
+      });
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -677,6 +676,100 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Failed to add MOTM')));
+      }
+    }
+  }
+
+  Future<void> _handleDeleteEvent(FootballMatchEvent event) async {
+    // Check if user is the coordinator of this tournament
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final isCoordinator = userProvider.isCoordinator;
+
+    if (!isCoordinator || _coordinatorId != userProvider.activeRoleId) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Only the tournament coordinator can delete events'),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Check if it's the most recent event
+    if (_events.isEmpty || _events.first.id != event.id) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cannot delete event if it\'s not the last one'),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Check if it's a match system event
+    final forbiddenTypes = {
+      FootballMatchEventType.start,
+      FootballMatchEventType.startHalf,
+      FootballMatchEventType.halftime,
+      FootballMatchEventType.finish,
+      FootballMatchEventType.penaltyShootOut,
+    };
+
+    if (forbiddenTypes.contains(event.type)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You can only delete player events')),
+        );
+      }
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Event'),
+            content: const Text('Do you want to delete this event?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed) return;
+
+    // Delete the event
+    final success = await DB().deleteMatchEvent(widget.matchId, event.id);
+
+    if (success) {
+      setState(() {
+        _hasChanges = true;
+      });
+      _loadMatchData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Event deleted successfully')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to delete event')));
       }
     }
   }
@@ -694,7 +787,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(_hasChanges),
         ),
         title: const Text(
           'Match Details',
@@ -996,12 +1089,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         eventName = 'Penalty Shootout';
       }
 
-      return MatchEventCard(
-        eventType: event.type,
-        minute: isInPenaltyShootOut ? null : event.minute,
-        additionalMinute: isInPenaltyShootOut ? null : event.additionalMinute,
-        playerName: eventName,
-        source: source,
+      return GestureDetector(
+        onLongPress: () => _handleDeleteEvent(event),
+        child: MatchEventCard(
+          eventType: event.type,
+          minute: isInPenaltyShootOut ? null : event.minute,
+          additionalMinute: isInPenaltyShootOut ? null : event.additionalMinute,
+          playerName: eventName,
+          source: source,
+        ),
       );
     }
 
@@ -1043,14 +1139,17 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
               (event.type == FootballMatchEventType.penalty ||
                   event.type == FootballMatchEventType.missedPenalty);
 
-          return MatchEventCard(
-            eventType: event.type,
-            minute: isInPenaltyShootOut ? null : event.minute,
-            additionalMinute: isInPenaltyShootOut
-                ? null
-                : event.additionalMinute,
-            playerName: formattedName,
-            source: source,
+          return GestureDetector(
+            onLongPress: () => _handleDeleteEvent(event),
+            child: MatchEventCard(
+              eventType: event.type,
+              minute: isInPenaltyShootOut ? null : event.minute,
+              additionalMinute: isInPenaltyShootOut
+                  ? null
+                  : event.additionalMinute,
+              playerName: formattedName,
+              source: source,
+            ),
           );
         },
       );

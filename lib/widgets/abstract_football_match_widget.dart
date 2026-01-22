@@ -5,6 +5,7 @@ import '../models/team.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'football_live_minute_widget.dart';
+import '../screens/tournaments/football_match_screen.dart';
 
 abstract class AbstractFootballMatchWidget extends StatelessWidget {
   final FootballMatch match;
@@ -13,6 +14,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   final int minutesPerRound;
   final SportCategory sportCategory;
   final int minutesPerPause;
+  final VoidCallback? onMatchUpdated;
+  final bool clickable;
 
   const AbstractFootballMatchWidget({
     super.key,
@@ -22,7 +25,13 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
     required this.minutesPerRound,
     required this.sportCategory,
     required this.minutesPerPause,
+    this.onMatchUpdated,
+    this.clickable = true,
   });
+
+  // Check if MOTM is missing
+  bool get needsMotm =>
+      match.status == MatchStatus.finished && match.motmPlayerId == null;
 
   // Metodi astratti da implementare nelle classi figlie
   double get statusIconSize;
@@ -361,7 +370,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ],
             ),
             if (match.status == MatchStatus.penaltyShootOut &&
-                (match.penaltyScoreHome != null || match.penaltyScoreAway != null))
+                (match.penaltyScoreHome != null ||
+                    match.penaltyScoreAway != null))
               Padding(
                 padding: EdgeInsets.only(top: scoreFontSize * 0.167),
                 child: Text(
@@ -400,6 +410,54 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
           fontWeight: FontWeight.bold,
           color: ATLColors.subtext,
         ),
+      ),
+    );
+  }
+
+  // Handle navigation to match screen
+  Future<void> handleMatchTap(BuildContext context) async {
+    final hasChanges = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            FootballMatchScreen(matchId: match.id, currentSport: sportCategory),
+      ),
+    );
+    // Callback to parent to reload data if changes were made
+    if (hasChanges == true && onMatchUpdated != null) {
+      onMatchUpdated!();
+    }
+  }
+
+  // Build MOTM warning widget
+  Widget buildMotmWarning({
+    required double fontSize,
+    required double iconSize,
+    required EdgeInsets padding,
+    required EdgeInsets margin,
+  }) {
+    return Container(
+      margin: margin,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: Colors.orange.shade100,
+        borderRadius: BorderRadius.circular(iconSize * 0.5),
+        border: Border.all(color: Colors.orange.shade300),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.warning, color: Colors.orange.shade700, size: iconSize),
+          SizedBox(width: iconSize * 0.5),
+          Text(
+            'Warning: MOTM missing',
+            style: TextStyle(
+              color: Colors.orange.shade700,
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
