@@ -16,11 +16,45 @@ import 'profile_screens/stats_screen.dart';
 import 'profile_screens/settings_screen.dart';
 import 'profile_screens/contact_us_screen.dart';
 import '../widgets/referee_bottom_bar.dart';
+import '../widgets/organization_bottom_bar.dart';
+import '../database/db_controller.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final SportCategory currentSport;
 
   const ProfileScreen({super.key, required this.currentSport});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int? _level;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLevel();
+  }
+
+  Future<void> _loadLevel() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.isCoordinator) {
+      final level = await DB.Coordinators.getLevelByCoordinatorId(userProvider.activeRoleId!);
+      if (mounted) {
+        setState(() {
+          _level = level;
+        });
+      }
+    } else if (userProvider.isReferee) {
+      final level = await DB.Referees.getLevelByRefereeId(userProvider.activeRoleId!);
+      if (mounted) {
+        setState(() {
+          _level = level;
+        });
+      }
+    }
+  }
 
   Future<void> _handleLogOut(BuildContext context) async {
     await Provider.of<UserProvider>(context, listen: false).logout();
@@ -49,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: ATLColors.background,
         body: Center(
           child: CircularProgressIndicator(
-            color: ATLColors.getPrimaryColor(currentSport),
+            color: ATLColors.getPrimaryColor(widget.currentSport),
           ),
         ),
       );
@@ -125,6 +159,16 @@ class ProfileScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (userProvider.isReferee || userProvider.isCoordinator) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Level: ${_level ?? 'Loading...'}',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -146,24 +190,43 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                WalletScreen(currentSport: currentSport),
+                                WalletScreen(currentSport: widget.currentSport),
                           ),
                         );
                       },
                     ),
-                    ProfileMenuItem(
-                      icon: Icons.emoji_events,
-                      text: 'Achievement',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                AchievementScreen(currentSport: currentSport),
-                          ),
-                        );
-                      },
-                    ),
+                    if (!userProvider.isOrganization) ...[
+                      ProfileMenuItem(
+                        icon: Icons.emoji_events,
+                        text: 'Achievement',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AchievementScreen(currentSport: widget.currentSport),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                    if (userProvider.isReferee) ...[
+                      ProfileMenuItem(
+                        icon: Icons.school,
+                        text: 'Certifications',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  //TODO: fill CertificationScreen
+                                  Container(),
+                              //CertificationScreen(currentSport: currentSport),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                     ProfileMenuItem(
                       icon: Icons.edit,
                       text: 'Edit infos',
@@ -172,7 +235,7 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                EditInfosScreen(currentSport: currentSport),
+                                EditInfosScreen(currentSport: widget.currentSport),
                           ),
                         );
                       },
@@ -185,25 +248,27 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                OrdersScreen(currentSport: currentSport),
+                                OrdersScreen(currentSport: widget.currentSport),
                           ),
                         );
                       },
                     ),
-                    ProfileMenuItem(
-                      icon: Icons.bar_chart,
-                      text: 'Stats',
-                      badge: 'VIP',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                StatsScreen(currentSport: currentSport),
-                          ),
-                        );
-                      },
-                    ),
+                    if (userProvider.isPlayer) ...[
+                      ProfileMenuItem(
+                        icon: Icons.bar_chart,
+                        text: 'Stats',
+                        badge: 'VIP',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  StatsScreen(currentSport: widget.currentSport),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                     ProfileMenuItem(
                       icon: Icons.settings,
                       text: 'Settings',
@@ -212,7 +277,7 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                SettingsScreen(currentSport: currentSport),
+                                SettingsScreen(currentSport: widget.currentSport),
                           ),
                         );
                       },
@@ -225,7 +290,7 @@ class ProfileScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                ContactUsScreen(currentSport: currentSport),
+                                ContactUsScreen(currentSport: widget.currentSport),
                           ),
                         );
                       },
@@ -256,11 +321,11 @@ class ProfileScreen extends StatelessWidget {
                 NavigationHelper.navigateToSection(
                   context: context,
                   index: index,
-                  currentSport: currentSport,
+                  currentSport: widget.currentSport,
                   currentIndex: 3,
                 );
               },
-              currentSport: currentSport,
+              currentSport: widget.currentSport,
               isHome: false,
             )
           : userProvider.isReferee
@@ -270,11 +335,25 @@ class ProfileScreen extends StatelessWidget {
                 NavigationHelper.navigateToSection(
                   context: context,
                   index: index,
-                  currentSport: currentSport,
+                  currentSport: widget.currentSport,
                   currentIndex: 3,
                 );
               },
-              currentSport: currentSport,
+              currentSport: widget.currentSport,
+              isHome: false,
+            )
+          : userProvider.isOrganization
+          ? OrganizationBottomBar(
+              currentIndex: 3,
+              onTap: (index) {
+                NavigationHelper.navigateToSection(
+                  context: context,
+                  index: index,
+                  currentSport: widget.currentSport,
+                  currentIndex: 3,
+                );
+              },
+              currentSport: widget.currentSport,
               isHome: false,
             )
           : null,

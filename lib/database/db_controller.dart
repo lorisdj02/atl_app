@@ -30,6 +30,8 @@ import 'repositories/bookings_repository.dart';
 import 'repositories/referee_assignment_repository.dart';
 import 'repositories/referee_repository.dart';
 import 'repositories/match_repository.dart';
+import 'repositories/organization_repository.dart';
+import 'repositories/wallet_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -74,6 +76,8 @@ class DB {
   static late final RefereeRepository Referees;
   static late final RefereeAssignmentRepository RefereeAssignments;
   static late final MatchRepository Matches;
+  static late final OrganizationRepository Organizations;
+  static late final WalletRepository Wallets;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -105,6 +109,9 @@ class DB {
     Referees = RefereeRepository();
     RefereeAssignments = RefereeAssignmentRepository();
     Matches = MatchRepository();
+    Organizations = OrganizationRepository();
+    Wallets = WalletRepository();
+
     // TODO: Inizializza altri repository
   }
 

@@ -495,14 +495,14 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       } else {
         final baseCost = _selectedField!.costTournament;
         final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
-        final playerToFind = _maxPlayers - _ownerPaysFor;
+        final playersToFind = _maxPlayers - _ownerPaysFor;
 
         final newBooking = LobbyBooking(
           id: 0, // ID will be set by the database
           fieldId: _selectedField!.id,
           ownerId: userProvider.activeRoleId!,
           maxPlayers: _maxPlayers,
-          playerToFind: playerToFind,
+          playersToFind: playersToFind,
           feePerPlayer: feePerPlayer,
           startTime: startDateTime,
           finishTime: endDateTime,
@@ -513,7 +513,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           newBooking.fieldId,
           newBooking.ownerId,
           newBooking.maxPlayers,
-          newBooking.playerToFind,
+          newBooking.playersToFind,
           newBooking.feePerPlayer,
           newBooking.startTime,
           newBooking.finishTime,

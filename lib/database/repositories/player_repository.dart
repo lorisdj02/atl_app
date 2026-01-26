@@ -22,7 +22,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'loris@example.com',
       firebaseUid: 'firebase_uid_1',
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
-      balance: 150.50,
       phone: '1234567890',
       playerId: 1,
       name: 'John',
@@ -37,7 +36,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'loris2@example.com',
       firebaseUid: 'firebase_uid_2',
       createdAt: DateTime.now().subtract(const Duration(days: 20)),
-      balance: 200.00,
       phone: '0987654321',
       playerId: 2,
       name: 'Jane',
@@ -52,7 +50,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'mike@example.com',
       firebaseUid: 'firebase_uid_player_1',
       createdAt: DateTime.now().subtract(const Duration(days: 10)),
-      balance: 75.00,
       phone: '5556667777',
       playerId: 3,
       name: 'Mike',
@@ -67,7 +64,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'asia@example.com',
       firebaseUid: 'firebase_uid_player_2',
       createdAt: DateTime.now().subtract(const Duration(days: 5)),
-      balance: 80.00,
       phone: '6667778888',
       playerId: 4,
       name: 'Sara',
@@ -81,7 +77,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'david@example.com',
       firebaseUid: 'firebase_uid_player_3',
       createdAt: DateTime.now().subtract(const Duration(days: 3)),
-      balance: 90.00,
       phone: '7778889999',
       playerId: 5,
       name: 'David',
@@ -95,7 +90,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'emma@example.com',
       firebaseUid: 'firebase_uid_player_4',
       createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      balance: 95.00,
       phone: '8889990000',
       playerId: 6,
       name: 'Emma',
@@ -109,7 +103,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'sophia@example.com',
       firebaseUid: 'firebase_uid_player_5',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      balance: 100.00,
       phone: '9990001111',
       playerId: 7,
       name: 'Sophia',
@@ -123,7 +116,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'james@example.com',
       firebaseUid: 'firebase_uid_player_6',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      balance: 110.00,
       phone: '0001112222',
       playerId: 8,
       name: 'James',
@@ -137,7 +129,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'olivia@example.com',
       firebaseUid: 'firebase_uid_player_7',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      balance: 120.00,
       phone: '1112223334',
       playerId: 9,
       name: 'Olivia',
@@ -151,7 +142,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'benjamin@example.com',
       firebaseUid: 'firebase_uid_player_8',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      balance: 130.00,
       phone: '2223334445',
       playerId: 10,
       name: 'Benjamin',
@@ -165,7 +155,6 @@ class PlayerRepository extends BaseRepository<Player> {
       email: 'leone@example.com',
       firebaseUid: 'firebase_uid_player_9',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      balance: 140.00,
       phone: '3334445556',
       playerId: 11,
       name: 'Leone',
@@ -233,18 +222,6 @@ class PlayerRepository extends BaseRepository<Player> {
       if (imgUrl != null) {
         _mockData[index].imageUrl = imgUrl;
       }
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  Future<bool> updateBalance(int id, double newBalance) async {
-    if (AppConfig.isDebug) {
-      final index = _mockData.indexWhere((u) => u.id == id);
-      if (index == -1) return false;
-
-      _mockData[index].balance = newBalance;
       return true;
     } else {
       throw UnimplementedError();

@@ -14,7 +14,7 @@ class PrivateBooking extends Booking {
     required DateTime finishTime,
     required this.cost,
     super.status = BookingStatus.booked,
-  }) : super(startTime: startTime, finishTime: finishTime);
+  }) : super(startTime: startTime, finishTime: finishTime, type: BookingType.private);
 
   factory PrivateBooking.fromJson(Map<String, dynamic> json) {
     return PrivateBooking(

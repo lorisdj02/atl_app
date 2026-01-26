@@ -6,7 +6,7 @@ import '../screens/teams/team_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/guest/guest_profile_screen.dart';
 import '../screens/guest/guest_home_screen.dart';
-import '../screens/home_router.dart';
+import 'home_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../screens/referee/available_matches_screen.dart';

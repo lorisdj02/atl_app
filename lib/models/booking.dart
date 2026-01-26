@@ -1,5 +1,7 @@
 enum BookingStatus { booked, full, inProgress, finished, refound }
 
+enum BookingType { private, lobby, match }
+
 extension BookingStatusExtension on BookingStatus {
   String get displayName {
     switch (this) {
@@ -42,6 +44,7 @@ class Booking {
   final DateTime startTime;
   final DateTime finishTime;
   BookingStatus status;
+  final BookingType type;
 
   Booking({
     required this.id,
@@ -49,6 +52,7 @@ class Booking {
     required DateTime startTime,
     required DateTime finishTime,
     this.status = BookingStatus.booked,
+    required this.type,
   }) : startTime = startTime.toUtc(),
        finishTime = finishTime.toUtc();
 
@@ -59,6 +63,10 @@ class Booking {
       startTime: DateTime.parse(json['start_time']),
       finishTime: DateTime.parse(json['finish_time']),
       status: BookingStatusExtension.fromString(json['status']),
+      type: BookingType.values.firstWhere(
+        (e) => e.toString() == json['type'],
+        orElse: () => BookingType.match,
+      ),
     );
   }
 
@@ -69,6 +77,7 @@ class Booking {
       'start_time': startTime.toIso8601String(),
       'finish_time': finishTime.toIso8601String(),
       'status': status.toShortString(),
+      'type': type.toString(),
     };
   }
 }

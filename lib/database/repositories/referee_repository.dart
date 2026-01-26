@@ -24,7 +24,6 @@ class RefereeRepository extends BaseRepository<Referee> {
       phone: '+391234567890',
       firebaseUid: '1',
       createdAt: DateTime.now(),
-      balance: 100,
       refereeId: 1,
       level: 1,
       birthdate: DateTime(1990, 5, 20),
@@ -39,7 +38,6 @@ class RefereeRepository extends BaseRepository<Referee> {
       phone: '+391234567891',
       firebaseUid: '2',
       createdAt: DateTime.now(),
-      balance: 120,
       refereeId: 2,
       level: 2,
       birthdate: DateTime(1985, 8, 15),
@@ -49,6 +47,20 @@ class RefereeRepository extends BaseRepository<Referee> {
   @override
   List<Referee> get mockData => _mockData;
 
+  Future<int> getLevelByRefereeId(int refereeId) async{
+    if (AppConfig.isDebug) {
+      try {
+        final referee = _mockData.firstWhere(
+          (referee) => referee.refereeId == refereeId,
+        );
+        return referee.level;
+      } catch (e) {
+        return -1;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
   Future<int> getRefereeIdByUserId(int userId) async{
     if (AppConfig.isDebug) {

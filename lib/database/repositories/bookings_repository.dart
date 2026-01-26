@@ -90,7 +90,7 @@ class BookingsRepository extends BaseRepository<Booking> {
     }
   }
 
-  int mockGetNextId(){
+  int mockGetNextId() {
     if (AppConfig.isDebug) {
       int maxIndex = 0;
       for (var booking in mockData) {
@@ -112,16 +112,20 @@ class BookingsRepository extends BaseRepository<Booking> {
     }
   }
 
-  Future<bool> isFieldFree(int fieldId, DateTime startTime, DateTime finishTime) async {
+  Future<bool> isFieldFree(
+    int fieldId,
+    DateTime startTime,
+    DateTime finishTime,
+  ) async {
     if (AppConfig.isDebug) {
       List<Booking> bookings = await getByFieldId(fieldId);
       for (var booking in bookings) {
         if (isTimeOverlapping(
-              startTime,
-              finishTime,
-              booking.startTime,
-              booking.finishTime,
-            )) {
+          startTime,
+          finishTime,
+          booking.startTime,
+          booking.finishTime,
+        )) {
           return false;
         }
       }

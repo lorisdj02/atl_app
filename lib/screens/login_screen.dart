@@ -7,7 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
-import 'home_router.dart';
+import '../utils/home_router.dart';
 import '../providers/user_provider.dart';
 import '../database/db_controller.dart';
 import '../models/coordinator.dart';
@@ -106,9 +106,18 @@ class _LoginScreenState extends State<LoginScreen> {
         userProvider.setActiveUser(user, roleId: roleId);
         break;
       case UserRole.organization:
+      final int? roleId = await DB.Users.getRoleId(user.id);
         // Fetch and set organization-specific data if needed
-        //TODO: implementare repository Organization
-        //userProvider.setActiveUser(user, roleId: await DB.Organizations.getById(user.id).then((o) => o!.organizationId));
+        if (roleId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).invalidCredentials),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        userProvider.setActiveUser(user, roleId: roleId);
         break;
       case UserRole.player:
         // Fetch and set player-specific data
@@ -160,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
         role: UserRole.guest,
         firebaseUid: '',
         createdAt: DateTime.now(),
-        balance: 0.0,
         phone: '',
         name: 'Guest',
         surname: '',

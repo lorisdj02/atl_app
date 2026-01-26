@@ -58,7 +58,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     DateTime startTime,
     DateTime finishTime,
     int maxPlayers,
-    int playerToFind,
+    int playersToFind,
     double feePerPlayer,
   ) async {
     if (AppConfig.isDebug) {
@@ -80,7 +80,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
         startTime: startTime,
         finishTime: finishTime,
         maxPlayers: maxPlayers,
-        playerToFind: playerToFind,
+        playersToFind: playersToFind,
         feePerPlayer: (baseCost / maxPlayers * 100).ceil() / 100,
         status: BookingStatus.booked,
       );
@@ -92,7 +92,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
   }
 
   /// Ottieni private bookings per torneo
-  Future<List<LobbyBooking>?> getByFieldId(int fieldId) async {
+  Future<List<LobbyBooking>> getByFieldId(int fieldId) async {
     if (AppConfig.isDebug) {
       return _mockData.where((booking) => booking.fieldId == fieldId).toList();
     } else {
@@ -152,7 +152,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
             if (endTime != null && endTime.isAfter(booking.finishTime)) {
               continue;
             }
-            if (playersToPay != null && booking.playerToFind != playersToPay) {
+            if (playersToPay != null && booking.playersToFind != playersToPay) {
               continue;
             }
             results.add(booking);
@@ -185,11 +185,11 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     if (AppConfig.isDebug) {
       _mockData
               .firstWhere((booking) => booking.id == lobbyBookingId)
-              .playerToFind -=
+              .playersToFind -=
           playersFound;
       if (_mockData
               .firstWhere((booking) => booking.id == lobbyBookingId)
-              .playerToFind <=
+              .playersToFind <=
           0) {
         updateLobbyBookingStatus(lobbyBookingId, BookingStatus.full);
       }
@@ -206,11 +206,11 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     if (AppConfig.isDebug) {
       _mockData
               .firstWhere((booking) => booking.id == lobbyBookingId)
-              .playerToFind +=
+              .playersToFind +=
           playersLeft;
       if (_mockData
               .firstWhere((booking) => booking.id == lobbyBookingId)
-              .playerToFind >
+              .playersToFind >
           0) {
         updateLobbyBookingStatus(lobbyBookingId, BookingStatus.booked);
       }

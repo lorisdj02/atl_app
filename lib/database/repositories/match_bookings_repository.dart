@@ -129,7 +129,7 @@ class MatchBookingsRepository extends BaseRepository<MatchBooking> {
   }
 
   /// Ottieni match bookings per campo
-  Future<List<MatchBooking>?> getByFieldId(int fieldId) async {
+  Future<List<MatchBooking>> getByFieldId(int fieldId) async {
     if (AppConfig.isDebug) {
       return _mockData.where((booking) => booking.fieldId == fieldId).toList();
     } else {

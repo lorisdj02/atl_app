@@ -21,6 +21,7 @@ class UserRepository extends BaseRepository<User> {
     ...DB.Players.mockData,
     ...DB.Coordinators.mockData,
     ...DB.Referees.mockData,
+    ...DB.Organizations.mockData,
   ];
 
   Future<T?> getByUserId<T extends User>(int id) async {
@@ -50,7 +51,9 @@ class UserRepository extends BaseRepository<User> {
           return DB.Coordinators.getCoordinatorIdByUserId(user.id);
         } else if (user.role == UserRole.referee) {
           return DB.Referees.getRefereeIdByUserId(user.id);
-        } else {
+        } else if (user.role == UserRole.organization) {
+          return DB.Organizations.getOrganizationIdByUserId(user.id);
+        } else  {
           return null;
         }
       } catch (e) {
@@ -148,12 +151,4 @@ class UserRepository extends BaseRepository<User> {
     }
   }
 
-  Future<bool> updateBalance(int id, double newBalance) async {
-    if (AppConfig.isDebug) {
-      return await DB.Players.updateBalance(id, newBalance) ||
-          await DB.Coordinators.updateBalance(id, newBalance);
-    } else {
-      throw UnimplementedError();
-    }
-  }
 }

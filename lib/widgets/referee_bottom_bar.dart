@@ -81,25 +81,45 @@ class RefereeBottomBar extends StatelessWidget {
                 child: InkWell(
                   onTap: () => onTap(4),
                   customBorder: const CircleBorder(),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.home,
-                        color: ATLColors.getPrimaryColor(currentSport),
-                        size: 32,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Home',
-                        style: TextStyle(
-                          color: ATLColors.getPrimaryColor(currentSport),
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                  child: isHome
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              currentSport.icon,
+                              color: ATLColors.getPrimaryColor(currentSport),
+                              size: 32,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              currentSport.name,
+                              style: TextStyle(
+                                color: ATLColors.getPrimaryColor(currentSport),
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.home,
+                              color: ATLColors.getPrimaryColor(currentSport),
+                              size: 32,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Home',
+                              style: TextStyle(
+                                color: ATLColors.getPrimaryColor(currentSport),
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),

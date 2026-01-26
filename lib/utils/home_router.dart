@@ -1,10 +1,10 @@
 import 'package:atl_app/screens/guest/guest_home_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
-import 'player/player_home_screen.dart';
-import 'coordinator/coordinator_home_screen.dart';
-import 'referee/referee_home_screen.dart';
-import 'organization/organization_home_screen.dart';
+import '../screens/player/player_home_screen.dart';
+import '../screens/coordinator/coordinator_home_screen.dart';
+import '../screens/referee/referee_home_screen.dart';
+import '../screens/organization/organization_home_screen.dart';
 
 class HomeRouter {
   static Widget getHomeScreen(User user) {

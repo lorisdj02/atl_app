@@ -21,7 +21,6 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       email: 'giuseppe@example.com',
       firebaseUid: 'firebase_uid_coord_1',
       createdAt: DateTime.now().subtract(const Duration(days: 60)),
-      balance: 500.00,
       phone: '1112223333',
       coordinatorId: 1,
       name: 'Mark',
@@ -36,7 +35,6 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       email: 'lucy@example.com',
       firebaseUid: 'firebase_uid_coord_2',
       createdAt: DateTime.now().subtract(const Duration(days: 45)),
-      balance: 300.00,
       phone: '2223334444',
       coordinatorId: 2,
       name: 'Lucy',
@@ -51,7 +49,6 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       email: 'alex@example.com',
       firebaseUid: 'firebase_uid_coord_3',
       createdAt: DateTime.now().subtract(const Duration(days: 30)),
-      balance: 400.00,
       phone: '3334445555',
       coordinatorId: 3,
       name: 'Alex',
@@ -64,6 +61,21 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
 
   @override
   List<Coordinator> get mockData => _mockData;
+
+  Future<int> getLevelByCoordinatorId(int coordinatorId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final coordinator = mockData.firstWhere(
+          (coordinator) => coordinator.coordinatorId == coordinatorId,
+        );
+        return coordinator.level;
+      } catch (e) {
+        return -1;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
   Future<int> getCoordinatorIdByUserId(int userId) async {
     if (AppConfig.isDebug) {
@@ -89,18 +101,6 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       if (index == -1) return false;
 
       _mockData.removeAt(index);
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  Future<bool> updateBalance(int id, double newBalance) async {
-    if (AppConfig.isDebug) {
-      final index = _mockData.indexWhere((u) => u.id == id);
-      if (index == -1) return false;
-
-      _mockData[index].balance = newBalance;
       return true;
     } else {
       throw UnimplementedError();
@@ -149,7 +149,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
     }
   }
 
-  Future<Coordinator> getByCoordinatorId(int coordinatorId) async {
+  Future<Coordinator?> getByCoordinatorId(int coordinatorId) async {
     if (AppConfig.isDebug) {
       return mockData.firstWhere(
         (coordinator) => coordinator.coordinatorId == coordinatorId,

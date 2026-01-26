@@ -23,7 +23,7 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
   List<PrivateBooking> get mockData => _mockData;
 
   /// Ottieni private bookings per player
-  Future<List<PrivateBooking>?> getByPlayerId(int playerId) async {
+  Future<List<PrivateBooking>> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
       return _mockData
           .where((booking) => booking.playerId == playerId)
@@ -49,7 +49,8 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
         return false; // Il campo non è libero in quel periodo
       }
 
-      final double baseCost = (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
+      final double baseCost =
+          (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
           finishTime.difference(startTime).inHours;
 
       final PrivateBooking newBooking = PrivateBooking(
@@ -69,7 +70,7 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
   }
 
   /// Ottieni private bookings per torneo
-  Future<List<PrivateBooking>?> getByFieldId(int fieldId) async {
+  Future<List<PrivateBooking>> getByFieldId(int fieldId) async {
     if (AppConfig.isDebug) {
       return _mockData.where((booking) => booking.fieldId == fieldId).toList();
     } else {
@@ -77,7 +78,19 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
     }
   }
 
-  Future<List<PrivateBooking>?> getByStatus(BookingStatus status) async {
+  Future<PrivateBooking?> getById(int bookingId) async {
+    if (AppConfig.isDebug) {
+      try {
+        return _mockData.firstWhere((booking) => booking.id == bookingId);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<PrivateBooking>> getByStatus(BookingStatus status) async {
     if (AppConfig.isDebug) {
       return _mockData.where((booking) => booking.status == status).toList();
     } else {

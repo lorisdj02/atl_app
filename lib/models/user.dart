@@ -35,8 +35,6 @@ class User {
   final String email;
   final String firebaseUid;
   final DateTime createdAt;
-  double balance;
-  DateTime? lastWithdraw;
   final String? stripeId;
   final UserRole role;
   bool isVip;
@@ -53,8 +51,6 @@ class User {
     required this.email,
     required this.firebaseUid,
     required this.createdAt,
-    required this.balance,
-    this.lastWithdraw,
     this.stripeId,
     required this.role,
     this.isVip = false,
@@ -91,8 +87,6 @@ class User {
       'email': email,
       'firebase_uid': firebaseUid,
       'created_at': createdAt.toIso8601String(),
-      'balance': balance,
-      'last_withdraw': lastWithdraw?.toIso8601String(),
       'stripe_id': stripeId,
       'role': role.name.toUpperCase(),
       'vip': isVip,
@@ -105,8 +99,6 @@ class User {
     };
   }
 
-  /// Formatta il balance come stringa con valuta
-  String get formattedBalance => '€${balance.toStringAsFixed(2)}';
 
   /// Nome visualizzato del ruolo
   String get roleDisplayName => role.displayName;
@@ -151,8 +143,6 @@ class User {
       email: email ?? this.email,
       firebaseUid: firebaseUid ?? this.firebaseUid,
       createdAt: createdAt ?? this.createdAt,
-      balance: balance ?? this.balance,
-      lastWithdraw: lastWithdraw ?? this.lastWithdraw,
       stripeId: stripeId ?? this.stripeId,
       role: role ?? this.role,
       isVip: isVip ?? this.isVip,

@@ -1,3 +1,4 @@
+import 'package:atl_app/widgets/organization_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/referee_bottom_bar.dart';
@@ -121,7 +122,10 @@ class ShopScreen extends StatelessWidget {
             ),
         ],
       ),
-      bottomNavigationBar: userProvider.isCoordinator || userProvider.isPlayer
+      bottomNavigationBar:
+          userProvider.isCoordinator ||
+              userProvider.isPlayer ||
+              userProvider.isGuest
           ? PlayerCoordinatorBottomBar(
               currentIndex: 0,
               onTap: (index) {
@@ -137,6 +141,20 @@ class ShopScreen extends StatelessWidget {
             )
           : userProvider.isReferee
           ? RefereeBottomBar(
+              currentIndex: 0,
+              onTap: (index) {
+                NavigationHelper.navigateToSection(
+                  context: context,
+                  index: index,
+                  currentSport: currentSport,
+                  currentIndex: 0,
+                );
+              },
+              currentSport: currentSport,
+              isHome: false,
+            )
+          : userProvider.isOrganization
+          ? OrganizationBottomBar(
               currentIndex: 0,
               onTap: (index) {
                 NavigationHelper.navigateToSection(

@@ -12,8 +12,6 @@ class Player extends User {
     required super.email,
     required super.firebaseUid,
     required super.createdAt,
-    required super.balance,
-    super.lastWithdraw,
     super.stripeId,
     super.isVip = false,
     required super.phone,
@@ -32,10 +30,6 @@ class Player extends User {
       email: json['email'],
       firebaseUid: json['firebase_uid'],
       createdAt: DateTime.parse(json['created_at']),
-      balance: double.parse(json['balance'].toString()),
-      lastWithdraw: json['last_withdraw'] != null
-          ? DateTime.parse(json['last_withdraw'])
-          : null,
       stripeId: json['stripe_id'],
       isVip: json['isVip'] ?? false,
       phone: json['phone'],

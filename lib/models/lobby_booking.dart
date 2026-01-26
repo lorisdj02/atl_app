@@ -5,7 +5,7 @@ import 'booking.dart';
 class LobbyBooking extends Booking {
   final int ownerId;
   int
-  playerToFind; //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
+  playersToFind; //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
   final int maxPlayers; //numero di giocatori totali -> prezzo per giocatore
   final double feePerPlayer;
 
@@ -16,10 +16,10 @@ class LobbyBooking extends Booking {
     required DateTime startTime,
     required DateTime finishTime,
     super.status = BookingStatus.booked,
-    required this.playerToFind,
+    required this.playersToFind,
     required this.maxPlayers,
     required this.feePerPlayer,
-  }) : super(startTime: startTime, finishTime: finishTime);
+  }) : super(startTime: startTime, finishTime: finishTime, type: BookingType.lobby);
 
   factory LobbyBooking.fromJson(Map<String, dynamic> json) {
     return LobbyBooking(
@@ -29,7 +29,7 @@ class LobbyBooking extends Booking {
       startTime: DateTime.parse(json['start_time']),
       finishTime: DateTime.parse(json['finish_time']),
       status: BookingStatusExtension.fromString(json['status']),
-      playerToFind: json['player_to_find'],
+      playersToFind: json['players_to_find'],
       maxPlayers: json['max_players'],
       feePerPlayer: json['fee_per_player'],
     );
@@ -44,7 +44,7 @@ class LobbyBooking extends Booking {
       'start_time': startTime.toIso8601String(),
       'finish_time': finishTime.toIso8601String(),
       'status': status.toShortString(),
-      'player_to_find': playerToFind,
+      'players_to_find': playersToFind,
       'max_players': maxPlayers,
       'fee_per_player': feePerPlayer,
     };

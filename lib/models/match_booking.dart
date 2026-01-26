@@ -12,7 +12,7 @@ class MatchBooking extends Booking{
     required DateTime startTime,
     required DateTime finishTime,
     super.status = BookingStatus.booked,
-  }) : super(startTime: startTime, finishTime: finishTime);
+  }) : super(startTime: startTime, finishTime: finishTime, type: BookingType.match);
 
   factory MatchBooking.fromJson(Map<String, dynamic> json) {
     return MatchBooking(

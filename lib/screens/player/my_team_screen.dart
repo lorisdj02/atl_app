@@ -1,5 +1,5 @@
 import 'package:atl_app/models/user.dart';
-import 'package:atl_app/screens/home_router.dart';
+import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

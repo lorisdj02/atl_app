@@ -41,7 +41,7 @@ class FieldRepository extends BaseRepository<Field> {
     ),
     Field(
       id: 3,
-      organizationId: 2,
+      organizationId: 1,
       name: 'Arena Roma',
       locationLat: 41.9028,
       locationLng: 12.4964,

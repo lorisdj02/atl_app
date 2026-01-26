@@ -117,7 +117,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       // Additional filter for playersToPay
       if (_maxPlayersToPay != null) {
         lobbies = lobbies
-            .where((lobby) => lobby.playerToFind <= _maxPlayersToPay!)
+            .where((lobby) => lobby.playersToFind <= _maxPlayersToPay!)
             .toList();
       }
 
@@ -243,7 +243,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
   void _showJoinDialog(LobbyBooking lobby) {
     int selectedPlayers = 1;
-    final maxPlayers = lobby.playerToFind;
+    final maxPlayers = lobby.playersToFind;
 
     // Se c'è solo 1 spot disponibile, conferma direttamente senza slider
     if (maxPlayers == 1) {
@@ -737,7 +737,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                 onPressed: () => _showJoinDialog(lobby),
                                 icon: const Icon(Icons.add_circle),
                                 label: Text(
-                                  'Join (${lobby.playerToFind} spots left)',
+                                  'Join (${lobby.playersToFind} spots left)',
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ATLColors.getPrimaryColor(
