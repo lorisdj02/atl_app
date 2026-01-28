@@ -26,7 +26,6 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerPause: 5,
       category: SportCategory.football,
       numReferee: 1,
-      refereeRoles: ['MAIN'],
     ),
     Sport(
       id: 2,
@@ -37,7 +36,6 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerPause: 10,
       category: SportCategory.football,
       numReferee: 1,
-      refereeRoles: ['MAIN'],
     ),
     Sport(
       id: 3,
@@ -48,7 +46,6 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerPause: 10,
       category: SportCategory.football,
       numReferee: 1,
-      refereeRoles: ['MAIN'],
     ),
     Sport(
       id: 4,
@@ -59,22 +56,8 @@ class SportRepository extends BaseRepository<Sport> {
       minutesPerPause: 10,
       category: SportCategory.football,
       numReferee: 3,
-      refereeRoles: ['MAIN', 'ASSISTANT1', 'ASSISTANT2'],
     ),
   ];
-
-  Future<bool> checkRole(int sportId, String role) async {
-    if (AppConfig.isDebug) {
-      try {
-        final sport = mockData.firstWhere((sport) => sport.id == sportId);
-        return sport.refereeRoles.contains(role);
-      } catch (e) {
-        return false;
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
 
   Future<Sport?> getById(int id) async {
     if (AppConfig.isDebug) {
@@ -121,16 +104,4 @@ class SportRepository extends BaseRepository<Sport> {
     }
   }
 
-  Future<List<String>> getRefereeRolesById(int sportId) async {
-    if (AppConfig.isDebug) {
-      try {
-        final sport = mockData.firstWhere((sport) => sport.id == sportId);
-        return sport.refereeRoles;
-      } catch (e) {
-        return [];
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
 }

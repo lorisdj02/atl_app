@@ -28,6 +28,12 @@ enum UserRole {
   }
 }
 
+enum VipType{
+  none,
+  monthly,
+  yearly,
+}
+
 /// Modello astratto User dal database
 class User {
   final int id;
@@ -37,13 +43,17 @@ class User {
   final DateTime createdAt;
   final String? stripeId;
   final UserRole role;
-  bool isVip;
   String phone;
   String? passwordMD5;
   String? imageUrl;
   final String name;
   final String surname;
   final DateTime birthdate;
+  bool isVip;
+  DateTime? startVip;
+  DateTime? endVip;
+  VipType vipType;
+
 
   User({
     required this.id,
@@ -60,6 +70,9 @@ class User {
     required this.name,
     required this.surname,
     required this.birthdate,
+    this.startVip,
+    this.endVip,
+    this.vipType = VipType.none,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
@@ -96,6 +109,9 @@ class User {
       'name': name,
       'surname': surname,
       'birthdate': birthdate.toIso8601String(),
+      'start_vip': startVip?.toIso8601String(),
+      'end_vip': endVip?.toIso8601String(),
+      'vip_type': vipType.name
     };
   }
 

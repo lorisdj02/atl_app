@@ -21,6 +21,9 @@ class Coordinator extends User {
     super.passwordMD5,
     super.imageUrl,
     required super.birthdate,
+    super.startVip,
+    super.endVip,
+    super.vipType = VipType.none,
   }) : super(role: UserRole.coordinator);
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
@@ -40,6 +43,13 @@ class Coordinator extends User {
       passwordMD5: json['password_md5'],
       imageUrl: json['image_url'],
       birthdate: DateTime.parse(json['birthdate']),
+      startVip: json['start_vip'] != null
+          ? DateTime.parse(json['start_vip'])
+          : null,
+      endVip: json['end_vip'] != null ? DateTime.parse(json['end_vip']) : null,
+      vipType: json['vip_type'] != null
+          ? VipType.values.firstWhere((e) => e.name == json['vip_type'])
+          : VipType.none,
     );
   }
 

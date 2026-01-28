@@ -32,6 +32,9 @@ import 'repositories/referee_repository.dart';
 import 'repositories/match_repository.dart';
 import 'repositories/organization_repository.dart';
 import 'repositories/wallet_repository.dart';
+import 'repositories/reviews_repository.dart';
+import 'repositories/referee_roles_repository.dart';
+import 'repositories/orders_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -78,6 +81,9 @@ class DB {
   static late final MatchRepository Matches;
   static late final OrganizationRepository Organizations;
   static late final WalletRepository Wallets;
+  static late final ReviewsRepository Reviews;
+  static late final RefereeRolesRepository RefereeRoles;
+  static late final OrdersRepository Orders;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -111,7 +117,9 @@ class DB {
     Matches = MatchRepository();
     Organizations = OrganizationRepository();
     Wallets = WalletRepository();
-
+    Reviews = ReviewsRepository();
+    RefereeRoles = RefereeRolesRepository();
+    Orders = OrdersRepository();
     // TODO: Inizializza altri repository
   }
 
@@ -1434,7 +1442,7 @@ class DB {
         return false;
       }
 
-      if (await Sports.checkRole(sportId, role) == false) {
+      if (await RefereeRoles.checkRoleExists(sportId, role) == false) {
         return false;
       }
 

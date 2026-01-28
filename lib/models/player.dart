@@ -21,6 +21,9 @@ class Player extends User {
     required super.birthdate,
     super.passwordMD5,
     super.imageUrl,
+    super.startVip,
+    super.endVip,
+    super.vipType = VipType.none,
   }) : super(role: UserRole.player);
 
   factory Player.fromJson(Map<String, dynamic> json) {
@@ -39,6 +42,13 @@ class Player extends User {
       birthdate: DateTime.parse(json['birthdate']),
       passwordMD5: json['password_md5'],
       imageUrl: json['image_url'],
+      startVip: json['start_vip'] != null
+          ? DateTime.parse(json['start_vip'])
+          : null,
+      endVip: json['end_vip'] != null ? DateTime.parse(json['end_vip']) : null,
+      vipType: json['vip_type'] != null
+          ? VipType.values.firstWhere((e) => e.name == json['vip_type'])
+          : VipType.none,
     );
   }
 
@@ -51,11 +61,10 @@ class Player extends User {
 
   /// Calcola l'età del giocatore
   int? get age {
-    if (birthdate == null) return null;
     final now = DateTime.now();
-    int age = now.year - birthdate!.year;
-    if (now.month < birthdate!.month ||
-        (now.month == birthdate!.month && now.day < birthdate!.day)) {
+    int age = now.year - birthdate.year;
+    if (now.month < birthdate.month ||
+        (now.month == birthdate.month && now.day < birthdate.day)) {
       age--;
     }
     return age;
