@@ -44,14 +44,30 @@ class SearchTeamWidget extends AbstractTeamWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    team.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        team.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      Text(
+                        "(${team.alias})",
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
+
                   const SizedBox(height: 4),
                   Text(
                     'Captain: ${captainName ?? 'Loading...'}',

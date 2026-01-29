@@ -1,3 +1,5 @@
+import 'sport_category.dart';
+
 class Team {
   final int id;
   int? cityId;
@@ -13,6 +15,7 @@ class Team {
   int? rankPts;
   int players;
   bool visibility;
+  SportCategory sportCategory;
 
   Team({
     required this.id,
@@ -29,6 +32,7 @@ class Team {
     this.rankPts,
     required this.players,
     this.visibility = true,
+    this.sportCategory = SportCategory.football,
   });
 
   factory Team.fromJson(Map<String, dynamic> json) {
@@ -47,6 +51,7 @@ class Team {
       rankPts: json['rank_pts'],
       players: json['players'] ?? 0,
       visibility: json['visibility'] ?? true,
+      sportCategory: SportCategoryExtension.fromJson(json['cat_id']),
     );
   }
 

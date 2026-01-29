@@ -64,4 +64,5 @@ extension SportCategoryExtension on SportCategory {
     }
     throw ArgumentError('Unknown sport category: $json');
   }
+
 }

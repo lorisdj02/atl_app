@@ -252,6 +252,19 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
+  Future<bool> isNotCreated(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final tournament = _mockData.firstWhere((t) => t.id == tournamentId);
+        return tournament.status != TournamentStatus.created;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<List<Tournament>> getByField(int fieldId) async {
     if (AppConfig.isDebug) {
       final tournaments = _mockData.where((t) => t.fieldId == fieldId).toList();

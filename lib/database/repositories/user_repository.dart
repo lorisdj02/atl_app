@@ -53,7 +53,7 @@ class UserRepository extends BaseRepository<User> {
           return DB.Referees.getRefereeIdByUserId(user.id);
         } else if (user.role == UserRole.organization) {
           return DB.Organizations.getOrganizationIdByUserId(user.id);
-        } else  {
+        } else {
           return null;
         }
       } catch (e) {
@@ -150,5 +150,4 @@ class UserRepository extends BaseRepository<User> {
       throw UnimplementedError();
     }
   }
-
 }

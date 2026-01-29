@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
-import '../../models/sport_category.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_floating_button.dart';

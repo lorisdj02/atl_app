@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../database/db_controller.dart';
 import '../../models/sport_category.dart';
 import '../../models/team.dart';
@@ -103,19 +102,25 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
 
   Future<void> loadPlayersData(int teamId) async {
     try {
-      final loadedTeam = await DB.Teams.getById(teamId);
-      final loadedPlayers = await DB.Players.getByTeam(teamId);
+      final Team? loadedTeam = await DB.Teams.getById(teamId);
+      final List<Player> loadedPlayers = await DB.Players.getByTeam(teamId);
 
-      // Sort players: Captain, Vice1, Vice2, then others
-      loadedPlayers.sort((a, b) {
-        if (a.playerId == loadedTeam?.captainId) return -1;
-        if (b.playerId == loadedTeam?.captainId) return 1;
-        if (a.playerId == loadedTeam?.vice1Id) return -1;
-        if (b.playerId == loadedTeam?.vice1Id) return 1;
-        if (a.playerId == loadedTeam?.vice2Id) return -1;
-        if (b.playerId == loadedTeam?.vice2Id) return 1;
-        return 0;
-      });
+      if (loadedTeam == null) {
+        throw Exception('Team not found');
+      }
+
+      if (loadedPlayers.isNotEmpty) {
+        // Sort players: Captain, Vice1, Vice2, then others
+        loadedPlayers.sort((a, b) {
+          if (a.playerId == loadedTeam.captainId) return -1;
+          if (b.playerId == loadedTeam.captainId) return 1;
+          if (a.playerId == loadedTeam.vice1Id) return -1;
+          if (b.playerId == loadedTeam.vice1Id) return 1;
+          if (a.playerId == loadedTeam.vice2Id) return -1;
+          if (b.playerId == loadedTeam.vice2Id) return 1;
+          return 0;
+        });
+      }
 
       if (mounted) {
         setState(() {

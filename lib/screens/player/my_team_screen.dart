@@ -1,10 +1,7 @@
-import 'package:atl_app/models/user.dart';
 import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../database/db_controller.dart';
-import '../../models/sport_category.dart';
 import '../../models/player.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';

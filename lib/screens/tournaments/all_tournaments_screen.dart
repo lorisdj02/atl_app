@@ -16,6 +16,8 @@ import '../../l10n/app_localizations.dart';
 import 'dart:async';
 import 'tournament_detail_screen.dart';
 import 'football_tournament_screen.dart';
+import '../../widgets/search_dialog_widget.dart';
+import 'football_tournament_screen.dart';
 
 class AllTournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -517,6 +519,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                         },
                       ),
                     ),
+
                     const SizedBox(width: 12),
                     // Filter button
                     Container(
@@ -527,6 +530,60 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                       child: IconButton(
                         icon: const Icon(Icons.tune),
                         onPressed: _showFilterDialog,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // ID search button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: ATLColors.darkBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: TextButton.icon(
+                        icon: const Icon(Icons.search, color: Colors.white),
+                        label: const Text(
+                          'ID',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => SearchDialogWidget(
+                              tournamentId: null,
+                              isTeam: false,
+                              isTournament: true,
+                              onFound: (team, tournament) {
+                                if (tournament != null) {
+                                  if (tournament.status ==
+                                      TournamentStatus.created) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TournamentDetailScreen(
+                                              tournament: tournament,
+                                              currentSport: widget.currentSport,
+                                            ),
+                                      ),
+                                    );
+                                  } else if (widget.currentSport == SportCategory.football) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            FootballTournamentScreen(
+                                              tournament: tournament,
+                                              sportCategory:
+                                                  widget.currentSport,
+                                            ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],

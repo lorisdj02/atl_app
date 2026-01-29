@@ -104,7 +104,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         throw Exception('User not found');
       }
 
-      if ((await DB.Teams.isNameUnique(_nameController.text)) == false) {
+      if ((await DB.Teams.isNameUniqueInCategory(_nameController.text, widget.currentSport)) == false) {
         throw Exception('Team name already in use');
       }
 

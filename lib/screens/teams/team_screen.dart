@@ -14,6 +14,9 @@ import '../player/create_team_screen.dart';
 import '../../models/user.dart';
 import '../../widgets/search_team_widget.dart';
 import '../../widgets/ranks_team_widget.dart';
+import '../../widgets/search_dialog_widget.dart';
+import 'team_detail_screen.dart';
+import '../tournaments/tournament_detail_screen.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -147,11 +150,15 @@ class _TeamScreenState extends State<TeamScreen>
         listen: false,
       );
       final isPlayer = userProvider.activeUser?.role == UserRole.player;
-      List<Team> teams = await DB.Teams.getAll();
+      List<Team> teams = await DB.Teams.getAllVisible();
 
       // Pre-carica i team e i capitani nella cache unificata
       for (var team in teams) {
         if (!_teamCache.containsKey(team.id)) {
+          if(team.captainId == -1){
+            _teamCache[team.id] = {'team': team, 'captainName': 'N/A'};
+            continue;
+          }
           final captain = await DB.Players.getByPlayerId(team.captainId);
           if (captain == null) continue;
           _teamCache[team.id] = {'team': team, 'captainName': captain.username};
@@ -473,7 +480,7 @@ class _TeamScreenState extends State<TeamScreen>
                         child: TextField(
                           controller: _searchController,
                           decoration: InputDecoration(
-                            hintText: 'Nome/Codice',
+                            hintText: 'Name (Alias)',
                             hintStyle: TextStyle(color: Colors.grey[400]),
                             filled: true,
                             fillColor: Colors.white,
@@ -507,6 +514,47 @@ class _TeamScreenState extends State<TeamScreen>
                         child: IconButton(
                           icon: const Icon(Icons.tune),
                           onPressed: _showFilterDialog,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // ID search button
+                    Visibility(
+                      visible: currentTab == 0,
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ATLColors.darkBlue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.search, color: Colors.white),
+                          label: const Text('ID', style: TextStyle(color: Colors.white)),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => SearchDialogWidget(
+                                teamId: null,
+                                isTeam: true,
+                                isTournament: false,
+                                onFound: (team, tournament) {
+                                  if (team != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TeamDetailScreen(
+                                          currentSport: widget.currentSport,
+                                          teamId: team.id,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),

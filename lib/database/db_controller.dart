@@ -451,7 +451,7 @@ class DB {
       }
 
       if ((await Teams.getById(teamId))?.players == 0) {
-        if ((await Teams.deleteTeam(teamId)) == false) {
+        if ((await Teams.disableTeam(teamId)) == false) {
           return false;
         }
       }

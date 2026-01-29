@@ -1,4 +1,5 @@
 import 'package:atl_app/config/app_config.dart';
+import 'package:atl_app/models/sport_category.dart';
 
 import '../../models/team.dart';
 import 'base_repository.dart';
@@ -165,14 +166,40 @@ class TeamRepository extends BaseRepository<Team> {
       throw UnimplementedError();
     }
   }
-  
-  Future<List<Team>> getAll() async{
+
+  Future<List<Team>> getAllVisible() async {
+    if (AppConfig.isDebug) {
+      return _mockData.where((team) => team.visibility).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> disableTeam(int teamId) async {
+    if (AppConfig.isDebug) {
+      Team? team = await getById(teamId);
+      if (team == null) return false;
+      Team newTeam = team;
+      newTeam.visibility = false;
+      newTeam.captainId = -1; // Rimuovi capitano
+
+      int index = _mockData.indexOf(team);
+      _mockData.removeAt(index);
+      _mockData.insert(index, newTeam);
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<Team>> getAll() async {
     if (AppConfig.isDebug) {
       return _mockData;
     } else {
       throw UnimplementedError();
     }
   }
+
   /// Ottieni team per categoria
   Future<List<Team>> getByCategory(String categoryId) async {
     if (AppConfig.isDebug) {
@@ -221,10 +248,15 @@ class TeamRepository extends BaseRepository<Team> {
     }
   }
 
-  Future<bool> isNameUnique(String name) async {
+  Future<bool> isNameUniqueInCategory(
+    String name,
+    SportCategory sportcategory,
+  ) async {
     if (AppConfig.isDebug) {
       for (var team in _mockData) {
-        if (team.name.toLowerCase() == name.toLowerCase()) {
+        if (team.name.toLowerCase() == name.toLowerCase() &&
+            team.visibility == true &&
+            team.sportCategory == sportcategory) {
           return false;
         }
       }
