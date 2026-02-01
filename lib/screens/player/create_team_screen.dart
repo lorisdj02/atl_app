@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -135,7 +136,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         visibility: _visibility,
       );
 
-      if ((await DB().createTeam(
+      if ((await DBWrite.createTeam(
             newTeam.cityId,
             newTeam.name,
             newTeam.alias,

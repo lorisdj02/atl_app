@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -369,7 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (user == null) return;
 
     // Delete account
-    final success = await DB().deleteAccount(user.id, user.passwordMD5!);
+    final success = await DBWrite.deleteAccount(user.id, user.passwordMD5!);
 
     if (success) {
       // Logout user

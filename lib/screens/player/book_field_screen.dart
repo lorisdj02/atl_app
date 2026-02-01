@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../models/booking.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/private_bookings.dart';
-import '../../models/booking.dart';
 import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -14,6 +12,7 @@ import '../../widgets/atl_button.dart';
 import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../models/sport_category.dart';
+import '../../database/db_write.dart';
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
 enum BookingType { none, private, lobby }
@@ -509,7 +508,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           status: BookingStatus.booked,
         );
 
-        success = await DB().createLobby(
+        success = await DBWrite.createLobby(
           newBooking.fieldId,
           newBooking.ownerId,
           newBooking.maxPlayers,

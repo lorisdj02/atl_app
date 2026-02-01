@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
@@ -164,7 +165,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
     setState(() => isLoading = true);
 
     try {
-      final success = await DB().insertEventMatch(
+      final success = await DBWrite.insertEventMatch(
         widget.matchId,
         _getEventTypeValue(_selectedEventType!),
         playerId: _selectedPlayer!.playerId,

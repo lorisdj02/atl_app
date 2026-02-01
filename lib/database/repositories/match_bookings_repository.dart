@@ -41,6 +41,18 @@ class MatchBookingsRepository extends BaseRepository<MatchBooking> {
     }
   }
 
+  Future<MatchBooking?> getById(int id) async {
+    if (AppConfig.isDebug) {
+      try {
+        return _mockData.firstWhere((booking) => booking.id == id);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> startMatch(int matchId) async {
     if (AppConfig.isDebug) {
       try {

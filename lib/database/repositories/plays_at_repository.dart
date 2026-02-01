@@ -58,14 +58,20 @@ class PlaysAtRepository extends BaseRepository<PlaysAt> {
     }
   }
 
-  Future<PlaysAt>? getByPlayerIdAndCategory(
+  Future<PlaysAt?> getByPlayerIdAndCategory(
     int playerId,
     SportCategory category,
   ) async {
     if (AppConfig.isDebug) {
+      try{
       // This method can be implemented to return PlaysAt by playerId and category if needed
-      PlaysAt? result = _mockData.firstWhere((pa) => pa.playerId == playerId);
+      PlaysAt? result = _mockData.firstWhere(
+        (pa) => pa.playerId == playerId && pa.sportCategory == category);
+
       return result;
+      } catch (e) {
+        return null;
+      }
     } else {
       throw UnimplementedError();
     }

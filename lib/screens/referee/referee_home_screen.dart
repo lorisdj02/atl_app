@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_read.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -7,7 +8,6 @@ import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/football_match_widget.dart';
 import '../shop_screen.dart';
@@ -28,6 +28,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
   List<FootballMatch> _assignedMatches = [];
+  Map<DateTime, List<FootballMatch>> _matchesByDate = {};
   Map<int, Team> _teamsCache = {};
   Map<int, int?> _minutesPerRoundCache = {};
   Map<int, int?> _minutesPerPauseCache = {};
@@ -94,55 +95,13 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         return;
       }
 
-      // Load referee assignments
-      final assignments = await DB.RefereeAssignments.getByRefereeId(refereeId);
-
-      // Load matches for selected date
-      final assignedMatches = <FootballMatch>[];
-
-      for (var assignment in assignments) {
-        final match = await DB.FootballMatches.getById(assignment.matchId);
-        if (match != null && match.scheduledStart != null) {
-          final matchDate = DateTime(
-            match.scheduledStart!.year,
-            match.scheduledStart!.month,
-            match.scheduledStart!.day,
-          );
-          final selectedDateOnly = DateTime(
-            _selectedDate.year,
-            _selectedDate.month,
-            _selectedDate.day,
-          );
-
-          if (matchDate.isAtSameMomentAs(selectedDateOnly)) {
-            assignedMatches.add(match);
-
-            // Load teams for this match
-            if (match.homeTeamId != null &&
-                !_teamsCache.containsKey(match.homeTeamId)) {
-              final team = await DB.Teams.getById(match.homeTeamId!);
-              if (team != null) _teamsCache[match.homeTeamId!] = team;
-            }
-            if (match.awayTeamId != null &&
-                !_teamsCache.containsKey(match.awayTeamId)) {
-              final team = await DB.Teams.getById(match.awayTeamId!);
-              if (team != null) _teamsCache[match.awayTeamId!] = team;
-            }
-
-            // Load minutes per round and pause for the tournament
-            if (!_minutesPerRoundCache.containsKey(match.tournamentId)) {
-              _minutesPerRoundCache[match.tournamentId] = await DB
-                  .Tournaments.getMinutesPerRoundById(match.tournamentId);
-            }
-            if (!_minutesPerPauseCache.containsKey(match.tournamentId)) {
-              _minutesPerPauseCache[match.tournamentId] = await DB
-                  .Tournaments.getMinutesPerPauseById(match.tournamentId);
-            }
-          }
-        }
-      }
+      final data = await DBRead.getRefereeHomeScreen(
+        refereeId: refereeId,
+        currentSport: _currentSport,
+      );
 
       // Sort matches by scheduled start time
+      final assignedMatches = data['assignedMatches'] as List<FootballMatch>;
       assignedMatches.sort((a, b) {
         if (a.scheduledStart == null && b.scheduledStart == null) return 0;
         if (a.scheduledStart == null) return 1;
@@ -150,10 +109,27 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         return a.scheduledStart!.compareTo(b.scheduledStart!);
       });
 
+      Map<DateTime, List<FootballMatch>> matchesByDate = {};
+
+      for (var match in assignedMatches) {
+        if (match.scheduledStart != null) {
+          final dateOnly = DateTime(
+            match.scheduledStart!.year,
+            match.scheduledStart!.month,
+            match.scheduledStart!.day,
+          );
+          matchesByDate.putIfAbsent(dateOnly, () => []).add(match);
+        }
+      }
+
       if (mounted) {
         setState(() {
           _assignedMatches = assignedMatches;
+          _teamsCache = data['teamsCache'] as Map<int, Team>;
+          _minutesPerRoundCache = data['minutesPerRoundCache'] as Map<int, int?>;
+          _minutesPerPauseCache = data['minutesPerPauseCache'] as Map<int, int?>;
           _isLoading = false;
+          _matchesByDate = matchesByDate;
         });
       }
     } catch (e) {
@@ -339,7 +315,6 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               setState(() {
                 _selectedDate = day;
               });
-              _loadData();
               _scrollToSelectedDay();
             },
             child: Container(
@@ -418,13 +393,20 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
       setState(() {
         _selectedDate = picked;
       });
-      _loadData();
       _scrollToSelectedDay();
     }
   }
 
   Widget _buildMatchesList() {
-    if (_assignedMatches.isEmpty) {
+    // Prendi solo i match del giorno selezionato
+    final selectedDateOnly = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    final matchesForDay = _matchesByDate[selectedDateOnly] ?? [];
+
+    if (matchesForDay.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -455,9 +437,9 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _assignedMatches.length,
+      itemCount: matchesForDay.length,
       itemBuilder: (context, index) {
-        final match = _assignedMatches[index];
+        final match = matchesForDay[index];
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../database/db_controller.dart';
@@ -438,7 +439,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       final playerId = userProvider.activeRoleId!;
 
       // TODO: GUARDA BACKEND - Add payment logic here
-      bool success = await DB().joinLobby(lobby.id, playerId, playersPaid);
+      bool success = await DBWrite.joinLobby(lobby.id, playerId, playersPaid);
 
       if (mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(

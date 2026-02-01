@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 
 import '../../database/db_controller.dart';
@@ -63,7 +64,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _acceptRequest(TeamRequest request) async {
     try {
-      if ((await DB().acceptRequestToTeam(request.playerId, widget.teamId)) ==
+      if ((await DBWrite.acceptRequestToTeam(request.playerId, widget.teamId)) ==
           false) {
         throw Exception('Failed to accept request');
       }
@@ -115,7 +116,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
     for (var request in requestsCopy) {
       try {
         //TODO: gestire il caso in cui la squadra è piena
-        if ((await DB().acceptRequestToTeam(request.playerId, widget.teamId)) ==
+        if ((await DBWrite.acceptRequestToTeam(request.playerId, widget.teamId)) ==
             false) {
           if (mounted) {
             if (await DB.Teams.isFull(widget.teamId) && mounted) {

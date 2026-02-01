@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../database/db_controller.dart';
@@ -317,7 +318,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
               }
 
               // TODO: Payment integration
-              if (await DB().updatePayment(
+              if (await DBWrite.updatePayment(
                     widget.participation.tournamentId,
                     widget.participation.teamId,
                     amount,

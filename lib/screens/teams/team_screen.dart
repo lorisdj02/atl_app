@@ -1,6 +1,6 @@
+import 'package:atl_app/database/db_read.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../database/db_controller.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
 import '../../providers/user_provider.dart';
@@ -16,7 +16,6 @@ import '../../widgets/search_team_widget.dart';
 import '../../widgets/ranks_team_widget.dart';
 import '../../widgets/search_dialog_widget.dart';
 import 'team_detail_screen.dart';
-import '../tournaments/tournament_detail_screen.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -36,7 +35,8 @@ class _TeamScreenState extends State<TeamScreen>
   Key _scaffoldKey = UniqueKey(); // Chiave per forzare rebuild
 
   // Cache unificata: associa teamId -> team e captainName
-  final Map<int, Map<String, dynamic>> _teamCache = {};
+  Map<int, Team> _teamCache = {};
+  Map<int, String> _captainNamePerTeam = {};
 
   // Filtri
   final TextEditingController _searchController = TextEditingController();
@@ -89,7 +89,6 @@ class _TeamScreenState extends State<TeamScreen>
         length: showMyTeamTab ? 3 : 2,
         vsync: this,
       );
-      print('Inizialized TabController with length: ${_tabController!.length}');
 
       if (showMyTeamTab) {
         _tabController!.addListener(() {
@@ -150,30 +149,15 @@ class _TeamScreenState extends State<TeamScreen>
         listen: false,
       );
       final isPlayer = userProvider.activeUser?.role == UserRole.player;
-      List<Team> teams = await DB.Teams.getAllVisible();
 
-      // Pre-carica i team e i capitani nella cache unificata
-      for (var team in teams) {
-        if (!_teamCache.containsKey(team.id)) {
-          if(team.captainId == -1){
-            _teamCache[team.id] = {'team': team, 'captainName': 'N/A'};
-            continue;
-          }
-          final captain = await DB.Players.getByPlayerId(team.captainId);
-          if (captain == null) continue;
-          _teamCache[team.id] = {'team': team, 'captainName': captain.username};
-        } else {
-          // Aggiorna solo il team se già in cache, mantieni il captainName
-          _teamCache[team.id] = {
-            'team': team,
-            'captainName': _teamCache[team.id]!['captainName'],
-          };
-        }
-      }
+      final data = await DBRead.getTeamScreen(widget.currentSport);
+      final Map<int, Team> teamCache = data['teamCache'];
+      final Map<int, String> captainNamePerTeam = data['captainNamePerTeam'];
 
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
 
+      List<Team> teams = teamCache.values.toList();
       // In "Ranks" ordina per rankPts - con controllo null-safe
       if (_tabController != null && _tabController!.index == ranksTabIndex) {
         teams.sort((a, b) => (b.rankPts ?? 0).compareTo(a.rankPts ?? 0));
@@ -181,6 +165,8 @@ class _TeamScreenState extends State<TeamScreen>
 
       setState(() {
         _teams = teams;
+        _teamCache = teamCache;
+        _captainNamePerTeam = captainNamePerTeam;
         _isLoading = false;
       });
     } catch (e) {
@@ -466,47 +452,43 @@ class _TeamScreenState extends State<TeamScreen>
                 ),
               ),
 
-              // Search bar - SOLO in Search tab (index 0)
+              // Search bar + Filter + ID search
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                padding: currentTab == 0
+                    ? const EdgeInsets.fromLTRB(16, 4, 16, 8)
+                    : const EdgeInsets.fromLTRB(16, 4, 0, 8),
                 child: Row(
                   children: [
                     Expanded(
-                      child: Visibility(
-                        visible: currentTab == 0,
-                        maintainSize: true,
-                        maintainAnimation: true,
-                        maintainState: true,
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Name (Alias)',
-                            hintStyle: TextStyle(color: Colors.grey[400]),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide.none,
+                      child: (() {
+                        return Center(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Name (Alias)',
+                              hintStyle: TextStyle(color: Colors.grey[400]),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
+                            onChanged: (value) {
+                              setState(() {});
+                            },
                           ),
-                          onChanged: (value) {
-                            setState(() {});
-                          },
-                        ),
-                      ),
+                        );
+                      }()),
                     ),
                     const SizedBox(width: 12),
-                    // Filter button
-                    Visibility(
-                      visible: currentTab == 0,
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: Container(
+                    // Filter button - only in Search tab (index 0)
+                    if (currentTab == 0)
+                      Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
@@ -516,22 +498,20 @@ class _TeamScreenState extends State<TeamScreen>
                           onPressed: _showFilterDialog,
                         ),
                       ),
-                    ),
                     const SizedBox(width: 12),
-                    // ID search button
-                    Visibility(
-                      visible: currentTab == 0,
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      child: Container(
+                    // ID search button - only in Search tab (index 0)
+                    if (currentTab == 0)
+                      Container(
                         decoration: BoxDecoration(
                           color: ATLColors.darkBlue,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextButton.icon(
                           icon: const Icon(Icons.search, color: Colors.white),
-                          label: const Text('ID', style: TextStyle(color: Colors.white)),
+                          label: const Text(
+                            'ID',
+                            style: TextStyle(color: Colors.white),
+                          ),
                           onPressed: () {
                             showDialog(
                               context: context,
@@ -557,7 +537,6 @@ class _TeamScreenState extends State<TeamScreen>
                           },
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -676,7 +655,6 @@ class _TeamScreenState extends State<TeamScreen>
                     itemBuilder: (context, index) {
                       final filteredTeams = _applyFilters(_teams!);
                       final team = filteredTeams[index];
-                      final cachedData = _teamCache[team.id];
 
                       // Calcola l'indice corretto per Ranks in base alla presenza di My team
                       final ranksTabIndex = showMyTeamTab ? 2 : 1;
@@ -688,14 +666,22 @@ class _TeamScreenState extends State<TeamScreen>
                           imageUrl: team.imageUrl,
                           rankPts: showRankPts ? (team.rankPts ?? 0) : null,
                           sportCategory: widget.currentSport,
-                          captainName: cachedData?['captainName'] as String?,
+                          captainName: _captainNamePerTeam[team.id],
+                          rank: _teams!.indexOf(team) + 1,
+                          color: _teams!.indexOf(team) == 0
+                              ? ATLColors.getPrimaryColor(widget.currentSport)
+                              : _teams!.indexOf(team) == 1
+                              ? ATLColors.getSecondaryColor(widget.currentSport)
+                              : _teams!.indexOf(team) == 2
+                              ? ATLColors.getTertiaryColor(widget.currentSport)
+                              : Colors.white,
                         );
                       } else {
                         return SearchTeamWidget(
                           team: team,
                           sportCategory: widget.currentSport,
                           imageUrl: team.imageUrl,
-                          captainName: cachedData?['captainName'] as String?,
+                          captainName: _captainNamePerTeam[team.id],
                         );
                       }
                     },

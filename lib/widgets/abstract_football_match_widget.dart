@@ -84,7 +84,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
           );
         }
         return Text(
-          'Scheduled',
+          'Scheduled (${DateFormat('dd/MM/yy').format(match.scheduledStart!)} at ${DateFormat('HH:mm').format(match.scheduledStart!)})',
           style: TextStyle(
             fontSize: statusFontSize,
             fontWeight: FontWeight.bold,

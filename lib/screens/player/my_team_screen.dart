@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -258,7 +259,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     if (confirm != true) return;
 
     try {
-      final success = await DB().leaveTeam(team!.id, player.playerId);
+      final success = await DBWrite.leaveTeam(team!.id, player.playerId);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -291,7 +292,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              if ((await DB().leaveTeam(team!.id, playerId!)) == false) {
+              if ((await DBWrite.leaveTeam(team!.id, playerId!)) == false) {
                 if (team!.captainId == playerId) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

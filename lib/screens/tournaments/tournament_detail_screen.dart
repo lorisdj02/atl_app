@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -845,7 +846,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     );
 
     try {
-      final success = await DB().startTournament(
+      final success = await DBWrite.startTournament(
         widget.tournament.id,
         userProvider.activeRoleId!,
       );
@@ -1162,7 +1163,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   );
 
                   if (confirmed == true) {
-                    bool success = await DB().deleteCallups(
+                    bool success = await DBWrite.deleteCallups(
                       widget.tournament.id,
                       _playerTeam!.id,
                     );

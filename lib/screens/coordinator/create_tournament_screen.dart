@@ -25,13 +25,13 @@ enum Round2Option {
   String get displayName {
     switch (this) {
       case Round2Option.none:
-        return 'No';
+        return 'Solo andata';
       case Round2Option.groupStageOnly:
-        return 'Solo ai gironi';
+        return 'A/R solo ai gironi';
       case Round2Option.finalStageOnly:
-        return 'Solo nella fase finale';
+        return 'A/R solo nella fase finale';
       case Round2Option.both:
-        return 'Per tutto il torneo';
+        return 'A/R per tutto il torneo';
     }
   }
 }

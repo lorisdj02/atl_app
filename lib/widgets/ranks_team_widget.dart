@@ -7,6 +7,7 @@ class RanksTeamWidget extends AbstractTeamWidget {
   final Color color;
   final int? rankPts;
   final String? captainName;
+  final int rank;
 
   const RanksTeamWidget({
     super.key,
@@ -16,139 +17,116 @@ class RanksTeamWidget extends AbstractTeamWidget {
     this.rankPts,
     this.captainName,
     required super.sportCategory,
+    required this.rank,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bool isTop3 = rank <= 3;
+    final accent = color; // il colore passato dallo screen (primary/secondary/tertiary)
+
+    // Calcola un colore di testo più scuro e leggibile partendo dall'accent
+    final accentHsl = HSLColor.fromColor(accent);
+    final double darkLightness = (accentHsl.lightness * 0.25).clamp(0.0, 1.0) as double;
+    final Color rankTextColor = isTop3 ? accentHsl.withLightness(darkLightness).toColor() : Colors.grey.shade700;
+
     return GestureDetector(
       onTap: () => handleTeamTap(context),
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         child: Row(
           children: [
-            // Logo del team
-            buildTeamLogo(size: 60),
-            const SizedBox(width: 16),
-            // Informazioni del team
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    team.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Captain: ${captainName ?? 'Loading...'}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
-                ],
+            // sottile striscia colorata per i top3 (altrimenti spazio vuoto)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: isTop3 ? 6 : 6,
+              height: 64,
+              decoration: BoxDecoration(
+                color: isTop3 ? accent : Colors.transparent,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  bottomLeft: Radius.circular(10),
+                ),
               ),
             ),
-            // Badge giocatori e punti
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: ATLColors.darkBlue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.people,
-                        size: 16,
-                        color: ATLColors.darkBlue,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${team.players}/24',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: ATLColors.darkBlue,
-                        ),
-                      ),
-                    ],
-                  ),
+
+            const SizedBox(width: 8),
+
+            // card principale bianca (semplice, leggibile)
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                if (rankPts != null) ...[
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '$rankPts pts',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade700,
+                child: Row(
+                  children: [
+                    // rank piccolo e discreto
+                    Container(
+                      width: 28,
+                      height: 28,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isTop3 ? accent.withOpacity(0.14) : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '$rank',
+                        style: TextStyle(
+                          color: rankTextColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-                if (team.vip) ...[
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star,
-                          size: 14,
-                          color: Colors.amber.shade700,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          'VIP',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.amber.shade700,
+
+                    const SizedBox(width: 10),
+
+                    // logo / avatar compatto (usa abstract widget)
+                    buildTeamLogo(size: 44),
+
+                    const SizedBox(width: 10),
+
+                    // info testuali
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            team.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Captain: ${captainName ?? '—'}',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ],
+
+                    // badge punti compatto
+                    if (rankPts != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text('${rankPts} pts', style: TextStyle(fontSize: 12, color: Colors.green.shade700)),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

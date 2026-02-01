@@ -1,15 +1,12 @@
-import 'package:atl_app/models/tournament_participation.dart';
 import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
-import '../../database/repositories/plays_at_repository.dart';
-import '../../database/repositories/player_repository.dart';
-import '../../database/repositories/callups_repository.dart';
 import '../../models/callups.dart';
 import '../../database/db_controller.dart';
 import '../../models/sport.dart';
+import '../../database/db_write.dart';
 
 class CallupsScreen extends StatefulWidget {
   final Tournament tournament;
@@ -67,7 +64,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
   }
 
   Future<bool> _confirmCallUps() async {
-    if ((await DB().confirmCallUps(
+    if ((await DBWrite.confirmCallUps(
           widget.tournament.id,
           widget.teamId,
           _selectedPlayerIds,

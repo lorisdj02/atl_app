@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_read.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -8,7 +9,6 @@ import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/football_match_widget.dart';
 import '../shop_screen.dart';
@@ -34,6 +34,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   Map<int, int?> _minutesPerRoundCache = {};
   Map<int, int?> _minutesPerPauseCache = {};
   final ScrollController _dayScrollController = ScrollController();
+  Map<DateTime , List<FootballMatch>> _matchesByDate = {};
 
   @override
   void initState() {
@@ -91,70 +92,42 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final coordinatorId = userProvider.activeRoleId;
 
-      if (coordinatorId == null) {
+      if (coordinatorId == null || _currentSport != SportCategory.football) {
         setState(() => _isLoading = false);
         return;
       }
 
-      // Load tournaments where user is coordinator
-      final tournaments = await DB.Tournaments.getByCoordinator(coordinatorId);
+      final coordinatorData = await DBRead.getCoordinatorHomeScreen(
+        coordinatorId: coordinatorId,
+        currentSport: _currentSport,
+      );
 
-      // Load matches for selected date for each tournament
-      final matchesByTournament = <int, List<FootballMatch>>{};
-
-      for (var tournament in tournaments) {
-        final matches = await DB.FootballMatches.getMatchesByTournament(
-          tournament.id,
-        );
-
-        // Filter matches for selected date
-        final filteredMatches = matches.where((match) {
-          if (match.scheduledStart == null) return false;
-
-          final matchDate = DateTime(
-            match.scheduledStart!.year,
-            match.scheduledStart!.month,
-            match.scheduledStart!.day,
-          );
-          final selectedDateOnly = DateTime(
-            _selectedDate.year,
-            _selectedDate.month,
-            _selectedDate.day,
-          );
-
-          return matchDate.isAtSameMomentAs(selectedDateOnly);
-        }).toList();
-
-        if (filteredMatches.isNotEmpty) {
-          matchesByTournament[tournament.id] = filteredMatches;
-
-          // Load teams for these matches
-          for (var match in filteredMatches) {
-            if (match.homeTeamId != null &&
-                !_teamsCache.containsKey(match.homeTeamId)) {
-              final team = await DB.Teams.getById(match.homeTeamId!);
-              if (team != null) _teamsCache[match.homeTeamId!] = team;
+      Map<DateTime, List<FootballMatch>> matchesByDate = {};
+      for (var matches in coordinatorData['matchesByTournament'].values) {
+        for (var match in matches) {
+          if (match.scheduledStart != null) {
+            final matchDate = DateTime(
+              match.scheduledStart!.year,
+              match.scheduledStart!.month,
+              match.scheduledStart!.day,
+            );
+            if (!matchesByDate.containsKey(matchDate)) {
+              matchesByDate[matchDate] = [];
             }
-            if (match.awayTeamId != null &&
-                !_teamsCache.containsKey(match.awayTeamId)) {
-              final team = await DB.Teams.getById(match.awayTeamId!);
-              if (team != null) _teamsCache[match.awayTeamId!] = team;
-            }
+            matchesByDate[matchDate]!.add(match);
           }
         }
-
-        // Load minutes per round and pause
-        _minutesPerRoundCache[tournament.id] =
-            await DB.Tournaments.getMinutesPerRoundById(tournament.id);
-        _minutesPerPauseCache[tournament.id] =
-            await DB.Tournaments.getMinutesPerPauseById(tournament.id);
       }
 
       if (mounted) {
         setState(() {
-          _tournaments = tournaments;
-          _matchesByTournament = matchesByTournament;
+          _tournaments = coordinatorData['tournaments'];
+          _matchesByTournament = coordinatorData['matchesByTournament'];
+          _teamsCache = coordinatorData['teamsCache'];
+          _minutesPerRoundCache = coordinatorData['minutesPerRoundCache'];
+          _minutesPerPauseCache = coordinatorData['minutesPerPauseCache'];
           _isLoading = false;
+          _matchesByDate = matchesByDate;
         });
       }
     } catch (e) {
@@ -380,7 +353,6 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               setState(() {
                 _selectedDate = day;
               });
-              _loadData();
               _scrollToSelectedDay();
             },
             child: Container(
@@ -459,7 +431,6 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       setState(() {
         _selectedDate = picked;
       });
-      _loadData();
       _scrollToSelectedDay();
     }
   }
@@ -495,7 +466,13 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
     }
 
     // Check if there are any matches for the selected date
-    final hasMatches = _matchesByTournament.isNotEmpty;
+    final hasMatches = _matchesByDate.containsKey(
+      DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+      ),
+    );
 
     if (!hasMatches) {
       return Center(
@@ -530,7 +507,21 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       itemCount: _tournaments.length,
       itemBuilder: (context, index) {
         final tournament = _tournaments[index];
-        final matches = _matchesByTournament[tournament.id] ?? [];
+        final matches = (_matchesByTournament[tournament.id] ?? []).where((
+          match,
+        ) {
+          final matchDate = DateTime(
+            match.scheduledStart!.year,
+            match.scheduledStart!.month,
+            match.scheduledStart!.day,
+          );
+          final selectedDate = DateTime(
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+          );
+          return matchDate == selectedDate;
+        }).toList();
 
         if (matches.isEmpty) return const SizedBox.shrink();
 

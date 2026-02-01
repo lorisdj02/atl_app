@@ -1,3 +1,6 @@
+import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/models/football_match.dart';
+import 'package:atl_app/models/team.dart';
 import 'package:atl_app/widgets/organization_booking_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +9,6 @@ import '../../widgets/organization_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../shop_screen.dart';
 import '../../models/field.dart';
@@ -29,7 +31,12 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   List<Field> _fields = [];
   Map<int, String> _citiesNames = {};
 
-  List<Booking> _bookings = [];
+  Map<int, dynamic> _detailedBookings = {};
+  Map<int, FootballMatch> _matchPerBooking = {};
+  Map<int, Team> _teamCache = {};
+  Map<int, String> _usernamePerBooking = {};
+
+  Map<DateTime, Map<int, List<Booking>>> _bookingsByFieldByDate = {};
 
   final ScrollController _dayScrollController = ScrollController();
 
@@ -94,39 +101,45 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         return;
       }
 
-      // Load Fields for the organization
-      final List<Field> fields = await DB.Fields.getByOrganization(
-        organizationId,
+      final organizationData = await DBRead.getOrganizationHomeScreen(
+        organizationId: organizationId,
+        currentSport: _currentSport,
       );
 
-      // Load Bookings for those fields on the selected date
-      List<Booking> bookings = [];
-      Map<int, String> citiesNames = {};
-      for (final field in fields) {
-        final fieldBookings = await DB.Bookings.getByFieldId(field.id);
-        bookings.addAll(fieldBookings);
-        if (!citiesNames.containsKey(field.cityId)) {
-          citiesNames[field.cityId] = await DB.Cities.getById(
-            field.cityId,
-          ).then((city) => city?.name ?? 'Unknown');
-        }
+      Map<int, List<Booking>> bookingsByField = {};
+
+      for (var booking in organizationData['bookings'] as List<Booking>) {
+        bookingsByField.putIfAbsent(booking.fieldId, () => []).add(booking);
       }
 
-      List<Booking> filteredBookings = [];
+      Map<DateTime, Map<int, List<Booking>>> bookingsByFieldByDate = {};
 
-      for (final booking in bookings) {
-        if (booking.startTime.year == _selectedDate.year &&
-            booking.startTime.month == _selectedDate.month &&
-            booking.startTime.day == _selectedDate.day) {
-          filteredBookings.add(booking);
+      for (var entry in bookingsByField.entries) {
+        final fieldId = entry.key;
+        final bookings = entry.value;
+
+        for (var booking in bookings) {
+          final bookingDate = DateTime(
+            booking.startTime.year,
+            booking.startTime.month,
+            booking.startTime.day,
+          );
+
+          bookingsByFieldByDate.putIfAbsent(bookingDate, () => {});
+          bookingsByFieldByDate[bookingDate]!.putIfAbsent(fieldId, () => []);
+          bookingsByFieldByDate[bookingDate]![fieldId]!.add(booking);
         }
       }
 
       if (mounted) {
         setState(() {
-          _fields = fields;
-          _bookings = filteredBookings;
-          _citiesNames = citiesNames;
+          _fields = organizationData['fields'];
+          _citiesNames = organizationData['citiesNames'];
+          _bookingsByFieldByDate = bookingsByFieldByDate;
+          _detailedBookings = organizationData['detailedBookings'];
+          _matchPerBooking = organizationData['matchPerBooking'];
+          _usernamePerBooking = organizationData['usernamePerBooking'];
+          _teamCache = organizationData['teamCache'];
           _isLoading = false;
         });
       }
@@ -307,7 +320,6 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               setState(() {
                 _selectedDate = day;
               });
-              _loadData();
               _scrollToSelectedDay();
             },
             child: Container(
@@ -386,13 +398,34 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
       setState(() {
         _selectedDate = picked;
       });
-      _loadData();
       _scrollToSelectedDay();
     }
   }
 
   Widget _buildMatchesList() {
-    if (_bookings.isEmpty) {
+    final selectedDateOnly = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    final bookingsByField = _bookingsByFieldByDate[selectedDateOnly] ?? {};
+
+    // Crea una lista piatta di tuple (field, booking) per ListView.builder
+    final List<MapEntry<Field?, Booking?>> flatList = [];
+
+    for (var field in _fields) {
+      var fieldBookings = bookingsByField[field.id] ?? [];
+      if (fieldBookings.isNotEmpty) {
+        // Header per il campo
+        flatList.add(MapEntry(field, null));
+        // Bookings per il campo
+        for (var booking in fieldBookings) {
+          flatList.add(MapEntry(null, booking));
+        }
+      }
+    }
+
+    if (flatList.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -411,7 +444,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'No matches assigned on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
+                'No bookings on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
@@ -421,21 +454,16 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
       );
     }
 
-    // Raggruppa i bookings per fieldId
-    Map<int, List<Booking>> bookingsByField = {};
-    for (var booking in _bookings) {
-      bookingsByField.putIfAbsent(booking.fieldId, () => []).add(booking);
-    }
-
-    // Crea la lista di widget
-    List<Widget> items = [];
-    for (var field in _fields) {
-      var fieldBookings = bookingsByField[field.id] ?? [];
-      if (fieldBookings.isNotEmpty) {
-        // Aggiungi il nome del campo
-        items.add(
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: flatList.length,
+      itemBuilder: (context, index) {
+        final entry = flatList[index];
+        if (entry.key != null && entry.value == null) {
+          // Header campo
+          final field = entry.key!;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
             child: Text(
               "${field.name} (${_citiesNames[field.cityId] ?? 'Unknown'})",
               style: const TextStyle(
@@ -444,26 +472,50 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                 color: ATLColors.title,
               ),
             ),
-          ),
-        );
-        // Aggiungi i bookings per questo campo
-        for (var booking in fieldBookings) {
-          items.add(
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
-              child: OrganizationBookingWidget(
-                booking: booking,
-                currentSport: _currentSport,
-              ),
-            ),
           );
+        } else if (entry.value != null) {
+          // Booking
+          final booking = entry.value!;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12, left: 0, right: 0),
+            child: booking.type == BookingType.lobby
+                ? OrganizationBookingWidget(
+                    key: ValueKey(booking.id),
+                    booking: booking,
+                    field: _fields.firstWhere((f) => f.id == booking.fieldId),
+                    currentSport: _currentSport,
+                    lobbyBooking: _detailedBookings[booking.id],
+                    playerString: _usernamePerBooking[booking.id],
+                  )
+                : booking.type == BookingType.match
+                ? OrganizationBookingWidget(
+                    key: ValueKey(booking.id),
+                    booking: booking,
+                    field: _fields.firstWhere((f) => f.id == booking.fieldId),
+                    currentSport: _currentSport,
+                    matchBooking: _detailedBookings[booking.id],
+                    homeTeam:
+                        _teamCache[_matchPerBooking[booking.id]?.homeTeamId],
+                    awayTeam:
+                        _teamCache[_matchPerBooking[booking.id]?.awayTeamId],
+                    coordinatorString: _usernamePerBooking[booking.id],
+                  )
+                : booking.type == BookingType.private
+                ? OrganizationBookingWidget(
+                    key: ValueKey(booking.id),
+                    booking: booking,
+                    field: _fields.firstWhere((f) => f.id == booking.fieldId),
+                    currentSport: _currentSport,
+                    privateBooking: _detailedBookings[booking.id],
+                    coordinatorString: _usernamePerBooking[booking.id],
+                    playerString: _usernamePerBooking[booking.id],
+                  )
+                : const SizedBox.shrink(),
+          );
+        } else {
+          return const SizedBox.shrink();
         }
-      }
-    }
-
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: items,
+      },
     );
   }
 }

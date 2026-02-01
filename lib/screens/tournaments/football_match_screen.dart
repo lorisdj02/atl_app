@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/football_match.dart';
@@ -254,7 +255,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     try {
-      final success = await DB().insertAssignment(
+      final success = await DBWrite.insertAssignment(
         widget.matchId,
         refereeId,
         selectedRole,
@@ -307,7 +308,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (scheduledStart == null || !mounted) return;
 
-    final success = await DB().scheduleMatch(
+    final success = await DBWrite.scheduleMatch(
       widget.matchId,
       scheduledStart,
       _coordinatorId!,
@@ -405,16 +406,16 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     switch (action) {
       case 'start':
-        success = await DB().insertEventMatch(widget.matchId, 'start');
+        success = await DBWrite.insertEventMatch(widget.matchId, 'start');
         break;
       case 'halftime':
-        success = await DB().insertEventMatch(widget.matchId, 'halftime');
+        success = await DBWrite.insertEventMatch(widget.matchId, 'halftime');
         break;
       case 'startHalf':
-        success = await DB().insertEventMatch(widget.matchId, 'startHalf');
+        success = await DBWrite.insertEventMatch(widget.matchId, 'startHalf');
         break;
       case 'finish':
-        success = await DB().insertEventMatch(widget.matchId, 'finish');
+        success = await DBWrite.insertEventMatch(widget.matchId, 'finish');
         break;
     }
 
@@ -653,7 +654,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       "Assigning MOTM to player ${selectedPlayer.playerId} in match ${widget.matchId}",
     );
 
-    final success = await DB().addFootballMotm(
+    final success = await DBWrite.addFootballMotm(
       widget.matchId,
       selectedPlayer.playerId,
       teamId,
@@ -753,7 +754,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (!confirmed) return;
 
     // Delete the event
-    final success = await DB().deleteMatchEvent(widget.matchId, event.id);
+    final success = await DBWrite.deleteMatchEvent(widget.matchId, event.id);
 
     if (success) {
       setState(() {

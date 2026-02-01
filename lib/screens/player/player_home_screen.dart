@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/models/private_bookings.dart';
 import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,6 @@ import '../../models/football_match.dart';
 import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
@@ -64,108 +64,28 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     });
 
     try {
-      // Carica i booking
-      final List<PrivateBooking> privateBookings =
-          await DB.PrivateBookings.getByPlayerId(playerId) ?? [];
-      List<int> lobbyBookingsIds =
-          (await DB.LobbyBookingParticipations.getByPlayerId(
-            playerId,
-          )).map((p) => p.lobbyBookingId).toList();
-      List<LobbyBooking> lobbyBookings = [];
-      for (var lobbyBookingId in lobbyBookingsIds) {
-        final lobbyBooking = await DB.LobbyBookings.getById(lobbyBookingId);
-        if (lobbyBooking != null) {
-          lobbyBookings.add(lobbyBooking);
-        }
-      }
-      print(
-        'Loaded ${privateBookings.length} private bookings and ${lobbyBookings.length} lobby bookings for player $playerId',
-      );
-      // Combina e ordina per startTime
-      final allBookings = <dynamic>[...privateBookings, ...lobbyBookings];
-      allBookings.sort((a, b) {
-        final aTime = a is PrivateBooking
-            ? a.startTime
-            : (a as LobbyBooking).startTime;
-        final bTime = b is PrivateBooking
-            ? b.startTime
-            : (b as LobbyBooking).startTime;
-        return aTime.compareTo(bTime);
-      });
 
-      _bookings = allBookings;
-
-      // Load user's team using teamId from user
-      if (teamId != null && teamId != -1) {
-        _userTeam = await DB.Teams.getById(teamId!);
-
-        // Load active tournaments where user's team participates
-        //final allTournaments = DB.Tournaments.mockData;
-        //final activeTournaments = allTournaments.where((t) => t.status == TournamentStatus.scheduled).toList();
-
-        final activeTournamentsId =
-            (await DB.TournamentParticipations.getPaidByTeamId(
-              teamId!,
-            )).map((p) => p.tournamentId).toSet();
-
-        final activeTournaments = (await DB.Tournaments.getBySportCategory(
-          _currentSport,
-        )).where((t) => activeTournamentsId.contains(t.id)).toList();
-
-        // Load matches and standings for each tournament
-        for (var tournament in activeTournaments) {
-          final matches = await DB.FootballMatches.getMatchesByTournament(
-            tournament.id,
-          );
-          final standings = await DB.FootballStandings.getStandingsByTournament(
-            tournament.id,
+      final Map<String, dynamic> playerHomeData =
+          await DBRead.getPlayerHomeScreen(
+            playerId: playerId,
+            currentSport: _currentSport,
           );
 
-          final int minutesPerRound =
-              await DB.Tournaments.getMinutesPerRoundById(tournament.id);
-          final int minutesPerPause =
-              await DB.Tournaments.getMinutesPerPauseById(tournament.id);
-
-          _minutesPerRound[tournament.id] = minutesPerRound;
-          _minutesPerPause[tournament.id] = minutesPerPause;
-          _tournamentMatches[tournament.id] = matches;
-          _tournamentStandings[tournament.id] = standings;
-
-          // Cache teams
-          final teamIds = <int>{};
-          for (var match in matches) {
-            if (match.homeTeamId != null){
-              teamIds.add(match.homeTeamId!);
-            }
-            if (match.awayTeamId != null){
-              teamIds.add(match.awayTeamId!);
-            }
-          }
-          for (var standing in standings) {
-            teamIds.add(standing.teamId);
-          }
-
-          for (var teamId in teamIds) {
-            if (!_teamsCache.containsKey(teamId)) {
-              final team = await DB.Teams.getById(teamId);
-              if (team != null) {
-                _teamsCache[teamId] = team;
-              }
-            }
-          }
-        }
-
-        if (mounted) {
-          setState(() {
-            _activeTournaments = activeTournaments;
-            _isLoading = false;
-          });
-        }
-      } else {
+      if (mounted) {
         setState(() {
+          _bookings = playerHomeData['bookings'];
+          _activeTournaments =
+              playerHomeData['activeTournaments'];
+          _minutesPerRound = playerHomeData['minutesPerRound'];
+          _minutesPerPause = playerHomeData['minutesPerPause'];
+          _tournamentMatches =
+              playerHomeData['tournamentMatches'];
+          _tournamentStandings =
+              playerHomeData['tournamentStandings'];
+          _teamsCache = playerHomeData['teamsCache'];
+          _userTeam = playerHomeData['userTeam'];
           _isLoading = false;
         });
-        return;
       }
     } catch (e) {
       if (mounted) {
@@ -470,7 +390,9 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         itemBuilder: (context, index) {
           final booking = _bookings[index];
           final isPrivate = booking is PrivateBooking;
-          final bookingId = isPrivate ? booking.id : (booking as LobbyBooking).id;
+          final bookingId = isPrivate
+              ? booking.id
+              : (booking as LobbyBooking).id;
           return BookingWidget(
             key: ValueKey('${isPrivate ? 'private' : 'lobby'}_$bookingId'),
             fieldId: isPrivate

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -411,7 +412,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                             if (confirm == true) {
                               bool success = false;
                               if (isLobby) {
-                                success = await DB().leaveLobby(
+                                success = await DBWrite.leaveLobby(
                                   widget.bookingId,
                                   playerId,
                                 );
