@@ -1,8 +1,5 @@
-import 'package:atl_app/models/team.dart';
-import 'package:dio/dio.dart';
 import '../../config/app_config.dart';
 import '../../models/team_stats.dart';
-import '../api_client.dart';
 import 'base_repository.dart';
 
 class TeamStatsRepository extends BaseRepository<TeamStats> {
@@ -16,14 +13,14 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
   Map<String, dynamic> toJson(TeamStats item) => item.toJson();
 
   List<TeamStats> _mockData = [
-    TeamStats(playerId: 1, teamId: 1, motm: 15, goals: 23),
-    TeamStats(playerId: 2, teamId: 1, motm: 12, goals: 18),
-    TeamStats(playerId: 3, teamId: 1, motm: 8, goals: 14),
-    TeamStats(playerId: 4, teamId: 1, motm: 10, goals: 12),
-    TeamStats(playerId: 5, teamId: 1, motm: 6, goals: 9),
-    TeamStats(playerId: 6, teamId: 2, motm: 14, goals: 21),
-    TeamStats(playerId: 7, teamId: 2, motm: 11, goals: 16),
-    TeamStats(playerId: 8, teamId: 3, motm: 9, goals: 15),
+    TeamStats(id: 1, playerId: 1, teamId: 1, motm: 15, goals: 23),
+    TeamStats(id: 2, playerId: 2, teamId: 1, motm: 12, goals: 18),
+    TeamStats(id: 3, playerId: 3, teamId: 1, motm: 8, goals: 14),
+    TeamStats(id: 4, playerId: 4, teamId: 1, motm: 10, goals: 12),
+    TeamStats(id: 5, playerId: 5, teamId: 1, motm: 6, goals: 9),
+    TeamStats(id: 6, playerId: 6, teamId: 2, motm: 14, goals: 21),
+    TeamStats(id: 7, playerId: 7, teamId: 2, motm: 11, goals: 16),
+    TeamStats(id: 8, playerId: 8, teamId: 3, motm: 9, goals: 15),
   ];
 
   @override
@@ -53,6 +50,7 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
       if (index == -1) {
         // Non esiste, crealo
         TeamStats newStats = TeamStats(
+          id: _mockData.length + 1,
           playerId: playerId,
           teamId: teamId,
           goals: goalsIncrement,
@@ -117,21 +115,13 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
       return mockData.firstWhere(
         (stats) => stats.playerId == playerId && stats.teamId == teamId,
         orElse: () =>
-            TeamStats(playerId: playerId, teamId: teamId, motm: 0, goals: 0),
+            TeamStats(id: 0, playerId: playerId, teamId: teamId, motm: 0, goals: 0),
       );
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<bool> deleteByPlayerIdInTeam(int playerId, int teamId) async {
-    if (AppConfig.isDebug) {
-      mockData.removeWhere((s) => s.playerId == playerId && s.teamId == teamId);
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
 
   Future<bool> createStats({
     required int playerId,
@@ -140,10 +130,11 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     required int goals,
   }) async {
     if (await getStatsForPlayerInTeam(playerId, teamId) != null) {
-      await deleteByPlayerIdInTeam(playerId, teamId);
+      return true;
     }
 
     final stats = TeamStats(
+      id: _mockData.length + 1,
       playerId: playerId,
       teamId: teamId,
       motm: motm,

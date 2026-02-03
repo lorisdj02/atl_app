@@ -101,7 +101,6 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     final isCaptain = playerId == team!.captainId;
     final isViceCaptain =
         playerId == team!.vice1Id || playerId == team!.vice2Id;
-
     if (!isCaptain && !isViceCaptain) return;
 
     final isPlayerVice =
@@ -190,7 +189,10 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     }
 
     try {
-      final success = await DB.Teams.promoteToVice(team!.id, player.playerId);
+      final success = await DB.Teams.promoteToVice(
+        team!.id,
+        player.playerId,
+      );
 
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

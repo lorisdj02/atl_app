@@ -10,10 +10,6 @@ import 'register_screen.dart';
 import '../utils/home_router.dart';
 import '../providers/user_provider.dart';
 import '../database/db_controller.dart';
-import '../models/coordinator.dart';
-import '../models/player.dart';
-import '../models/referee.dart';
-import '../models/organization.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

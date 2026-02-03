@@ -340,8 +340,6 @@ class DBWrite {
       }
 
       if ((await DB.PlaysAt.removePlaysAt(teamId, playerId)) == false ||
-          (await DB.TeamStats.deleteByPlayerIdInTeam(playerId, teamId)) ==
-              false ||
           (await DB.CallUps.deleteByPlayerAndTeam(playerId, teamId)) == false ||
           (await DB.Teams.updatePlayerCount(teamId, -1) == false)) {
         return false;
@@ -955,16 +953,6 @@ class DBWrite {
         } else {
           modifiedTables.add(result);
         }
-
-        result = await DB.PersonalStats.incrementStats(
-          playerId,
-          goalsIncrement: 1,
-        );
-        if (result == {}) {
-          return false;
-        } else {
-          modifiedTables.add(result);
-        }
       }
 
       // Unifica le entry per tabella
@@ -1269,10 +1257,6 @@ class DBWrite {
           {}) {
         return false;
       }
-      if (await DB.PersonalStats.incrementStats(playerId, motmIncrement: 1) ==
-          {}) {
-        return false;
-      }
       if (await DB.TeamStats.incrementStats(
             playerId,
             teamId,
@@ -1447,9 +1431,6 @@ class DBWrite {
               success = await DB.FootballTournamentStats.rollbackByJson(
                 tableChanges,
               );
-              break;
-            case 'PersonalStats':
-              success = await DB.PersonalStats.rollbackByJson(tableChanges);
               break;
             default:
               return false; // Tabella non riconosciuta

@@ -21,6 +21,7 @@ import '../../widgets/booking_widget.dart';
 import '../../models/lobby_booking.dart';
 import 'join_lobby_screen.dart';
 import '../../widgets/tournament_card_home.dart';
+import '../../config/api_json_keys.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
   const PlayerHomeScreen({super.key});
@@ -41,10 +42,10 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
       userProvider.selectedSportCategory ?? SportCategory.football;
 
   List<Tournament>? _activeTournaments;
-  Map<int, int> _minutesPerRound = {};
-  Map<int, int> _minutesPerPause = {};
-  Map<int, List<FootballMatch>> _tournamentMatches = {};
-  Map<int, List<FootballStanding>> _tournamentStandings = {};
+  Map<int, int> _minutesRoundPerTournament = {};
+  Map<int, int> _minutesPausePerTournament = {};
+  Map<int, List<FootballMatch>> _matchesPerTournament = {};
+  Map<int, List<FootballStanding>> _standingsPerTournament = {};
   Map<int, Team> _teamsCache = {};
   Team? _userTeam;
   List<dynamic> _bookings = [];
@@ -71,19 +72,21 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             currentSport: _currentSport,
           );
 
+      print('Player home data loaded: $playerHomeData');
+
       if (mounted) {
         setState(() {
-          _bookings = playerHomeData['bookings'];
+          _bookings = playerHomeData[ApiJsonKeys.bookings];
           _activeTournaments =
-              playerHomeData['activeTournaments'];
-          _minutesPerRound = playerHomeData['minutesPerRound'];
-          _minutesPerPause = playerHomeData['minutesPerPause'];
-          _tournamentMatches =
-              playerHomeData['tournamentMatches'];
-          _tournamentStandings =
-              playerHomeData['tournamentStandings'];
-          _teamsCache = playerHomeData['teamsCache'];
-          _userTeam = playerHomeData['userTeam'];
+              playerHomeData[ApiJsonKeys.activeTournaments];
+          _minutesRoundPerTournament = playerHomeData[ApiJsonKeys.minutesRoundPerTournament];
+          _minutesPausePerTournament = playerHomeData[ApiJsonKeys.minutesPausePerTournament];
+          _matchesPerTournament =
+              playerHomeData[ApiJsonKeys.matchesPerTournament];
+          _standingsPerTournament =
+              playerHomeData[ApiJsonKeys.standingsPerTournament];
+          _teamsCache = playerHomeData[ApiJsonKeys.teamsCache];
+          _userTeam = playerHomeData[ApiJsonKeys.userTeam];
           _isLoading = false;
         });
       }
@@ -344,13 +347,13 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TournamentCardHome(
                     tournament: tournament,
-                    matches: _tournamentMatches[tournament.id] ?? [],
-                    standings: _tournamentStandings[tournament.id] ?? [],
+                    matches: _matchesPerTournament[tournament.id] ?? [],
+                    standings: _standingsPerTournament[tournament.id] ?? [],
                     teamsCache: _teamsCache,
                     userTeam: _userTeam,
                     sportCategory: _currentSport,
-                    minutesPerRound: _minutesPerRound[tournament.id]!,
-                    minutesPerPause: _minutesPerPause[tournament.id]!,
+                    minutesPerRound: _minutesRoundPerTournament[tournament.id]!,
+                    minutesPerPause: _minutesPausePerTournament[tournament.id]!,
                   ),
                 );
               } else if (hasBookings && index == tournamentsCount) {

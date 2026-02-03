@@ -289,6 +289,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       // Converti FootballTournamentStats in TeamStats per la compatibilità con il widget
       for (var stat in stats) {
         _playerStatsCache[stat.playerId] = TeamStats(
+          id: 0,
           playerId: stat.playerId,
           teamId: stat.teamId,
           motm: stat.motm,

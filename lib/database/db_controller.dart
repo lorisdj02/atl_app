@@ -21,7 +21,6 @@ import 'repositories/football_match_event_repository.dart';
 import 'repositories/sport_repository.dart';
 import 'repositories/city_repository.dart';
 import 'repositories/football_tournament_stats_repository.dart';
-import 'repositories/personal_stats_repository.dart';
 import 'repositories/match_bookings_repository.dart';
 import 'repositories/bookings_repository.dart';
 import 'repositories/referee_assignment_repository.dart';
@@ -70,7 +69,6 @@ class DB {
   static late final SportRepository Sports;
   static late final CityRepository Cities;
   static late final FootballTournamentStatsRepository FootballTournamentStats;
-  static late final PersonalStatsRepository PersonalStats;
   static late final MatchBookingsRepository MatchBookings;
   static late final BookingsRepository Bookings;
   static late final RefereeRepository Referees;
@@ -106,7 +104,6 @@ class DB {
     Sports = SportRepository();
     Cities = CityRepository();
     FootballTournamentStats = FootballTournamentStatsRepository();
-    PersonalStats = PersonalStatsRepository();
     MatchBookings = MatchBookingsRepository();
     Bookings = BookingsRepository();
     Referees = RefereeRepository();

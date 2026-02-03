@@ -14,6 +14,7 @@ import '../shop_screen.dart';
 import '../../models/field.dart';
 import '../profile_screen.dart';
 import '../../models/booking.dart';
+import '../../config/api_json_keys.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
   const OrganizationHomeScreen({super.key});
@@ -29,11 +30,11 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   bool _isLoading = true;
 
   List<Field> _fields = [];
-  Map<int, String> _citiesNames = {};
+  Map<int, String> _cityNamePerField = {};
 
   Map<int, dynamic> _detailedBookings = {};
   Map<int, FootballMatch> _matchPerBooking = {};
-  Map<int, Team> _teamCache = {};
+  Map<int, Team> _teamsCache = {};
   Map<int, String> _usernamePerBooking = {};
 
   Map<DateTime, Map<int, List<Booking>>> _bookingsByFieldByDate = {};
@@ -108,7 +109,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
 
       Map<int, List<Booking>> bookingsByField = {};
 
-      for (var booking in organizationData['bookings'] as List<Booking>) {
+      for (var booking in organizationData[ApiJsonKeys.generalBookings] as List<Booking>) {
         bookingsByField.putIfAbsent(booking.fieldId, () => []).add(booking);
       }
 
@@ -133,13 +134,13 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
 
       if (mounted) {
         setState(() {
-          _fields = organizationData['fields'];
-          _citiesNames = organizationData['citiesNames'];
+          _fields = organizationData[ApiJsonKeys.fields];
+          _cityNamePerField = organizationData[ApiJsonKeys.cityNamePerField];
           _bookingsByFieldByDate = bookingsByFieldByDate;
-          _detailedBookings = organizationData['detailedBookings'];
-          _matchPerBooking = organizationData['matchPerBooking'];
-          _usernamePerBooking = organizationData['usernamePerBooking'];
-          _teamCache = organizationData['teamCache'];
+          _detailedBookings = organizationData[ApiJsonKeys.detailedBookings];
+          _matchPerBooking = organizationData[ApiJsonKeys.matchPerBooking];
+          _usernamePerBooking = organizationData[ApiJsonKeys.usernamePerBooking];
+          _teamsCache = organizationData[ApiJsonKeys.teamsCache];
           _isLoading = false;
         });
       }
@@ -465,7 +466,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
             child: Text(
-              "${field.name} (${_citiesNames[field.cityId] ?? 'Unknown'})",
+              "${field.name} (${_cityNamePerField[field.cityId] ?? 'Unknown'})",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -495,9 +496,9 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                     currentSport: _currentSport,
                     matchBooking: _detailedBookings[booking.id],
                     homeTeam:
-                        _teamCache[_matchPerBooking[booking.id]?.homeTeamId],
+                        _teamsCache[_matchPerBooking[booking.id]?.homeTeamId],
                     awayTeam:
-                        _teamCache[_matchPerBooking[booking.id]?.awayTeamId],
+                        _teamsCache[_matchPerBooking[booking.id]?.awayTeamId],
                     coordinatorString: _usernamePerBooking[booking.id],
                   )
                 : booking.type == BookingType.private

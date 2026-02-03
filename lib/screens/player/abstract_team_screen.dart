@@ -1,6 +1,7 @@
+import 'package:atl_app/config/api_json_keys.dart';
+import 'package:atl_app/database/db_read.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../database/db_controller.dart';
 import '../../models/sport_category.dart';
 import '../../models/team.dart';
 import '../../models/player.dart';
@@ -34,16 +35,22 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   List<Palmares>? palmares;
   List<Tournament>? tournaments;
 
+  List<Player>? historicalPlayers;
+
   // Cache per palmares
-  final Map<int, Coordinator?> coordinatorCache = {};
-  final Map<int, Field?> fieldCache = {};
+  Map<int, Coordinator?> coordinatorCache = {};
+  Map<int, Field?> fieldCache = {};
 
   // Cache per stats
-  final Map<int, TeamStats?> playerStatsCache = {};
+  Map<int, TeamStats?> playerStatsCache = {};
+
+  // Cache for city names
+  Map<int, String> cityNamePerField = {};
 
   bool playersLoaded = false;
   bool palmaresLoaded = false;
   bool statsLoaded = false;
+  bool statsShowAll = false;
 
   @override
   void initState() {
@@ -52,7 +59,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     tabController.addListener(onTabChanged);
     userProvider = Provider.of<UserProvider>(context, listen: false);
     playerId = userProvider.activeRoleId;
-    loadTabData(0);
+    loadData();
   }
 
   @override
@@ -70,45 +77,27 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   }
 
   void onTabChanged() {
-    if (!mounted) return;
+    if (tabController.indexIsChanging) return;
+
     setState(() {
-      loadTabData(tabController.index);
+      if (tabController.index == 1 && !palmaresLoaded) {
+        palmaresLoaded = true;
+      } else if (tabController.index == 2 && !statsLoaded) {
+        statsLoaded = true;
+      }
     });
   }
 
-  Future<void> loadTabData(int tabIndex) async {
+  Future<void> loadData() async {
     final int teamId = getTeamId();
 
-    switch (tabIndex) {
-      case 0:
-        if (!playersLoaded) {
-          await loadPlayersData(teamId);
-        }
-        break;
-      case 1:
-        if (!palmaresLoaded) {
-          await loadPalmaresData(teamId);
-        }
-        break;
-      case 2:
-        if (!statsLoaded) {
-          await loadStatsData(teamId);
-        }
-        break;
-    }
-  }
-
-  int getTeamId();
-
-  Future<void> loadPlayersData(int teamId) async {
     try {
-      final Team? loadedTeam = await DB.Teams.getById(teamId);
-      final List<Player> loadedPlayers = await DB.Players.getByTeam(teamId);
-
+      final data = await DBRead.getAbstractTeamScreen(teamId);
+      final Team? loadedTeam = data[ApiJsonKeys.team];
       if (loadedTeam == null) {
-        throw Exception('Team not found');
+        throw Exception("Team not found");
       }
-
+      List<Player> loadedPlayers = data[ApiJsonKeys.players] ?? [];
       if (loadedPlayers.isNotEmpty) {
         // Sort players: Captain, Vice1, Vice2, then others
         loadedPlayers.sort((a, b) {
@@ -126,6 +115,13 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
         setState(() {
           team = loadedTeam;
           players = loadedPlayers;
+          palmares = data[ApiJsonKeys.palmares] ?? [];
+          tournaments = data[ApiJsonKeys.tournaments] ?? [];
+          playerStatsCache = data[ApiJsonKeys.playerStatsCache];
+          coordinatorCache = data[ApiJsonKeys.coordinatorCache];
+          fieldCache = data[ApiJsonKeys.fieldCache];
+          cityNamePerField = data[ApiJsonKeys.cityNamePerField];
+          historicalPlayers = data[ApiJsonKeys.historicalPlayers] ?? [];
           playersLoaded = true;
         });
       }
@@ -133,85 +129,34 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
+        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
       }
     }
   }
 
-  Future<void> loadPalmaresData(int teamId) async {
-    try {
-      final loadedPalmares = await DB.Palmares.getByTeam(teamId);
+  int getTeamId();
 
-      final tournamentIds = loadedPalmares.map((p) => p.tournamentId).toSet();
-      final loadedTournaments = <Tournament>[];
-      for (var id in tournamentIds) {
-        final tournament = await DB.Tournaments.getById(id);
-        if (tournament != null) {
-          loadedTournaments.add(tournament);
+  Future<void> loadPlayersData(int teamId) async {
+    final data = await DBRead.getPlayersInTeam(teamId);
 
-          if (!coordinatorCache.containsKey(tournament.coordinatorId)) {
-            final coordinator = await DB.Coordinators.getByCoordinatorId(
-              tournament.coordinatorId,
-            );
-            coordinatorCache[tournament.coordinatorId] = coordinator;
-          }
-
-          if (!fieldCache.containsKey(tournament.fieldId)) {
-            final field = await DB.Fields.getById(tournament.fieldId);
-            fieldCache[tournament.fieldId] = field;
-          }
-        }
-      }
+    List<Player> loadedPlayers = data[ApiJsonKeys.players] ?? [];
+    if (loadedPlayers.isNotEmpty) {
+      // Sort players: Captain, Vice1, Vice2, then others
+      loadedPlayers.sort((a, b) {
+        if (a.playerId == team!.captainId) return -1;
+        if (b.playerId == team!.captainId) return 1;
+        if (a.playerId == team!.vice1Id) return -1;
+        if (b.playerId == team!.vice1Id) return 1;
+        if (a.playerId == team!.vice2Id) return -1;
+        if (b.playerId == team!.vice2Id) return 1;
+        return 0;
+      });
 
       if (mounted) {
         setState(() {
-          palmares = loadedPalmares;
-          tournaments = loadedTournaments;
-          palmaresLoaded = true;
+          players = loadedPlayers;
+          playersLoaded = true;
         });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading palmares: $e')));
-      }
-    }
-  }
-
-  Future<void> loadStatsData(int teamId) async {
-    try {
-      if (players == null) {
-        final loadedPlayers = await DB.Players.getByTeam(teamId);
-        if (mounted) {
-          setState(() {
-            players = loadedPlayers;
-          });
-        }
-      }
-
-      if (players != null) {
-        for (var player in players!) {
-          if (!playerStatsCache.containsKey(player.id)) {
-            final stats = await DB.TeamStats.getStatsForPlayerInTeam(
-              player.id,
-              teamId,
-            );
-            playerStatsCache[player.id] = stats;
-          }
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          statsLoaded = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading stats: $e')));
       }
     }
   }
@@ -239,6 +184,69 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildStatsFilterButton(String text, bool value) {
+    // legacy: replaced by animated toggle below
+    return const SizedBox.shrink();
+  }
+
+  Widget buildStatsToggle() {
+    // Two centered toggle buttons (no slider), using primary color for active
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              statsShowAll = false;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: statsShowAll
+                  ? Colors.white
+                  : ATLColors.getPrimaryColor(widget.currentSport),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: ATLColors.darkBlue.withOpacity(0.12)),
+            ),
+            child: Text(
+              'Actual Players',
+              style: TextStyle(
+                color: statsShowAll ? ATLColors.darkBlue : Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              statsShowAll = true;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: statsShowAll
+                  ? ATLColors.getPrimaryColor(widget.currentSport)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: ATLColors.darkBlue.withOpacity(0.12)),
+            ),
+            child: Text(
+              'All Players',
+              style: TextStyle(
+                color: statsShowAll ? Colors.white : ATLColors.darkBlue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -276,6 +284,62 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   Widget buildPalmaresTab() {
     if (!palmaresLoaded) {
       return const LoadingATL();
+    }
+
+    // Only VIP teams can see palmares
+    if (team == null || (team!.vip != true && team!.players > 0)) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.lock_outline,
+                size: 80,
+                color: ATLColors.subtext.withOpacity(0.5),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'VIP Feature',
+                style: TextStyle(
+                  color: ATLColors.darkBlue,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'This section is available for VIP teams only. Upgrade to VIP to view the team palmares.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: ATLColors.subtext, fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('VIP upgrade coming soon')),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ATLColors.getPrimaryColor(
+                    widget.currentSport,
+                  ),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+                child: const Text(
+                  'Upgrade to VIP',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     if (palmares == null || palmares!.isEmpty) {
@@ -317,6 +381,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                 sportCategory: widget.currentSport,
                 coordinator: coordinatorCache[tournament.coordinatorId],
                 field: fieldCache[tournament.fieldId],
+                cityName: cityNamePerField[tournament.fieldId],
               );
             },
           ),
@@ -331,14 +396,49 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       return const LoadingATL();
     }
 
+    // Non-VIP teams default to players-only view
+    if (team == null || (team!.vip == false && team!.players > 0)) {
+      statsShowAll = false;
+    }
+
+    // Prepare playerStats map depending on filter
+    Map<int, TeamStats?> statsToShow = {};
+    if (statsShowAll) {
+      statsToShow = Map<int, TeamStats?>.from(playerStatsCache);
+    } else {
+      final playerIds = (players ?? []).map((p) => p.playerId).toSet();
+      statsToShow = Map.fromEntries(
+        playerStatsCache.entries.where((e) => playerIds.contains(e.key)),
+      );
+    }
+
     return Stack(
       children: [
         Padding(
           padding: EdgeInsets.only(bottom: getBottomPadding()),
-          child: PlayersStatsWidget(
-            players: players ?? [],
-            sportCategory: widget.currentSport,
-            playerStats: playerStatsCache,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Center(
+                  child: team != null && team!.vip == true
+                      ? buildStatsToggle()
+                      : const SizedBox.shrink(),
+                ),
+              ),
+              Expanded(
+                child: PlayersStatsWidget(
+                  players: (statsShowAll)
+                      ? historicalPlayers ?? []
+                      : players ?? [],
+                  sportCategory: widget.currentSport,
+                  playerStats: statsToShow,
+                ),
+              ),
+            ],
           ),
         ),
         buildBottomGradient(),

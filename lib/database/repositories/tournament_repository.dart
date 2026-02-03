@@ -265,6 +265,21 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
+  Future<List<Tournament>> getByCoordinatorAndCategory(int coordinatorId, SportCategory category) async {
+    if (AppConfig.isDebug) {
+      final sportIds = (await DB.Sports.getByCategory(
+        category,
+      )).map((s) => s.id).toList();
+      final tournaments = _mockData
+          .where((t) =>
+              t.coordinatorId == coordinatorId && sportIds.contains(t.sportId))
+          .toList();
+      return tournaments;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<List<Tournament>> getByField(int fieldId) async {
     if (AppConfig.isDebug) {
       final tournaments = _mockData.where((t) => t.fieldId == fieldId).toList();

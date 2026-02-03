@@ -15,6 +15,7 @@ import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
 import '../profile_screen.dart';
+import '../../config/api_json_keys.dart';
 
 class CoordinatorHomeScreen extends StatefulWidget {
   const CoordinatorHomeScreen({super.key});
@@ -28,13 +29,13 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
-  List<Tournament> _tournaments = [];
-  Map<int, List<FootballMatch>> _matchesByTournament = {};
+  List<Tournament> _activeTournaments = [];
+  Map<int, List<FootballMatch>> _matchesPerTournament = {};
   Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesPerRoundCache = {};
-  Map<int, int?> _minutesPerPauseCache = {};
+  Map<int, int?> _minutesRoundPerTournament = {};
+  Map<int, int?> _minutesPausePerTournament = {};
   final ScrollController _dayScrollController = ScrollController();
-  Map<DateTime , List<FootballMatch>> _matchesByDate = {};
+  Map<DateTime , List<FootballMatch>> _matchesPerDate = {};
 
   @override
   void initState() {
@@ -102,8 +103,8 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         currentSport: _currentSport,
       );
 
-      Map<DateTime, List<FootballMatch>> matchesByDate = {};
-      for (var matches in coordinatorData['matchesByTournament'].values) {
+      Map<DateTime, List<FootballMatch>> matchesPerDate = {};
+      for (var matches in coordinatorData['matchesPerTournament'].values) {
         for (var match in matches) {
           if (match.scheduledStart != null) {
             final matchDate = DateTime(
@@ -111,23 +112,23 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               match.scheduledStart!.month,
               match.scheduledStart!.day,
             );
-            if (!matchesByDate.containsKey(matchDate)) {
-              matchesByDate[matchDate] = [];
+            if (!matchesPerDate.containsKey(matchDate)) {
+              matchesPerDate[matchDate] = [];
             }
-            matchesByDate[matchDate]!.add(match);
+            matchesPerDate[matchDate]!.add(match);
           }
         }
       }
 
       if (mounted) {
         setState(() {
-          _tournaments = coordinatorData['tournaments'];
-          _matchesByTournament = coordinatorData['matchesByTournament'];
-          _teamsCache = coordinatorData['teamsCache'];
-          _minutesPerRoundCache = coordinatorData['minutesPerRoundCache'];
-          _minutesPerPauseCache = coordinatorData['minutesPerPauseCache'];
+          _activeTournaments = coordinatorData[ApiJsonKeys.activeTournaments];
+          _matchesPerTournament = coordinatorData[ApiJsonKeys.matchesPerTournament];
+          _teamsCache = coordinatorData[ApiJsonKeys.teamsCache];
+          _minutesRoundPerTournament = coordinatorData[ApiJsonKeys.minutesRoundPerTournament];
+          _minutesPausePerTournament = coordinatorData[ApiJsonKeys.minutesPausePerTournament];
+          _matchesPerDate = matchesPerDate;
           _isLoading = false;
-          _matchesByDate = matchesByDate;
         });
       }
     } catch (e) {
@@ -436,7 +437,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   }
 
   Widget _buildMatchesList() {
-    if (_tournaments.isEmpty) {
+    if (_activeTournaments.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -466,7 +467,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
     }
 
     // Check if there are any matches for the selected date
-    final hasMatches = _matchesByDate.containsKey(
+    final hasMatches = _matchesPerDate.containsKey(
       DateTime(
         _selectedDate.year,
         _selectedDate.month,
@@ -504,10 +505,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _tournaments.length,
+      itemCount: _activeTournaments.length,
       itemBuilder: (context, index) {
-        final tournament = _tournaments[index];
-        final matches = (_matchesByTournament[tournament.id] ?? []).where((
+        final tournament = _activeTournaments[index];
+        final matches = (_matchesPerTournament[tournament.id] ?? []).where((
           match,
         ) {
           final matchDate = DateTime(
@@ -561,8 +562,8 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                   homeTeam: _teamsCache[match.homeTeamId],
                   awayTeam: _teamsCache[match.awayTeamId],
                   currentSport: _currentSport,
-                  minutesPerRound: _minutesPerRoundCache[tournament.id] ?? 0,
-                  minutesPerPause: _minutesPerPauseCache[tournament.id] ?? 0,
+                  minutesPerRound: _minutesRoundPerTournament[tournament.id] ?? 0,
+                  minutesPerPause: _minutesPausePerTournament[tournament.id] ?? 0,
                   onMatchUpdated: _loadData,
                 ),
               ),

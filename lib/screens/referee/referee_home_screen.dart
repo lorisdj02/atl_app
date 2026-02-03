@@ -14,6 +14,7 @@ import '../shop_screen.dart';
 import '../profile_screen.dart';
 import 'available_matches_screen.dart';
 import 'past_assigned_matches_screen.dart';
+import '../../config/api_json_keys.dart';
 
 class RefereeHomeScreen extends StatefulWidget {
   const RefereeHomeScreen({super.key});
@@ -28,10 +29,10 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
   List<FootballMatch> _assignedMatches = [];
-  Map<DateTime, List<FootballMatch>> _matchesByDate = {};
+  Map<DateTime, List<FootballMatch>> _matchesPerDate = {};
   Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesPerRoundCache = {};
-  Map<int, int?> _minutesPerPauseCache = {};
+  Map<int, int?> _minutesRoundPerTournament = {};
+  Map<int, int?> _minutesPausePerTournament = {};
   final ScrollController _dayScrollController = ScrollController();
 
   @override
@@ -101,7 +102,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
       );
 
       // Sort matches by scheduled start time
-      final assignedMatches = data['assignedMatches'] as List<FootballMatch>;
+      final assignedMatches = data[ApiJsonKeys.assignedMatches] as List<FootballMatch>;
       assignedMatches.sort((a, b) {
         if (a.scheduledStart == null && b.scheduledStart == null) return 0;
         if (a.scheduledStart == null) return 1;
@@ -109,7 +110,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         return a.scheduledStart!.compareTo(b.scheduledStart!);
       });
 
-      Map<DateTime, List<FootballMatch>> matchesByDate = {};
+      Map<DateTime, List<FootballMatch>> matchesPerDate = {};
 
       for (var match in assignedMatches) {
         if (match.scheduledStart != null) {
@@ -118,18 +119,18 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
             match.scheduledStart!.month,
             match.scheduledStart!.day,
           );
-          matchesByDate.putIfAbsent(dateOnly, () => []).add(match);
+          matchesPerDate.putIfAbsent(dateOnly, () => []).add(match);
         }
       }
 
       if (mounted) {
         setState(() {
           _assignedMatches = assignedMatches;
-          _teamsCache = data['teamsCache'] as Map<int, Team>;
-          _minutesPerRoundCache = data['minutesPerRoundCache'] as Map<int, int?>;
-          _minutesPerPauseCache = data['minutesPerPauseCache'] as Map<int, int?>;
+          _teamsCache = data[ApiJsonKeys.teamsCache] as Map<int, Team>;
+          _minutesRoundPerTournament = data[ApiJsonKeys.minutesRoundPerTournament] as Map<int, int?>;
+          _minutesPausePerTournament = data[ApiJsonKeys.minutesPausePerTournament] as Map<int, int?>;
+          _matchesPerDate = matchesPerDate;
           _isLoading = false;
-          _matchesByDate = matchesByDate;
         });
       }
     } catch (e) {
@@ -404,7 +405,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
       _selectedDate.month,
       _selectedDate.day,
     );
-    final matchesForDay = _matchesByDate[selectedDateOnly] ?? [];
+    final matchesForDay = _matchesPerDate[selectedDateOnly] ?? [];
 
     if (matchesForDay.isEmpty) {
       return Center(
@@ -448,8 +449,8 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
             homeTeam: _teamsCache[match.homeTeamId],
             awayTeam: _teamsCache[match.awayTeamId],
             currentSport: _currentSport,
-            minutesPerRound: _minutesPerRoundCache[match.tournamentId] ?? 0,
-            minutesPerPause: _minutesPerPauseCache[match.tournamentId] ?? 0,
+            minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
+            minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
             onMatchUpdated: _loadData,
           ),
         );

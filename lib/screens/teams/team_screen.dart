@@ -1,3 +1,4 @@
+import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,7 @@ class _TeamScreenState extends State<TeamScreen>
   Key _scaffoldKey = UniqueKey(); // Chiave per forzare rebuild
 
   // Cache unificata: associa teamId -> team e captainName
-  Map<int, Team> _teamCache = {};
+  Map<int, Team> _teamsCache = {};
   Map<int, String> _captainNamePerTeam = {};
 
   // Filtri
@@ -137,7 +138,7 @@ class _TeamScreenState extends State<TeamScreen>
     _tabController?.dispose();
     _searchController.dispose();
     // Svuota la cache solo quando si esce dalla sezione team
-    _teamCache.clear();
+    _teamsCache.clear();
     super.dispose();
   }
 
@@ -150,14 +151,14 @@ class _TeamScreenState extends State<TeamScreen>
       );
       final isPlayer = userProvider.activeUser?.role == UserRole.player;
 
-      final data = await DBRead.getTeamScreen(widget.currentSport);
-      final Map<int, Team> teamCache = data['teamCache'];
-      final Map<int, String> captainNamePerTeam = data['captainNamePerTeam'];
+      final data = await DBRead.getTeamsScreen(widget.currentSport);
+      final Map<int, Team> teamsCache = data[ApiJsonKeys.teamsCache];
+      final Map<int, String> captainNamePerTeam = data[ApiJsonKeys.captainNamePerTeam];
 
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
 
-      List<Team> teams = teamCache.values.toList();
+      List<Team> teams = teamsCache.values.toList();
       // In "Ranks" ordina per rankPts - con controllo null-safe
       if (_tabController != null && _tabController!.index == ranksTabIndex) {
         teams.sort((a, b) => (b.rankPts ?? 0).compareTo(a.rankPts ?? 0));
@@ -165,7 +166,7 @@ class _TeamScreenState extends State<TeamScreen>
 
       setState(() {
         _teams = teams;
-        _teamCache = teamCache;
+        _teamsCache = teamsCache;
         _captainNamePerTeam = captainNamePerTeam;
         _isLoading = false;
       });
@@ -503,7 +504,7 @@ class _TeamScreenState extends State<TeamScreen>
                     if (currentTab == 0)
                       Container(
                         decoration: BoxDecoration(
-                          color: ATLColors.darkBlue,
+                          color: ATLColors.getPrimaryColor(widget.currentSport),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextButton.icon(
