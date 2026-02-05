@@ -1,9 +1,11 @@
 import 'package:atl_app/models/booking.dart';
+import 'package:atl_app/models/city.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/football_standing.dart';
 import 'package:atl_app/models/lobby_booking.dart';
+import 'package:atl_app/models/lobby_booking_participation.dart';
 import 'package:atl_app/models/palmares.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/private_bookings.dart';
@@ -29,6 +31,14 @@ class DBRead {
       Map<int, int> minutesPausePerTournament = {};
       Map<int, List<FootballMatch>> matchesPerTournament = {};
       Map<int, List<FootballStanding>> standingsPerTournament = {};
+      Map<int, Field> fieldCache = {};
+      Map<int, String> completeAddressPerField = {};
+
+      Map<int, String> usernamePerBooking = {};
+      Map<int, int> maxPlayersPerLobby = {};
+      Map<int, int> currentPlayersPerLobby = {};
+      Map<int, int> playersPaidPerBooking = {};
+
       Team? userTeam;
 
       int? teamId;
@@ -51,9 +61,20 @@ class DBRead {
           )).map((p) => p.lobbyBookingId).toList();
       List<LobbyBooking> lobbyBookings = [];
       for (var lobbyBookingId in lobbyBookingsIds) {
-        final lobbyBooking = await DB.LobbyBookings.getById(lobbyBookingId);
+        final LobbyBooking? lobbyBooking = await DB.LobbyBookings.getById(
+          lobbyBookingId,
+        );
         if (lobbyBooking != null) {
           lobbyBookings.add(lobbyBooking);
+          final lobbyData = await getLobbyInfo(lobbyBookingId, playerId);
+          usernamePerBooking[lobbyBooking.id] =
+              lobbyData[ApiJsonKeys.usernamePerBooking];
+          maxPlayersPerLobby[lobbyBooking.id] =
+              lobbyData[ApiJsonKeys.maxPlayersPerLobby];
+          currentPlayersPerLobby[lobbyBooking.id] =
+              lobbyData[ApiJsonKeys.currentPlayersPerLobby];
+          playersPaidPerBooking[lobbyBooking.id] =
+              lobbyData[ApiJsonKeys.playersPaidPerBooking];
         }
       }
 
@@ -70,6 +91,18 @@ class DBRead {
       });
 
       bookings = allBookings;
+
+      for (var booking in bookings) {
+        Field field = await DB.Fields.getById(booking.fieldId);
+        if (!fieldCache.containsKey(field.id)) {
+          fieldCache[field.id] = field;
+        }
+        if (!completeAddressPerField.containsKey(field.id)) {
+          final city = await DB.Cities.getById(field.cityId);
+          String cityName = city != null ? city.name : 'Unknown';
+          completeAddressPerField[field.id] = "${field.address}, $cityName";
+        }
+      }
 
       // Load user's team using teamId from user
       if (teamId != null &&
@@ -139,6 +172,12 @@ class DBRead {
         ApiJsonKeys.standingsPerTournament: standingsPerTournament,
         ApiJsonKeys.teamsCache: teamsCache,
         ApiJsonKeys.userTeam: userTeam,
+        ApiJsonKeys.usernamePerBooking: usernamePerBooking,
+        ApiJsonKeys.fieldCache: fieldCache,
+        ApiJsonKeys.maxPlayersPerLobby: maxPlayersPerLobby,
+        ApiJsonKeys.currentPlayersPerLobby: currentPlayersPerLobby,
+        ApiJsonKeys.completeAddressPerField: completeAddressPerField,
+        ApiJsonKeys.playersPaidPerBooking: playersPaidPerBooking,
       };
     } else {
       throw UnimplementedError();
@@ -519,6 +558,115 @@ class DBRead {
       return {
         ApiJsonKeys.players: players,
         ApiJsonKeys.historicalPlayers: historicalPlayers,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getLobbyInfo(
+    int lobbyBookingId,
+    int playerId,
+  ) async {
+    if (AppConfig.isDebug) {
+      String username = '';
+      int maxPlayers = 0;
+      int currentPlayers = 0;
+      String completeAddress = '';
+      int playersPaid = 0;
+      Field field;
+
+      final LobbyBooking? lobbyBooking = await DB.LobbyBookings.getById(
+        lobbyBookingId,
+      );
+      if (lobbyBooking == null) {
+        throw Exception("LobbyBooking not found");
+      }
+
+      field = await DB.Fields.getById(lobbyBooking.fieldId);
+
+      final city = await DB.Cities.getById(field.cityId);
+      String cityName = city != null ? city.name : 'Unknown';
+      completeAddress = "${field.address}, $cityName";
+
+      final Player? owner = await DB.Players.getByPlayerId(
+        lobbyBooking.ownerId,
+      );
+
+      if (owner != null) {
+        username = "${owner.username} (${owner.name} ${owner.surname})";
+      }
+
+      maxPlayers = lobbyBooking.maxPlayers;
+
+      currentPlayers = await DB.LobbyBookingParticipations.getParticipantCount(
+        lobbyBooking.id,
+      );
+
+      LobbyBookingParticipation? participation =
+          await DB.LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
+            playerId,
+            lobbyBooking.id,
+          );
+
+      if (participation != null) {
+        playersPaid = participation.playersPaid;
+      }
+
+      return {
+        ApiJsonKeys.bookings: lobbyBooking,
+        ApiJsonKeys.usernamePerBooking: username,
+        ApiJsonKeys.maxPlayersPerLobby: maxPlayers,
+        ApiJsonKeys.currentPlayersPerLobby: currentPlayers,
+        ApiJsonKeys.completeAddressPerField: completeAddress,
+        ApiJsonKeys.playersPaidPerBooking: playersPaid,
+        ApiJsonKeys.fields: field,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getJoinLobbyScreen(
+    int playerId,
+    int? totalPlayers,
+    int? selectedCity,
+    DateTime? startTime,
+    DateTime? endTime,
+  ) async {
+    if (AppConfig.isDebug) {
+      Map<int, String> usernamePerBooking = {};
+      Map<int, int> maxPlayersPerLobby = {};
+      Map<int, int> currentPlayersPerLobby = {};
+      Map<int, int> playersPaidPerBooking = {};
+      List<City> availableCities = await DB.Cities.getAll();
+
+      List<LobbyBooking> lobbies =
+          await DB.LobbyBookings.getBookedLobbyBookings(
+            totalPlayers,
+            selectedCity,
+            startTime,
+            endTime,
+            null,
+          );
+
+      for (var lobby in lobbies) {
+        final data = await getLobbyInfo(lobby.id, playerId);
+        usernamePerBooking[lobby.id] = data[ApiJsonKeys.usernamePerBooking];
+        maxPlayersPerLobby[lobby.id] = data[ApiJsonKeys.maxPlayersPerLobby];
+        currentPlayersPerLobby[lobby.id] =
+            data[ApiJsonKeys.currentPlayersPerLobby];
+        playersPaidPerBooking[lobby.id] =
+            data[ApiJsonKeys.playersPaidPerBooking];
+      }
+
+      return {
+        ApiJsonKeys.usernamePerBooking: usernamePerBooking,
+        ApiJsonKeys.bookings: lobbies,
+        ApiJsonKeys.maxPlayersPerLobby: maxPlayersPerLobby,
+        ApiJsonKeys.currentPlayersPerLobby: currentPlayersPerLobby,
+        ApiJsonKeys.playersPaidPerBooking: playersPaidPerBooking,
+        ApiJsonKeys.cities: availableCities,
       };
     } else {
       throw UnimplementedError();

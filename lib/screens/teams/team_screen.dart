@@ -369,11 +369,6 @@ class _TeamScreenState extends State<TeamScreen>
     final showMyTeamTab =
         !isGuest && isPlayer && teamId != null && teamId != -1;
 
-    // Debug: verifica lo stato
-    print(
-      'DEBUG TeamScreen - isGuest: $isGuest, isPlayer: $isPlayer, showMyTeamTab: $showMyTeamTab, role: ${userProvider.activeUser?.role}',
-    );
-
     return Scaffold(
       key: _scaffoldKey, // Aggiungi chiave per forzare rebuild
       backgroundColor: ATLColors.background,
@@ -410,9 +405,9 @@ class _TeamScreenState extends State<TeamScreen>
                 },
               )
             : null,
-        title: const Text(
-          'TEAM',
-          style: TextStyle(
+        title: Text(
+          '${widget.currentSport.name.toUpperCase()} TEAMS',
+          style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -504,7 +499,7 @@ class _TeamScreenState extends State<TeamScreen>
                     if (currentTab == 0)
                       Container(
                         decoration: BoxDecoration(
-                          color: ATLColors.getPrimaryColor(widget.currentSport),
+                          color: ATLColors.darkBlue,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: TextButton.icon(

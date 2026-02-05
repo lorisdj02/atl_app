@@ -21,11 +21,9 @@ class LobbyBookingParticipationRepository
 
   Future<List<LobbyBookingParticipation>> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
-      return Future.value(
-        _mockdata
-            .where((participation) => participation.playerId == playerId)
-            .toList(),
-      );
+      return _mockdata
+          .where((participation) => participation.playerId == playerId)
+          .toList();
     } else {
       throw UnimplementedError();
     }
@@ -35,13 +33,11 @@ class LobbyBookingParticipationRepository
     int lobbyBookingId,
   ) async {
     if (AppConfig.isDebug) {
-      return Future.value(
-        _mockdata
-            .where(
-              (participation) => participation.lobbyBookingId == lobbyBookingId,
-            )
-            .toList(),
-      );
+      return _mockdata
+          .where(
+            (participation) => participation.lobbyBookingId == lobbyBookingId,
+          )
+          .toList();
     } else {
       throw UnimplementedError();
     }
@@ -52,14 +48,15 @@ class LobbyBookingParticipationRepository
     int lobbyBookingId,
   ) async {
     if (AppConfig.isDebug) {
-      return Future.value(
-        _mockdata.firstWhere(
+      try {
+        return _mockdata.firstWhere(
           (participation) =>
               participation.playerId == playerId &&
               participation.lobbyBookingId == lobbyBookingId,
-          orElse: () => Future.value(null) as LobbyBookingParticipation,
-        ),
-      );
+        );
+      } catch (e) {
+        return null;
+      }
     } else {
       throw UnimplementedError();
     }
@@ -72,7 +69,7 @@ class LobbyBookingParticipationRepository
             participation.playerId == playerId &&
             participation.lobbyBookingId == lobbyBookingId,
       );
-      return Future.value(true);
+      return true;
     } else {
       throw UnimplementedError();
     }
@@ -85,7 +82,7 @@ class LobbyBookingParticipationRepository
             participation.playerId == playerId &&
             participation.lobbyBookingId == lobbyBookingId,
       );
-      return Future.value(exists);
+      return exists;
     } else {
       throw UnimplementedError();
     }
@@ -105,7 +102,8 @@ class LobbyBookingParticipationRepository
       );
       _mockdata.add(participation);
 
-      return Future.value(true);
+
+      return true;
     } else {
       throw UnimplementedError();
     }
@@ -116,7 +114,7 @@ class LobbyBookingParticipationRepository
       _mockdata.removeWhere(
         (participation) => participation.lobbyBookingId == lobbyBookingId,
       );
-      return Future.value(true);
+      return true;
     } else {
       throw UnimplementedError();
     }

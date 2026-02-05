@@ -20,6 +20,15 @@ class ApiJsonKeys {
   static const String teamsCache = 'teamsCache'; // Map<int, Team>
   // PlayerHomeScreen,
   static const String userTeam = 'userTeam'; // Team?
+  // PlayerHomeScreen,
+  static const String maxPlayersPerLobby = 'maxPlayersPerLobby'; // Map<int, int>
+  // PlayerHomeScreen,
+  static const String currentPlayersPerLobby = 'currentPlayersPerLobby'; // Map<int, int>
+  // PlayerHomeScreen,
+  static const String completeAddressPerField = 'completeAddressPerField'; // Map<int, String>
+  // PlayerHomeScreen,
+  static const String playersPaidPerBooking = 'playersPaidPerBooking'; // Map<int, int>
+
 
   // RefereeHomeScreen
   static const String assignments = 'assignments'; // List<RefereeAssignment>
@@ -37,7 +46,7 @@ class ApiJsonKeys {
   // OrganizationHomeScreen
   static const String matchPerBooking =
       'matchPerBooking'; // Map<int, FootballMatch>
-  // OrganizationHomeScreen
+  // OrganizationHomeScreen, PlayerHomeScreen
   static const String usernamePerBooking =
       'usernamePerBooking'; // Map<int, String>
   // OrganizationHomeScreen
@@ -65,4 +74,8 @@ class ApiJsonKeys {
       'playerStatsCache'; // Map<int, TeamStats>
   // AbstractTeamScreen
   static const String historicalPlayers = 'historicalPlayers'; // List<Player>
+
+  // JoinLobbyScreen
+  static const String cities = 'cities'; // List<City>
+
 }

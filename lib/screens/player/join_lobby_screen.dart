@@ -1,13 +1,15 @@
+import 'package:atl_app/config/api_json_keys.dart';
+import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../database/db_controller.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/sport_category.dart';
 import '../../models/city.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/booking_widget.dart';
+import '../../models/field.dart';
 
 class JoinLobbyScreen extends StatefulWidget {
   final SportCategory sportCategory;
@@ -28,8 +30,12 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   int? _maxPlayersToPay;
 
   List<LobbyBooking> _availableLobbies = [];
-  Map<int, bool> _participationStatus = {};
   bool _isLoading = false;
+
+  Map<int, Field> _fieldCache = {};
+  Map<int, String> _completeAddressPerField = {};
+  Map<int, String> _usernamePerBooking = {};
+  Map<int, int> _playersPaidPerBooking = {};
 
   final List<int> _availablePlayerCounts = [10, 14, 16, 18, 22];
   List<City> _availableCities = [];
@@ -37,25 +43,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCities();
     _loadLobbies();
-  }
-
-  Future<void> _loadCities() async {
-    try {
-      final cities = await DB.Cities.getAll();
-      if (mounted) {
-        setState(() {
-          _availableCities = cities;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel caricamento città: $e')),
-        );
-      }
-    }
   }
 
   Future<void> _loadLobbies() async {
@@ -103,14 +91,15 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         }
       }
 
-      List<LobbyBooking> lobbies =
-          await DB.LobbyBookings.getBookedLobbyBookings(
-            _selectedTotalPlayers,
-            _selectedCity,
-            startDateTime,
-            endDateTime,
-            null,
-          );
+      final data = await DBRead.getJoinLobbyScreen(
+        playerId,
+        _selectedTotalPlayers,
+        _selectedCity,
+        startDateTime,
+        endDateTime,
+      );
+
+      List<LobbyBooking> lobbies = data[ApiJsonKeys.bookings] as List<LobbyBooking>;
 
       // Filter out lobbies where current user is the owner
       lobbies = lobbies.where((lobby) => lobby.ownerId != playerId).toList();
@@ -122,17 +111,13 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
             .toList();
       }
 
-      // Check participation status for each lobby
-      final participationStatus = <int, bool>{};
-      for (var lobby in lobbies) {
-        final isParticipating = await DB
-            .LobbyBookingParticipations.isParticipating(playerId, lobby.id);
-        participationStatus[lobby.id] = isParticipating;
-      }
-
       setState(() {
         _availableLobbies = lobbies;
-        _participationStatus = participationStatus;
+        _fieldCache = data[ApiJsonKeys.fieldCache];
+        _completeAddressPerField = data[ApiJsonKeys.completeAddressPerField];
+        _usernamePerBooking = data[ApiJsonKeys.usernamePerBooking];
+        _playersPaidPerBooking = data[ApiJsonKeys.playersPaidPerBooking];
+        _availableCities = data[ApiJsonKeys.cities];
         _isLoading = false;
       });
     } catch (e) {
@@ -717,21 +702,24 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     itemBuilder: (context, index) {
                       final lobby = _availableLobbies[index];
                       final isParticipating =
-                          _participationStatus[lobby.id] ?? false;
+                          _playersPaidPerBooking[lobby.id] == 0 ? false : true;
 
                       return Column(
                         children: [
                           BookingWidget(
-                            fieldId: lobby.fieldId,
+                            playersPaid: _playersPaidPerBooking[lobby.id] ?? 0,
+                            field: _fieldCache[lobby.fieldId]!,
                             startTime: lobby.startTime,
                             finishTime: lobby.finishTime,
-                            ownerId: lobby.ownerId,
+                            ownerUsername: _usernamePerBooking[lobby.id],
                             currentSport: widget.sportCategory,
-                            bookingId: lobby.id,
+                            booking: lobby,
                             isDeletable: false,
+                            completeAddress:
+                                _completeAddressPerField[lobby.fieldId]!,
                           ),
                           const SizedBox(height: 12),
-                          if (!isParticipating)
+                          if (_playersPaidPerBooking[lobby.id] == 0)
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton.icon(

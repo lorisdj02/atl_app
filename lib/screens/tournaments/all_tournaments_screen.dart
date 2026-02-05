@@ -415,7 +415,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
         automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text(
-          AppLocalizations.of(context).tournaments.toUpperCase(),
+          "${widget.currentSport.name.toUpperCase()} TOURNAMENTS", // "TOURNAMENTS" LOCALIZZATO
           style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,

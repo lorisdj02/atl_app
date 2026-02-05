@@ -198,6 +198,9 @@ class DBWrite {
         return false;
       }
 
+      print('Lobby $id created with owner $ownerId');
+      print('Max players: $maxPlayers, Players to find: $playerToFind');
+
       return true;
     } else {
       throw UnimplementedError();

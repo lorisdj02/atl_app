@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/private_bookings.dart';
 import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +47,16 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   Map<int, int> _minutesPausePerTournament = {};
   Map<int, List<FootballMatch>> _matchesPerTournament = {};
   Map<int, List<FootballStanding>> _standingsPerTournament = {};
+  Map<int, String> _usernamePerBooking = {};
+  Map<int, Field> _fieldCache = {};
+
+  Map<int, int> _maxPlayersPerLobby = {};
+  Map<int, int> _currentPlayersPerLobby = {};
+  Map<int, int> _playersPaidPerBooking = {};
+  Map<int, String> _completeAddressPerField = {};
+
   Map<int, Team> _teamsCache = {};
+
   Team? _userTeam;
   List<dynamic> _bookings = [];
   bool _isLoading = true;
@@ -65,28 +75,54 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     });
 
     try {
-
       final Map<String, dynamic> playerHomeData =
           await DBRead.getPlayerHomeScreen(
             playerId: playerId,
             currentSport: _currentSport,
           );
 
-      print('Player home data loaded: $playerHomeData');
+      List<dynamic> bookings = playerHomeData[ApiJsonKeys.bookings];
+
+      bookings.sort((a, b) {
+        DateTime aStart;
+        DateTime bStart;
+        DateTime aCreated;
+        DateTime bCreated;
+
+        aStart = a.startTime;
+        bStart = b.startTime;
+        aCreated = a.createdAt;
+        bCreated = b.createdAt;
+
+        if (aStart != bStart) {
+          return aStart.compareTo(bStart);
+        }
+        return aCreated.compareTo(bCreated);
+      });
 
       if (mounted) {
         setState(() {
-          _bookings = playerHomeData[ApiJsonKeys.bookings];
-          _activeTournaments =
-              playerHomeData[ApiJsonKeys.activeTournaments];
-          _minutesRoundPerTournament = playerHomeData[ApiJsonKeys.minutesRoundPerTournament];
-          _minutesPausePerTournament = playerHomeData[ApiJsonKeys.minutesPausePerTournament];
+          _bookings = bookings;
+          _activeTournaments = playerHomeData[ApiJsonKeys.activeTournaments];
+          _minutesRoundPerTournament =
+              playerHomeData[ApiJsonKeys.minutesRoundPerTournament];
+          _minutesPausePerTournament =
+              playerHomeData[ApiJsonKeys.minutesPausePerTournament];
           _matchesPerTournament =
               playerHomeData[ApiJsonKeys.matchesPerTournament];
           _standingsPerTournament =
               playerHomeData[ApiJsonKeys.standingsPerTournament];
           _teamsCache = playerHomeData[ApiJsonKeys.teamsCache];
           _userTeam = playerHomeData[ApiJsonKeys.userTeam];
+          _usernamePerBooking = playerHomeData[ApiJsonKeys.usernamePerBooking];
+          _fieldCache = playerHomeData[ApiJsonKeys.fieldCache];
+          _maxPlayersPerLobby = playerHomeData[ApiJsonKeys.maxPlayersPerLobby];
+          _currentPlayersPerLobby =
+              playerHomeData[ApiJsonKeys.currentPlayersPerLobby];
+          _completeAddressPerField =
+              playerHomeData[ApiJsonKeys.completeAddressPerField];
+          _playersPaidPerBooking =
+              playerHomeData[ApiJsonKeys.playersPaidPerBooking];
           _isLoading = false;
         });
       }
@@ -215,7 +251,14 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
                   // Se è stata creata una prenotazione, ricarica i dati
                   if (result == true) {
-                    _loadPlayerData();
+                    await _loadPlayerData();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Field booked successfully!'),
+                        ),
+                      );
+                    }
                   }
                 },
                 child: Container(
@@ -398,18 +441,21 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               : (booking as LobbyBooking).id;
           return BookingWidget(
             key: ValueKey('${isPrivate ? 'private' : 'lobby'}_$bookingId'),
-            fieldId: isPrivate
-                ? booking.fieldId
-                : (booking as LobbyBooking).fieldId,
+            field: _fieldCache[booking.fieldId]!,
+            completeAddress:
+                _completeAddressPerField[booking.fieldId] ?? 'Unknown address',
+            booking: booking,
             startTime: isPrivate
                 ? booking.startTime
                 : (booking as LobbyBooking).startTime,
             finishTime: isPrivate
                 ? booking.finishTime
                 : (booking as LobbyBooking).finishTime,
-            ownerId: booking is LobbyBooking ? booking.ownerId : null,
+            ownerUsername: isPrivate ? null : _usernamePerBooking[bookingId],
             currentSport: _currentSport,
-            bookingId: bookingId,
+            playersPaid: isPrivate
+                ? null
+                : _playersPaidPerBooking[bookingId] ?? 0,
             onBookingDeleted: () {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
@@ -463,7 +509,15 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
                   // Se è stata creata una prenotazione, ricarica i dati
                   if (result == true) {
-                    _loadPlayerData();
+                    await _loadPlayerData();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Booking created successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
                   }
                 },
                 icon: const Icon(Icons.stadium, size: 28),
