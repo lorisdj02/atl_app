@@ -1,23 +1,34 @@
+import 'dart:ffi';
+
+import 'package:atl_app/models/coordinator.dart';
+import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
-import '../screens/tournaments/tournament_detail_screen.dart';
 import 'package:provider/provider.dart';
+import '../database/db_controller.dart';
 import '../providers/user_provider.dart';
 
 /// Widget per visualizzare una card torneo
 
 class TournamentCard extends StatefulWidget {
   final Tournament tournament;
+  final Field field;
+  final Coordinator coordinator;
   final SportCategory currentSport;
   final VoidCallback? onTap;
+  final VoidCallback? onFavoriteToggle;
+  final String cityName;
 
   const TournamentCard({
     super.key,
     required this.tournament,
     required this.currentSport,
+    required this.field,
+    required this.coordinator,
+    required this.cityName,
+    this.onFavoriteToggle,
     this.onTap,
   });
 
@@ -31,238 +42,76 @@ class _TournamentCardStatus extends State<TournamentCard> {
   @override
   void initState() {
     super.initState();
-    isFavorite = widget.tournament.isFavorite ?? false;
-  }
-
-  Future<Map<String, String>> _loadCardData() async {
-    final coordinator = await DB.Coordinators.getByCoordinatorId(
-      widget.tournament.coordinatorId,
-    );
-    final field = await DB.Fields.getById(widget.tournament.fieldId);
-    final city = await DB.Cities.getById(widget.tournament.cityId);
-
-    return {
-      'coordinatorUsername': coordinator?.username ?? 'Unknown',
-      'fieldName': field?.name ?? 'Unknown',
-      'cityName': city?.name ?? 'Unknown',
-    };
+    isFavorite = widget.tournament.isFavorite;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, String>>(
-      future: _loadCardData(),
-      builder: (context, snapshot) {
-        // Mostra placeholder mentre carica
-        if (!snapshot.hasData) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            height: 140,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: ATLColors.darkBlue,
-                ),
-              ),
-            ),
-          );
-        }
+    // Use provided attributes directly (no DB calls for display)
+    final coordinatorUsername = widget.coordinator.username;
+    final fieldName = widget.field.name;
+    final cityName = widget.cityName;
 
-        final data = snapshot.data!;
-
-        return GestureDetector(
-          onTap: () {
-            // Naviga alla schermata di dettaglio del torneo
-            if (widget.onTap != null) {
-              widget.onTap!();
-            }
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: _getBackgroundColor(),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        if (widget.onTap != null) widget.onTap!();
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _getBackgroundColor(),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header: Logo/Color indicator + Coordinator + Teams count + Favorite
+            Row(
               children: [
-                // Header: Logo/Color indicator + Coordinator + Teams count + Favorite
-                Row(
-                  children: [
-                    // Logo ATL o color indicator
-                    _buildLeadingIndicator(),
-                    const SizedBox(width: 12),
+                // Logo ATL o color indicator
+                _buildLeadingIndicator(),
+                const SizedBox(width: 12),
 
-                    // Coordinator info
-                    Expanded(
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.person,
-                            size: 16,
-                            color: ATLColors.darkBlue,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            data['coordinatorUsername']!,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: ATLColors.darkBlue,
-                            ),
-                          ),
-                        ],
+                // Coordinator info
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.person,
+                        size: 16,
+                        color: ATLColors.darkBlue,
                       ),
-                    ),
-
-                    // Teams count
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.group,
-                          size: 16,
-                          color: ATLColors.darkBlue,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${widget.tournament.paidTeams}/${widget.tournament.numTeams}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: ATLColors.darkBlue,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    // Favorite button
-                    if (_canAddToFavorites())
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            // Toggle favorite/participating status
-                            if (widget.tournament.isParticipating!) {
-                              // Se partecipo, non posso togliere il preferito
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Cannot change favorite status while participating.',
-                                  ),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                              return;
-                            }
-
-                            int userId = Provider.of<UserProvider>(
-                              context,
-                              listen: false,
-                            ).activeUser!.id;
-                            Future.microtask(() async {
-                              await DB.Tournaments.toggleFavoriteStatus(
-                                widget.tournament.id,
-                                userId,
-                              );
-                            });
-
-                            isFavorite = !isFavorite;
-
-                            print(
-                              'Tournament ${widget.tournament.id} favorite status: $isFavorite',
-                            );
-                          });
-                        },
-                        child: Icon(
-                          _getFavoriteIcon(),
-                          color: _getFavoriteColor(),
-                          size: 24,
-                        ),
-                      ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Tournament name + Prize
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.tournament.name,
+                      const SizedBox(width: 4),
+                      Text(
+                        coordinatorUsername,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                           color: ATLColors.darkBlue,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Prize in grassetto affianco al nome
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.emoji_events,
-                          size: 18,
-                          color: Colors.amber,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.tournament.formattedPrize1,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: ATLColors.darkBlue,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 8),
-
-                // Location and fee
+                // Teams count
                 Row(
                   children: [
-                    // Location
                     const Icon(
-                      Icons.location_on,
+                      Icons.group,
                       size: 16,
-                      color: ATLColors.subtext,
+                      color: ATLColors.darkBlue,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${data['fieldName']!}, ${data['cityName']!}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: ATLColors.subtext,
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // Fee
-                    const Icon(Icons.payments, size: 16, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text(
-                      widget.tournament.formattedFee,
+                      '${widget.tournament.paidTeams}/${widget.tournament.numTeams}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -271,11 +120,125 @@ class _TournamentCardStatus extends State<TournamentCard> {
                     ),
                   ],
                 ),
+
+                const SizedBox(width: 12),
+
+                // Favorite button
+                if (_canAddToFavorites())
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (widget.tournament.isParticipating) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Cannot change favorite status while participating.',
+                              ),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          return;
+                        }
+
+                        int userId = Provider.of<UserProvider>(
+                          context,
+                          listen: false,
+                        ).activeUser!.id;
+                        Future.microtask(() async {
+                          await DB.Tournaments.toggleFavoriteStatus(
+                            widget.tournament.id,
+                            userId,
+                          );
+                        });
+
+                        isFavorite = !isFavorite;
+                        if (widget.onFavoriteToggle != null) {
+                          widget.onFavoriteToggle!();
+                        }
+                      });
+                    },
+                    child: Icon(
+                      _getFavoriteIcon(),
+                      color: _getFavoriteColor(),
+                      size: 24,
+                    ),
+                  ),
               ],
             ),
-          ),
-        );
-      },
+
+            const SizedBox(height: 12),
+
+            // Tournament name + Prize
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.tournament.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ATLColors.darkBlue,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.emoji_events,
+                      size: 18,
+                      color: Colors.amber,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.tournament.formattedPrize1,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: ATLColors.darkBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Location and fee
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  size: 16,
+                  color: ATLColors.subtext,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '$fieldName, $cityName',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: ATLColors.subtext,
+                  ),
+                ),
+
+                const Spacer(),
+
+                const Icon(Icons.payments, size: 16, color: Colors.green),
+                const SizedBox(width: 4),
+                Text(
+                  widget.tournament.formattedFee,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: ATLColors.darkBlue,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -334,14 +297,14 @@ class _TournamentCardStatus extends State<TournamentCard> {
 
   /// Icona del cuore (pieno o vuoto)
   IconData _getFavoriteIcon() {
-    return (widget.tournament.isParticipating! || isFavorite)
+    return (widget.tournament.isParticipating || isFavorite)
         ? Icons.favorite
         : Icons.favorite_border;
   }
 
   /// Colore del cuore preferiti
   Color _getFavoriteColor() {
-    if (widget.tournament.isParticipating!) {
+    if (widget.tournament.isParticipating) {
       return ATLColors.getPrimaryColor(
         widget.currentSport,
       ); // Verde se partecipo (precedenza)

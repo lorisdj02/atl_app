@@ -1,3 +1,4 @@
+import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
 import '../database/db_controller.dart';
 import '../models/team.dart';
@@ -20,7 +21,7 @@ class SearchDialogWidget extends StatefulWidget {
     required this.isTeam,
     required this.isTournament,
     this.onFound,
-  }) : assert(isTeam != isTournament, 'isTeam and isTournament must be opposites');
+  }) : assert(isTeam != isTournament, 'Must specify either team or tournament search');
 
   @override
   State<SearchDialogWidget> createState() => _SearchDialogWidgetState();

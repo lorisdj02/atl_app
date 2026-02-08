@@ -1,5 +1,7 @@
 import 'package:atl_app/config/app_config.dart';
+import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/sport_category.dart';
+import 'package:flutter/material.dart';
 import '../db_controller.dart';
 import '../../models/tournament.dart';
 import 'base_repository.dart';
@@ -265,14 +267,20 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
-  Future<List<Tournament>> getByCoordinatorAndCategory(int coordinatorId, SportCategory category) async {
+  Future<List<Tournament>> getByCoordinatorAndCategory(
+    int coordinatorId,
+    SportCategory category,
+  ) async {
     if (AppConfig.isDebug) {
       final sportIds = (await DB.Sports.getByCategory(
         category,
       )).map((s) => s.id).toList();
       final tournaments = _mockData
-          .where((t) =>
-              t.coordinatorId == coordinatorId && sportIds.contains(t.sportId))
+          .where(
+            (t) =>
+                t.coordinatorId == coordinatorId &&
+                sportIds.contains(t.sportId),
+          )
           .toList();
       return tournaments;
     } else {
@@ -289,11 +297,51 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
+  Future<List<Tournament>> getFilteredTournaments({
+    int? cityId,
+    int? numTeams,
+    RangeValues? prizeRange,
+    RangeValues? feeRange,
+    String? nameOrCode,
+    required SportCategory sportCategory,
+  }) async {
+    if (AppConfig.isDebug) {
+      final List<Sport> sports = await DB.Sports.getByCategory(sportCategory);
+
+      final List<Tournament> filtered = _mockData.where((t) {
+        if (cityId != null && t.cityId != cityId) return false;
+        if (numTeams != null && t.numTeams != numTeams) return false;
+        if (prizeRange != null &&
+            (t.prize1 < prizeRange.start || t.prize1 > prizeRange.end)) {
+          return false;
+        }
+        if (feeRange != null &&
+            (t.fee < feeRange.start || t.fee > feeRange.end)) {
+          return false;
+        }
+        if (nameOrCode != null &&
+            !t.name.toLowerCase().contains(nameOrCode.toLowerCase()) &&
+            t.id.toString() != nameOrCode) {
+          return false;
+        }
+
+        if (!sports.map((s) => s.id).contains(t.sportId)) return false;
+        return true;
+      }).toList();
+      return filtered;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<List<Tournament>> getActiveOwnedByCoordinatorId(
     int coordinatorId,
+    SportCategory currentSport,
   ) async {
     if (AppConfig.isDebug) {
-      List<Tournament> tournaments = await getActive();
+      List<Tournament> tournaments = await getActive(
+        sportCategory: currentSport,
+      );
       tournaments.retainWhere((t) => t.coordinatorId == coordinatorId);
 
       tournaments = tournaments
@@ -306,13 +354,24 @@ class TournamentRepository extends BaseRepository<Tournament> {
   }
 
   /// Metodo custom: ottieni tornei attivi
-  Future<List<Tournament>> getActive() async {
+  Future<List<Tournament>> getActive({SportCategory? sportCategory}) async {
     if (AppConfig.isDebug) {
+      if (sportCategory == null) {
+        return _mockData
+            .where(
+              (t) =>
+                  t.status != TournamentStatus.finished &&
+                  t.status != TournamentStatus.canceled,
+            )
+            .toList();
+      }
+      List<Sport> sports = await DB.Sports.getByCategory(sportCategory);
       return _mockData
           .where(
             (t) =>
-                t.status == TournamentStatus.scheduled ||
-                t.status == TournamentStatus.created,
+                t.status != TournamentStatus.finished &&
+                t.status != TournamentStatus.canceled &&
+                sports.map((s) => s.id).contains(t.sportId),
           )
           .toList();
     } else {
@@ -326,7 +385,7 @@ class TournamentRepository extends BaseRepository<Tournament> {
       final sportIds = (await DB.Sports.getByCategory(
         category,
       )).map((s) => s.id).toList();
-      return mockData.where((t) => sportIds.contains(t.sportId)).toList();
+      return _mockData.where((t) => sportIds.contains(t.sportId)).toList();
     } else {
       throw UnimplementedError();
     }
@@ -335,12 +394,13 @@ class TournamentRepository extends BaseRepository<Tournament> {
   Future<List<Tournament>> getActiveParticipatingTournamentByPlayerAndTeam(
     int playerId,
     int teamId,
+    SportCategory currentSport,
   ) async {
     if (AppConfig.isDebug) {
       // In modalità debug, restituisci tutti i tornei come preferiti
-      List<int> activeTournamentsId = (await getActive())
-          .map((t) => t.id)
-          .toList();
+      List<int> activeTournamentsId = (await getActive(
+        sportCategory: currentSport,
+      )).map((t) => t.id).toList();
       List<int> callupsTournamentsIds = (await DB.CallUps.getByPlayerAndTeam(
         playerId,
         teamId,
@@ -353,7 +413,6 @@ class TournamentRepository extends BaseRepository<Tournament> {
           .where((t) => activeTournamentsId.contains(t.id))
           .toList();
       return participatingTournaments;
-      //return (await getActive()).where((t) => t.isFavorite == true || t.isParticipating == true).toList();
     } else {
       throw UnimplementedError();
     }

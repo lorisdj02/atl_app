@@ -79,8 +79,8 @@ class Tournament {
   TournamentPhase phase;
   final String? photoURL;
 
-  bool? isFavorite;
-  bool? isParticipating;
+  bool isFavorite;
+  bool isParticipating;
 
   Tournament({
     required this.id,

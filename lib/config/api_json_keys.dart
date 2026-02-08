@@ -21,14 +21,17 @@ class ApiJsonKeys {
   // PlayerHomeScreen,
   static const String userTeam = 'userTeam'; // Team?
   // PlayerHomeScreen,
-  static const String maxPlayersPerLobby = 'maxPlayersPerLobby'; // Map<int, int>
+  static const String maxPlayersPerLobby =
+      'maxPlayersPerLobby'; // Map<int, int>
   // PlayerHomeScreen,
-  static const String currentPlayersPerLobby = 'currentPlayersPerLobby'; // Map<int, int>
+  static const String currentPlayersPerLobby =
+      'currentPlayersPerLobby'; // Map<int, int>
   // PlayerHomeScreen,
-  static const String completeAddressPerField = 'completeAddressPerField'; // Map<int, String>
+  static const String completeAddressPerField =
+      'completeAddressPerField'; // Map<int, String>
   // PlayerHomeScreen,
-  static const String playersPaidPerBooking = 'playersPaidPerBooking'; // Map<int, int>
-
+  static const String playersPaidPerBooking =
+      'playersPaidPerBooking'; // Map<int, int>
 
   // RefereeHomeScreen
   static const String assignments = 'assignments'; // List<RefereeAssignment>
@@ -62,7 +65,7 @@ class ApiJsonKeys {
   static const String players = 'players'; // List<Player>
   // AbstractTeamScreen
   static const String palmares = 'palmares'; // List<Palmares>
-  // AbstractTeamScreen
+  // AbstractTeamScreen, AllTournamentsScreen
   static const String tournaments = 'tournaments'; // List<Tournament>
   // AbstractTeamScreen
   static const String coordinatorCache =
@@ -75,7 +78,26 @@ class ApiJsonKeys {
   // AbstractTeamScreen
   static const String historicalPlayers = 'historicalPlayers'; // List<Player>
 
-  // JoinLobbyScreen
+  // JoinLobbyScreen, AllTournamentsScreen
   static const String cities = 'cities'; // List<City>
 
+  // AllTournamentsScreen
+  static const String myTournaments = 'myTournaments'; // List<Tournament>
+  // AllTournamentsScreen
+  static const String coordinatorPertournament =
+      'coordinatorPertournament'; // Map<int, Coordinator>
+  // AllTournamentsScreen
+  static const String participatingTournaments =
+      'participatingTournaments'; // List<Tournament>
+  // AllTournamentsScreen
+  static const String favoriteTournaments =
+      'favoriteTournaments'; // List<Tournament>
+  // AllTournamentsScreen
+  static const String prizeMin = 'prizeMin'; // double
+  // AllTournamentsScreen
+  static const String prizeMax = 'prizeMax'; // double
+  // AllTournamentsScreen
+  static const String feeMin = 'feeMin'; // double
+  // AllTournamentsScreen
+  static const String feeMax = 'feeMax'; // double
 }

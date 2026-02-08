@@ -12,6 +12,8 @@ import 'package:atl_app/models/private_bookings.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/team_stats.dart';
 import 'package:atl_app/models/tournament.dart';
+import 'package:atl_app/models/user.dart';
+import 'package:flutter/material.dart';
 import 'db_controller.dart';
 import '../config/app_config.dart';
 import '../../models/sport_category.dart';
@@ -667,6 +669,214 @@ class DBRead {
         ApiJsonKeys.currentPlayersPerLobby: currentPlayersPerLobby,
         ApiJsonKeys.playersPaidPerBooking: playersPaidPerBooking,
         ApiJsonKeys.cities: availableCities,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getAllTournamentsScreen(
+    int? userId,
+    int? teamId,
+    SportCategory currentSport,
+  ) async {
+    if (AppConfig.isDebug) {
+      List<Tournament> tournaments = await DB.Tournaments.getActive(
+        sportCategory: currentSport,
+      );
+      Map<int, Coordinator> coordinatorCache = {};
+      Map<int, Field> fieldCache = {};
+      Map<int, String> cityNamePerField = {};
+      List<Tournament> myTournaments = [];
+      double prizeMin = 0;
+      double prizeMax = 0;
+      double feeMin = 0;
+      double feeMax = 0;
+
+      if (userId != null) {
+        final myTournamentsData = await getMyTournaments(
+          userId,
+          teamId,
+          currentSport,
+        );
+        myTournaments = myTournamentsData[ApiJsonKeys.myTournaments];
+      }
+
+      tournaments.removeWhere(
+        (t) => myTournaments.any((fav) => fav.id == t.id),
+      );
+
+      tournaments.addAll(myTournaments);
+
+      tournaments.sort((a, b) => a.name.compareTo(b.name));
+
+      for (var tournament in tournaments) {
+        if (!coordinatorCache.containsKey(tournament.coordinatorId)) {
+          final coordinator = await DB.Coordinators.getByCoordinatorId(
+            tournament.coordinatorId,
+          );
+          if (coordinator != null) {
+            coordinatorCache[tournament.coordinatorId] = coordinator;
+          }
+        }
+        if (!fieldCache.containsKey(tournament.fieldId)) {
+          final field = await DB.Fields.getById(tournament.fieldId);
+          fieldCache[tournament.fieldId] = field;
+          if (!cityNamePerField.containsKey(field.cityId)) {
+            final city = await DB.Cities.getById(field.cityId);
+            if (city != null) {
+              cityNamePerField[field.cityId] = city.name;
+            }
+          }
+        }
+      }
+
+      if (tournaments.isNotEmpty) {
+        prizeMin = tournaments
+            .map((t) => t.prize1)
+            .reduce((a, b) => a < b ? a : b);
+        prizeMax = tournaments
+            .map((t) => t.prize1)
+            .reduce((a, b) => a > b ? a : b);
+        feeMin = tournaments.map((t) => t.fee).reduce((a, b) => a < b ? a : b);
+        feeMax = tournaments.map((t) => t.fee).reduce((a, b) => a > b ? a : b);
+      } else {
+        prizeMin = 0;
+        prizeMax = 0;
+        feeMin = 0;
+        feeMax = 0;
+      }
+
+      return {
+        ApiJsonKeys.tournaments: tournaments,
+        ApiJsonKeys.myTournaments: myTournaments,
+        ApiJsonKeys.coordinatorCache: coordinatorCache,
+        ApiJsonKeys.fieldCache: fieldCache,
+        ApiJsonKeys.cities: await DB.Cities.getAll(),
+        ApiJsonKeys.cityNamePerField: cityNamePerField,
+        ApiJsonKeys.prizeMin: prizeMin,
+        ApiJsonKeys.prizeMax: prizeMax,
+        ApiJsonKeys.feeMin: feeMin,
+        ApiJsonKeys.feeMax: feeMax,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getMyTournaments(
+    int userId,
+    int? teamId,
+    SportCategory currentSport,
+  ) async {
+    if (AppConfig.isDebug) {
+      List<Tournament> participatingTournaments = [];
+      List<Tournament> favoriteTournaments = [];
+
+      final User? user = await DB.Users.getByUserId(userId);
+      if (user == null) {
+        throw Exception("User not found");
+      }
+
+      if (user.isPlayer) {
+        final int playerId = await DB.Players.getPlayerIdByUserId(userId);
+        final PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
+          playerId,
+          currentSport,
+        );
+        if (teamId != null && playsAt != null && playsAt.teamId == teamId) {
+          participatingTournaments =
+              await DB
+                  .Tournaments.getActiveParticipatingTournamentByPlayerAndTeam(
+                playerId,
+                teamId,
+                currentSport,
+              );
+        }
+      } else if (user.isCoordinator) {
+        final int coordinatorId =
+            await DB.Coordinators.getCoordinatorIdByUserId(userId);
+        participatingTournaments =
+            await DB.Tournaments.getActiveOwnedByCoordinatorId(
+              coordinatorId,
+              currentSport,
+            );
+      }
+
+      favoriteTournaments = await DB.Tournaments.getFavoriteTournamentByUser(
+        userId,
+      );
+
+      participatingTournaments.sort((a, b) => a.name.compareTo(b.name));
+      favoriteTournaments.sort((a, b) => a.name.compareTo(b.name));
+
+      for(var fav in favoriteTournaments) {
+          fav.isFavorite = true;
+      }
+
+      return {
+        ApiJsonKeys.myTournaments:
+            (participatingTournaments + favoriteTournaments)
+              ..sort((a, b) => a.name.compareTo(b.name)),
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> applyTournamentFilters(
+    int? userId,
+    int? teamId, {
+    int? cityId,
+    int? numTeams,
+    RangeValues? prizeRange,
+    RangeValues? feeRange,
+    String? nameOrCode,
+    required SportCategory sportCategory,
+  }) async {
+    if (AppConfig.isDebug) {
+      Map<int, String> cityNamePerField = {};
+      Map<int, Field> fieldCache = {};
+      Map<int, Coordinator> coordinatorCache = {};
+
+      List<Tournament> filteredTournaments =
+          await DB.Tournaments.getFilteredTournaments(
+            cityId: cityId,
+            numTeams: numTeams,
+            prizeRange: prizeRange,
+            feeRange: feeRange,
+            nameOrCode: nameOrCode,
+            sportCategory: sportCategory,
+          );
+
+      filteredTournaments.sort((a, b) => a.name.compareTo(b.name));
+
+      for (var tournament in filteredTournaments) {
+        if (!coordinatorCache.containsKey(tournament.coordinatorId)) {
+          final coordinator = await DB.Coordinators.getByCoordinatorId(
+            tournament.coordinatorId,
+          );
+          if (coordinator != null) {
+            coordinatorCache[tournament.coordinatorId] = coordinator;
+          }
+        }
+        if (!fieldCache.containsKey(tournament.fieldId)) {
+          final field = await DB.Fields.getById(tournament.fieldId);
+          fieldCache[tournament.fieldId] = field;
+          if (!cityNamePerField.containsKey(field.cityId)) {
+            final city = await DB.Cities.getById(field.cityId);
+            if (city != null) {
+              cityNamePerField[field.cityId] = city.name;
+            }
+          }
+        }
+      }
+
+      return {
+        ApiJsonKeys.tournaments: filteredTournaments,
+        ApiJsonKeys.cityNamePerField: cityNamePerField,
+        ApiJsonKeys.fieldCache: fieldCache,
+        ApiJsonKeys.coordinatorCache: coordinatorCache,
       };
     } else {
       throw UnimplementedError();
