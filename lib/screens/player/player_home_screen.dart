@@ -1,6 +1,6 @@
 import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/models/field.dart';
-import 'package:atl_app/models/private_bookings.dart';
+import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/user.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';

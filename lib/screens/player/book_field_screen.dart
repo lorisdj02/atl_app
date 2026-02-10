@@ -4,7 +4,7 @@ import '../../models/booking.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../models/lobby_booking.dart';
-import '../../models/private_bookings.dart';
+import '../../models/private_booking.dart';
 import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';

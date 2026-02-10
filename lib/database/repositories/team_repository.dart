@@ -1,9 +1,7 @@
 import 'package:atl_app/config/app_config.dart';
 import 'package:atl_app/models/sport_category.dart';
-
 import '../../models/team.dart';
 import 'base_repository.dart';
-import '../db_controller.dart';
 
 /// Repository per la gestione dei team
 class TeamRepository extends BaseRepository<Team> {

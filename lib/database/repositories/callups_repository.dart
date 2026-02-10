@@ -1,9 +1,9 @@
-import 'package:atl_app/models/callups.dart';
+import 'package:atl_app/models/callup.dart';
 import 'base_repository.dart';
 import '../../config/app_config.dart';
 
 /// Repository per la gestione delle convocazioni
-class CallUpsRepository extends BaseRepository<CallUps> {
+class CallUpsRepository extends BaseRepository<Callup> {
   static final CallUpsRepository _instance = CallUpsRepository._internal();
   factory CallUpsRepository() => _instance;
   CallUpsRepository._internal();
@@ -12,20 +12,20 @@ class CallUpsRepository extends BaseRepository<CallUps> {
   String get endpoint => 'callups';
 
   @override
-  CallUps fromJson(Map<String, dynamic> json) => CallUps.fromJson(json);
+  Callup fromJson(Map<String, dynamic> json) => Callup.fromJson(json);
 
   @override
-  Map<String, dynamic> toJson(CallUps item) => item.toJson();
+  Map<String, dynamic> toJson(Callup item) => item.toJson();
 
-  final List<CallUps> _mockData = [
-    CallUps(tournamentId: 8, playerId: 1, teamId: 1),
+  final List<Callup> _mockData = [
+    Callup(tournamentId: 8, playerId: 1, teamId: 1),
   ];
 
   @override
-  List<CallUps> get mockData => _mockData;
+  List<Callup> get mockData => _mockData;
 
   /// Ottieni convocazioni per torneo
-  Future<List<CallUps>> getByTournament(int tournamentId) async {
+  Future<List<Callup>> getByTournament(int tournamentId) async {
     if (AppConfig.isDebug) {
       return Future.value(
         _mockData
@@ -51,7 +51,7 @@ class CallUpsRepository extends BaseRepository<CallUps> {
   }
 
   /// Ottieni convocazioni per team
-  Future<List<CallUps>> getByTeam(int teamId) async {
+  Future<List<Callup>> getByTeam(int teamId) async {
     if (AppConfig.isDebug) {
       return Future.value(
         _mockData.where((callup) => callup.teamId == teamId).toList(),
@@ -62,7 +62,7 @@ class CallUpsRepository extends BaseRepository<CallUps> {
   }
 
   /// Ottieni convocazione specifica per torneo e team
-  Future<List<CallUps>> getByTournamentAndTeam(
+  Future<List<Callup>> getByTournamentAndTeam(
     int tournamentId,
     int teamId,
   ) async {
@@ -93,7 +93,7 @@ class CallUpsRepository extends BaseRepository<CallUps> {
     }
   }
 
-  Future<List<CallUps>> getByPlayerAndTeam(int playerId, int teamId) async {
+  Future<List<Callup>> getByPlayerAndTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug) {
       return Future.value(
         _mockData
@@ -109,7 +109,7 @@ class CallUpsRepository extends BaseRepository<CallUps> {
   }
 
   Future<bool> addCallUp(int tournamentId, int teamId, int playerId) async {
-    CallUps newCallUp = CallUps(
+    Callup newCallUp = Callup(
       tournamentId: tournamentId,
       teamId: teamId,
       playerId: playerId,

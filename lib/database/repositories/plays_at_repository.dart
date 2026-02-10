@@ -1,11 +1,7 @@
 import 'package:atl_app/models/sport_category.dart';
-
 import '../../config/app_config.dart';
 import '../../models/plays_at.dart';
 import 'base_repository.dart';
-import '../../models/player.dart';
-import '../../models/team.dart';
-
 class PlaysAtRepository extends BaseRepository<PlaysAt> {
   static final PlaysAtRepository _instance = PlaysAtRepository._internal();
   factory PlaysAtRepository() => _instance;

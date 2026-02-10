@@ -1,9 +1,7 @@
 import 'package:atl_app/config/app_config.dart';
-
 import '../../models/sport.dart';
 import '../../models/sport_category.dart';
 import 'base_repository.dart';
-import '../db_controller.dart';
 
 class SportRepository extends BaseRepository<Sport> {
   @override

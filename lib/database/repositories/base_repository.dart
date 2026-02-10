@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import '../../config/app_config.dart';
 import '../api_client.dart';
 
 /// Repository base con logica comune per API e mock data

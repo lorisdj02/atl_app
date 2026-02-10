@@ -1,6 +1,6 @@
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:atl_app/models/match_booking.dart';
-import 'package:atl_app/models/private_bookings.dart';
+import 'package:atl_app/models/private_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/atl_colors.dart';

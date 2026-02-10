@@ -1,11 +1,8 @@
-import 'package:dio/dio.dart';
 import '../../config/app_config.dart';
 import '../../models/team_request.dart';
-import '../api_client.dart';
 import 'base_repository.dart';
 
 class TeamRequestRepository extends BaseRepository<TeamRequest> {
-  final Dio _dio = ApiClient.instance;
 
   @override
   String get endpoint => 'team_requests';

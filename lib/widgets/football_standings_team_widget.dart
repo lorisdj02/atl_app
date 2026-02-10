@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
-import '../models/team.dart';
-import '../models/sport_category.dart';
 import 'abstract_team_widget.dart';
 
 /// Widget per visualizzare un team nella classifica

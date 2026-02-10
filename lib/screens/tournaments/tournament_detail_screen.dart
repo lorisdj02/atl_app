@@ -6,7 +6,6 @@ import '../../models/tournament.dart';
 import '../../models/sport_category.dart';
 import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/square_team_widget.dart';
 import '../../models/field.dart';
@@ -18,6 +17,8 @@ import '../../widgets/tournament_info_dialog.dart';
 import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
 import './football_tournament_screen.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
   final Tournament tournament;
@@ -34,9 +35,9 @@ class TournamentDetailScreen extends StatefulWidget {
 }
 
 class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
-  List<Team>? _participatingTeams;
+  Map<int, Team> _teamCache = {};
   bool _isLoading = true;
-  bool _isLoadingTeams = true;
+  bool _isLoadingTeams = false;
   Field? _tournamentField;
   String? _cityName;
   Player? _currentPlayer;
@@ -53,80 +54,46 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   Future<void> _loadAllData() async {
     setState(() => _isLoading = true);
+    UserProvider userProvider = Provider.of<UserProvider>(
+      context,
+      listen: false,
+    );
 
-    await Future.wait([
-      _loadTournamentDetails(),
-      _loadPlayerData(),
-      _loadCoordinatorData(),
-    ]);
-
-    await _checkPartecipation();
-    setState(() => _isLoading = false);
-
-    // Carica i team partecipanti dopo, se necessario
-    if (!widget.tournament.isATL) {
-      _loadParticipatingTeams();
-    }
-  }
-
-  Future<void> _loadCoordinatorData() async {
     try {
-      final coordinator = await DB.Coordinators.getByCoordinatorId(
-        widget.tournament.coordinatorId,
-      );
-      setState(() {
-        _tournamentCoordinator = coordinator;
-      });
-    } catch (e) {
-      print('Error loading coordinator data: $e');
-    }
-  }
-
-  Future<void> _checkPartecipation() async {
-    print("Checking partecipation for team: ${_playerTeam?.name}");
-    if (_playerTeam == null) return;
-    try {
-      final participation =
-          await DB.TournamentParticipations.getByTournamentAndTeam(
-            widget.tournament.id,
-            _playerTeam?.id ?? -1,
-          );
-      setState(() {
-        _isTeamParticipating = participation != null;
-        _teamParticipation = participation;
-      });
-      print("Is team participating: $_isTeamParticipating");
-    } catch (e) {
-      print('Error checking partecipation: $e');
-    }
-  }
-
-  Future<void> _loadPlayerData() async {
-    try {
-      final UserProvider userProvider = Provider.of<UserProvider>(
-        context,
-        listen: false,
-      );
-      if (userProvider.isPlayer && !userProvider.isGuest) {
-        final userId = userProvider.activeUser!.id;
-        final player = await DB.Players.getByUserId(userId);
-
-        if (userProvider.currentTeamId != null &&
-            userProvider.currentTeamId != -1) {
-          final team = await DB.Teams.getById(userProvider.currentTeamId!);
-          setState(() {
-            _currentPlayer = player;
-            _playerTeam = team;
-          });
-        } else {
-          setState(() {
-            _currentPlayer = player;
-          });
-        }
+      final Map<String, dynamic> data;
+      if (userProvider.isPlayer && userProvider.activeUser != null) {
+        data = await DBRead.getTournamentDetailScreen(
+          widget.tournament.id,
+          widget.currentSport,
+          userProvider.activeUser!.id,
+        );
+      } else {
+        data = await DBRead.getTournamentDetailScreen(
+          widget.tournament.id,
+          widget.currentSport,
+          null, // Pass null for userId if not a player
+        );
       }
+
+      setState(() {
+        _teamCache = data[ApiJsonKeys.teamsCache] ?? {};
+        _tournamentField = data[ApiJsonKeys.field];
+        _cityName = data[ApiJsonKeys.cityName];
+        _currentPlayer = data[ApiJsonKeys.currentPlayer];
+        _playerTeam = data[ApiJsonKeys.userTeam];
+        _tournamentCoordinator = data[ApiJsonKeys.coordinator];
+        _teamParticipation = data[ApiJsonKeys.teamParticipation];
+        _isTeamParticipating = _teamParticipation != null;
+        _isLoading = false;
+        _isLoadingTeams = false;
+      });
     } catch (e) {
-      print('Error loading player data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading tournament details: $e')),
+      );
     }
+
+    setState(() => _isLoading = false);
   }
 
   bool _canManageCallUps() {
@@ -149,61 +116,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         userProvider.activeRoleId == widget.tournament.coordinatorId &&
         widget.tournament.paidTeams >= widget.tournament.numTeams &&
         widget.tournament.status == TournamentStatus.created;
-  }
-
-  Future<void> _loadParticipatingTeams() async {
-    setState(() => _isLoadingTeams = true);
-
-    try {
-      // Simula un delay per mostrare il loading (rimuovi in produzione se non necessario)
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Carica le partecipazioni del torneo
-      final partecipations = await DB
-          .TournamentParticipations.getPaidByTournamentId(widget.tournament.id);
-
-      // Carica i team corrispondenti
-      final teams = <Team>[];
-      for (var partecipation in partecipations) {
-        final team = await DB.Teams.getById(partecipation.teamId);
-        if (team != null) {
-          teams.add(team);
-        }
-      }
-
-      setState(() {
-        _participatingTeams = teams;
-        _isLoadingTeams = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingTeams = false);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading teams: $e')));
-      }
-    }
-  }
-
-  Future<void> _loadTournamentDetails() async {
-    // Implementa il caricamento dei dettagli del torneo se necessario
-    try {
-      final field = await DB.Fields.getById(widget.tournament.fieldId);
-      final city = await DB.Cities.getById(widget.tournament.cityId);
-      setState(() {
-        _tournamentField = field;
-        _cityName = city?.name;
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading field details: $e')),
-        );
-      }
-    }
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   void _showFullInfoDialog() {
@@ -1022,13 +934,13 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                 MaterialPageRoute(
                   builder: (context) => CallupsScreen(
                     tournament: widget.tournament,
-                    teamId: _playerTeam!.id,
+                    team: _playerTeam!,
                   ),
                 ),
               );
               if (mounted) {
                 if (result == true) {
-                  await _checkPartecipation();
+                  await _loadAllData();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Call-ups updated successfully'),
@@ -1107,7 +1019,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                     MaterialPageRoute(
                       builder: (context) => CallupsScreen(
                         tournament: widget.tournament,
-                        teamId: _playerTeam!.id,
+                        team: _playerTeam!,
                       ),
                     ),
                   );
@@ -1173,7 +1085,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                           content: Text('Call-ups deleted successfully'),
                         ),
                       );
-                      await _checkPartecipation();
+                      await _loadAllData();
                     } else if (mounted && !success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -1300,7 +1212,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
     // Mostra "No participating teams" solo se il caricamento è terminato
     if (!_isLoadingTeams &&
-        (_participatingTeams == null || _participatingTeams!.isEmpty)) {
+        (_teamCache.isEmpty)) {
       return Container(
         height: 200,
         width: double.infinity,
@@ -1344,7 +1256,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               spacing: 16,
               runSpacing: 16,
               alignment: WrapAlignment.center,
-              children: _participatingTeams!.map((team) {
+              children: _teamCache.values.map((team) {
                 return SquareTeamWidget(
                   team: team,
                   sportCategory: widget.currentSport,

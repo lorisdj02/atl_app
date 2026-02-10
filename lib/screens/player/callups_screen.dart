@@ -1,22 +1,20 @@
+import 'package:atl_app/config/api_json_keys.dart';
+import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
-import '../../models/callups.dart';
-import '../../database/db_controller.dart';
 import '../../models/sport.dart';
 import '../../database/db_write.dart';
+import '../../models/team.dart';
 
 class CallupsScreen extends StatefulWidget {
   final Tournament tournament;
-  final int teamId;
+  final Team team;
 
-  const CallupsScreen({
-    Key? key,
-    required this.tournament,
-    required this.teamId,
-  }) : super(key: key);
+  const CallupsScreen({Key? key, required this.tournament, required this.team})
+    : super(key: key);
 
   @override
   State<CallupsScreen> createState() => _CallupsScreenState();
@@ -26,55 +24,49 @@ class _CallupsScreenState extends State<CallupsScreen> {
   List<Player> _teamPlayers = [];
   Set<int> _selectedPlayerIds = {};
   bool _isLoading = true;
-  bool _isNewCallUps = true;
   Sport? _tournamentSport;
+  Tournament? _tournament;
 
   @override
   void initState() {
-    _loadSport();
     super.initState();
-
-    _loadTeamPlayers();
-    _checkCallUps();
+    _loadData();
   }
 
-  Future<void> _loadSport() async {
+  Future<void> _loadData() async {
     try {
-      print(
-        '🔧 [DEBUG] Loading sport for tournament ID: ${widget.tournament.id}, sportId: ${widget.tournament.sportId}',
+      final data = await DBRead.getCallupsScreen(
+        widget.tournament.id,
+        widget.team.id,
       );
-      final Sport? sport = await DB.Sports.getById(widget.tournament.sportId);
-      if (mounted && sport != null) {
-        setState(() {
-          _tournamentSport = sport;
-        });
-      }
-    } catch (e) {
-      print('❌ Error loading sport: $e');
-    }
-  }
 
-  Future<double> get _TournamentFee async {
-    try {
-      return await DB.Tournaments.getTournamentFee(widget.tournament.id);
+      setState(() {
+        _teamPlayers = data[ApiJsonKeys.players];
+        _tournamentSport = data[ApiJsonKeys.sport];
+        _tournament = data[ApiJsonKeys.tournament];
+        _isLoading = false;
+      });
     } catch (e) {
-      print('❌ Error loading tournament fee: $e');
-      return 0.0;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading call-ups data: $e')),
+      );
     }
   }
 
   Future<bool> _confirmCallUps() async {
     if ((await DBWrite.confirmCallUps(
-          widget.tournament.id,
-          widget.teamId,
+          _tournament?.id ?? 0,
+          widget.team.id,
           _selectedPlayerIds,
-          await _TournamentFee,
+          _tournament?.fee ?? 0.0,
         )) ==
         false) {
       if (mounted) {
         bool isThereCaptain = false;
         for (int playerId in _selectedPlayerIds) {
-          if (await DB.Teams.isCaptainOrVice(widget.teamId, playerId)) {
+          if (playerId == widget.team.captainId ||
+              playerId == widget.team.vice1Id ||
+              playerId == widget.team.vice2Id) {
             isThereCaptain = true;
             break;
           }
@@ -94,55 +86,6 @@ class _CallupsScreenState extends State<CallupsScreen> {
       return false;
     }
     return true;
-  }
-
-  Future<void> _loadTeamPlayers() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final playerIds = await DB.PlaysAt.getPlayersIdinTeam(widget.teamId);
-      final players = <Player>[];
-
-      for (final playerId in playerIds) {
-        final player = await DB.Players.getByPlayerId(playerId);
-        if (player != null) {
-          players.add(player);
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _teamPlayers = players;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('❌ Error loading team players: $e');
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
-      }
-    }
-  }
-
-  Future<void> _checkCallUps() async {
-    try {
-      final List<CallUps> callUps = await DB.CallUps.getByTournamentAndTeam(
-        widget.tournament.id,
-        widget.teamId,
-      );
-      if (callUps.isNotEmpty && mounted) {
-        setState(() {
-          _selectedPlayerIds = callUps.map((cu) => cu.playerId).toSet();
-          _isNewCallUps = false;
-        });
-        print('🔧 [DEBUG] Loaded ${callUps.length} existing call-ups');
-      }
-    } catch (e) {
-      print('❌ Error checking call-ups: $e');
-    }
   }
 
   void _togglePlayerSelection(int playerId) {

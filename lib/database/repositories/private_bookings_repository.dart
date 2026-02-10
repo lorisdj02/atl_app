@@ -1,6 +1,6 @@
 import 'package:atl_app/config/app_config.dart';
 import 'base_repository.dart';
-import '../../models/private_bookings.dart';
+import '../../models/private_booking.dart';
 import '../db_controller.dart';
 import '../../models/booking.dart';
 

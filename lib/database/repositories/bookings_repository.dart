@@ -1,6 +1,6 @@
 import '../../models/booking.dart';
 import '../../models/lobby_booking.dart';
-import '../../models/private_bookings.dart';
+import '../../models/private_booking.dart';
 import '../db_controller.dart';
 import '../../models/match_booking.dart';
 import 'base_repository.dart';

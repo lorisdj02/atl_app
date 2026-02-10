@@ -1,7 +1,6 @@
 import 'base_repository.dart';
 import '../../config/app_config.dart';
 import '../../models/referee_assignment.dart';
-import '../db_controller.dart';
 
 class RefereeAssignmentRepository extends BaseRepository<RefereeAssignment> {
   @override

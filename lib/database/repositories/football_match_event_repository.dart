@@ -1,6 +1,4 @@
 import 'package:atl_app/config/app_config.dart';
-import 'package:atl_app/widgets/booking_widget.dart';
-
 import '../../models/football_match_event.dart';
 import 'base_repository.dart';
 

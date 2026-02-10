@@ -1,4 +1,3 @@
-import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
 import '../database/db_controller.dart';
 import '../models/team.dart';

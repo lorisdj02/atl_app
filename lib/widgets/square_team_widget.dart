@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/team.dart';
-import '../models/sport_category.dart';
 import 'abstract_team_widget.dart';
 import '../utils/atl_colors.dart';
 
@@ -68,7 +66,7 @@ class SquareTeamWidget extends AbstractTeamWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              team.alias ?? team.name.substring(0, 3).toUpperCase(),
+              team.alias,
               style: TextStyle(
                 color: ATLColors.getPrimaryColor(sportCategory),
                 fontSize: 10,

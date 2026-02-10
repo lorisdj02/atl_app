@@ -1,8 +1,5 @@
 import 'base_repository.dart';
-import '../../models/football_match.dart';
 import '../../models/match.dart';
-import '../../config/app_config.dart';
-import '../../models/sport_category.dart';
 import '../db_controller.dart';
 
 class MatchRepository extends BaseRepository<Match> {

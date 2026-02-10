@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
-import '../../database/db_controller.dart';
-import '../../models/callups.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class ViewCallupsScreen extends StatefulWidget {
   final Tournament tournament;
@@ -36,35 +36,18 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final List<CallUps> callUps = await DB.CallUps.getByTournamentAndTeam(
+      final data = await DBRead.getViewCallupsScreen(
         widget.tournament.id,
         widget.teamId,
       );
 
-      print(
-        'ℹ️ Loaded ${callUps.length} call-ups for Tournament ${widget.tournament.id}, Team ${widget.teamId}',
-      );
-
-      final List<Player> players = [];
-      for (final callUp in callUps) {
-        print('ℹ️ Loading player with ID ${callUp.playerId}');
-        final Player? player = await DB.Players.getByPlayerId(callUp.playerId);
-        if (player == null) {
-          continue;
-        }
-        players.add(player);
-      }
-
-      print('ℹ️ Loaded ${players.length} players for call-ups');
-
       if (mounted) {
         setState(() {
-          _calledUpPlayers = players;
+          _calledUpPlayers = data[ApiJsonKeys.players];
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('❌ Error loading call-ups: $e');
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/team.dart';
-import '../models/sport_category.dart';
 import '../models/player.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_controller.dart';

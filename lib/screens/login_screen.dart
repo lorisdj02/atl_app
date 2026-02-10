@@ -139,8 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
       case UserRole.guest:
         userProvider.setActiveUser(user);
         break;
-      default:
-        break;
     }
 
     print(

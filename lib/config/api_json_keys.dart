@@ -100,4 +100,20 @@ class ApiJsonKeys {
   static const String feeMin = 'feeMin'; // double
   // AllTournamentsScreen
   static const String feeMax = 'feeMax'; // double
+
+  // TournamentDetailScreen
+  static const String tournament = 'tournament'; // Tournament
+  // TournamentDetailScreen
+  static const String field = 'field'; // Field
+  // TournamentDetailScreen
+  static const String cityName = 'cityName'; // String
+  // TournamentDetailScreen
+  static const String currentPlayer = 'currentPlayer'; // Player?
+  // TournamentDetailScreen
+  static const String coordinator = 'coordinator'; // Coordinator?
+  // TournamentDetailScreen
+  static const String teamParticipation = 'teamParticipation'; // TournamentParticipation?
+
+  // CallUpsScreen
+  static const String sport = 'sport'; // Sport
 }

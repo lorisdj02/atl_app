@@ -1,9 +1,6 @@
 import 'package:atl_app/config/app_config.dart';
-
 import '../../models/user.dart';
-import '../../models/player.dart';
 import 'base_repository.dart';
-import '../../models/coordinator.dart';
 import '../db_controller.dart';
 
 class UserRepository extends BaseRepository<User> {
@@ -29,7 +26,7 @@ class UserRepository extends BaseRepository<User> {
       try {
         final user = mockData.firstWhere((user) => user.id == id);
         if (user is T) {
-          return user as T;
+          return user;
         } else {
           return null;
         }

@@ -16,7 +16,6 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
   @override
   Map<String, dynamic> toJson(FootballStanding item) => item.toJson();
 
-  @override
   List<FootballStanding> _mockData = [
     FootballStanding(
       tournamentId: 8,

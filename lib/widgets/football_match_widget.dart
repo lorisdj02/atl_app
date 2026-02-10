@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
-import '../models/football_match.dart';
 import 'abstract_football_match_widget.dart';
 
 class FootballMatchWidget extends AbstractFootballMatchWidget {

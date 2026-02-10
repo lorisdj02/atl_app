@@ -1,6 +1,5 @@
 import '../../models/coordinator.dart';
 import 'base_repository.dart';
-import '../db_controller.dart';
 import '../../config/app_config.dart';
 
 class CoordinatorRepository extends BaseRepository<Coordinator> {

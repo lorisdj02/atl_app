@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/atl_colors.dart';
 import 'abstract_team_widget.dart';
 
 /// Widget per visualizzare un team nella pagina dei ranks
@@ -27,7 +26,7 @@ class RanksTeamWidget extends AbstractTeamWidget {
 
     // Calcola un colore di testo più scuro e leggibile partendo dall'accent
     final accentHsl = HSLColor.fromColor(accent);
-    final double darkLightness = (accentHsl.lightness * 0.25).clamp(0.0, 1.0) as double;
+    final double darkLightness = (accentHsl.lightness * 0.25).clamp(0.0, 1.0);
     final Color rankTextColor = isTop3 ? accentHsl.withLightness(darkLightness).toColor() : Colors.grey.shade700;
 
     return GestureDetector(

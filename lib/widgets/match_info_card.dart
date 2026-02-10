@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/referee_assignment.dart';
-import '../models/referee.dart';
 import '../models/field.dart';
 import '../models/city.dart';
 import '../utils/atl_colors.dart';

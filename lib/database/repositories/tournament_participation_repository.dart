@@ -1,13 +1,9 @@
 import 'package:atl_app/config/app_config.dart';
-
 import 'base_repository.dart';
 import '../../models/tournament_participation.dart';
-import '../api_client.dart';
-import 'package:dio/dio.dart';
 
 class TournamentParticipationRepository
     extends BaseRepository<TournamentParticipation> {
-  final Dio _dio = ApiClient.instance;
 
   @override
   String get endpoint => 'tournament_participations';
