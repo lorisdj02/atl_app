@@ -1,7 +1,6 @@
 import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../database/db_controller.dart';
 import '../models/tournament.dart';
 import '../models/tournament_participation.dart';
 import '../models/sport_category.dart';
@@ -13,6 +12,7 @@ class ParticipationCard extends StatefulWidget {
   final int playerId;
   final SportCategory sportCategory;
   final VoidCallback onPaymentCompleted;
+  final bool isCalledUp;
 
   const ParticipationCard({
     super.key,
@@ -21,6 +21,7 @@ class ParticipationCard extends StatefulWidget {
     required this.playerId,
     required this.sportCategory,
     required this.onPaymentCompleted,
+    required this.isCalledUp,
   });
 
   @override
@@ -28,35 +29,11 @@ class ParticipationCard extends StatefulWidget {
 }
 
 class _ParticipationCardState extends State<ParticipationCard> {
-  bool? _isCalledUp;
-  bool _isCheckingCallup = true;
+  bool _isCheckingCallup = false;
 
   @override
   void initState() {
     super.initState();
-    _checkCallupStatus();
-  }
-
-  Future<void> _checkCallupStatus() async {
-    try {
-      final isCalledUp = await DB.CallUps.isPlayerInCallup(
-        widget.playerId,
-        widget.participation.tournamentId,
-      );
-      if (mounted) {
-        setState(() {
-          _isCalledUp = isCalledUp;
-          _isCheckingCallup = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isCalledUp = null;
-          _isCheckingCallup = false;
-        });
-      }
-    }
   }
 
   @override
@@ -65,8 +42,6 @@ class _ParticipationCardState extends State<ParticipationCard> {
     final double totalCost = widget.tournament?.fee ?? toPay;
     final double paid = totalCost - toPay;
     final double progress = totalCost > 0 ? paid / totalCost : 0.0;
-    print("ParticipationCard: toPay=$toPay, totalCost=$totalCost, paid=$paid, progress=$progress, isCalledUp=$_isCalledUp");
-
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -96,7 +71,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                else if (_isCalledUp == true)
+                else if (widget.isCalledUp == true)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -126,7 +101,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                       ],
                     ),
                   )
-                else if (_isCalledUp == false)
+                else if (widget.isCalledUp == false)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,

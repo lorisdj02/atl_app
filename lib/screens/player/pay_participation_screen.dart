@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../database/db_controller.dart';
 import '../../models/tournament.dart';
 import '../../models/tournament_participation.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/participation_card.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class PayParticipationScreen extends StatefulWidget {
   final int teamId;
@@ -24,45 +25,34 @@ class PayParticipationScreen extends StatefulWidget {
 }
 
 class _PayParticipationScreenState extends State<PayParticipationScreen> {
-  List<TournamentParticipation>? _participations;
-  final Map<int, Tournament?> _tournamentCache = {};
+  List<TournamentParticipation> _tournamentParticipations = [];
+  Map<int, Tournament?> _tournamentCache = {};
+  Map<int, bool> _isCalledUpPerTournament = {};
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadParticipations();
+    _loadData();
   }
 
-  Future<void> _loadParticipations() async {
-    try {
-      final participations = await DB.TournamentParticipations.getByTeamId(
-        widget.teamId,
-      );
-      final pendingPayments = participations
-          .where((p) => (p.toPay ?? 0) > 0)
-          .toList();
+  Future<void> _loadData() async{
+      try{
+      final data = await DBRead.getPayParticipationScreen(widget.playerId, widget.sportCategory);
 
-      for (var participation in pendingPayments) {
-        final tournament = await DB.Tournaments.getById(
-          participation.tournamentId,
-        );
-        _tournamentCache[participation.tournamentId] = tournament;
-      }
-
-      if (mounted) {
-        setState(() {
-          _participations = pendingPayments;
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _tournamentParticipations = data[ApiJsonKeys.tournamentParticipations];
+        _tournamentCache = data[ApiJsonKeys.tournamentCache];
+        _isCalledUpPerTournament = data[ApiJsonKeys.isCalledUpPerTournament];
+        _isLoading = false;
+      });
+    
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading participations: $e')),
-        );
-      }
+      print("Error loading participations: $e");
+      setState(() {
+        _isLoading = false;
+        _tournamentParticipations = [];
+      });
     }
   }
 
@@ -88,7 +78,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
       ),
       body: _isLoading
           ? const LoadingATL()
-          : _participations == null || _participations!.isEmpty
+          : _tournamentParticipations == null || _tournamentParticipations!.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -104,16 +94,17 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _participations!.length,
+              itemCount: _tournamentParticipations!.length,
               itemBuilder: (context, index) {
-                final participation = _participations![index];
+                final participation = _tournamentParticipations![index];
                 final tournament = _tournamentCache[participation.tournamentId];
                 return ParticipationCard(
                   participation: participation,
                   tournament: tournament,
                   playerId: widget.playerId,
                   sportCategory: widget.sportCategory,
-                  onPaymentCompleted: _loadParticipations,
+                  onPaymentCompleted: _loadData,
+                  isCalledUp: _isCalledUpPerTournament[participation.tournamentId] ?? false,
                 );
               },
             ),

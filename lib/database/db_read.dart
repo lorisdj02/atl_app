@@ -1,15 +1,20 @@
+import 'dart:math';
+
 import 'package:atl_app/models/booking.dart';
 import 'package:atl_app/models/callup.dart';
 import 'package:atl_app/models/city.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/football_match.dart';
+import 'package:atl_app/models/football_match_event.dart';
 import 'package:atl_app/models/football_standing.dart';
+import 'package:atl_app/models/football_tournament_stats.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:atl_app/models/lobby_booking_participation.dart';
 import 'package:atl_app/models/palmares.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/private_booking.dart';
+import 'package:atl_app/models/referee_assignment.dart';
 import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/team_stats.dart';
@@ -1010,15 +1015,253 @@ class DBRead {
 
       final TournamentParticipation? teamParticipation =
           await DB.TournamentParticipations.getByTournamentAndTeam(
-        tournamentId,
-        teamId,
-      );
+            tournamentId,
+            teamId,
+          );
 
       return {
         ApiJsonKeys.players: teamPlayers,
         ApiJsonKeys.sport: sport,
         ApiJsonKeys.teamParticipation: teamParticipation,
         ApiJsonKeys.tournament: tournament,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getFootballTournamentScreen(
+    int tournamentId,
+  ) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
+      if (tournament == null) {
+        throw Exception("Tournament not found");
+      }
+
+      final List<FootballMatch> matches =
+          await DB.FootballMatches.getMatchesByTournament(tournamentId);
+      final List<FootballStanding> standings =
+          await DB.FootballStandings.getStandingsByTournament(tournamentId);
+      List<Player> players = [];
+      Map<int, Team> teamsCache = {};
+
+      final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
+        tournamentId,
+      );
+      final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
+        tournamentId,
+      );
+
+      final List<Callup> callups = await DB.CallUps.getByTournament(
+        tournamentId,
+      );
+
+      final List<TournamentParticipation> participations =
+          await DB.TournamentParticipations.getByTournamentId(tournamentId);
+
+      for (var participation in participations) {
+        final team = await DB.Teams.getById(participation.teamId);
+        if (team != null && !teamsCache.containsKey(team.id)) {
+          teamsCache[team.id] = team;
+        }
+      }
+
+      for (var callup in callups) {
+        final player = await DB.Players.getByPlayerId(callup.playerId);
+        if (player != null) {
+          players.add(player);
+        }
+      }
+
+      final List<FootballTournamentStats> tournamentStats =
+          await DB.FootballTournamentStats.getByTournamentId(tournamentId);
+
+      Map<int, TeamStats> playerStatsCache = {};
+
+      for (var stats in tournamentStats) {
+        if(stats.motm == 0 && stats.goals == 0) {
+          continue; // Skip players with no stats
+        }
+        playerStatsCache[stats.playerId] = TeamStats(
+          id: Random().nextInt(1000000),
+          playerId: stats.playerId,
+          teamId: stats.teamId,
+          motm: stats.motm,
+          goals: stats.goals,
+        );
+      }
+
+      return {
+        ApiJsonKeys.matches: matches,
+        ApiJsonKeys.standings: standings,
+        ApiJsonKeys.players: players,
+        ApiJsonKeys.teamsCache: teamsCache,
+        ApiJsonKeys.playerStatsCache: playerStatsCache,
+        ApiJsonKeys.minutesPerRound: minutesPerRound,
+        ApiJsonKeys.minutesPerPause: minutesPerPause,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getFootballMatchScreen(
+    int matchId,
+  ) async {
+    if (AppConfig.isDebug) {
+      final FootballMatch? match = await DB.FootballMatches.getById(matchId);
+      if (match == null) {
+        throw Exception("Match not found");
+      }
+
+      final Tournament? tournament = await DB.Tournaments.getById(match.tournamentId);
+      if (tournament == null) {
+        throw Exception("Tournament not found");
+      }
+
+      final Team? homeTeam = match.homeTeamId != null
+          ? await DB.Teams.getById(match.homeTeamId!)
+          : null;
+      final Team? awayTeam = match.awayTeamId != null
+          ? await DB.Teams.getById(match.awayTeamId!)
+          : null;
+
+      final List<FootballMatchEvent> events =
+          await DB.FootballMatchEvents.getByMatchId(matchId);
+
+      final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
+        match.tournamentId,
+      );
+
+      final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
+        match.tournamentId,
+      );
+
+      final int? sportId = (await DB.Tournaments.getById(
+        match.tournamentId,
+      ))?.sportId;
+
+      if (sportId == null) {
+        throw Exception("Sport not found for tournament");
+      }
+
+      List<String> requiredRoles = [];
+      if (sportId == 1 || sportId == 2 || sportId == 3) {
+        requiredRoles = ['MAIN'];
+      } else if (sportId == 4) {
+        requiredRoles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
+      }
+
+      // Get existing assignments for this match
+      final assignments = await DB.RefereeAssignments.getByMatchId(matchId);
+      final assignedRoles = assignments.map((a) => a.role).toSet();
+
+      // Find available roles (required roles that are not yet assigned)
+      final availableRoles = requiredRoles
+          .where((role) => !assignedRoles.contains(role))
+          .toList();
+
+      Map<int, List<Player>> playersPerTeam = {};
+      if (homeTeam != null) {
+        final List<Callup> homeCallup = await DB.CallUps.getByTournamentAndTeam(
+          match.tournamentId,
+          homeTeam.id,
+        );
+        for (Callup callup in homeCallup) {
+          final player = await DB.Players.getByPlayerId(callup.playerId);
+          if (player != null) {
+            playersPerTeam.putIfAbsent(homeTeam.id, () => []).add(player);
+          }
+        }
+      }
+      if (awayTeam != null) {
+        final List<Callup> awayCallup = await DB.CallUps.getByTournamentAndTeam(
+          match.tournamentId,
+          awayTeam.id,
+        );
+        for (Callup callup in awayCallup) {
+          final player = await DB.Players.getByPlayerId(callup.playerId);
+          if (player != null) {
+            playersPerTeam.putIfAbsent(awayTeam.id, () => []).add(player);
+          }
+        }
+      }
+
+      final List<RefereeAssignment> refereeAssignments =
+          await DB.RefereeAssignments.getByMatchId(matchId);
+      Map<String, String> assignmentPerRefereeNameSurname = {};
+
+
+      for (var assignment in refereeAssignments) {
+        final referee = await DB.Referees.getByRefereeId(assignment.refereeId);
+        if (referee != null) {
+          assignmentPerRefereeNameSurname[
+              "${referee.name} ${referee.surname}"] = assignment.role;
+        }
+      }
+
+      final Field field = await DB.Fields.getById(
+        tournament.fieldId,
+      );
+
+      final city = await DB.Cities.getById(field.cityId);
+      final String cityName = city != null ? city.name : 'Unknown';
+
+      return {
+        ApiJsonKeys.match: match,
+        ApiJsonKeys.homeTeam: homeTeam,
+        ApiJsonKeys.awayTeam: awayTeam,
+        ApiJsonKeys.events: events,
+        ApiJsonKeys.minutesPerRound: minutesPerRound,
+        ApiJsonKeys.minutesPerPause: minutesPerPause,
+        ApiJsonKeys.availableRefereeRoles: availableRoles,
+        ApiJsonKeys.playersPerTeam: playersPerTeam,
+        ApiJsonKeys.assignmentPerRefereeNameSurname: assignmentPerRefereeNameSurname,
+        ApiJsonKeys.field: field,
+        ApiJsonKeys.cityName: cityName,
+        ApiJsonKeys.coordinatorId: tournament.coordinatorId,
+        ApiJsonKeys.refereeCheck: availableRoles.isEmpty,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getPayParticipationScreen(int playerId, SportCategory sportCategory) async {
+    if (AppConfig.isDebug) {
+      Map<int, Tournament> tournamentCache = {};
+      List<TournamentParticipation> participations = [];
+      Map<int, bool> isCalledUpPerTournament = {};
+      final PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
+        playerId,
+        sportCategory,
+      );
+
+      if (playsAt != null) {
+        final teamId = playsAt.teamId;
+        participations = await DB.TournamentParticipations.getByTeamId(teamId);
+        participations.removeWhere((p) => p.toPay == 0);
+        for (TournamentParticipation participation in participations) {
+          final tournamentId = participation.tournamentId;
+          if (!tournamentCache.containsKey(tournamentId)) {
+            final tournament = await DB.Tournaments.getById(tournamentId);
+            if (tournament != null) {
+              tournamentCache[tournamentId] = tournament;
+              final callup = await DB.CallUps.getByTournamentAndTeam(
+                tournamentId,
+                teamId,
+              );
+              isCalledUpPerTournament[tournamentId] = callup.any((c) => c.playerId == playerId);
+            }
+          }
+        }
+      }
+
+      return {
+        ApiJsonKeys.tournamentCache: tournamentCache,
+        ApiJsonKeys.tournamentParticipations: participations,
+        ApiJsonKeys.isCalledUpPerTournament: isCalledUpPerTournament,
       };
     } else {
       throw UnimplementedError();

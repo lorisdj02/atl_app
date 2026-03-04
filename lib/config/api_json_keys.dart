@@ -1,4 +1,7 @@
 class ApiJsonKeys {
+  // All screens
+  static const String error = 'error'; // String
+
   // PlayerHomeScreen,
   static const String bookings = 'bookings'; // List<dynamic>
   // PlayerHomeScreen, CoordinatorHomeScreen
@@ -61,7 +64,7 @@ class ApiJsonKeys {
 
   // AbstractTeamScreen
   static const String team = 'team'; // Team
-  // AbstractTeamScreen
+  // AbstractTeamScreen, FootballTournamentScreen
   static const String players = 'players'; // List<Player>
   // AbstractTeamScreen
   static const String palmares = 'palmares'; // List<Palmares>
@@ -72,7 +75,7 @@ class ApiJsonKeys {
       'coordinatorCache'; // Map<int, Coordinator>
   // AbstractTeamScreen
   static const String fieldCache = 'fieldCache'; // Map<int, Field>
-  // AbstractTeamScreen
+  // AbstractTeamScreen, FootballTournamentScreen
   static const String playerStatsCache =
       'playerStatsCache'; // Map<int, TeamStats>
   // AbstractTeamScreen
@@ -116,4 +119,39 @@ class ApiJsonKeys {
 
   // CallUpsScreen
   static const String sport = 'sport'; // Sport
+
+  // FootballTournamentScreen
+  static const String matches = 'matches'; // List<FootballMatch>
+  // FootballTournamentScreen
+  static const String standings = 'standings'; // List<FootballStanding>
+  // FootballTournamentScreen, FootballMatchDetailScreen
+  static const String minutesPerRound = 'minutesPerRound'; // int
+  // FootballTournamentScreen, FootballMatchDetailScreen
+  static const String minutesPerPause = 'minutesPerPause'; // int
+
+  // FootballMatchDetailScreen
+  static const String match = 'match'; // FootballMatch
+  // FootballMatchDetailScreen
+  static const String events = 'events'; // List<FootballMatchEvent>
+  // FootballMatchDetailScreen
+  static const String homeTeam = 'homeTeam'; // Team?
+  // FootballMatchDetailScreen
+  static const String awayTeam = 'awayTeam'; // Team?
+  // FootballMatchDetailScreen
+  static const String availableRefereeRoles = 'availableRefereeRoles'; // List<RefereeRole>
+  // FootballMatchDetailScreen
+  static const String playersPerTeam = 'playersPerTeam'; // Map<int, List<Player>>
+  // FootballMatchDetailScreen
+  static const String assignmentPerRefereeNameSurname = 'assignmentPerRefereeNameSurname'; // Map<int, List<RefereeAssignment>> // key: Name+Surname, value: Role
+  // FootballMatchDetailScreen
+  static const String coordinatorId = 'coordinatorId'; // int
+  // FootballMatchDetailScreen
+  static const String refereeCheck = 'refereeCheck'; // bool
+
+  // PayParticipationScreen
+  static const String tournamentCache = 'tournamentCache'; // Map<int, Tournament>
+  // PayParticipationScreen
+  static const String tournamentParticipations = 'tournamentParticipations'; // List<TournamentParticipation>
+  // PayParticipationScreen
+  static const String isCalledUpPerTournament = 'isCalledUpPerTournament'; // Map<int, bool>
 }

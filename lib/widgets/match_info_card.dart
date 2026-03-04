@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
-import '../models/referee_assignment.dart';
 import '../models/field.dart';
-import '../models/city.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
 import 'info_row_with_icon.dart';
 
 class MatchInfoCard extends StatefulWidget {
@@ -14,6 +11,9 @@ class MatchInfoCard extends StatefulWidget {
   final bool isNotScheduled;
   final bool isScheduled;
   final SportCategory sportCategory;
+  final Field field;
+  final String cityName;
+  final Map<String, String> assignmentPerRefereeNameSurname;
 
   const MatchInfoCard({
     super.key,
@@ -21,6 +21,9 @@ class MatchInfoCard extends StatefulWidget {
     required this.isNotScheduled,
     required this.isScheduled,
     required this.sportCategory,
+    required this.field,
+    required this.cityName,
+    required this.assignmentPerRefereeNameSurname,
   });
 
   @override
@@ -29,118 +32,16 @@ class MatchInfoCard extends StatefulWidget {
 
 class _MatchInfoCardState extends State<MatchInfoCard> {
   bool _isExpanded = true;
-  List<String>? _refereeRoles;
-  List<RefereeAssignment>? _refereeAssignments;
-  Map<String, String>? _refereesMap; // key: Name+Surname, value: Role
-  bool _isLoadingReferees = true;
-  int? _sportId;
-  int? _fieldId;
-  Field? _field;
-  City? _city;
-  bool _isLoadingField = true;
+  // Data is passed via props, no async loading needed
+  final bool _isLoadingReferees = false;
+  final bool _isLoadingField = false;
 
   @override
   void initState() {
     super.initState();
-    _loadRefereeRoles();
-    _loadFieldInfo();
   }
 
-  Future<void> _loadFieldInfo() async {
-    try {
-      final int fieldId =
-          await DB.Tournaments.getFieldId(widget.match.tournamentId) ?? 0;
 
-      if (fieldId == 0) {
-        setState(() {
-          _isLoadingField = false;
-        });
-        return;
-      }
-
-      final field = await DB.Fields.getById(fieldId);
-
-      final city = await DB.Cities.getById(field.cityId);
-
-      if (mounted) {
-        setState(() {
-          _fieldId = fieldId;
-          _field = field;
-          _city = city;
-          _isLoadingField = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoadingField = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadRefereeRoles() async {
-    try {
-      final int sportId =
-          await DB.Tournaments.getSportId(widget.match.tournamentId) ?? 0;
-      final int fieldId =
-          await DB.Tournaments.getFieldId(widget.match.tournamentId) ?? 0;
-
-      if (sportId == 0 || fieldId == 0) {
-        setState(() {
-          _refereeRoles = [];
-          _refereeAssignments = [];
-          _refereesMap = {};
-          _isLoadingReferees = false;
-        });
-        return;
-      }
-      List<String> roles = [];
-      if (sportId == 1 || sportId == 2 || sportId == 3) {
-        // Football 5, Football 7, Football 8
-        roles = ['MAIN'];
-      } else if (sportId == 4) {
-        // Football 11
-        roles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
-      } else {
-        // Other sports can be added here with their respective roles
-        roles = [];
-      }
-      final assignments = await DB.RefereeAssignments.getByMatchId(
-        widget.match.id,
-      );
-
-      // Build referees map
-      final Map<String, String> refereesMap = {};
-      for (var assignment in assignments) {
-        final referee = await DB.Referees.getByRefereeId(assignment.refereeId);
-        if (referee != null) {
-          final refereeName = '${referee.name} ${referee.surname}';
-          refereesMap[assignment.role] = refereeName;
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _refereeRoles = roles;
-          _refereeAssignments = assignments;
-          _refereesMap = refereesMap;
-          _isLoadingReferees = false;
-          _sportId = sportId;
-          _fieldId = fieldId;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _refereeRoles = [];
-          _refereeAssignments = [];
-          _refereesMap = {};
-          _isLoadingReferees = false;
-        });
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -254,9 +155,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                       : InfoRowWithIcon(
                           icon: Icons.location_on,
                           label: 'Field',
-                          value: _field != null
-                              ? '${_field!.name}${_city != null ? ' - ${_city!.name}' : ''}'
-                              : 'Field #$_fieldId',
+                          value: "${widget.field.name} - ${widget.cityName}",
                           color: Colors.orange,
                         ),
                   const Divider(height: 24),
@@ -267,7 +166,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                           value: 'Loading...',
                           color: Colors.blue,
                         )
-                      : (_refereesMap == null || _refereesMap!.isEmpty)
+                      : (widget.assignmentPerRefereeNameSurname.isEmpty)
                       ? const InfoRowWithIcon(
                           icon: Icons.sports,
                           label: 'Referees',
@@ -277,7 +176,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                       : InfoRowWithIcon(
                           icon: Icons.sports,
                           label: 'Referees',
-                          multipleValues: _refereesMap,
+                          multipleValues: widget.assignmentPerRefereeNameSurname,
                           color: Colors.blue,
                         ),
                 ],

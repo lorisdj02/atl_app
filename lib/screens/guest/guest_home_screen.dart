@@ -24,6 +24,22 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
   late final SportCategory _currentSport =
       userProvider.selectedSportCategory ?? SportCategory.football;
 
+  int _currentPage = 0;
+  final List<String> _roles = [
+    'Player',
+    'Coordinator',
+    'Referee',
+    'Organization',
+  ];
+
+  final Map<String, String> _roleDescriptions = {
+    'Player': 'Join matches, book fields, and connect with teammates.',
+    'Coordinator':
+        'Create and manage tournaments, schedule matches, and coordinate teams.',
+    'Referee': 'Manage match officiating, report events, and access schedules.',
+    'Organization': 'Oversee clubs and venues, manage memberships and events.',
+  };
+
   void _onNavTap(int index) {
     if (index == 4) {
       _showSportSelector();
@@ -79,7 +95,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
         automaticallyImplyLeading: false,
         centerTitle: true,
         title: const Text(
-          'HOME',
+          'WELCOME TO ATL',
           style: TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -116,116 +132,113 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
   }
 
   Widget _buildGuestHomeContent() {
-    return SingleChildScrollView(
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+
+        // Page indicators (pallini)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_roles.length, (index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: index == _currentPage
+                      ? ATLColors.getPrimaryColor(_currentSport)
+                      : Colors.grey.shade300,
+                ),
+              );
+            }),
+          ),
+        ),
+
+        // Slideshow
+        Expanded(
+          child: PageView.builder(
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemCount: _roles.length,
+            itemBuilder: (context, index) {
+              return _buildRoleSlide(_roles[index]);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleSlide(String role) {
+    return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Guest info banner
+          // Icona del ruolo
           Container(
-            padding: const EdgeInsets.all(16),
+            width: 120,
+            height: 120,
             decoration: BoxDecoration(
-              color: Colors.orange.shade100,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.orange.shade300, width: 2),
+              shape: BoxShape.circle,
+              color: ATLColors.getPrimaryColor(_currentSport).withOpacity(0.1),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: Colors.orange.shade700,
-                  size: 32,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Guest Mode',
-                        style: TextStyle(
-                          color: Colors.orange.shade900,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Login to access all features',
-                        style: TextStyle(
-                          color: Colors.orange.shade700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            child: Icon(
+              _getRoleIcon(role),
+              size: 64,
+              color: ATLColors.getPrimaryColor(_currentSport),
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          // Today's matches title
-          Row(
-            children: [
-              Icon(
-                _currentSport.icon,
-                color: ATLColors.getPrimaryColor(_currentSport),
-                size: 32,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'TODAY\'S MATCHES',
-                style: TextStyle(
-                  color: ATLColors.subtext,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
+          // Nome del ruolo
+          Text(
+            role.toUpperCase(),
+            style: const TextStyle(
+              color: ATLColors.title,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          // TODO: Lista partite del giorno
+          // Spazio riservato per la descrizione (vuoto per ora)
           Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  _currentSport.icon,
-                  color: ATLColors.getPrimaryColor(_currentSport),
-                  size: 64,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No matches today',
-                  style: TextStyle(color: ATLColors.subtext, fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Login to follow tournaments!',
-                  style: TextStyle(color: ATLColors.title, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+            height: 96,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Text(
+              _roleDescriptions[role] ?? '',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: ATLColors.subtext, fontSize: 14),
             ),
           ),
         ],
       ),
     );
+  }
+
+  IconData _getRoleIcon(String role) {
+    switch (role) {
+      case 'Player':
+        return Icons.person;
+      case 'Coordinator':
+        return Icons.groups;
+      case 'Referee':
+        return Icons.sports;
+      case 'Organization':
+        return Icons.business;
+      default:
+        return Icons.info;
+    }
   }
 }

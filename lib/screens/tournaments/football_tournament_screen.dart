@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../database/db_controller.dart';
 import '../../models/tournament.dart';
 import '../../models/sport_category.dart';
 import '../../models/football_match.dart';
 import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../models/player.dart';
-import '../../models/football_tournament_stats.dart';
 import '../../models/team_stats.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
@@ -15,6 +13,8 @@ import '../../widgets/football_standings_team_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../widgets/road_to_victory_widget.dart';
 import '../../widgets/tournament_info_dialog.dart';
+import '../../config/api_json_keys.dart';
+import '../../database/db_read.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
   final Tournament tournament;
@@ -35,19 +35,17 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  List<FootballMatch>? _matches;
-  List<FootballStanding>? _standings;
-  List<Player>? _players;
+  List<FootballMatch> _matches = [];
+  List<FootballStanding> _standings = [];
+  List<Player> _players = [];
   Map<int, Team> _teamsCache = {};
-  Map<int, String> _captainNamesCache = {};
-  Map<int, TeamStats?> _playerStatsCache = {};
+  Map<int, TeamStats> _playerStatsCache = {};
 
   bool _fixturesLoaded = false;
   bool _tablesLoaded = false;
   bool _statsLoaded = false;
   bool _isInitialized = false;
 
-  int _selectedDay = 1;
   String _selectedPhase = 'day_1'; // Format: 'day_1', 'of', 'qf', 'sf', 'fi'
   String _selectedTableView =
       'group_stage'; // 'group_stage' or 'road_to_victory'
@@ -61,12 +59,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
-    _loadTabData(0).then((_) {
-      if (mounted) {
-        _isInitialized = true;
-      }
-    });
-    _loadMinutes();
+    _loadData();
   }
 
   @override
@@ -74,36 +67,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     super.didChangeDependencies();
     // Refresh data when returning to this screen (but not on first load)
     if (_isInitialized) {
-      _refreshCurrentTab();
-    }
-  }
-
-  void _refreshCurrentTab() {
-    final currentTab = _tabController.index;
-    // Reset loaded flags to force reload
-    if (currentTab == 0) {
-      _fixturesLoaded = false;
-    } else if (currentTab == 1) {
-      _tablesLoaded = false;
-    } else if (currentTab == 2) {
-      _statsLoaded = false;
-      _playerStatsCache.clear(); // Clear cache to get fresh data
-    }
-    _loadTabData(currentTab);
-  }
-
-  Future<void> _loadMinutes() async {
-    _minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
-      widget.tournament.id,
-    );
-    _minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
-      widget.tournament.id,
-    );
-
-    if (mounted && (_minutesPerRound == null || _minutesPerPause == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error loading sport settings')),
-      );
+      _loadData();
     }
   }
 
@@ -114,201 +78,56 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     super.dispose();
   }
 
-  void _onTabChanged() {
+  Future<void> _onTabChanged() async {
     if (!mounted) return;
     final newIndex = _tabController.index;
     if (_currentIndex != newIndex) {
       setState(() {
         _currentIndex = newIndex;
       });
-      _loadTabData(newIndex);
+      await _loadData();
     }
   }
 
-  Future<void> _loadTabData(int tabIndex) async {
-    switch (tabIndex) {
-      case 0: // Fixtures
-        if (!_fixturesLoaded) {
-          await _loadFixtures();
-        }
-        break;
-      case 1: // Tables
-        if (!_tablesLoaded) {
-          await _loadTables();
-        }
-        break;
-      case 2: // Stats
-        if (!_statsLoaded) {
-          await _loadStats();
-        }
-        break;
-    }
-  }
-
-  Future<void> _loadFixtures() async {
-    try {
-      final matches = await DB.FootballMatches.getMatchesByTournament(
-        widget.tournament.id,
-      );
-
-      // TODO: Gestire i placeholder teams
-      // Load teams for matches
-      final teamIds = <int>{};
-      for (var match in matches) {
-        if (match.homeTeamId != null) {
-          teamIds.add(match.homeTeamId!);
-        }
-        if (match.awayTeamId != null) {
-          teamIds.add(match.awayTeamId!);
-        }
-      }
-
-      for (var teamId in teamIds) {
-        if (!_teamsCache.containsKey(teamId)) {
-          final team = await DB.Teams.getById(teamId);
-          if (team != null) {
-            _teamsCache[teamId] = team;
-          }
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _matches = matches;
-          _fixturesLoaded = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading fixtures: $e')));
-      }
-    }
-  }
-
-  Future<void> _reloadFixtures() async {
+  Future<void> _loadData() async {
     setState(() {
       _fixturesLoaded = false;
+      _tablesLoaded = false;
+      _statsLoaded = false;
     });
-    await _loadFixtures();
-  }
 
-  Future<void> _reloadAllLoadedData() async {
-    // Reload fixtures
+    try{
+    Map<String, dynamic> data = await DBRead.getFootballTournamentScreen(
+      widget.tournament.id,
+    );
+
     setState(() {
-      _fixturesLoaded = false;
-    });
-    await _loadFixtures();
-
-    // Reload standings if they were already loaded
-    if (_tablesLoaded) {
-      setState(() {
-        _tablesLoaded = false;
-      });
-      await _loadTables();
-    }
-
-    // Reload stats if they were already loaded
-    if (_statsLoaded) {
-      setState(() {
-        _statsLoaded = false;
-        _playerStatsCache.clear();
-      });
-      await _loadStats();
-    }
-  }
-
-  Future<void> _loadTables() async {
-    try {
-      final standings = await DB.FootballStandings.getStandingsByTournament(
-        widget.tournament.id,
+      _matches = data[ApiJsonKeys.matches] as List<FootballMatch>;
+      _standings = data[ApiJsonKeys.standings] as List<FootballStanding>;
+      _players = data[ApiJsonKeys.players] as List<Player>;
+      _teamsCache = Map<int, Team>.from(data[ApiJsonKeys.teamsCache]);
+      _playerStatsCache = Map<int, TeamStats>.from(
+        data[ApiJsonKeys.playerStatsCache],
       );
-
-      // Load teams and captains
-      final teamIds = standings.map((s) => s.teamId).toSet();
-
-      for (var teamId in teamIds) {
-        if (!_teamsCache.containsKey(teamId)) {
-          final team = await DB.Teams.getById(teamId);
-          if (team != null) {
-            _teamsCache[teamId] = team;
-
-            // Load captain name
-            final captain = await DB.Players.getByPlayerId(team.captainId);
-            if (captain != null) {
-              _captainNamesCache[teamId] = '${captain.name} ${captain.surname}';
-            }
-          }
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _standings = standings;
-          _tablesLoaded = true;
-        });
-      }
+      _minutesPerRound = data[ApiJsonKeys.minutesPerRound] as int?;
+      _minutesPerPause = data[ApiJsonKeys.minutesPerPause] as int?;
+      _fixturesLoaded = true;
+      _tablesLoaded = true;
+      _statsLoaded = true;
+      _isInitialized = true;
+    });
     } catch (e) {
+      // Handle error (e.g., show a snackbar)
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading tables: $e')));
-      }
-    }
-  }
-
-  Future<void> _loadStats() async {
-    try {
-      // Carica le statistiche del torneo
-      final List<FootballTournamentStats> stats = await DB
-          .FootballTournamentStats.getByTournamentId(widget.tournament.id);
-
-      // Carica i giocatori e i team
-      final playerIds = stats.map((s) => s.playerId).toList();
-      final teamIds = stats.map((s) => s.teamId).toList();
-
-      final loadedPlayers = <Player>[];
-
-      for (var playerId in playerIds) {
-        final player = await DB.Players.getByPlayerId(playerId);
-        if (player != null) {
-          loadedPlayers.add(player);
-        }
-      }
-
-      for (var teamId in teamIds) {
-        if (!_teamsCache.containsKey(teamId)) {
-          final team = await DB.Teams.getById(teamId);
-          if (team != null) {
-            _teamsCache[teamId] = team;
-          }
-        }
-      }
-
-      // Converti FootballTournamentStats in TeamStats per la compatibilità con il widget
-      for (var stat in stats) {
-        _playerStatsCache[stat.playerId] = TeamStats(
-          id: 0,
-          playerId: stat.playerId,
-          teamId: stat.teamId,
-          motm: stat.motm,
-          goals: stat.goals,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading data: $e')),
         );
       }
-
-      if (mounted) {
-        setState(() {
-          _players = loadedPlayers;
-          _statsLoaded = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading stats: $e')));
-      }
+      setState(() {
+        _fixturesLoaded = true;
+        _tablesLoaded = true;
+        _statsLoaded = true;
+      });
     }
   }
 
@@ -411,7 +230,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         setState(() {
           _currentIndex = index;
         });
-        _loadTabData(index);
+        _loadData();
       },
       child: Container(
         decoration: BoxDecoration(
@@ -437,7 +256,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     final phases = <Map<String, dynamic>>[];
 
     // Add group stage days
-    final maxDay = _matches!.fold<int>(
+    final maxDay = _matches.fold<int>(
       0,
       (max, match) => match.day != null && match.day! > max ? match.day! : max,
     );
@@ -550,7 +369,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       return const LoadingATL();
     }
 
-    if (_matches == null || _matches!.isEmpty) {
+    if (_matches.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -596,9 +415,6 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                       if (selected) {
                         setState(() {
                           _selectedPhase = phaseId;
-                          if (phase['isDay'] == true) {
-                            _selectedDay = phase['day'] as int;
-                          }
                         });
                       }
                     },
@@ -647,7 +463,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
-        final groupMatches = _matches!
+        final groupMatches = _matches
             .where((m) => m.group == group && m.day == day)
             .toList();
 
@@ -675,7 +491,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                 currentSport: widget.sportCategory,
                 minutesPerRound: _minutesPerRound!,
                 minutesPerPause: _minutesPerPause!,
-                onMatchUpdated: _reloadAllLoadedData,
+                onMatchUpdated: _loadData,
               ),
             ),
             const SizedBox(height: 16),
@@ -687,8 +503,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
   Widget _buildPlayoffMatches(String groupPrefix, String phaseLabel) {
     // Find all matches with groups starting with the prefix
-    final playoffMatches = _matches!
-        .where((m) => m.group != null && m.group!.startsWith(groupPrefix))
+    final playoffMatches = _matches
+        .where((m) => m.group.startsWith(groupPrefix))
         .toList();
 
     if (playoffMatches.isEmpty) {
@@ -706,7 +522,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     // Group matches by their group identifier (e.g., SF1, SF2, QF1, etc.)
     final matchesByGroup = <String, List<FootballMatch>>{};
     for (var match in playoffMatches) {
-      final group = match.group!;
+      final group = match.group;
       matchesByGroup.putIfAbsent(group, () => []).add(match);
     }
 
@@ -760,7 +576,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                 currentSport: widget.sportCategory,
                 minutesPerRound: _minutesPerRound!,
                 minutesPerPause: _minutesPerPause!,
-                onMatchUpdated: _reloadAllLoadedData,
+                onMatchUpdated: _loadData,
               ),
             ),
             const SizedBox(height: 16),
@@ -775,7 +591,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       return const LoadingATL();
     }
 
-    if (_standings == null || _standings!.isEmpty) {
+    if (_standings.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -868,7 +684,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
             itemBuilder: (context, index) {
               final group = groups[index];
               final groupStandings =
-                  _standings!.where((s) => s.group == group).toList()
+                  _standings.where((s) => s.group == group).toList()
                     // Ordina per rank (gestito dal DB)
                     ..sort((a, b) => a.rank.compareTo(b.rank));
 
@@ -995,7 +811,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       return const LoadingATL();
     }
 
-    if (_players == null || _players!.isEmpty) {
+    if (_players.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1015,7 +831,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       children: [
         Expanded(
           child: PlayersStatsWidget(
-            players: _players!,
+            players: _players,
             sportCategory: widget.sportCategory,
             playerStats: _playerStatsCache,
             inTournament: true,

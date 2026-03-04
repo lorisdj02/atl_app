@@ -7,7 +7,6 @@ import '../widgets/player_coordinator_bottom_bar.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
-import 'login_screen.dart';
 
 class ShopScreen extends StatelessWidget {
   final SportCategory currentSport;
@@ -105,16 +104,6 @@ class ShopScreen extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('LOGIN'),
                     ),
                   ],
                 ),

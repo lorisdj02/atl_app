@@ -36,7 +36,6 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   List<Tournament> _myTournaments = [];
   Map<int, Coordinator> _coordinatorCache = {};
   Map<int, Field> _fieldCache = {};
-  List<City> _cities = [];
   Map<int, String> _cityNamePerField = {};
 
   bool _isLoading = true;
@@ -113,7 +112,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
     try {
       final data = await DBRead.getAllTournamentsScreen(
-        userProvider.activeUser?.id,
+        !userProvider.isGuest ? userProvider.activeUser?.id : null,
         userProvider.currentTeamId,
         widget.currentSport,
       );

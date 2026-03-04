@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/football_match.dart';
@@ -17,7 +18,9 @@ import '../../widgets/football_motm_selector_dialog.dart';
 import '../../widgets/schedule_match_dialog.dart';
 import '../../widgets/referee_match_dialog.dart';
 import '../../providers/user_provider.dart';
-import '../../database/db_controller.dart';
+import '../../config/api_json_keys.dart';
+import '../../database/db_read.dart';
+import '../../database/db_controller.dart'; // Importa DBController per canMatchFinish
 
 class FootballMatchScreen extends StatefulWidget {
   final int matchId;
@@ -42,14 +45,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   late int _minutesPerRound;
   late int _minutesPerPause;
   int? _coordinatorId;
-  int? _tournamentId;
-  int? _numReferees;
-  int? _sportId;
-  bool? _refereeCheck;
+  bool _refereeCheck = false;
   List<String> _availableRefereeRoles = [];
   bool _isLoadingRefereeRoles = true;
   int _matchInfoKey = 0; // Counter to force MatchInfoCard rebuild
   bool _hasChanges = false; // Track if any changes were made
+  Map<int, List<Player>> _playersPerTeam = {};
+  Map<String, String> _assignmentPerRefereeNameSurname = {}; // key: Name+Surname, value: Role
+  String _cityName = '';
+  Field? _field;
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -61,7 +65,6 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   // In produzione, deve essere: return difference.inMinutes < 60;
   bool get _canStartMatch {
     if (!_isScheduled || _match?.scheduledStart == null) return false;
-    final difference = _match!.scheduledStart!.difference(DateTime.now());
 
     // DEBUG: Permette di avviare quando non è più possibile rischedulare (< 24h)
     return _refereeCheck!;
@@ -100,88 +103,28 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     try {
       // Carica la partita dal database
-      final FootballMatch? match = await DB.FootballMatches.getById(
-        widget.matchId,
-      );
+    
+      final data = await DBRead.getFootballMatchScreen(widget.matchId);
+      List<FootballMatchEvent> events = data[ApiJsonKeys.events] ?? [];
 
-      if (match == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Carica i team (possono essere null se TBD)
-      Team? homeTeam;
-      if (match.homeTeamId != null) {
-        homeTeam = await DB.Teams.getById(match.homeTeamId!);
-      }
-
-      Team? awayTeam;
-      if (match.awayTeamId != null) {
-        awayTeam = await DB.Teams.getById(match.awayTeamId!);
-      }
-
-      // Carica il coordinatore della partita
-      int tournamentId = match.tournamentId;
-      final int? coordinatorId = (await DB.Tournaments.getById(
-        tournamentId,
-      ))?.coordinatorId;
-
-      if (coordinatorId == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      // Carica gli eventi della partita
-      final List<FootballMatchEvent> events =
-          await DB.FootballMatchEvents.getByMatchId(widget.matchId);
-
-      // Ordina gli eventi per eventTime in senso decrescente (più recenti in alto)
-      events.sort((a, b) => b.eventTime.compareTo(a.eventTime));
-
-      final minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
-        match.tournamentId,
-      );
-      final minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
-        match.tournamentId,
-      );
-
-      if (minutesPerRound == 0 || minutesPerPause == 0) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final int numReferees = await DB.RefereeAssignments.countRefereesPerMatch(
-        widget.matchId,
-      );
-
-      final int sportId = await DB.Tournaments.getSportId(tournamentId) ?? 0;
-
-      if (sportId == 0) {
-        return;
-      }
-
-      final bool refereeCheck =
-          _numReferees != null &&
-          ((_numReferees == 1 &&
-                  (_sportId == 1 || _sportId == 2 || _sportId == 3)) ||
-              (_numReferees == 3 && _sportId == 4));
-
-      // Load available referee roles
-      await _loadAvailableRefereeRoles(sportId);
+      events.sort((a, b) => b.eventTime.compareTo(a.eventTime)); // Ordina per data decrescente
 
       setState(() {
-        _match = match;
-        _homeTeam = homeTeam;
-        _awayTeam = awayTeam;
+        _match = data[ApiJsonKeys.match];
+        _homeTeam = data[ApiJsonKeys.homeTeam];
+        _awayTeam = data[ApiJsonKeys.awayTeam];
         _events = events;
+        _minutesPerRound = data[ApiJsonKeys.minutesPerRound];
+        _minutesPerPause = data[ApiJsonKeys.minutesPerPause];
+        _availableRefereeRoles = data[ApiJsonKeys.availableRefereeRoles];
+        _playersPerTeam = data[ApiJsonKeys.playersPerTeam];
+        _cityName = data[ApiJsonKeys.cityName];
+        _assignmentPerRefereeNameSurname = data[ApiJsonKeys.assignmentPerRefereeNameSurname];
+        _field = data[ApiJsonKeys.field];
+        _coordinatorId = data[ApiJsonKeys.coordinatorId];
+        _refereeCheck = data[ApiJsonKeys.refereeCheck];
+        _isLoadingRefereeRoles = false;
         _isLoading = false;
-        _minutesPerRound = minutesPerRound;
-        _minutesPerPause = minutesPerPause;
-        _coordinatorId = coordinatorId;
-        _tournamentId = tournamentId;
-        _numReferees = numReferees;
-        _sportId = sportId;
-        _refereeCheck = refereeCheck;
       });
     } catch (e) {
       print('Error loading match data: $e');
@@ -189,45 +132,6 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
   }
 
-  Future<void> _loadAvailableRefereeRoles(int sportId) async {
-    setState(() => _isLoadingRefereeRoles = true);
-
-    try {
-      // Get all required roles for this sport (hardcoded)
-      List<String> requiredRoles = [];
-      if (sportId == 1 || sportId == 2 || sportId == 3) {
-        requiredRoles = ['MAIN'];
-      } else if (sportId == 4) {
-        requiredRoles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
-      }
-
-      // Get existing assignments for this match
-      final assignments = await DB.RefereeAssignments.getByMatchId(
-        widget.matchId,
-      );
-      final assignedRoles = assignments.map((a) => a.role).toSet();
-
-      // Find available roles (required roles that are not yet assigned)
-      final availableRoles = requiredRoles
-          .where((role) => !assignedRoles.contains(role))
-          .toList();
-
-      if (mounted) {
-        setState(() {
-          _availableRefereeRoles = availableRoles;
-          _isLoadingRefereeRoles = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading available referee roles: $e');
-      if (mounted) {
-        setState(() {
-          _availableRefereeRoles = [];
-          _isLoadingRefereeRoles = false;
-        });
-      }
-    }
-  }
 
   Future<void> _showRefereeMatchDialog() async {
     if (_availableRefereeRoles.isEmpty) return;
@@ -289,18 +193,25 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   }
 
   Future<void> _showScheduleDialog() async {
-    if (_tournamentId == null) return;
 
-    final fieldId = (await DB.Tournaments.getById(_tournamentId!))?.fieldId;
-    if (fieldId == null) return;
+    if(_field == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: Field information not available')),
+        );
+      }
+      return;
+    }
+
+    if (_match == null) return;
 
     final wasScheduled = _match?.status == MatchStatus.scheduled;
 
     final DateTime? scheduledStart = await showDialog<DateTime>(
       context: context,
       builder: (context) => ScheduleMatchDialog(
-        tournamentId: _tournamentId!,
-        fieldId: fieldId,
+        tournamentId: _match!.tournamentId,
+        fieldId: _field!.id,
         currentSport: widget.currentSport,
         currentScheduledStart: _match?.scheduledStart,
       ),
@@ -577,15 +488,35 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (_homeTeam == null || _awayTeam == null) {
       return;
     }
+
+    // Filter out players who received a red card or double yellow card
+    final redCardedPlayerIds = _events
+        .where((e) =>
+            e.type == FootballMatchEventType.redCard ||
+            e.type == FootballMatchEventType.redYellowCard)
+        .where((e) => e.playerId != null)
+        .map((e) => e.playerId!)
+        .toSet();
+
+    final filteredPlayersPerTeam = _playersPerTeam.map(
+      (teamId, players) => MapEntry(
+        teamId,
+        players
+            .where((p) => !redCardedPlayerIds.contains(p.playerId))
+            .toList(),
+      ),
+    );
+
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => MatchEventDialog(
         homeTeam: _homeTeam!,
         awayTeam: _awayTeam!,
-        tournamentId: _tournamentId!,
+        tournamentId: _match!.tournamentId,
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
         coordinatorId: _coordinatorId!,
+        playersPerTeam: filteredPlayersPerTeam,
         penaltyMode: penaltyMode,
       ),
     );
@@ -639,7 +570,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       builder: (context) => FootballMotmSelectorDialog(
         homeTeam: _homeTeam!,
         awayTeam: _awayTeam!,
-        tournamentId: _tournamentId!,
+        tournamentId: _match!.tournamentId,
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
       ),
@@ -658,7 +589,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       widget.matchId,
       selectedPlayer.playerId,
       teamId,
-      _tournamentId!,
+      _match!.tournamentId,
       _coordinatorId!,
     );
 
@@ -827,6 +758,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                       isNotScheduled: _isNotScheduled,
                       isScheduled: _isScheduled,
                       sportCategory: widget.currentSport,
+                      field: _field!,
+                      cityName: _cityName,
+                      assignmentPerRefereeNameSurname: _assignmentPerRefereeNameSurname,
                     ),
                     const SizedBox(height: 16),
                     // Sezione Eventi
@@ -1122,37 +1056,37 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       }
 
       // Carica solo il giocatore per il nome
-      return FutureBuilder<Player?>(
-        future: DB.Players.getByUserId(event.playerId!),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const SizedBox.shrink();
-          }
+      Player? player;
+      final teamPlayers = _playersPerTeam[event.teamId];
+      if (teamPlayers != null) {
+        try {
+          player = teamPlayers.firstWhere((p) => p.playerId == event.playerId);
+        } catch (_) {
+          player = null;
+        }
+      }
+      if (player == null) return const SizedBox.shrink();
 
-          final player = snapshot.data!;
+      // Formatta il nome: nome puntato e cognome esteso
+      final String formattedName = _formatPlayerName(player);
 
-          // Formatta il nome: nome puntato e cognome esteso
-          final String formattedName = _formatPlayerName(player);
+      // Verifica se l'evento è durante penalty shootout
+      final bool isInPenaltyShootOut =
+          _isPenaltyShootOut &&
+          (event.type == FootballMatchEventType.penalty ||
+              event.type == FootballMatchEventType.missedPenalty);
 
-          // Verifica se l'evento è durante penalty shootout
-          final bool isInPenaltyShootOut =
-              _isPenaltyShootOut &&
-              (event.type == FootballMatchEventType.penalty ||
-                  event.type == FootballMatchEventType.missedPenalty);
-
-          return GestureDetector(
-            onLongPress: () => _handleDeleteEvent(event),
-            child: MatchEventCard(
-              eventType: event.type,
-              minute: isInPenaltyShootOut ? null : event.minute,
-              additionalMinute: isInPenaltyShootOut
-                  ? null
-                  : event.additionalMinute,
-              playerName: formattedName,
-              source: source,
-            ),
-          );
-        },
+      return GestureDetector(
+        onLongPress: () => _handleDeleteEvent(event),
+        child: MatchEventCard(
+          eventType: event.type,
+          minute: isInPenaltyShootOut ? null : event.minute,
+          additionalMinute: isInPenaltyShootOut
+              ? null
+              : event.additionalMinute,
+          playerName: formattedName,
+          source: source,
+        ),
       );
     }
 

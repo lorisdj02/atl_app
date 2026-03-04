@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/player.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
 import 'square_team_widget.dart';
-import '../config/app_config.dart';
 import 'abstract_team_dialog.dart';
 
 enum EventType { goal, penalty, missedPenalty, ownGoal, yellowCard, redCard, redYellowCard }
@@ -13,6 +11,7 @@ enum EventType { goal, penalty, missedPenalty, ownGoal, yellowCard, redCard, red
 class MatchEventDialog extends AbstractTeamDialog {
   final int coordinatorId;
   final bool penaltyMode;
+  final Map<int, List<Player>> playersPerTeam;
 
   const MatchEventDialog({
     super.key,
@@ -22,6 +21,7 @@ class MatchEventDialog extends AbstractTeamDialog {
     required super.matchId,
     required super.sportCategory,
     required this.coordinatorId,
+    required this.playersPerTeam,
     this.penaltyMode = false,
   });
 
@@ -73,58 +73,14 @@ class _MatchEventDialogState extends State<MatchEventDialog>
     }
   }
 
-  Future<void> _loadPlayers() async {
-    if (selectedTeam == null || _selectedEventType == null) return;
-
+  void _loadPlayers() {
+    if (selectedTeam == null) return;
     setState(() {
-      isLoading = true;
       _selectedPlayer = null;
+      _availablePlayers = List<Player>.from(
+        widget.playersPerTeam[selectedTeam!.id] ?? [],
+      );
     });
-
-    try {
-      List<Player> players = [];
-
-      // Per tutti gli eventi (Goal, Penalty, Yellow Card, Red Card, Own Goal),
-      // mostra solo giocatori del team selezionato.
-      List<int> playerIds = [];
-      if (AppConfig.isDebug) {
-        playerIds = await DB.PlaysAt.getPlayersIdinTeam(selectedTeam!.id);
-      } else {
-        playerIds = await DB.CallUps.getPlayersInTeamInTournament(
-          widget.tournamentId,
-          selectedTeam!.id,
-        );
-      }
-
-      for (var playerId in playerIds) {
-        // Salta i giocatori espulsi
-        if (await DB.FootballMatchEvents.isPlayerSentOff(
-          widget.matchId,
-          playerId,
-        )) {
-          continue;
-        }
-
-        final player = await DB.Players.getByPlayerId(playerId);
-        if (player != null) {
-          players.add(player);
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _availablePlayers = players;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
-      }
-    }
   }
 
   Future<void> _submitEvent() async {
