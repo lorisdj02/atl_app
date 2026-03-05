@@ -6,6 +6,8 @@ import '../models/sport_category.dart';
 import '../models/team_request.dart';
 import '../utils/atl_colors.dart';
 
+// TODO: ASSOLUTAMENTE rimuovere db_controller
+
 class PlayersRequestsWidget extends StatefulWidget {
   final int teamId;
   final SportCategory sportCategory;

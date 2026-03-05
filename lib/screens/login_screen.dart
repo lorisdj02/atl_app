@@ -1,3 +1,5 @@
+import 'package:atl_app/config/api_json_keys.dart';
+import 'package:atl_app/database/db_read.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/atl_button.dart';
@@ -9,7 +11,8 @@ import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import '../utils/home_router.dart';
 import '../providers/user_provider.dart';
-import '../database/db_controller.dart';
+
+// TODO: Rimuovi db_controller
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,10 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
       listen: false,
     );
     // Replace mock user creation with DB call
-    final User? user = await DB.Users.getByEmailOrUsername(
-      usernameOrEmail,
-      password,
-    );
+    final loginData = await DBRead.handleLogin(usernameOrEmail, password);
+    final User? user = loginData[ApiJsonKeys.user];
 
     if (user == null || user.passwordMD5 != password) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -72,73 +73,26 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    switch (user.role) {
-      case UserRole.referee:
-        // Fetch and set referee-specific data if needed
-        final int? roleId = await DB.Users.getRoleId(user.id);
-        if (roleId == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).invalidCredentials),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-        userProvider.setActiveUser(user, roleId: roleId);
-        break;
-      case UserRole.coordinator:
-        // Fetch and set coordinator-specific data if needed
-        final int? roleId = await DB.Users.getRoleId(user.id);
-        if (roleId == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).invalidCredentials),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-        userProvider.setActiveUser(user, roleId: roleId);
-        break;
-      case UserRole.organization:
-      final int? roleId = await DB.Users.getRoleId(user.id);
-        // Fetch and set organization-specific data if needed
-        if (roleId == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).invalidCredentials),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-        userProvider.setActiveUser(user, roleId: roleId);
-        break;
-      case UserRole.player:
-        // Fetch and set player-specific data
-        final int? roleId = await DB.Users.getRoleId(user.id);
-        if (roleId == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).invalidCredentials),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-        userProvider.setActiveUser(user, roleId: roleId);
-        try {
-          userProvider.setCurrentTeamId(
-            await DB.PlaysAt.getTeamIdByPlayerId(userProvider.activeRoleId!),
-          );
-        } catch (e) {
-          userProvider.setCurrentTeamId(-1);
-        }
-        break;
-      case UserRole.guest:
-        userProvider.setActiveUser(user);
-        break;
+    final int? roleId = loginData[ApiJsonKeys.roleId];
+    if (roleId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).invalidCredentials),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    userProvider.setActiveUser(user, roleId: roleId);
+
+    if (user.role == UserRole.player) {
+      final int? teamId = loginData[ApiJsonKeys.team];
+      if (teamId != null) {
+        userProvider.setCurrentTeamId(teamId);
+      } else {
+        userProvider.setCurrentTeamId(-1);
+      }
     }
 
     print(

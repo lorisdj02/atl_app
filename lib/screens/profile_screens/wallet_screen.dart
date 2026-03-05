@@ -6,6 +6,8 @@ import '../../utils/atl_colors.dart';
 import '../../database/db_controller.dart';
 import '../../models/wallet.dart';
 
+//TODO: Rimuovi db_controller
+
 class WalletScreen extends StatefulWidget {
   final SportCategory currentSport;
 

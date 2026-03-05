@@ -4,6 +4,8 @@ import '../models/sport.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_controller.dart';
 
+// TODO: rimuovi db_controller
+
 /// Widget per la selezione dello sport all'interno di una categoria
 class SportSelectorWidget extends StatefulWidget {
   final SportCategory sportCategory;

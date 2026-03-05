@@ -147,6 +147,8 @@ class ApiJsonKeys {
   static const String coordinatorId = 'coordinatorId'; // int
   // FootballMatchDetailScreen
   static const String refereeCheck = 'refereeCheck'; // bool
+  // FootballMatchDetailScreen
+  static const String canMatchFinish = 'canMatchFinish'; // bool
 
   // PayParticipationScreen
   static const String tournamentCache = 'tournamentCache'; // Map<int, Tournament>
@@ -154,4 +156,12 @@ class ApiJsonKeys {
   static const String tournamentParticipations = 'tournamentParticipations'; // List<TournamentParticipation>
   // PayParticipationScreen
   static const String isCalledUpPerTournament = 'isCalledUpPerTournament'; // Map<int, bool>
+
+  // LoginScreen
+  static const String user = 'user'; // User?
+  // LoginScreen
+  static const String roleId = 'roleId'; // int
+
+  // ProfileScreen
+  static const String level = 'level'; // String
 }

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import '../config/app_config.dart';
 import 'repositories/user_repository.dart';
 import 'repositories/tournament_repository.dart';
@@ -31,6 +33,7 @@ import 'repositories/wallet_repository.dart';
 import 'repositories/reviews_repository.dart';
 import 'repositories/referee_roles_repository.dart';
 import 'repositories/orders_repository.dart';
+import 'repositories/referee_licenses_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -79,6 +82,7 @@ class DB {
   static late final ReviewsRepository Reviews;
   static late final RefereeRolesRepository RefereeRoles;
   static late final OrdersRepository Orders;
+  static late final RefereeLicensesRepository RefereeLicenses;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -114,6 +118,7 @@ class DB {
     Reviews = ReviewsRepository();
     RefereeRoles = RefereeRolesRepository();
     Orders = OrdersRepository();
+    RefereeLicenses = RefereeLicensesRepository();
     // TODO: Inizializza altri repository
   }
 

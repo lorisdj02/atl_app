@@ -20,7 +20,6 @@ import '../../widgets/referee_match_dialog.dart';
 import '../../providers/user_provider.dart';
 import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
-import '../../database/db_controller.dart'; // Importa DBController per canMatchFinish
 
 class FootballMatchScreen extends StatefulWidget {
   final int matchId;
@@ -51,9 +50,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   int _matchInfoKey = 0; // Counter to force MatchInfoCard rebuild
   bool _hasChanges = false; // Track if any changes were made
   Map<int, List<Player>> _playersPerTeam = {};
-  Map<String, String> _assignmentPerRefereeNameSurname = {}; // key: Name+Surname, value: Role
+  Map<int, List<Player>> _availablePlayersPerTeam = {};
+  Map<String, String> _assignmentPerRefereeNameSurname =
+      {}; // key: Name+Surname, value: Role
   String _cityName = '';
   Field? _field;
+  bool _canMatchFinish = false;
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -67,7 +69,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (!_isScheduled || _match?.scheduledStart == null) return false;
 
     // DEBUG: Permette di avviare quando non è più possibile rischedulare (< 24h)
-    return _refereeCheck!;
+    return _refereeCheck;
   }
 
   bool get _canReschedule {
@@ -103,11 +105,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     try {
       // Carica la partita dal database
-    
+
       final data = await DBRead.getFootballMatchScreen(widget.matchId);
       List<FootballMatchEvent> events = data[ApiJsonKeys.events] ?? [];
 
-      events.sort((a, b) => b.eventTime.compareTo(a.eventTime)); // Ordina per data decrescente
+      events.sort(
+        (a, b) => b.eventTime.compareTo(a.eventTime),
+      ); // Ordina per data decrescente
 
       setState(() {
         _match = data[ApiJsonKeys.match];
@@ -119,19 +123,56 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         _availableRefereeRoles = data[ApiJsonKeys.availableRefereeRoles];
         _playersPerTeam = data[ApiJsonKeys.playersPerTeam];
         _cityName = data[ApiJsonKeys.cityName];
-        _assignmentPerRefereeNameSurname = data[ApiJsonKeys.assignmentPerRefereeNameSurname];
+        _assignmentPerRefereeNameSurname =
+            data[ApiJsonKeys.assignmentPerRefereeNameSurname];
         _field = data[ApiJsonKeys.field];
         _coordinatorId = data[ApiJsonKeys.coordinatorId];
         _refereeCheck = data[ApiJsonKeys.refereeCheck];
+        _canMatchFinish = data[ApiJsonKeys.canMatchFinish];
         _isLoadingRefereeRoles = false;
         _isLoading = false;
       });
+      _reloadAvailablePlayersPerTeam();
     } catch (e) {
       print('Error loading match data: $e');
       setState(() => _isLoading = false);
     }
   }
 
+  Future<void> _refreshEvents() async {
+    try {
+      final Map<String, dynamic> events = await DBRead.getMatchEvents(
+        widget.matchId,
+      );
+      List<FootballMatchEvent> matchEvents = events[ApiJsonKeys.events] ?? [];
+      matchEvents.sort(
+        (a, b) => b.eventTime.compareTo(a.eventTime),
+      ); // Ordina per data decrescente
+      setState(() {
+        _events = matchEvents;
+      });
+      _reloadAvailablePlayersPerTeam();
+    } catch (e) {
+      print('Error refreshing events: $e');
+    }
+  }
+
+  void _reloadAvailablePlayersPerTeam() {
+    setState(() {
+      _availablePlayersPerTeam = _playersPerTeam.map((teamId, players) {
+        final availablePlayers = players.where((player) {
+          // Un giocatore è disponibile se non ha un cartellino rosso o doppio giallo
+          return !_events.any(
+            (event) =>
+                event.playerId == player.playerId &&
+                (event.type == FootballMatchEventType.redCard ||
+                    event.type == FootballMatchEventType.redYellowCard),
+          );
+        }).toList();
+        return MapEntry(teamId, availablePlayers);
+      });
+    });
+  }
 
   Future<void> _showRefereeMatchDialog() async {
     if (_availableRefereeRoles.isEmpty) return;
@@ -193,11 +234,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   }
 
   Future<void> _showScheduleDialog() async {
-
-    if(_field == null) {
+    if (_field == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: Field information not available')),
+          const SnackBar(
+            content: Text('Error: Field information not available'),
+          ),
         );
       }
       return;
@@ -370,10 +412,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
       // Se siamo nel secondo tempo (startHalf), controlla se il match può finire
       if (_match?.status == MatchStatus.startHalf) {
-        final canFinish = await DB.FootballMatches.canMatchFinish(
-          widget.matchId,
-        );
-        if (canFinish) {
+        if (_canMatchFinish) {
           actions.add('Finish Match');
         } else {
           actions.add('Start Penalty ShootOut');
@@ -384,8 +423,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       actions.add('Start Second Half');
     } else if (_isPenaltyShootOut) {
       // Durante i rigori, verifica se il match può finire
-      final canFinish = await DB.FootballMatches.canMatchFinish(widget.matchId);
-      if (canFinish) {
+      if (_canMatchFinish) {
         actions.add('Finish Match');
       } else {
         actions.add('Insert Penalty');
@@ -489,24 +527,6 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       return;
     }
 
-    // Filter out players who received a red card or double yellow card
-    final redCardedPlayerIds = _events
-        .where((e) =>
-            e.type == FootballMatchEventType.redCard ||
-            e.type == FootballMatchEventType.redYellowCard)
-        .where((e) => e.playerId != null)
-        .map((e) => e.playerId!)
-        .toSet();
-
-    final filteredPlayersPerTeam = _playersPerTeam.map(
-      (teamId, players) => MapEntry(
-        teamId,
-        players
-            .where((p) => !redCardedPlayerIds.contains(p.playerId))
-            .toList(),
-      ),
-    );
-
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => MatchEventDialog(
@@ -516,7 +536,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
         coordinatorId: _coordinatorId!,
-        playersPerTeam: filteredPlayersPerTeam,
+        playersPerTeam: _availablePlayersPerTeam,
         penaltyMode: penaltyMode,
       ),
     );
@@ -525,7 +545,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       setState(() {
         _hasChanges = true;
       });
-      _loadMatchData();
+      _refreshEvents();
     }
   }
 
@@ -538,10 +558,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     );
     if (!confirmed) return;
 
-    final success = await DB.FootballMatches.startPenaltyShootOut(
-      widget.matchId,
-    );
-
+    final success = await DBWrite.startFootballPenaltyShootOut(widget.matchId);
     if (success) {
       setState(() {
         _hasChanges = true;
@@ -691,7 +708,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       setState(() {
         _hasChanges = true;
       });
-      _loadMatchData();
+      _refreshEvents();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Event deleted successfully')),
@@ -760,7 +777,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                       sportCategory: widget.currentSport,
                       field: _field!,
                       cityName: _cityName,
-                      assignmentPerRefereeNameSurname: _assignmentPerRefereeNameSurname,
+                      assignmentPerRefereeNameSurname:
+                          _assignmentPerRefereeNameSurname,
                     ),
                     const SizedBox(height: 16),
                     // Sezione Eventi
@@ -953,22 +971,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     // Se è in penalty shootout, mostra il pulsante appropriato
     if (_isPenaltyShootOut) {
-      return FutureBuilder<bool>(
-        future: DB.FootballMatches.canMatchFinish(widget.matchId),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return ATLFloatingButton(
-              onPressed: () {},
-              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-              icon: Icons.sports_soccer,
-              label: 'Loading...',
-              heroTag: 'soccerMatchFAB',
-            );
-          }
-
-          final canFinish = snapshot.data!;
-
-          if (canFinish) {
+      if (_canMatchFinish) {
             return ATLFloatingButton(
               onPressed: () => _handleMatchAction('finish'),
               backgroundColor: Colors.green,
@@ -985,10 +988,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
               heroTag: 'soccerMatchFAB',
             );
           }
-        },
-      );
     }
-
     return null;
   }
 
@@ -1081,9 +1081,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         child: MatchEventCard(
           eventType: event.type,
           minute: isInPenaltyShootOut ? null : event.minute,
-          additionalMinute: isInPenaltyShootOut
-              ? null
-              : event.additionalMinute,
+          additionalMinute: isInPenaltyShootOut ? null : event.additionalMinute,
           playerName: formattedName,
           source: source,
         ),

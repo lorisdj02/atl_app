@@ -1465,4 +1465,12 @@ class DBWrite {
       throw UnimplementedError();
     }
   }
+
+  static Future<bool> startFootballPenaltyShootOut(int matchId) async {
+    if (AppConfig.isDebug) {
+      return await DB.FootballMatches.startPenaltyShootOut(matchId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

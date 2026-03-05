@@ -14,6 +14,7 @@ import 'package:atl_app/models/lobby_booking_participation.dart';
 import 'package:atl_app/models/palmares.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/private_booking.dart';
+import 'package:atl_app/models/referee.dart';
 import 'package:atl_app/models/referee_assignment.dart';
 import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/team.dart';
@@ -29,6 +30,95 @@ import '../../models/plays_at.dart';
 import '../config/api_json_keys.dart';
 
 class DBRead {
+  // la password è in chiaro, ma tanto è un mock, quindi non importa
+  static Future<Map<String, dynamic>> handleLogin(
+    String usernameOrEmail,
+    String password,
+  ) async {
+    if (AppConfig.isDebug) {
+      final User? user = await DB.Users.getByEmailOrUsername(
+        usernameOrEmail,
+        password,
+      );
+      if (user == null) {
+        return {ApiJsonKeys.user: null};
+      }
+
+      final UserRole userRole = user.role;
+
+      switch (userRole) {
+        case UserRole.player:
+          final int playerId = await DB.Players.getPlayerIdByUserId(user.id);
+          if (playerId < 1) {
+            throw Exception("Player not found for user");
+          }
+
+          final PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
+            playerId,
+            SportCategory.football,
+          );
+          Team? userTeam;
+
+          return {
+            ApiJsonKeys.user: user,
+            ApiJsonKeys.roleId: playerId,
+            ApiJsonKeys.team: playsAt != null ? playsAt.teamId : null,
+          };
+        case UserRole.coordinator:
+          final int coordinatorId =
+              await DB.Coordinators.getCoordinatorIdByUserId(user.id);
+          if (coordinatorId < 1) {
+            throw Exception("Coordinator not found for user");
+          }
+          return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: coordinatorId};
+        case UserRole.referee:
+          final int refereeId = await DB.Referees.getRefereeIdByUserId(user.id);
+          if (refereeId < 1) {
+            throw Exception("Referee not found for user");
+          }
+          return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: refereeId};
+        case UserRole.organization:
+          final int organizationId =
+              await DB.Organizations.getOrganizationIdByUserId(user.id);
+          if (organizationId < 1) {
+            throw Exception("Organization not found for user");
+          }
+          return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: organizationId};
+        default:
+          throw Exception("Unknown user role");
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getUserLevel(int userId) async {
+    if (AppConfig.isDebug) {
+      final User? user = await DB.Users.getByUserId(userId);
+      if (user == null) {
+        throw Exception("User not found");
+      }
+      if (user.role == UserRole.coordinator) {
+        final Coordinator? coordinator =
+            await DB.Coordinators.getByUserId(userId);
+        if (coordinator == null) {
+          throw Exception("Coordinator not found for user");
+        }
+        return {ApiJsonKeys.level: coordinator.level};
+      } else if (user.role == UserRole.referee) {
+        final Referee? referee = await DB.Referees.getByUserId(userId);
+        if (referee == null) {
+          throw Exception("Referee not found for user");
+        }
+        return {ApiJsonKeys.level: referee.level};
+      } else {
+        return {};
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   static Future<Map<String, dynamic>> getPlayerHomeScreen({
     required int playerId,
     required SportCategory currentSport,
@@ -450,7 +540,7 @@ class DBRead {
         teamCache[team.id] = team;
         final captain = await DB.Players.getByPlayerId(team.captainId);
         if (captain != null) {
-          captainNamePerTeam[team.id] = "${captain.username}";
+          captainNamePerTeam[team.id] = captain.username;
         }
       }
       return {
@@ -1080,7 +1170,7 @@ class DBRead {
       Map<int, TeamStats> playerStatsCache = {};
 
       for (var stats in tournamentStats) {
-        if(stats.motm == 0 && stats.goals == 0) {
+        if (stats.motm == 0 && stats.goals == 0) {
           continue; // Skip players with no stats
         }
         playerStatsCache[stats.playerId] = TeamStats(
@@ -1115,7 +1205,9 @@ class DBRead {
         throw Exception("Match not found");
       }
 
-      final Tournament? tournament = await DB.Tournaments.getById(match.tournamentId);
+      final Tournament? tournament = await DB.Tournaments.getById(
+        match.tournamentId,
+      );
       if (tournament == null) {
         throw Exception("Tournament not found");
       }
@@ -1126,9 +1218,6 @@ class DBRead {
       final Team? awayTeam = match.awayTeamId != null
           ? await DB.Teams.getById(match.awayTeamId!)
           : null;
-
-      final List<FootballMatchEvent> events =
-          await DB.FootballMatchEvents.getByMatchId(matchId);
 
       final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
         match.tournamentId,
@@ -1192,21 +1281,22 @@ class DBRead {
           await DB.RefereeAssignments.getByMatchId(matchId);
       Map<String, String> assignmentPerRefereeNameSurname = {};
 
-
       for (var assignment in refereeAssignments) {
         final referee = await DB.Referees.getByRefereeId(assignment.refereeId);
         if (referee != null) {
-          assignmentPerRefereeNameSurname[
-              "${referee.name} ${referee.surname}"] = assignment.role;
+          assignmentPerRefereeNameSurname["${referee.name} ${referee.surname}"] =
+              assignment.role;
         }
       }
 
-      final Field field = await DB.Fields.getById(
-        tournament.fieldId,
-      );
+      final Field field = await DB.Fields.getById(tournament.fieldId);
 
       final city = await DB.Cities.getById(field.cityId);
       final String cityName = city != null ? city.name : 'Unknown';
+
+      final eventData = await getMatchEvents(matchId);
+      final List<FootballMatchEvent> events = eventData[ApiJsonKeys.events];
+      final bool canMatchFinish = eventData[ApiJsonKeys.canMatchFinish];
 
       return {
         ApiJsonKeys.match: match,
@@ -1217,18 +1307,64 @@ class DBRead {
         ApiJsonKeys.minutesPerPause: minutesPerPause,
         ApiJsonKeys.availableRefereeRoles: availableRoles,
         ApiJsonKeys.playersPerTeam: playersPerTeam,
-        ApiJsonKeys.assignmentPerRefereeNameSurname: assignmentPerRefereeNameSurname,
+        ApiJsonKeys.assignmentPerRefereeNameSurname:
+            assignmentPerRefereeNameSurname,
         ApiJsonKeys.field: field,
         ApiJsonKeys.cityName: cityName,
         ApiJsonKeys.coordinatorId: tournament.coordinatorId,
         ApiJsonKeys.refereeCheck: availableRoles.isEmpty,
+        ApiJsonKeys.canMatchFinish: canMatchFinish,
       };
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getPayParticipationScreen(int playerId, SportCategory sportCategory) async {
+  static Future<Map<String, dynamic>> getMatchEvents(int matchId) async {
+    if (AppConfig.isDebug) {
+      try {
+        final FootballMatch? match = await DB.FootballMatches.getById(matchId);
+        if (match == null) {
+          throw Exception("Match not found");
+        }
+
+        final Tournament? tournament = await DB.Tournaments.getById(
+          match.tournamentId,
+        );
+        if (tournament == null) {
+          throw Exception("Tournament not found");
+        }
+
+        final Sport? sport = await DB.Sports.getById(tournament.sportId);
+        if (sport == null) {
+          throw Exception("Sport not found for tournament");
+        }
+
+        if (sport.category == SportCategory.football) {
+          final List<FootballMatchEvent> events =
+              await DB.FootballMatchEvents.getByMatchId(matchId);
+          final bool canMatchFinish = await DB.FootballMatches.canMatchFinish(
+            matchId,
+          );
+          return {
+            ApiJsonKeys.events: events,
+            ApiJsonKeys.canMatchFinish: canMatchFinish,
+          };
+        } else {
+          throw Exception("Sport is not football");
+        }
+      } catch (e) {
+        return {ApiJsonKeys.events: [], ApiJsonKeys.canMatchFinish: false};
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getPayParticipationScreen(
+    int playerId,
+    SportCategory sportCategory,
+  ) async {
     if (AppConfig.isDebug) {
       Map<int, Tournament> tournamentCache = {};
       List<TournamentParticipation> participations = [];
@@ -1252,7 +1388,9 @@ class DBRead {
                 tournamentId,
                 teamId,
               );
-              isCalledUpPerTournament[tournamentId] = callup.any((c) => c.playerId == playerId);
+              isCalledUpPerTournament[tournamentId] = callup.any(
+                (c) => c.playerId == playerId,
+              );
             }
           }
         }

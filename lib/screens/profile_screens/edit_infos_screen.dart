@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../database/db_controller.dart';
 import '../../models/sport_category.dart';
-import '../../models/user.dart';
 import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/info_row_widget.dart';
+
+//TODO: Rimuovi db_controller
 
 class EditInfosScreen extends StatefulWidget {
   final SportCategory currentSport;

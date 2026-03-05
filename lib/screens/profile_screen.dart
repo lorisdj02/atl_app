@@ -17,7 +17,8 @@ import 'profile_screens/settings_screen.dart';
 import 'profile_screens/contact_us_screen.dart';
 import '../widgets/referee_bottom_bar.dart';
 import '../widgets/organization_bottom_bar.dart';
-import '../database/db_controller.dart';
+import '../database/db_read.dart';
+import '../config/api_json_keys.dart';
 
 class ProfileScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -39,18 +40,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadLevel() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (userProvider.isCoordinator) {
-      final level = await DB.Coordinators.getLevelByCoordinatorId(userProvider.activeRoleId!);
+    if (userProvider.isCoordinator || userProvider.isReferee) {
+      final data = await DBRead.getUserLevel(userProvider.activeUser!.id);
       if (mounted) {
         setState(() {
-          _level = level;
-        });
-      }
-    } else if (userProvider.isReferee) {
-      final level = await DB.Referees.getLevelByRefereeId(userProvider.activeRoleId!);
-      if (mounted) {
-        setState(() {
-          _level = level;
+          _level = data[ApiJsonKeys.level];
         });
       }
     }
@@ -162,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (userProvider.isReferee || userProvider.isCoordinator) ...[
                       const SizedBox(height: 8),
                       Text(
-                        'Level: ${_level ?? 'Loading...'}',
+                        _level != null ? 'Level: $_level' : 'Loading level...',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.9),
                           fontSize: 16,
@@ -213,15 +207,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (userProvider.isReferee) ...[
                       ProfileMenuItem(
                         icon: Icons.school,
-                        text: 'Certifications',
+                        text: 'Licenses',
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  //TODO: fill CertificationScreen
+                                  //TODO: fill LicenseScreen
                                   Container(),
-                              //CertificationScreen(currentSport: currentSport),
+                              //LicenseScreen(currentSport: currentSport),
                             ),
                           );
                         },

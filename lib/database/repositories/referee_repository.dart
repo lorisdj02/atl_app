@@ -99,4 +99,19 @@ class RefereeRepository extends BaseRepository<Referee> {
       throw UnimplementedError();
     }
   }
+
+  Future<Referee?> getByUserId(int userId) async{
+    if (AppConfig.isDebug) {
+      try {
+        final referee = _mockData.firstWhere(
+          (referee) => referee.id == userId,
+        );
+        return referee;
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }
