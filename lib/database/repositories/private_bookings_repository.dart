@@ -36,14 +36,12 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
   Future<bool> addPrivateBooking(
     int playerId,
     int fieldId,
-    double cost,
     DateTime startTime,
     DateTime finishTime,
   ) async {
     if (AppConfig.isDebug) {
       List<int> freeFieldIds =
-          await DB.Bookings.getFreeFieldIds(startTime, finishTime, [fieldId]) ??
-          [];
+          await DB.Bookings.getFreeFieldIds(startTime, finishTime, [fieldId]);
 
       if (!freeFieldIds.contains(fieldId)) {
         return false; // Il campo non è libero in quel periodo

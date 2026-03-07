@@ -254,7 +254,8 @@ class TeamRepository extends BaseRepository<Team> {
       for (var team in _mockData) {
         if (team.name.toLowerCase() == name.toLowerCase() &&
             team.visibility == true &&
-            team.sportCategory == sportcategory) {
+            team.sportCategory == sportcategory &&
+            team.players > 0) {
           return false;
         }
       }

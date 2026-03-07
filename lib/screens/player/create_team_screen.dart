@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
 import '../../models/city.dart';
-import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../utils/text_formatters.dart';
@@ -44,10 +44,10 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await DB.Cities.getAll();
+      final data = await DBRead.getCities();
       if (mounted) {
         setState(() {
-          _availableCities = cities;
+          _availableCities = data[ApiJsonKeys.cities] as List<City>;
         });
       }
     } catch (e) {
@@ -105,7 +105,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         throw Exception('User not found');
       }
 
-      if ((await DB.Teams.isNameUniqueInCategory(_nameController.text, widget.currentSport)) == false) {
+      if ((await DBRead.checkTeamNameInCategory(_nameController.text, widget.currentSport)) == false) {
         throw Exception('Team name already in use');
       }
 
@@ -136,30 +136,22 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         visibility: _visibility,
       );
 
-      if ((await DBWrite.createTeam(
-            newTeam.cityId,
-            newTeam.name,
-            newTeam.alias,
-            newTeam.description,
-            newTeam.captainId,
-            newTeam.catId,
-            newTeam.imageUrl,
-            newTeam.vip,
-            newTeam.visibility,
-          )) ==
-          false) {
+      final int newTeamId = await DBWrite.createTeam(
+        newTeam.cityId!,
+        newTeam.name,
+        newTeam.alias,
+        newTeam.description,
+        newTeam.captainId,
+        newTeam.catId,
+        newTeam.imageUrl,
+        newTeam.vip,
+        newTeam.visibility,
+      );
+
+      if (newTeamId == -1) {
         throw Exception('Failed to create team');
       }
 
-      final int newTeamId =
-          (await DB.PlaysAt.getByPlayerIdAndCategory(
-            currentUser.id,
-            widget.currentSport,
-          ))?.teamId ??
-          -1;
-      if (newTeamId == -1) {
-        throw Exception('Failed to retrieve new team ID');
-      }
       // Aggiorna l'utente con il teamId
       final updatedUser = currentUser.copyWith(teamId: newTeamId);
       await userProvider.updateUser(updatedUser);

@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../providers/user_provider.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/atl_textfield.dart';
 
 class SettingsScreen extends StatefulWidget {

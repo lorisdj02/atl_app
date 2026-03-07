@@ -6,13 +6,14 @@ import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/small_football_match_widget.dart';
 import '../shop_screen.dart';
 import '../profile_screen.dart';
 import 'referee_home_screen.dart';
 import 'available_matches_screen.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class PastAssignedMatchesScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -28,8 +29,8 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
   bool _isLoading = true;
   List<FootballMatch> _assignedMatches = [];
   Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesPerRoundCache = {};
-  Map<int, int?> _minutesPerPauseCache = {};
+  Map<int, int> _minutesRoundPerTournament = {};
+  Map<int, int> _minutesPausePerTournament = {};
 
   @override
   void initState() {
@@ -49,41 +50,9 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         return;
       }
 
-      // Load referee assignments
-      final assignments = await DB.RefereeAssignments.getByRefereeId(refereeId);
+      final data = await DBRead.getPastRefereeAssignedMatchesScreen(refereeId);
 
-      // Load all assigned matches
-      final assignedMatches = <FootballMatch>[];
-
-      for (var assignment in assignments) {
-        final match = await DB.FootballMatches.getById(assignment.matchId);
-        if (match != null) {
-          assignedMatches.add(match);
-
-          // Load teams for this match
-          if (match.homeTeamId != null &&
-              !_teamsCache.containsKey(match.homeTeamId)) {
-            final team = await DB.Teams.getById(match.homeTeamId!);
-            if (team != null) _teamsCache[match.homeTeamId!] = team;
-          }
-          if (match.awayTeamId != null &&
-              !_teamsCache.containsKey(match.awayTeamId)) {
-            final team = await DB.Teams.getById(match.awayTeamId!);
-            if (team != null) _teamsCache[match.awayTeamId!] = team;
-          }
-
-          // Load minutes per round and pause for the tournament
-          if (!_minutesPerRoundCache.containsKey(match.tournamentId)) {
-            _minutesPerRoundCache[match.tournamentId] =
-                await DB.Tournaments.getMinutesPerRoundById(match.tournamentId);
-          }
-          if (!_minutesPerPauseCache.containsKey(match.tournamentId)) {
-            _minutesPerPauseCache[match.tournamentId] =
-                await DB.Tournaments.getMinutesPerPauseById(match.tournamentId);
-          }
-        }
-      }
-
+      final assignedMatches = data[ApiJsonKeys.matches] as List<FootballMatch>;
       // Sort matches by scheduled start time (most recent first)
       assignedMatches.sort((a, b) {
         if (a.scheduledStart == null && b.scheduledStart == null) return 0;
@@ -97,6 +66,11 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
       if (mounted) {
         setState(() {
           _assignedMatches = assignedMatches;
+          _teamsCache = data[ApiJsonKeys.teamsCache];
+          _minutesRoundPerTournament =
+              data[ApiJsonKeys.minutesRoundPerTournament];
+          _minutesPausePerTournament =
+              data[ApiJsonKeys.minutesPausePerTournament];
           _isLoading = false;
         });
       }
@@ -233,8 +207,8 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
             homeTeam: _teamsCache[match.homeTeamId],
             awayTeam: _teamsCache[match.awayTeamId],
             currentSport: widget.currentSport,
-            minutesPerRound: _minutesPerRoundCache[match.tournamentId] ?? 0,
-            minutesPerPause: _minutesPerPauseCache[match.tournamentId] ?? 0,
+            minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
+            minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
             onMatchUpdated: () => _loadData(),
           ),
         );

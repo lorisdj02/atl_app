@@ -86,4 +86,42 @@ class OrganizationRepository extends BaseRepository<Organization> {
       throw UnimplementedError();
     }
   }
+
+  Future<bool> updateUserInfo({
+    required int id,
+    String? username,
+    String? phone,
+    String? oldPasswordMD5,
+    String? newPasswordMD5,
+    DateTime? birthdate,
+    String? imgUrl,
+    int? preferredCityId,
+  }) async {
+    if (AppConfig.isDebug) {
+      // Update mock data
+      final index = _mockData.indexWhere((u) => u.id == id);
+      if (index == -1) return false;
+
+      if (username != null) {
+        _mockData[index].username = username;
+      }
+      if (phone != null) {
+        _mockData[index].phone = phone;
+      }
+      if (newPasswordMD5 != null &&
+          oldPasswordMD5 != null &&
+          _mockData[index].passwordMD5 == oldPasswordMD5) {
+        _mockData[index].passwordMD5 = newPasswordMD5;
+      }
+      if (imgUrl != null) {
+        _mockData[index].imageUrl = imgUrl;
+      }
+      if (preferredCityId != null) {
+        _mockData[index].preferredCityId = preferredCityId;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

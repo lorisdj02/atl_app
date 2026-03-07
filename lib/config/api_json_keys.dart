@@ -55,7 +55,7 @@ class ApiJsonKeys {
   // OrganizationHomeScreen, PlayerHomeScreen
   static const String usernamePerBooking =
       'usernamePerBooking'; // Map<int, String>
-  // OrganizationHomeScreen
+  // OrganizationHomeScreen, CreateTournamentScreen, BookFieldScreen
   static const String fields = 'fields'; // List<Field>
 
   // TeamsScreen
@@ -81,7 +81,7 @@ class ApiJsonKeys {
   // AbstractTeamScreen
   static const String historicalPlayers = 'historicalPlayers'; // List<Player>
 
-  // JoinLobbyScreen, AllTournamentsScreen
+  // JoinLobbyScreen, AllTournamentsScreen, CreateTournamentScreen
   static const String cities = 'cities'; // List<City>
 
   // AllTournamentsScreen
@@ -164,4 +164,29 @@ class ApiJsonKeys {
 
   // ProfileScreen
   static const String level = 'level'; // String
+
+  // CreateTournamentScreen
+  static const String fee = 'fee'; // double
+  // CreateTournamentScreen
+  static const String coordinatorPay = 'coordinatorPay'; // double
+  // CreateTournamentScreen
+  static const String prize1 = 'prize1'; // double
+  // CreateTournamentScreen
+  static const String prize2 = 'prize2'; // double
+  
+  // PlayerRequestsScreen
+  static const String teamRequests = 'teamRequests'; // List<TeamRequest>
+  // PlayerRequestsScreen
+  static const String playersCache = 'playersCache'; // Map<int, Player?>
+
+  // EditInfosScreen
+  static const String updatedUser = 'updatedUser'; // User?
+
+  // WalletScreen
+  static const String wallet = 'wallet'; // Wallet
+
+  // TeamDetailScreen
+  static const String isPlayerInTeam = 'isPlayerInTeam'; // bool
+  // TeamDetailScreen
+  static const String existingRequest = 'existingRequest'; // TeamRequest?
 }

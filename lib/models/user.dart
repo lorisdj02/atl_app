@@ -28,16 +28,15 @@ enum UserRole {
   }
 }
 
-enum VipType{
-  none,
-  monthly,
-  yearly,
-}
+enum VipType { none, monthly, yearly }
+
+enum UserStatus { active, inactive, deleted }
 
 /// Modello astratto User dal database
 class User {
   final int id;
   String username;
+  int? preferredCityId;
   final String email;
   final String firebaseUid;
   final DateTime createdAt;
@@ -53,7 +52,7 @@ class User {
   DateTime? startVip;
   DateTime? endVip;
   VipType vipType;
-
+  UserStatus status;
 
   User({
     required this.id,
@@ -73,6 +72,8 @@ class User {
     this.startVip,
     this.endVip,
     this.vipType = VipType.none,
+    this.status = UserStatus.active,
+    this.preferredCityId,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
@@ -111,10 +112,11 @@ class User {
       'birthdate': birthdate.toIso8601String(),
       'start_vip': startVip?.toIso8601String(),
       'end_vip': endVip?.toIso8601String(),
-      'vip_type': vipType.name
+      'vip_type': vipType.name.toUpperCase(),
+      'status': status.name.toUpperCase(),
+      'preferred_city_id': preferredCityId,
     };
   }
-
 
   /// Nome visualizzato del ruolo
   String get roleDisplayName => role.displayName;
@@ -152,6 +154,11 @@ class User {
     DateTime? birthdate,
     String? name,
     String? surname,
+    DateTime? startVip,
+    DateTime? endVip,
+    VipType? vipType,
+    UserStatus? status,
+    int? preferredCityId,
   }) {
     return User(
       id: id ?? this.id,
@@ -168,6 +175,11 @@ class User {
       name: name ?? this.name,
       surname: surname ?? this.surname,
       birthdate: birthdate ?? this.birthdate,
+      startVip: startVip ?? this.startVip,
+      endVip: endVip ?? this.endVip,
+      vipType: vipType ?? this.vipType,
+      status: status ?? this.status,
+      preferredCityId: preferredCityId ?? this.preferredCityId,
     );
   }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
-import '../database/db_controller.dart';
 import '../providers/user_provider.dart';
 import '../screens/player/my_team_screen.dart';
 import '../screens/teams/team_detail_screen.dart';
@@ -30,14 +29,12 @@ abstract class AbstractTeamWidget extends StatelessWidget {
     );
 
     if (userProvider.isPlayer && userProvider.activeRoleId != null) {
-      final int playerId = userProvider.activeRoleId!;
+      final int? teamId = userProvider.currentTeamId;
 
-      // Check if player is part of this team
-      final playAt = await DB.PlaysAt.getByTeamAndPlayer(team.id, playerId);
 
       if (!context.mounted) return;
 
-      if (playAt == null) {
+      if (teamId == null || teamId != team.id) {
         // Player is NOT part of the team -> go to TeamDetailScreen
         Navigator.of(context).push(
           MaterialPageRoute(

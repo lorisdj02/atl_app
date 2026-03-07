@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../models/sport.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../models/sport_category.dart';
 import '../../models/tournament.dart';
-import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_step_indicator.dart';
@@ -15,6 +13,9 @@ import '../../widgets/atl_button.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../widgets/tournament_summary.dart';
+import '../../database/db_read.dart';
+import '../../database/db_write.dart';
+import '../../config/api_json_keys.dart';
 
 enum Round2Option {
   none,
@@ -74,8 +75,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   final TextEditingController _descriptionController = TextEditingController();
 
   bool _isLoading = false;
-  List<Field> _availableFields = [];
-  List<City> _availableCities = [];
+  List<Field> _fields = [];
+  List<City> _cities = [];
 
   @override
   void initState() {
@@ -160,9 +161,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await DB.Cities.getAll();
+      final data = await DBRead.getCities();
+      final List<City> cities = data[ApiJsonKeys.cities] ?? [];
       setState(() {
-        _availableCities = cities;
+        _cities = cities;
       });
     } catch (e) {
       if (mounted) {
@@ -179,13 +181,15 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final allFields = await DB.Fields.getByMaxPlayersAndCity(
-        _selectedSport!.maxPlayersPerTeam,
-        _selectedCity!,
+      final data = await DBRead.getFieldsByPlayersAndCity(
+        maxPlayers: _selectedSport!.maxPlayersPerTeam,
+        cityId: _selectedCity!,
       );
 
+      final List<Field> fields = data[ApiJsonKeys.fields] ?? [];
+
       setState(() {
-        _availableFields = allFields;
+        _fields = fields;
       });
     } catch (e) {
       if (mounted) {
@@ -216,11 +220,13 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
     // Valori fissi: 2, 4, 8, 16
     List<int> fixedValues = [2, 4, 8, 16];
-    
+
     // Filtra solo i valori che sono:
     // 1. >= numGroups
     // 2. < numTeams
-    return fixedValues.where((value) => value >= _numGroups! && value < _numTeams).toList();
+    return fixedValues
+        .where((value) => value >= _numGroups! && value < _numTeams)
+        .toList();
   }
 
   Tournament _createFictitiousTournament() {
@@ -333,7 +339,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         startDate = DateTime(year, month, 1);
       }
 
-      final success = await DB.Tournaments.insertTournament(
+      final bool success = await DBWrite.createTournament(
         name: _nameController.text.trim(),
         coordinatorId: userProvider.activeRoleId!,
         fieldId: _selectedField!.id,
@@ -650,7 +656,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
               isExpanded: true,
               value: _selectedCity,
               hint: const Text('Città'),
-              items: _availableCities.map((city) {
+              items: _cities.map((city) {
                 return DropdownMenuItem(value: city.id, child: Text(city.name));
               }).toList(),
               onChanged: (value) {
@@ -835,7 +841,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
                   // Valori fissi: 2, 4, 8, 16
                   List<int> fixedValues = [2, 4, 8, 16];
                   List<int> newValidQualified = fixedValues
-                      .where((value) => value >= _numGroups! && value < newValue)
+                      .where(
+                        (value) => value >= _numGroups! && value < newValue,
+                      )
                       .toList();
 
                   // Reset qualified only if it's no longer valid
@@ -982,7 +990,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         ),
         const SizedBox(height: 32),
 
-        if (_availableFields.isEmpty) ...[
+        if (_fields.isEmpty) ...[
           Center(
             child: Text(
               'Nessun campo disponibile per i criteri selezionati',
@@ -1008,7 +1016,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
           const SizedBox(height: 24),
 
-          ..._availableFields.map((field) {
+          ..._fields.map((field) {
             final isSelected = _selectedField?.id == field.id;
             final isOversized = _isFieldOversized(field);
             return Padding(
@@ -1199,25 +1207,21 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   Future<Widget> _buildStep5() async {
     final fictitiousTournament = _createFictitiousTournament();
 
-    // Calculate all values from backend
-    final fee = await DB.Tournaments.calculateTournamentFee(
+    final Map<String, dynamic> data = await DBRead.calculateTournamentParameters(
       fictitiousTournament,
-    );
-    final coordinatorPay = await DB.Tournaments.calculatePayCoordinator(
-      fictitiousTournament,
+      _prize1,
+      _prize2,
     );
 
-    // Calculate prizes only if requested
-    final prize1Value = _prize1
-        ? await DB.Tournaments.calculatePrize1(fictitiousTournament)
-        : null;
-    final prize2Value = _prize2
-        ? await DB.Tournaments.calculatePrize2(fictitiousTournament)
-        : null;
+    // Calculate all values from backend
+    final fee = data[ApiJsonKeys.fee] as double;
+    final coordinatorPay = data[ApiJsonKeys.coordinatorPay] as double;
+    final prize1Value = data[ApiJsonKeys.prize1] as double;
+    final prize2Value = data[ApiJsonKeys.prize2] as double;
 
     // Get city name
-    final city = await DB.Cities.getById(_selectedCity!);
-    final cityName = city?.name ?? '';
+    final City city = _cities.firstWhere((c) => c.id == _selectedCity);
+    final cityName = city.name;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

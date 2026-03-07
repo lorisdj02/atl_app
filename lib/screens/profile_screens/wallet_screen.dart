@@ -3,10 +3,9 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../models/wallet.dart';
-
-//TODO: Rimuovi db_controller
+import '../../config/api_json_keys.dart';
+import '../../database/db_read.dart';
 
 class WalletScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -31,10 +30,10 @@ class _WalletScreenState extends State<WalletScreen> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.activeUser;
     if (user != null) {
-      final wallet = await DB.Wallets.getByUserId(user.id);
+      final data = await DBRead.getWalletScreen(user.id);
       if (mounted) {
         setState(() {
-          _wallet = wallet;
+          _wallet = data[ApiJsonKeys.wallet];
           _isLoading = false;
         });
       }

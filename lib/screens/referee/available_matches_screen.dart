@@ -1,17 +1,20 @@
+import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/referee_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
-import '../../models/tournament.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_controller.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/small_football_match_widget.dart';
 import '../shop_screen.dart';
 import '../profile_screen.dart';
 import 'referee_home_screen.dart';
 import 'past_assigned_matches_screen.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class AvailableMatchesScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -26,10 +29,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   bool _isLoading = true;
   List<FootballMatch> _availableMatches = [];
   Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesPerRoundCache = {};
-  Map<int, int?> _minutesPerPauseCache = {};
-  List<int> _cities = [];
-  int? _selectedCityId;
+  Map<int, int?> _minutesRoundPerTournament = {};
+  Map<int, int?> _minutesPausePerTournament = {};
+  List<City> _cities = [];
+  City? _selectedCity;
   int? _selectedSportId;
 
   // Map of sport types by category
@@ -52,12 +55,23 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final cities = await DB.Cities.getAll();
+      final data = await DBRead.getCities();
       if (mounted) {
+        final preferredCityId =
+            Provider.of<UserProvider>(context, listen: false).cityId;
+        final cities = data[ApiJsonKeys.cities] as List<City>;
+        City? defaultCity;
+        if (preferredCityId != null) {
+          try {
+            defaultCity = cities.firstWhere((c) => c.id == preferredCityId);
+          } catch (_) {}
+        }
         setState(() {
-          _cities = cities.map((c) => c.id).toList();
+          _cities = cities;
+          if (defaultCity != null) _selectedCity = defaultCity;
           _isLoading = false;
         });
+        if (_selectedCity != null) await _loadMatches();
       }
     } catch (e) {
       print('Error loading cities: $e');
@@ -68,65 +82,18 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   }
 
   Future<void> _loadMatches() async {
-    if (_selectedCityId == null) return;
+    if (_selectedCity == null) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final availableMatches = <FootballMatch>[];
+      final data = await DBRead.getAvailableMatchesScreen(
+        widget.currentSport,
+        cityId: _selectedCity!.id,
+        sportId: _selectedSportId,
+      );
 
-      // Get tournaments by sport if selected, otherwise get all tournaments
-      List<Tournament> tournaments;
-      if (_selectedSportId != null) {
-        tournaments = await DB.Tournaments.getBySportCategory(
-          widget.currentSport,
-        );
-        tournaments = tournaments
-            .where(
-              (t) =>
-                  t.sportId == _selectedSportId && t.cityId == _selectedCityId,
-            )
-            .toList();
-      } else {
-        tournaments = await DB.Tournaments.getBySportCategory(
-          widget.currentSport,
-        );
-        tournaments = tournaments
-            .where((t) => t.cityId == _selectedCityId)
-            .toList();
-      }
-
-      // Load scheduled matches for each tournament
-      for (var tournament in tournaments) {
-        final matches = await DB
-            .FootballMatches.getScheduledMatchesByTournament(tournament.id);
-
-        for (var match in matches) {
-          availableMatches.add(match);
-
-          // Load teams for this match
-          if (match.homeTeamId != null &&
-              !_teamsCache.containsKey(match.homeTeamId)) {
-            final team = await DB.Teams.getById(match.homeTeamId!);
-            if (team != null) _teamsCache[match.homeTeamId!] = team;
-          }
-          if (match.awayTeamId != null &&
-              !_teamsCache.containsKey(match.awayTeamId)) {
-            final team = await DB.Teams.getById(match.awayTeamId!);
-            if (team != null) _teamsCache[match.awayTeamId!] = team;
-          }
-
-          // Load minutes per round and pause
-          if (!_minutesPerRoundCache.containsKey(match.tournamentId)) {
-            _minutesPerRoundCache[match.tournamentId] =
-                await DB.Tournaments.getMinutesPerRoundById(match.tournamentId);
-          }
-          if (!_minutesPerPauseCache.containsKey(match.tournamentId)) {
-            _minutesPerPauseCache[match.tournamentId] =
-                await DB.Tournaments.getMinutesPerPauseById(match.tournamentId);
-          }
-        }
-      }
+      List<FootballMatch> availableMatches = data[ApiJsonKeys.matches];
 
       // Sort matches by scheduled start time
       availableMatches.sort((a, b) {
@@ -139,6 +106,9 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
       if (mounted) {
         setState(() {
           _availableMatches = availableMatches;
+          _teamsCache = data[ApiJsonKeys.teamsCache];
+          _minutesRoundPerTournament = data[ApiJsonKeys.minutesRoundPerTournament];
+          _minutesPausePerTournament = data[ApiJsonKeys.minutesPausePerTournament];
           _isLoading = false;
         });
       }
@@ -241,27 +211,17 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
           child: Column(
             children: [
               // City dropdown
-              _buildDropdown(
+              _buildDropdown<City>(
                 label: 'City',
-                value: _selectedCityId,
+                value: _selectedCity,
                 items: _cities,
                 onChanged: (value) async {
                   setState(() {
-                    _selectedCityId = value;
+                    _selectedCity = value;
                   });
                   await _loadMatches();
                 },
-                itemBuilder: (cityId) {
-                  return FutureBuilder(
-                    future: DB.Cities.getById(cityId),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data != null) {
-                        return Text(snapshot.data!.name);
-                      }
-                      return Text('City $cityId');
-                    },
-                  );
-                },
+                itemBuilder: (city) => Text(city.name),
               ),
               const SizedBox(height: 12),
               // Sport type dropdown
@@ -321,7 +281,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   }
 
   Widget _buildMatchesList() {
-    if (_selectedCityId == null) {
+    if (_selectedCity == null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -396,8 +356,8 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
             homeTeam: _teamsCache[match.homeTeamId],
             awayTeam: _teamsCache[match.awayTeamId],
             currentSport: widget.currentSport,
-            minutesPerRound: _minutesPerRoundCache[match.tournamentId] ?? 0,
-            minutesPerPause: _minutesPerPauseCache[match.tournamentId] ?? 0,
+            minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
+            minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
             onMatchUpdated: () => _loadMatches(),
           ),
         );

@@ -108,7 +108,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-  Future<List<int>?> getFreeFieldIds(
+  Future<List<int>> getFreeFieldIds(
     DateTime startTime,
     DateTime finishTime,
     List<int> allFieldIds,

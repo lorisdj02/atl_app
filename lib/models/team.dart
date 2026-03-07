@@ -16,6 +16,7 @@ class Team {
   int players;
   bool visibility;
   SportCategory sportCategory;
+  static final int maxPlayers = 24;
 
   Team({
     required this.id,

@@ -2,7 +2,6 @@ import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../database/db_controller.dart';
 import '../../models/player.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -10,6 +9,9 @@ import 'player_requests_screen.dart';
 import 'pay_participation_screen.dart';
 import '../../widgets/atl_floating_button.dart';
 import 'abstract_team_screen.dart';
+import '../../database/db_write.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class MyTeamScreen extends AbstractTeamScreen {
   const MyTeamScreen({super.key, required super.currentSport});
@@ -39,16 +41,12 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (teamId == null) return;
 
-      final participations = await DB.TournamentParticipations.getByTeamId(
-        teamId,
-      );
-      final pendingCount = participations
-          .where((p) => (p.toPay ?? 0) > 0)
-          .length;
+      final data = await DBRead.getTeamParticipations(teamId);
 
       if (mounted) {
         setState(() {
-          _pendingPaymentsCount = pendingCount;
+          _pendingPaymentsCount =
+              data[ApiJsonKeys.tournamentParticipations]?.length ?? 0;
         });
       }
     } catch (e) {
@@ -189,9 +187,10 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     }
 
     try {
-      final success = await DB.Teams.promoteToVice(
+      final success = await DBWrite.promoteOrDemoteInTeam(
         team!.id,
         player.playerId,
+        promote: true,
       );
 
       if (success && mounted) {
@@ -217,7 +216,11 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
   Future<void> _demoteViceCaptain(Player player) async {
     try {
-      final success = await DB.Teams.demoteVice(team!.id, player.playerId);
+      final success = await DBWrite.promoteOrDemoteInTeam(
+        team!.id,
+        player.playerId,
+        promote: false,
+      );
 
       if (success && mounted) {
         ScaffoldMessenger.of(

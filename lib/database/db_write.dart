@@ -1,11 +1,133 @@
+import 'package:atl_app/models/team_request.dart';
+import 'package:atl_app/models/user.dart';
+import '../../config/api_json_keys.dart';
 import 'db_controller.dart';
 import '../config/app_config.dart';
 import '../../models/sport_category.dart';
+import '../../models/team.dart';
 import 'dart:math';
 import 'dart:convert';
 
 class DBWrite {
-  static Future<bool> createTeam(
+  static Future<Map<String, dynamic>> updateUserInfo({
+    required int id,
+    String? username,
+    String? phone,
+    String? oldPasswordMD5,
+    String? newPasswordMD5,
+    DateTime? birthdate,
+    String? imgUrl,
+    int? preferredCityId,
+  }) async{
+    if(AppConfig.isDebug){
+      final bool success = await DB.Users.updateUserInfo(
+        id: id,
+        username: username,
+        phone: phone,
+        oldPasswordMD5: oldPasswordMD5,
+        newPasswordMD5: newPasswordMD5,
+        birthdate: birthdate,
+        imgUrl: imgUrl,
+        preferredCityId: preferredCityId,
+      );
+
+      if(!success){
+        return {
+          ApiJsonKeys.updatedUser: null,
+        };
+      }
+
+      final User? updatedUser = await DB.Users.getByUserId(id);
+      if(updatedUser == null){
+        return {
+          ApiJsonKeys.updatedUser: null,
+        };
+      }
+      return {
+        ApiJsonKeys.updatedUser: updatedUser,
+      };
+    }else{
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> createTournament({
+    required String name,
+    required int coordinatorId,
+    required int fieldId,
+    required int cityId,
+    DateTime? startDate,
+    required int sportId,
+    required int numTeams,
+    required int numGroups,
+    required bool round2GroupStage,
+    required bool round2FinalStage,
+    required int qualified,
+    required String description,
+    required bool payCoordinator,
+    required bool prize1,
+    required bool prize2,
+    required bool isPublic,
+  }) async {
+    if (AppConfig.isDebug == true) {
+      return await DB.Tournaments.insertTournament(
+        name: name,
+        coordinatorId: coordinatorId,
+        fieldId: fieldId,
+        cityId: cityId,
+        startDate: startDate,
+        sportId: sportId,
+        numTeams: numTeams,
+        numGroups: numGroups,
+        round2GroupStage: round2GroupStage,
+        round2FinalStage: round2FinalStage,
+        qualified: qualified,
+        description: description,
+        payCoordinator: payCoordinator,
+        prize1: prize1,
+        prize2: prize2,
+        isPublic: isPublic,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> createPrivateBooking(
+    int playerId,
+    int fieldId,
+    DateTime startDateTime,
+    DateTime endDateTime,
+  ) async {
+    if (AppConfig.isDebug == true) {
+      return await DB.PrivateBookings.addPrivateBooking(
+        playerId,
+        fieldId,
+        startDateTime,
+        endDateTime,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> promoteOrDemoteInTeam(
+    int teamId,
+    int playerId, {
+    bool promote = true,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (promote) {
+        return await DB.Teams.promoteToVice(teamId, playerId);
+      } else {
+        return await DB.Teams.demoteVice(teamId, playerId);
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<int> createTeam(
     int? cityId,
     String name,
     String alias,
@@ -29,7 +151,7 @@ class DBWrite {
         visibility,
       );
       if (id == -1) {
-        return false;
+        return -1;
       }
       if ((await DB.TeamStats.createStats(
             playerId: captainId,
@@ -38,12 +160,12 @@ class DBWrite {
             goals: 0,
           )) ==
           false) {
-        return false;
+        return -1;
       }
       if ((await DB.Players.joinTeam(captainId, id)) == false) {
-        return false;
+        return -1;
       }
-      return true;
+      return id;
     } else {
       throw UnimplementedError();
     }
@@ -133,35 +255,119 @@ class DBWrite {
     }
   }
 
-  static Future<bool> acceptRequestToTeam(int playerId, int teamId) async {
+  static Future<bool> acceptTeamRequest(
+    int teamId, {
+    int? playerId,
+    bool allRequests = false,
+  }) async {
     if (AppConfig.isDebug == true) {
-      if ((await DB.Teams.getById(teamId))?.players == 24) {
-        return false;
-      }
+      if (allRequests == true) {
+        if(await DB.Teams.getById(teamId) == null){
+          return false;
+        }
 
-      if ((await DB.Players.joinTeam(playerId, teamId)) == false) {
-        return false;
-      }
-      if ((await DB.TeamRequests.deleteByPlayerId(playerId)) == false) {
-        return false;
-      }
+        final List<TeamRequest> requests = await DB.TeamRequests.getByTeamId(
+          teamId,
+        );
 
-      if ((await DB.TeamStats.createStats(
-            playerId: playerId,
-            teamId: teamId,
-            motm: 0,
-            goals: 0,
-          )) ==
-          false) {
-        return false;
-      }
+        if (requests.isEmpty) {
+          return false;
+        }
 
-      if ((await DB.Teams.updatePlayerCount(teamId, 1)) == false) {
-        return false;
-      }
+        if ((await DB.Teams.getById(teamId))!.players + requests.length >
+            Team.maxPlayers) {
+          return false;
+        }
 
-      return true;
+        for (final request in requests) {
+          if ((await DB.Players.joinTeam(request.playerId, teamId)) == false ||
+              (await DB.TeamStats.createStats(
+                    playerId: request.playerId,
+                    teamId: teamId,
+                    motm: 0,
+                    goals: 0,
+                  )) ==
+                  false) {
+            return false;
+          }
+        }
+        if ((await DB.TeamRequests.deleteByTeam(teamId)) == false) {
+          return false;
+        }
+        if ((await DB.Teams.updatePlayerCount(teamId, requests.length)) ==
+            false) {
+          return false;
+        }
+        return true;
+      } else if (playerId != null) {
+        if ((await DB.Teams.getById(teamId))?.players == Team.maxPlayers) {
+          return false;
+        }
+
+        if ((await DB.Players.joinTeam(playerId, teamId)) == false) {
+          return false;
+        }
+        if ((await DB.TeamRequests.deleteByPlayerId(playerId)) == false) {
+          return false;
+        }
+
+        if ((await DB.TeamStats.createStats(
+              playerId: playerId,
+              teamId: teamId,
+              motm: 0,
+              goals: 0,
+            )) ==
+            false) {
+          return false;
+        }
+
+        if ((await DB.Teams.updatePlayerCount(teamId, 1)) == false) {
+          return false;
+        }
+
+        return true;
+      } else {
+        throw ArgumentError(
+          'Invalid arguments: either playerId must be provided or allRequests must be true',
+        );
+      }
     } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> rejectTeamRequest(
+    int teamId, {
+    int? playerId,
+    bool allRequests = false,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (playerId == null && allRequests == true) {
+        return await DB.TeamRequests.deleteByTeam(teamId);
+      } else if (playerId != null) {
+        return await DB.TeamRequests.deleteRequest(teamId, playerId);
+      } else {
+        throw ArgumentError(
+          'Invalid arguments: either playerId must be provided or allRequests must be true',
+        );
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> createTeamRequest(int teamId, int playerId) async {
+    if (AppConfig.isDebug){
+      return DB.TeamRequests.addRequest(teamId, playerId);
+    }else{
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> deleteTeamRequest(int teamId, int playerId) async {
+    if (AppConfig.isDebug){
+      return DB.TeamRequests.deleteRequest(teamId, playerId);
+    }else{
       throw UnimplementedError();
     }
   }

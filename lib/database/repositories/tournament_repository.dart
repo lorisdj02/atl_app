@@ -6,6 +6,7 @@ import '../db_controller.dart';
 import '../../models/tournament.dart';
 import 'base_repository.dart';
 
+
 class TournamentRepository extends BaseRepository<Tournament> {
   @override
   String get endpoint => 'tournaments';

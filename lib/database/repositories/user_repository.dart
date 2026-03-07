@@ -112,28 +112,60 @@ class UserRepository extends BaseRepository<User> {
     String? newPasswordMD5,
     DateTime? birthdate,
     String? imgUrl,
+    int? preferredCityId,
   }) async {
     if (AppConfig.isDebug) {
       // Update mock data
 
-      return await DB.Players.updateUserInfo(
-            id: id,
-            username: username,
-            phone: phone,
-            oldPasswordMD5: oldPasswordMD5,
-            newPasswordMD5: newPasswordMD5,
-            birthdate: birthdate,
-            imgUrl: imgUrl,
-          ) ||
-          await DB.Coordinators.updateUserInfo(
-            id: id,
-            username: username,
-            phone: phone,
-            oldPasswordMD5: oldPasswordMD5,
-            newPasswordMD5: newPasswordMD5,
-            birthdate: birthdate,
-            imgUrl: imgUrl,
-          );
+      final User? user = await getByUserId(id);
+      if (user == null) return false;
+      if (user.role == UserRole.player) {
+        return await DB.Players.updateUserInfo(
+          id: id,
+          username: username,
+          phone: phone,
+          oldPasswordMD5: oldPasswordMD5,
+          newPasswordMD5: newPasswordMD5,
+          birthdate: birthdate,
+          imgUrl: imgUrl,
+          preferredCityId: preferredCityId,
+        );
+      } else if (user.role == UserRole.coordinator) {
+        return await DB.Coordinators.updateUserInfo(
+          id: id,
+          username: username,
+          phone: phone,
+          oldPasswordMD5: oldPasswordMD5,
+          newPasswordMD5: newPasswordMD5,
+          birthdate: birthdate,
+          imgUrl: imgUrl,
+          preferredCityId: preferredCityId,
+        );
+      } else if (user.role == UserRole.referee) {
+        return await DB.Referees.updateUserInfo(
+          id: id,
+          username: username,
+          phone: phone,
+          oldPasswordMD5: oldPasswordMD5,
+          newPasswordMD5: newPasswordMD5,
+          birthdate: birthdate,
+          imgUrl: imgUrl,
+          preferredCityId: preferredCityId,
+        );
+      } else if (user.role == UserRole.organization) {
+        return await DB.Organizations.updateUserInfo(
+          id: id,
+          username: username,
+          phone: phone,
+          oldPasswordMD5: oldPasswordMD5,
+          newPasswordMD5: newPasswordMD5,
+          birthdate: birthdate,
+          imgUrl: imgUrl,
+          preferredCityId: preferredCityId,
+        );
+      } else {
+        return false;
+      }
     } else {
       throw UnimplementedError();
     }

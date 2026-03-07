@@ -5,7 +5,6 @@ import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/private_booking.dart';
-import '../../database/db_controller.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_button.dart';
@@ -13,6 +12,8 @@ import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../models/sport_category.dart';
 import '../../database/db_write.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
 enum BookingType { none, private, lobby }
@@ -42,8 +43,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   int _ownerPaysFor = 1;
 
   bool _isLoading = false;
-  List<Field> _availableFields = [];
-  List<City> _availableCities = [];
+  List<Field> _fields = [];
+  List<City> _cities = [];
 
   // Available player counts
   final List<int> _availablePlayerCounts = [];
@@ -91,9 +92,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await DB.Cities.getAll();
+      final data = await DBRead.getCities();
+      final cities = data[ApiJsonKeys.cities] as List<City>;
       setState(() {
-        _availableCities = cities;
+        _cities = cities;
       });
     } catch (e) {
       if (mounted) {
@@ -192,11 +194,6 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Get all fields in the selected city
-      final allFields = await DB.Fields.getByMaxPlayersAndCity(
-        _maxPlayers,
-        _selectedCity!,
-      );
 
       // Create DateTime objects for the booking period
       final startDateTime = DateTime(
@@ -215,21 +212,18 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _endTime!.minute,
       );
 
-      // Get free field IDs
-      final allFieldIds = allFields.map((f) => f.id).toList();
-      final freeFieldIds = await DB.LobbyBookings.getFreeFieldIds(
-        startDateTime,
-        endDateTime,
-        allFieldIds,
+
+      final data = await DBRead.getFreeFieldsByPlayerAndCityAndDate(
+        maxPlayers: _maxPlayers,
+        cityId: _selectedCity!,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
       );
 
+      final allFields = data[ApiJsonKeys.fields] as List<Field>;
       // Filter available fields
       setState(() {
-        _availableFields = allFields
-            .where((field) => freeFieldIds?.contains(field.id) ?? false)
-            .where((field) => field.isOpenAt(startDateTime))
-            .where((field) => field.isOpenAt(endDateTime))
-            .toList();
+        _fields = allFields;
       });
     } catch (e) {
       if (mounted) {
@@ -287,8 +281,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<String> _getCityName() async {
     if (_selectedCity == null) return '';
-    final city = await DB.Cities.getById(_selectedCity!);
-    return city?.name ?? '';
+    return _cities.firstWhere((c) => c.id == _selectedCity).name;
   }
 
   Future<void> _selectDate() async {
@@ -474,22 +467,12 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       );
 
       if (_selectedBookingType == BookingType.private) {
-        final newBooking = PrivateBooking(
-          id: DateTime.now().millisecondsSinceEpoch,
-          fieldId: _selectedField!.id,
-          playerId: userProvider.activeRoleId!,
-          startTime: startDateTime,
-          finishTime: endDateTime,
-          cost: _calculateTotalToPay(),
-          status: BookingStatus.booked,
-        );
 
-        success = await DB.PrivateBookings.addPrivateBooking(
-          newBooking.playerId,
-          newBooking.fieldId,
-          newBooking.cost,
-          newBooking.startTime,
-          newBooking.finishTime,
+        success = await DBWrite.createPrivateBooking(
+          userProvider.activeRoleId!,
+          _selectedField!.id,
+          startDateTime,
+          endDateTime,
         );
       } else {
         final baseCost = _selectedField!.costTournament;
@@ -708,7 +691,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               border: InputBorder.none,
               hintText: 'Seleziona città *',
             ),
-            items: _availableCities.map((city) {
+            items: _cities.map((city) {
               return DropdownMenuItem(value: city.id, child: Text(city.name));
             }).toList(),
             onChanged: (value) {
@@ -963,7 +946,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         const SizedBox(height: 32),
 
-        if (_availableFields.isEmpty) ...[
+        if (_fields.isEmpty) ...[
           const Center(
             child: Text(
               'Nessun campo disponibile per questa fascia oraria',
@@ -993,9 +976,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: _availableFields.length,
+            itemCount: _fields.length,
             itemBuilder: (context, index) {
-              final field = _availableFields[index];
+              final field = _fields[index];
               final isSelected = _selectedField?.id == field.id;
               final isOversized = _isFieldOversized(field);
 

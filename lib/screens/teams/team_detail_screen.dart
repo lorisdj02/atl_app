@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../../database/db_controller.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../player/abstract_team_screen.dart';
+import '../../database/db_read.dart';
+import '../../database/db_write.dart';
+import '../../config/api_json_keys.dart';
 
 class TeamDetailScreen extends AbstractTeamScreen {
   final int teamId;
@@ -28,69 +30,37 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _checkPlayerInTeam();
-    _loadRequestStatus();
+    _loadData();
   }
 
   @override
   int getTeamId() => widget.teamId;
 
-  Future<void> _loadRequestStatus() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(
-      context,
-      listen: false,
-    );
-    if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
-      setState(() {
-        _requestLoaded = true;
-      });
-      return;
-    }
+  Future<void> _loadData() async {
     try {
-      final TeamRequest? existingRequest =
-          await DB.TeamRequests.getByTeamAndPlayer(widget.teamId, playerId!);
-      if (mounted) {
-        setState(() {
-          _existingRequest = existingRequest;
-          _requestLoaded = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _requestLoaded = true;
-        });
-      }
-    }
-  }
-
-  Future<void> _checkPlayerInTeam() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(
-      context,
-      listen: false,
-    );
-    if (!userProvider.isPlayer || userProvider.activeRoleId == null) {
-      setState(() {
-        _requestLoaded = true;
-      });
-      return;
-    }
-    try {
-      final playAt = await DB.PlaysAt.getByPlayerIdAndCategory(
-        playerId!,
-        widget.currentSport,
+      final UserProvider userProvider = Provider.of<UserProvider>(
+        context,
+        listen: false,
       );
-      if (mounted) {
+
+      if (userProvider.isPlayer && userProvider.activeRoleId != null) {
+        playerId = userProvider.activeRoleId!;
+        final data = await DBRead.getTeamDetailScreen(widget.teamId, playerId!);
         setState(() {
-          _isPlayerInTeam = playAt != null;
+          _existingRequest = data[ApiJsonKeys.existingRequest];
+          _isPlayerInTeam = data[ApiJsonKeys.isPlayerInTeam];
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isPlayerInTeam = false;
-        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading team data: $e')));
       }
+    } finally {
+      setState(() {
+        _requestLoaded = true;
+      });
     }
   }
 
@@ -106,7 +76,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       return;
     }
     try {
-      if (await DB.TeamRequests.addRequest(widget.teamId, playerId!) == false) {
+      if (await DBWrite.createTeamRequest(widget.teamId, playerId!) == false) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Error sending request')),
@@ -114,7 +84,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
         }
         return;
       }
-      await _loadRequestStatus();
+      await _loadData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Request sent successfully')),
@@ -143,7 +113,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
     if (_existingRequest == null) return;
 
     try {
-      if (await DB.TeamRequests.deleteRequest(
+      if (await DBWrite.deleteTeamRequest(
             _existingRequest!.teamId,
             _existingRequest!.playerId,
           ) ==
@@ -155,7 +125,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
         }
         return;
       }
-      await _loadRequestStatus();
+      await _loadData();
       if (mounted) {
         ScaffoldMessenger.of(
           context,

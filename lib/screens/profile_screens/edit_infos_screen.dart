@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
-import '../../database/db_controller.dart';
+import '../../models/city.dart';
 import '../../models/sport_category.dart';
 import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/info_row_widget.dart';
-
-//TODO: Rimuovi db_controller
+import '../../database/db_read.dart';
+import '../../database/db_write.dart';
+import '../../config/api_json_keys.dart';
 
 class EditInfosScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -32,6 +33,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   bool _hasChanges = false;
   bool _showPasswordFields = false;
 
+  List<City> _cities = [];
+  City? _selectedCity;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +51,30 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
     _phoneController.addListener(_onFieldChanged);
     _oldPasswordController.addListener(_onFieldChanged);
     _newPasswordController.addListener(_onFieldChanged);
+
+    _loadCities();
+  }
+
+  Future<void> _loadCities() async {
+    final user = Provider.of<UserProvider>(context, listen: false).activeUser;
+    try {
+      final data = await DBRead.getCities();
+      if (mounted) {
+        final cities = data[ApiJsonKeys.cities] as List<City>;
+        City? currentCity;
+        if (user?.preferredCityId != null) {
+          try {
+            currentCity = cities.firstWhere((c) => c.id == user!.preferredCityId);
+          } catch (_) {}
+        }
+        setState(() {
+          _cities = cities;
+          _selectedCity = currentCity;
+        });
+      }
+    } catch (e) {
+      print('Error loading cities: $e');
+    }
   }
 
   void _onFieldChanged() {
@@ -120,7 +148,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
 
     try {
       // Update user info through repository
-      final bool success = await DB.Users.updateUserInfo(
+      final data = await DBWrite.updateUserInfo(
         id: user.id,
         username: _usernameController.text != user.username
             ? _usernameController.text
@@ -134,14 +162,17 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         newPasswordMD5: _newPasswordController.text.isNotEmpty
             ? _newPasswordController.text
             : null,
+        preferredCityId: _selectedCity?.id != user.preferredCityId
+            ? _selectedCity?.id
+            : null,
       );
-
-      if (!success) {
+  
+      if (!data[ApiJsonKeys.updatedUser]) {
         throw Exception('Failed to update user info');
       }
 
       // Retrieve updated user from repository
-      final updatedUser = await DB.Users.getByUserId(user.id);
+      final updatedUser = data[ApiJsonKeys.updatedUser];
       if (updatedUser == null) {
         throw Exception('Failed to retrieve updated user');
       }
@@ -287,6 +318,37 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                 controller: _phoneController,
                 hintText: 'Enter phone number',
                 keyboardType: TextInputType.phone,
+              ),
+
+              const SizedBox(height: 16),
+              _buildLabel('Preferred City'),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: ATLColors.subtext.withOpacity(0.3)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<City>(
+                    value: _selectedCity,
+                    hint: Text('Select city', style: TextStyle(color: ATLColors.subtext)),
+                    isExpanded: true,
+                    icon: const Icon(Icons.arrow_drop_down, color: ATLColors.darkBlue),
+                    items: _cities.map((city) {
+                      return DropdownMenuItem<City>(
+                        value: city,
+                        child: Text(city.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCity = value;
+                        _hasChanges = true;
+                      });
+                    },
+                  ),
+                ),
               ),
 
               const SizedBox(height: 32),

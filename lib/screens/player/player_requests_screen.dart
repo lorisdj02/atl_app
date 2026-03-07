@@ -1,13 +1,13 @@
 import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
-
-import '../../database/db_controller.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/player_request_widget.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
 
 class PlayerRequestsScreen extends StatefulWidget {
   final int teamId;
@@ -25,7 +25,7 @@ class PlayerRequestsScreen extends StatefulWidget {
 
 class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   List<TeamRequest> _requests = [];
-  final Map<int, Player?> _playersCache = {};
+  Map<int, Player?> _playersCache = {};
   bool _isLoading = true;
 
   @override
@@ -36,17 +36,12 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _loadRequests() async {
     try {
-      final requests = await DB.TeamRequests.getByTeamId(widget.teamId);
-
-      // Carica i dati dei giocatori
-      for (var request in requests) {
-        final player = await DB.Players.getByPlayerId(request.playerId);
-        _playersCache[request.playerId] = player;
-      }
+      final data = await DBRead.getTeamRequestsScreen(widget.teamId);
 
       if (mounted) {
         setState(() {
-          _requests = requests;
+          _requests = data[ApiJsonKeys.teamRequests] ?? [];
+          _playersCache = data[ApiJsonKeys.playersCache] ?? {};
           _isLoading = false;
         });
       }
@@ -64,7 +59,10 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _acceptRequest(TeamRequest request) async {
     try {
-      if ((await DBWrite.acceptRequestToTeam(request.playerId, widget.teamId)) ==
+      if ((await DBWrite.acceptTeamRequest(
+            widget.teamId,
+            playerId: request.playerId,
+          )) ==
           false) {
         throw Exception('Failed to accept request');
       }
@@ -94,9 +92,12 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _rejectRequest(TeamRequest request) async {
     try {
-      await DB.TeamRequests.deleteByPlayerId(request.playerId);
+      final success = await DBWrite.rejectTeamRequest(
+        widget.teamId,
+        playerId: request.playerId,
+      );
 
-      if (mounted) {
+      if (mounted && success) {
         setState(() {
           _requests.removeWhere((r) => r.playerId == request.playerId);
         });
@@ -111,39 +112,12 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   }
 
   Future<void> _acceptAll() async {
-    final requestsCopy = List<TeamRequest>.from(_requests);
+    final success = await DBWrite.acceptTeamRequest(
+      widget.teamId,
+      allRequests: true,
+    );
 
-    for (var request in requestsCopy) {
-      try {
-        //TODO: gestire il caso in cui la squadra è piena
-        if ((await DBWrite.acceptRequestToTeam(request.playerId, widget.teamId)) ==
-            false) {
-          if (mounted) {
-            if (await DB.Teams.isFull(widget.teamId) && mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Team is full. Cannot accept more requests.'),
-                ),
-              );
-              break; // Esce dal ciclo se la squadra è piena
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error accepting request')),
-              );
-            }
-          }
-          throw Exception('Failed to accept request');
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error accepting request: $e')),
-          );
-        }
-      }
-    }
-
-    if (mounted) {
+    if (mounted && success) {
       setState(() {
         _requests.clear();
       });
@@ -154,28 +128,31 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
           backgroundColor: Colors.green,
         ),
       );
+    }else{
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error accepting all requests')),
+        );
+      }
     }
   }
 
   Future<void> _rejectAll() async {
-    final requestsCopy = List<TeamRequest>.from(_requests);
+    final success = await DBWrite.rejectTeamRequest(
+      widget.teamId,
+      allRequests: true,
+    );
 
-    for (var request in requestsCopy) {
-      try {
-        await DB.TeamRequests.deleteByPlayerId(request.playerId);
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error rejecting request: $e')),
-          );
-        }
-      }
-    }
-
-    if (mounted) {
+    if (mounted && success) {
       setState(() {
         _requests.clear();
       });
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error rejecting all requests')),
+        );
+      }
     }
   }
 

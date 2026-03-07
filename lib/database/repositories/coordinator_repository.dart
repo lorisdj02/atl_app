@@ -114,6 +114,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
     String? newPasswordMD5,
     DateTime? birthdate,
     String? imgUrl,
+    int? preferredCityId,
   }) async {
     if (AppConfig.isDebug) {
       // Update mock data
@@ -133,6 +134,9 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       }
       if (imgUrl != null) {
         _mockData[index].imageUrl = imgUrl;
+      }
+      if (preferredCityId != null) {
+        _mockData[index].preferredCityId = preferredCityId;
       }
       return true;
     } else {
