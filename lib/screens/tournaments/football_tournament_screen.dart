@@ -5,7 +5,7 @@ import '../../models/football_match.dart';
 import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../models/player.dart';
-import '../../models/team_stats.dart';
+import '../../models/football_team_stats.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/small_football_match_widget.dart';
@@ -39,7 +39,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   List<FootballStanding> _standings = [];
   List<Player> _players = [];
   Map<int, Team> _teamsCache = {};
-  Map<int, TeamStats> _playerStatsCache = {};
+  Map<int, FootballTeamStats> _playerStatsCache = {};
 
   bool _fixturesLoaded = false;
   bool _tablesLoaded = false;
@@ -106,7 +106,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       _standings = data[ApiJsonKeys.standings] as List<FootballStanding>;
       _players = data[ApiJsonKeys.players] as List<Player>;
       _teamsCache = Map<int, Team>.from(data[ApiJsonKeys.teamsCache]);
-      _playerStatsCache = Map<int, TeamStats>.from(
+      _playerStatsCache = Map<int, FootballTeamStats>.from(
         data[ApiJsonKeys.playerStatsCache],
       );
       _minutesPerRound = data[ApiJsonKeys.minutesPerRound] as int?;

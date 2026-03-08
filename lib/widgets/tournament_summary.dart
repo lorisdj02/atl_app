@@ -3,7 +3,8 @@ import '../models/tournament.dart';
 import '../models/sport.dart';
 import '../models/field.dart';
 import '../widgets/info_row_widget.dart';
-import '../database/db_controller.dart';
+import '../database/db_read.dart';
+import '../config/api_json_keys.dart';
 
 /// Widget for displaying tournament summary information
 class TournamentSummary extends StatelessWidget {
@@ -93,12 +94,12 @@ class TournamentSummary extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _fetchData() async {
-    final sportData = sport ?? await DB.Sports.getById(tournament.sportId);
-    final fieldData = field ?? await DB.Fields.getById(tournament.fieldId);
-    final city = cityName != null
-        ? null
-        : await DB.Cities.getById(tournament.cityId);
-    final cityNameData = cityName ?? city?.name ?? 'N/A';
+    final data = await DBRead.getTournamentSummary(tournament.id);
+
+
+    final sportData = sport ?? data[ApiJsonKeys.sport] as Sport?;
+    final fieldData = field ?? data[ApiJsonKeys.field] as Field?;
+    final cityNameData = cityName ?? data[ApiJsonKeys.cityName] as String? ?? 'N/A';
 
     final feeData = fee ?? tournament.fee;
     final prize1Data = prize1Value ?? tournament.prize1;

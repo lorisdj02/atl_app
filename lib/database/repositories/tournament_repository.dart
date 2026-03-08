@@ -435,14 +435,14 @@ class TournamentRepository extends BaseRepository<Tournament> {
     }
   }
 
-  Future<void> toggleFavoriteStatus(int tournamentId, int userId) async {
+  Future<bool> toggleFavoriteStatus(int tournamentId, int userId) async {
     if (AppConfig.isDebug) {
       if (await DB.FavoriteTournaments.isFavorite(userId, tournamentId)) {
         await DB.FavoriteTournaments.removeFavorite(userId, tournamentId);
       } else {
         await DB.FavoriteTournaments.addFavorite(userId, tournamentId);
       }
-      return Future.value();
+      return true;
     } else {
       throw UnimplementedError();
     }

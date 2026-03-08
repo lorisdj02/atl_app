@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../database/db_controller.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';
+import '../config/api_json_keys.dart';
+import '../database/db_read.dart';
 
 /// Widget per visualizzare un match all'interno del tabellone Road to Victory
 class MatchBracket extends StatefulWidget {
@@ -41,30 +42,23 @@ class _MatchBracketState extends State<MatchBracket> {
 
   Future<void> _loadMatchData() async {
     try {
-      final match = await DB.FootballMatches.getById(widget.matchId);
+      final data = await DBRead.getMatchBracket(
+        widget.matchId,
+        widget.sportCategory,
+        isFinal: widget.isFinal,
+      );
+
+      final match = data[ApiJsonKeys.match] as FootballMatch?;
       if (match == null) {
         setState(() => _isLoading = false);
         return;
       }
 
-      Team? homeTeam;
-      Team? awayTeam;
-      int? winnerId;
+      final Team? homeTeam = data[ApiJsonKeys.homeTeam] as Team?;
+      final Team? awayTeam = data[ApiJsonKeys.awayTeam] as Team?;
+      int? winnerId = data[ApiJsonKeys.winnerId] as int?;
 
-      if (match.homeTeamId != null) {
-        homeTeam = await DB.Teams.getById(match.homeTeamId!);
-      }
-
-      if (match.awayTeamId != null) {
-        awayTeam = await DB.Teams.getById(match.awayTeamId!);
-      }
-
-      // Determina il vincitore
-      if (widget.isFinal && match.status == MatchStatus.finished) {
-        // Per la finale usa getMatchWinner
-        winnerId = await DB.FootballMatches.getMatchWinner(widget.matchId);
-        if (winnerId == -1) winnerId = null;
-      } else {
+      if (!(widget.isFinal && match.status == MatchStatus.finished)) {
         // Per le altre fasi controlla chi è passato al turno successivo
         if (widget.nextRoundHomeTeamId != null &&
             match.homeTeamId == widget.nextRoundHomeTeamId) {

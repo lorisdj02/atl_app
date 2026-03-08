@@ -18,6 +18,7 @@ import 'profile_screens/contact_us_screen.dart';
 import '../widgets/referee_bottom_bar.dart';
 import '../widgets/organization_bottom_bar.dart';
 import '../database/db_read.dart';
+import 'referee/referee_licenses_screen.dart';
 import '../config/api_json_keys.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -212,10 +213,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  //TODO: fill LicenseScreen
-                                  Container(),
-                              //LicenseScreen(currentSport: currentSport),
+                              builder: (context) => RefereeLicensesScreen(
+                                currentSport: widget.currentSport,
+                              ),
                             ),
                           );
                         },

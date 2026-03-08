@@ -49,6 +49,8 @@ class FootballTournamentStatsRepository
     int tournamentId, {
     int goalsIncrement = 0,
     int motmIncrement = 0,
+    int yellowCardsIncrement = 0,
+    int redCardsIncrement = 0,
   }) async {
     if (AppConfig.isDebug) {
       FootballTournamentStats stats = mockData.firstWhere(
@@ -62,12 +64,16 @@ class FootballTournamentStatsRepository
           tournamentId: tournamentId,
           motm: 0,
           goals: 0,
+          yellowCards: 0,
+          redCards: 0,
         ),
       );
 
       Map<String, dynamic> result = {"table": "FootballTournamentStats", "changes": [stats.toJson()]};
       stats.goals += goalsIncrement;
       stats.motm += motmIncrement;
+      stats.yellowCards += yellowCardsIncrement;
+      stats.redCards += redCardsIncrement;
       final int index = mockData.indexWhere(
         (s) =>
             s.playerId == playerId &&
@@ -159,6 +165,8 @@ class FootballTournamentStatsRepository
           tournamentId: tournamentId,
           motm: 0,
           goals: 0,
+          yellowCards: 0,
+          redCards: 0,
         ),
       );
     } else {

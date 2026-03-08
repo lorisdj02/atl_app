@@ -133,9 +133,9 @@ class ApiJsonKeys {
   static const String match = 'match'; // FootballMatch
   // FootballMatchDetailScreen
   static const String events = 'events'; // List<FootballMatchEvent>
-  // FootballMatchDetailScreen
+  // FootballMatchDetailScreen, MatchBracket
   static const String homeTeam = 'homeTeam'; // Team?
-  // FootballMatchDetailScreen
+  // FootballMatchDetailScreen, MatchBracket
   static const String awayTeam = 'awayTeam'; // Team?
   // FootballMatchDetailScreen
   static const String availableRefereeRoles = 'availableRefereeRoles'; // List<RefereeRole>
@@ -189,4 +189,13 @@ class ApiJsonKeys {
   static const String isPlayerInTeam = 'isPlayerInTeam'; // bool
   // TeamDetailScreen
   static const String existingRequest = 'existingRequest'; // TeamRequest?
+
+  // MatchBracket
+  static const String winnerId = 'winnerId'; // int
+
+  // SportSelectorWidget
+  static const String sports = 'sports'; // List<Sport>
+
+  // RefereeLicensesScreen
+  static const String refereeLicenses = 'refereeLicenses'; // List<RefereeLicense>
 }

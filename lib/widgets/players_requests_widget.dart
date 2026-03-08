@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-
-import '../database/db_controller.dart';
 import '../models/player.dart';
 import '../models/sport_category.dart';
 import '../models/team_request.dart';
 import '../utils/atl_colors.dart';
-
-// TODO: ASSOLUTAMENTE rimuovere db_controller
+import '../database/db_read.dart';
+import '../config/api_json_keys.dart';
+import '../database/db_write.dart';
 
 class PlayersRequestsWidget extends StatefulWidget {
   final int teamId;
@@ -26,7 +25,7 @@ class PlayersRequestsWidget extends StatefulWidget {
 
 class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
   List<TeamRequest> _requests = [];
-  final Map<int, Player?> _playersCache = {};
+  Map<int, Player?> _playersCache = {};
   bool _isLoading = true;
 
   @override
@@ -37,17 +36,12 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
 
   Future<void> _loadRequests() async {
     try {
-      final requests = await DB.TeamRequests.getByTeamId(widget.teamId);
-
-      // Carica i dati dei giocatori
-      for (var request in requests) {
-        final player = await DB.Players.getByPlayerId(request.playerId);
-        _playersCache[request.playerId] = player;
-      }
+      final data = await DBRead.getPlayerRequests(widget.teamId);
 
       if (mounted) {
         setState(() {
-          _requests = requests;
+          _requests = data[ApiJsonKeys.teamRequests] as List<TeamRequest>;
+          _playersCache = data[ApiJsonKeys.playersCache] as Map<int, Player?>;
           _isLoading = false;
         });
       }
@@ -65,10 +59,12 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
 
   Future<void> _acceptRequest(TeamRequest request) async {
     try {
-      await DB.Players.joinTeam(request.playerId, widget.teamId);
-      await DB.TeamRequests.deleteByPlayerId(request.playerId);
+      final bool success = await DBWrite.acceptTeamRequest(
+        widget.teamId,
+        playerId: request.playerId,
+      );
 
-      if (mounted) {
+      if (mounted && success) {
         setState(() {
           _requests.removeWhere((r) => r.playerId == request.playerId);
         });
@@ -94,7 +90,10 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
 
   Future<void> _rejectRequest(TeamRequest request) async {
     try {
-      await DB.TeamRequests.deleteByPlayerId(request.playerId);
+      await DBWrite.rejectTeamRequest(
+        widget.teamId,
+        playerId: request.playerId,
+      );
 
       if (mounted) {
         setState(() {
@@ -112,22 +111,12 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
   }
 
   Future<void> _acceptAll() async {
-    final requestsCopy = List<TeamRequest>.from(_requests);
+    final bool success = await DBWrite.acceptTeamRequest(
+      widget.teamId,
+      allRequests: true,
+    );
 
-    for (var request in requestsCopy) {
-      try {
-        await DB.Players.joinTeam(request.playerId, widget.teamId);
-        await DB.TeamRequests.deleteByPlayerId(request.playerId);
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error accepting request: $e')),
-          );
-        }
-      }
-    }
-
-    if (mounted) {
+    if (mounted && success) {
       setState(() {
         _requests.clear();
       });
@@ -143,21 +132,11 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
   }
 
   Future<void> _rejectAll() async {
-    final requestsCopy = List<TeamRequest>.from(_requests);
-
-    for (var request in requestsCopy) {
-      try {
-        await DB.TeamRequests.deleteByPlayerId(request.playerId);
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error rejecting request: $e')),
-          );
-        }
-      }
-    }
-
-    if (mounted) {
+    final bool success = await DBWrite.rejectTeamRequest(
+      widget.teamId,
+      allRequests: true,
+    );
+    if (mounted && success) {
       setState(() {
         _requests.clear();
       });

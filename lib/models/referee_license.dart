@@ -1,4 +1,5 @@
 enum LicenseStatus{
+  notVerified,
   active,
   revoked,
   suspended
@@ -13,16 +14,18 @@ class RefereeLicense {
   final DateTime issuedAt;
   DateTime? verifiedAt;
   DateTime? revokedAt;
+  final String photoUrl;
 
   RefereeLicense({
     required this.refereeId,
     required this.sportId,
     required this.id,
-    this.status = LicenseStatus.active,
+    this.status = LicenseStatus.notVerified,
     required this.createdAt,
     required this.issuedAt,
     this.verifiedAt,
     this.revokedAt,
+    this.photoUrl = '',
   });
 
   Map<String, dynamic> toJson() {

@@ -9,7 +9,7 @@ import '../../models/palmares.dart';
 import '../../models/tournament.dart';
 import '../../models/coordinator.dart';
 import '../../models/field.dart';
-import '../../models/team_stats.dart';
+import '../../models/football_team_stats.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
@@ -42,7 +42,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   Map<int, Field?> fieldCache = {};
 
   // Cache per stats
-  Map<int, TeamStats?> playerStatsCache = {};
+  Map<int, FootballTeamStats?> playerStatsCache = {};
 
   // Cache for city names
   Map<int, String> cityNamePerField = {};
@@ -402,9 +402,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     }
 
     // Prepare playerStats map depending on filter
-    Map<int, TeamStats?> statsToShow = {};
+    Map<int, FootballTeamStats?> statsToShow = {};
     if (statsShowAll) {
-      statsToShow = Map<int, TeamStats?>.from(playerStatsCache);
+      statsToShow = Map<int, FootballTeamStats?>.from(playerStatsCache);
     } else {
       final playerIds = (players ?? []).map((p) => p.playerId).toSet();
       statsToShow = Map.fromEntries(

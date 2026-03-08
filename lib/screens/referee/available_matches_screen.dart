@@ -225,10 +225,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               ),
               const SizedBox(height: 12),
               // Sport type dropdown
-              _buildDropdown(
+              _buildDropdown<int?>(
                 label: 'Sport Type',
                 value: _selectedSportId,
-                items: _sportTypes[widget.currentSport]?.keys.toList() ?? [],
+                items: [null, ...(_sportTypes[widget.currentSport]?.keys.toList() ?? [])],
                 onChanged: (value) async {
                   setState(() {
                     _selectedSportId = value;
@@ -236,6 +236,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                   await _loadMatches();
                 },
                 itemBuilder: (sportId) {
+                  if (sportId == null) return const Text('All');
                   return Text(
                     _sportTypes[widget.currentSport]?[sportId] ??
                         'Sport $sportId',

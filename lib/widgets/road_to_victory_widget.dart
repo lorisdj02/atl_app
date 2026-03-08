@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../database/db_controller.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
 import '../widgets/loading_atl.dart';
 import 'match_bracket.dart';
+import '../database/db_read.dart';
+import '../config/api_json_keys.dart';
 
 /// Widget per visualizzare il tabellone Road to Victory di un torneo
 class RoadToVictoryWidget extends StatefulWidget {
@@ -35,26 +36,28 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
 
   Future<void> _loadData() async {
     try {
-      final tournament = await DB.Tournaments.getById(widget.tournamentId);
+
+      final data = await DBRead.getMatchesInTournament(widget.tournamentId, widget.sportCategory);
+
+      final tournament = data[ApiJsonKeys.tournament] as Tournament?;
       if (tournament == null) {
         setState(() => _isLoading = false);
         return;
       }
 
+      Map<String, List<FootballMatch>> matchesByGroup = {};
+
       final qualified = tournament.qualified;
       final phases = _getPhasesForQualified(qualified);
-
+      final List<FootballMatch> matches = data[ApiJsonKeys.matches] as List<FootballMatch>;
       // Carica tutti i match per ogni fase
       for (final phase in phases) {
-        final matches = await DB.FootballMatches.getMatchesByGroup(
-          widget.tournamentId,
-          phase,
-        );
-        _matchesByGroup[phase] = matches;
+        matchesByGroup[phase] = matches.where((m) => m.group == phase).toList();
       }
 
       if (mounted) {
         setState(() {
+          _matchesByGroup = matchesByGroup;
           _tournament = tournament;
           _isLoading = false;
         });

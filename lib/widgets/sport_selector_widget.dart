@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import '../models/sport.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
-
-// TODO: rimuovi db_controller
+import '../database/db_read.dart';
+import '../config/api_json_keys.dart';
 
 /// Widget per la selezione dello sport all'interno di una categoria
 class SportSelectorWidget extends StatefulWidget {
@@ -39,9 +38,9 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
 
   Future<void> _loadSports() async {
     try {
-      final sports = await DB.Sports.getByCategory(widget.sportCategory);
+      final data = await DBRead.getSportsByCategory(widget.sportCategory);
       setState(() {
-        _availableSports = sports;
+        _availableSports = data[ApiJsonKeys.sports] ?? [];
         _isLoading = false;
       });
     } catch (e) {

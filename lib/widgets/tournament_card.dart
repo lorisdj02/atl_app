@@ -5,8 +5,8 @@ import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'package:provider/provider.dart';
-import '../database/db_controller.dart';
 import '../providers/user_provider.dart';
+import '../database/db_write.dart';
 
 /// Widget per visualizzare una card torneo
 
@@ -143,7 +143,7 @@ class _TournamentCardStatus extends State<TournamentCard> {
                           listen: false,
                         ).activeUser!.id;
                         Future.microtask(() async {
-                          await DB.Tournaments.toggleFavoriteStatus(
+                          await DBWrite.toggleTournamentFavoriteStatus(
                             widget.tournament.id,
                             userId,
                           );

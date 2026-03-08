@@ -1,32 +1,32 @@
 import '../../config/app_config.dart';
-import '../../models/team_stats.dart';
+import '../../models/football_team_stats.dart';
 import 'base_repository.dart';
 
-class TeamStatsRepository extends BaseRepository<TeamStats> {
+class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
   @override
   String get endpoint => 'team_stats';
 
   @override
-  TeamStats fromJson(Map<String, dynamic> json) => TeamStats.fromJson(json);
+  FootballTeamStats fromJson(Map<String, dynamic> json) => FootballTeamStats.fromJson(json);
 
   @override
-  Map<String, dynamic> toJson(TeamStats item) => item.toJson();
+  Map<String, dynamic> toJson(FootballTeamStats item) => item.toJson();
 
-  List<TeamStats> _mockData = [
-    TeamStats(id: 1, playerId: 1, teamId: 1, motm: 15, goals: 23),
-    TeamStats(id: 2, playerId: 2, teamId: 1, motm: 12, goals: 18),
-    TeamStats(id: 3, playerId: 3, teamId: 1, motm: 8, goals: 14),
-    TeamStats(id: 4, playerId: 4, teamId: 1, motm: 10, goals: 12),
-    TeamStats(id: 5, playerId: 5, teamId: 1, motm: 6, goals: 9),
-    TeamStats(id: 6, playerId: 6, teamId: 2, motm: 14, goals: 21),
-    TeamStats(id: 7, playerId: 7, teamId: 2, motm: 11, goals: 16),
-    TeamStats(id: 8, playerId: 8, teamId: 3, motm: 9, goals: 15),
+  List<FootballTeamStats> _mockData = [
+    FootballTeamStats(id: 1, playerId: 1, teamId: 1, motm: 15, goals: 23),
+    FootballTeamStats(id: 2, playerId: 2, teamId: 1, motm: 12, goals: 18),
+    FootballTeamStats(id: 3, playerId: 3, teamId: 1, motm: 8, goals: 14),
+    FootballTeamStats(id: 4, playerId: 4, teamId: 1, motm: 10, goals: 12),
+    FootballTeamStats(id: 5, playerId: 5, teamId: 1, motm: 6, goals: 9),
+    FootballTeamStats(id: 6, playerId: 6, teamId: 2, motm: 14, goals: 21),
+    FootballTeamStats(id: 7, playerId: 7, teamId: 2, motm: 11, goals: 16),
+    FootballTeamStats(id: 8, playerId: 8, teamId: 3, motm: 9, goals: 15),
   ];
 
   @override
-  List<TeamStats> get mockData => _mockData;
+  List<FootballTeamStats> get mockData => _mockData;
 
-  Future<List<TeamStats>> getByTeamId(int teamId) async {
+  Future<List<FootballTeamStats>> getByTeamId(int teamId) async {
     if (AppConfig.isDebug) {
       return mockData.where((stats) => stats.teamId == teamId).toList();
     } else {
@@ -39,6 +39,8 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     int teamId, {
     int goalsIncrement = 0,
     int motmIncrement = 0,
+    int yellowCardsIncrement = 0,
+    int redCardsIncrement = 0,
   }) async {
     if (AppConfig.isDebug) {
       final int index = _mockData.indexWhere(
@@ -49,28 +51,32 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
 
       if (index == -1) {
         // Non esiste, crealo
-        TeamStats newStats = TeamStats(
+        FootballTeamStats newStats = FootballTeamStats(
           id: _mockData.length + 1,
           playerId: playerId,
           teamId: teamId,
           goals: goalsIncrement,
           motm: motmIncrement,
+          yellowCards: yellowCardsIncrement,
+          redCards: redCardsIncrement,
         );
 
         _mockData.add(newStats);
 
         result = {
-          "table": "TeamStats",
+          "table": "FootballTeamStats",
           "changes": [newStats.toJson()],
         };
       } else {
         // Esiste, aggiornalo usando copyWith
         result = {
-          "table": "TeamStats",
+          "table": "FootballTeamStats",
           "changes": [_mockData[index].toJson()],
         };
         _mockData[index].goals += goalsIncrement;
         _mockData[index].motm += motmIncrement;
+        _mockData[index].yellowCards += yellowCardsIncrement;
+        _mockData[index].redCards += redCardsIncrement;
       }
       return result;
     } else {
@@ -82,7 +88,7 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     if (AppConfig.isDebug) {
       try {
         for (var json in jsonList) {
-          TeamStats stats = TeamStats.fromJson(json);
+          FootballTeamStats stats = FootballTeamStats.fromJson(json);
           int index = _mockData.indexWhere(
             (s) => s.playerId == stats.playerId && s.teamId == stats.teamId,
           );
@@ -102,7 +108,7 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     }
   }
 
-  Future<List<TeamStats>> getByPlayerId(int playerId) async {
+  Future<List<FootballTeamStats>> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
       return mockData.where((stats) => stats.playerId == playerId).toList();
     } else {
@@ -110,12 +116,12 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
     }
   }
 
-  Future<TeamStats>? getStatsForPlayerInTeam(int playerId, int teamId) async {
+  Future<FootballTeamStats>? getStatsForPlayerInTeam(int playerId, int teamId) async {
     if (AppConfig.isDebug) {
       return mockData.firstWhere(
         (stats) => stats.playerId == playerId && stats.teamId == teamId,
         orElse: () =>
-            TeamStats(id: 0, playerId: playerId, teamId: teamId, motm: 0, goals: 0),
+            FootballTeamStats(id: 0, playerId: playerId, teamId: teamId, motm: 0, goals: 0),
       );
     } else {
       throw UnimplementedError();
@@ -133,7 +139,7 @@ class TeamStatsRepository extends BaseRepository<TeamStats> {
       return true;
     }
 
-    final stats = TeamStats(
+    final stats = FootballTeamStats(
       id: _mockData.length + 1,
       playerId: playerId,
       teamId: teamId,

@@ -18,8 +18,8 @@ class DBWrite {
     DateTime? birthdate,
     String? imgUrl,
     int? preferredCityId,
-  }) async{
-    if(AppConfig.isDebug){
+  }) async {
+    if (AppConfig.isDebug) {
       final bool success = await DB.Users.updateUserInfo(
         id: id,
         username: username,
@@ -31,22 +31,16 @@ class DBWrite {
         preferredCityId: preferredCityId,
       );
 
-      if(!success){
-        return {
-          ApiJsonKeys.updatedUser: null,
-        };
+      if (!success) {
+        return {ApiJsonKeys.updatedUser: null};
       }
 
       final User? updatedUser = await DB.Users.getByUserId(id);
-      if(updatedUser == null){
-        return {
-          ApiJsonKeys.updatedUser: null,
-        };
+      if (updatedUser == null) {
+        return {ApiJsonKeys.updatedUser: null};
       }
-      return {
-        ApiJsonKeys.updatedUser: updatedUser,
-      };
-    }else{
+      return {ApiJsonKeys.updatedUser: updatedUser};
+    } else {
       throw UnimplementedError();
     }
   }
@@ -153,7 +147,7 @@ class DBWrite {
       if (id == -1) {
         return -1;
       }
-      if ((await DB.TeamStats.createStats(
+      if ((await DB.FootballTeamStats.createStats(
             playerId: captainId,
             teamId: id,
             motm: 0,
@@ -262,7 +256,7 @@ class DBWrite {
   }) async {
     if (AppConfig.isDebug == true) {
       if (allRequests == true) {
-        if(await DB.Teams.getById(teamId) == null){
+        if (await DB.Teams.getById(teamId) == null) {
           return false;
         }
 
@@ -281,7 +275,7 @@ class DBWrite {
 
         for (final request in requests) {
           if ((await DB.Players.joinTeam(request.playerId, teamId)) == false ||
-              (await DB.TeamStats.createStats(
+              (await DB.FootballTeamStats.createStats(
                     playerId: request.playerId,
                     teamId: teamId,
                     motm: 0,
@@ -311,7 +305,7 @@ class DBWrite {
           return false;
         }
 
-        if ((await DB.TeamStats.createStats(
+        if ((await DB.FootballTeamStats.createStats(
               playerId: playerId,
               teamId: teamId,
               motm: 0,
@@ -357,17 +351,17 @@ class DBWrite {
   }
 
   static Future<bool> createTeamRequest(int teamId, int playerId) async {
-    if (AppConfig.isDebug){
+    if (AppConfig.isDebug) {
       return DB.TeamRequests.addRequest(teamId, playerId);
-    }else{
+    } else {
       throw UnimplementedError();
     }
   }
 
   static Future<bool> deleteTeamRequest(int teamId, int playerId) async {
-    if (AppConfig.isDebug){
+    if (AppConfig.isDebug) {
       return DB.TeamRequests.deleteRequest(teamId, playerId);
-    }else{
+    } else {
       throw UnimplementedError();
     }
   }
@@ -1042,6 +1036,48 @@ class DBWrite {
                 false) {
           return false;
         }
+      } else if (type == 'yellowCard') {
+        if (playerId == null) {
+          return false;
+        }
+        if (await DB.FootballTeamStats.incrementStats(
+              playerId,
+              teamId,
+              yellowCardsIncrement: 1,
+            ) ==
+            {}) {
+          return false;
+        }
+        if (await DB.FootballTournamentStats.incrementStatsInTournament(
+              playerId,
+              teamId,
+              tournamentId,
+              yellowCardsIncrement: 1,
+            ) ==
+            {}) {
+          return false;
+        }
+      } else if (type == 'redCard' || type == 'redYellowCard') {
+        if (playerId == null) {
+          return false;
+        }
+        if (await DB.FootballTeamStats.incrementStats(
+              playerId,
+              teamId,
+              redCardsIncrement: 1,
+            ) ==
+            {}) {
+          return false;
+        }
+        if (await DB.FootballTournamentStats.incrementStatsInTournament(
+              playerId,
+              teamId,
+              tournamentId,
+              redCardsIncrement: 1,
+            ) ==
+            {}) {
+          return false;
+        }
       }
       return true;
     } else {
@@ -1140,7 +1176,7 @@ class DBWrite {
       if (type != 'ownGoal' &&
           type != 'missedPenalty' &&
           await DB.FootballMatches.isPenaltyShootOut(matchId) == false) {
-        result = await DB.TeamStats.incrementStats(
+        result = await DB.FootballTeamStats.incrementStats(
           playerId,
           teamId,
           goalsIncrement: 1,
@@ -1466,7 +1502,7 @@ class DBWrite {
           {}) {
         return false;
       }
-      if (await DB.TeamStats.incrementStats(
+      if (await DB.FootballTeamStats.incrementStats(
             playerId,
             teamId,
             motmIncrement: 1,
@@ -1633,8 +1669,8 @@ class DBWrite {
             case 'FootballStandings':
               success = await DB.FootballStandings.rollbackByJson(tableChanges);
               break;
-            case 'TeamStats':
-              success = await DB.TeamStats.rollbackByJson(tableChanges);
+            case 'FootballTeamStats':
+              success = await DB.FootballTeamStats.rollbackByJson(tableChanges);
               break;
             case 'FootballTournamentStats':
               success = await DB.FootballTournamentStats.rollbackByJson(
@@ -1675,6 +1711,51 @@ class DBWrite {
   static Future<bool> startFootballPenaltyShootOut(int matchId) async {
     if (AppConfig.isDebug) {
       return await DB.FootballMatches.startPenaltyShootOut(matchId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> deletePrivateBooking(int bookingId) async {
+    if (AppConfig.isDebug) {
+      return await await DB.PrivateBookings.deletePrivateBooking(bookingId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> toggleTournamentFavoriteStatus(
+    int tournamentId,
+    int userId,
+  ) async {
+    if (AppConfig.isDebug) {
+      return await DB.Tournaments.toggleFavoriteStatus(tournamentId, userId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> insertRefereeLicense(
+    int sportId,
+    int refereeId,
+    String id,
+    DateTime issuedAt,
+  ) async {
+    if (AppConfig.isDebug) {
+      return await DB.RefereeLicenses.addLicense(
+        sportId,
+        refereeId,
+        id,
+        issuedAt,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> deleteRefereeLicense(int refereeId, int sportId) async {
+    if (AppConfig.isDebug) {
+      return await DB.RefereeLicenses.removeLicense(refereeId, sportId);
     } else {
       throw UnimplementedError();
     }

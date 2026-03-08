@@ -102,4 +102,12 @@ class SportRepository extends BaseRepository<Sport> {
     }
   }
 
+  Future<List<Sport>> getAll() async{
+    if(AppConfig.isDebug){
+      return mockData;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
 }

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../models/player.dart';
 import '../models/sport_category.dart';
-import '../models/team_stats.dart';
+import '../models/football_team_stats.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';
 
 class PlayersStatsWidget extends StatelessWidget {
   final List<Player> players;
   final SportCategory sportCategory;
-  final Map<int, TeamStats?> playerStats;
+  final Map<int, FootballTeamStats?> playerStats;
   final bool inTournament;
   final Map<int, Team>? teamsCache;
 

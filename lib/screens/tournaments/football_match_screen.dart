@@ -590,6 +590,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         tournamentId: _match!.tournamentId,
         matchId: widget.matchId,
         sportCategory: widget.currentSport,
+        playersByTeam: _playersPerTeam,
       ),
     );
 

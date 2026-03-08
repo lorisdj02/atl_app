@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
+import '../database/db_read.dart';
+import '../database/db_write.dart';
+import '../config/api_json_keys.dart';
+import '../models/booking.dart';
 
 class ScheduleMatchDialog extends StatefulWidget {
   final int tournamentId;
@@ -30,6 +33,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   int _minutesPerPause = 0;
   int _totalBookingDuration = 0;
   List<TimeOfDay> _availableSlots = [];
+  List<Booking> _existingBookings = [];
 
   @override
   void initState() {
@@ -41,22 +45,29 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final sportId = await DB.Tournaments.getById(
-        widget.tournamentId,
-      ).then((t) => t!.sportId);
-      final sport = await DB.Sports.getById(sportId);
+      final data = await DBRead.getScheduleData(widget.tournamentId);
 
-      if (sport != null) {
-        _minutesPerRound = sport.minutesPerRound;
-        _minutesPerPause = sport.minutesPerPause;
+      int minutesPerRound = 0;
+      int minutesPerPause = 0;
+      int totalBookingDuration = 0;
+      if (data.isNotEmpty) {
+        minutesPerRound = data[ApiJsonKeys.minutesPerRound] as int;
+        minutesPerPause = data[ApiJsonKeys.minutesPerPause] as int;
         // minutesPerRound*2 + minutesPerPause + 30 (15 before + 15 after)
-        _totalBookingDuration = (_minutesPerRound * 2) + _minutesPerPause + 30;
+        totalBookingDuration = (minutesPerRound * 2) + minutesPerPause + 30;
+        setState(() {
+          _minutesPerRound = minutesPerRound;
+          _minutesPerPause = minutesPerPause;
+          _totalBookingDuration = totalBookingDuration;
+          _existingBookings = data[ApiJsonKeys.bookings] as List<Booking>;
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load tournament time data');
       }
-
-      setState(() => _isLoading = false);
     } catch (e) {
-      print('Error loading tournament data: $e');
       setState(() => _isLoading = false);
+      return;
     }
   }
 
@@ -66,9 +77,6 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     try {
       final List<TimeOfDay> slots = [];
       final now = DateTime.now();
-
-      // Load existing bookings for this field
-      final existingBookings = await DB.Bookings.getByFieldId(widget.fieldId);
 
       // Generate time slots from 00:00 to 23:45 in 15-minute intervals
       for (int hour = 0; hour < 24; hour++) {
@@ -103,7 +111,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
 
             // Check if this time slot conflicts with existing bookings
             bool hasConflict = false;
-            for (var booking in existingBookings) {
+            for (var booking in _existingBookings) {
               // Check if there's any overlap between the proposed booking and existing booking
               // Overlap occurs if: startTime < booking.finishTime AND finishTime > booking.startTime
               if (startTime.isBefore(booking.finishTime) &&
@@ -115,16 +123,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
 
             // Only add the slot if there's no conflict
             if (!hasConflict) {
-              // Also check if field is available via the existing method
-              final freeFields = await DB.Bookings.getFreeFieldIds(
-                startTime,
-                finishTime,
-                [widget.fieldId],
-              );
-
-              if (freeFields != null && freeFields.contains(widget.fieldId)) {
-                slots.add(slot);
-              }
+              slots.add(slot);
             }
           }
         }

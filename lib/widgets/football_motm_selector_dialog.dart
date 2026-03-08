@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_controller.dart';
-import '../config/app_config.dart';
+import '../database/db_read.dart';
+import '../config/api_json_keys.dart';
 import 'abstract_team_dialog.dart';
 
 class FootballMotmSelectorDialog extends AbstractTeamDialog {
-  const FootballMotmSelectorDialog({
+  Map<int, List<Player>> playersByTeam = {};
+
+  FootballMotmSelectorDialog({
     super.key,
     required super.homeTeam,
     required super.awayTeam,
     required super.tournamentId,
     required super.matchId,
     required super.sportCategory,
+    required Map<int, List<Player>> playersByTeam,
   });
 
   @override
@@ -32,31 +35,10 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
     });
 
     try {
-      List<Player> players = [];
-
-      List<int> playerIds = [];
-      if (AppConfig.isDebug) {
-        playerIds = await DB.PlaysAt.getPlayersIdinTeam(selectedTeam!.id);
-      } else {
-        playerIds = await DB.CallUps.getPlayersInTeamInTournament(
-          widget.tournamentId,
-          selectedTeam!.id,
-        );
-      }
-
-      for (var playerId in playerIds) {
-        final player = await DB.Players.getByPlayerId(playerId);
-        if (player != null) {
-          players.add(player);
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _availablePlayers = players;
-          isLoading = false;
-        });
-      }
+      setState(() {
+        _availablePlayers = widget.playersByTeam[selectedTeam!.id] ?? [];
+        isLoading = false;
+      });
     } catch (e) {
       if (mounted) {
         setState(() => isLoading = false);

@@ -5,6 +5,8 @@ class FootballTournamentStats {
   final int teamId;
   int goals;
   int motm; // Man of the Match
+  int yellowCards;
+  int redCards;
 
   FootballTournamentStats({
     required this.playerId,
@@ -12,6 +14,8 @@ class FootballTournamentStats {
     required this.teamId,
     this.goals = 0,
     this.motm = 0,
+    this.yellowCards = 0,
+    this.redCards = 0,
   });
 
   factory FootballTournamentStats.fromJson(Map<String, dynamic> json) {
@@ -21,6 +25,8 @@ class FootballTournamentStats {
       teamId: json['team_id'],
       goals: json['goals'] ?? 0,
       motm: json['motm'] ?? 0,
+      yellowCards: json['yellow_cards'] ?? 0,
+      redCards: json['red_cards'] ?? 0,
     );
   }
 
@@ -31,12 +37,14 @@ class FootballTournamentStats {
       'team_id': teamId,
       'goals': goals,
       'motm': motm,
+      'yellow_cards': yellowCards,
+      'red_cards': redCards,
     };
   }
 
   @override
   String toString(){
-    return 'FootballTournamentStats(playerId: $playerId, tournamentId: $tournamentId, teamId: $teamId, goals: $goals, motm: $motm)';
+    return 'FootballTournamentStats(playerId: $playerId, tournamentId: $tournamentId, teamId: $teamId, goals: $goals, motm: $motm, yellowCards: $yellowCards, redCards: $redCards)';
   }
   /// Media gol per partita (da calcolare con numero partite giocate)
   // TODO: Aggiungere goalsPerMatch quando disponibili i dati delle partite

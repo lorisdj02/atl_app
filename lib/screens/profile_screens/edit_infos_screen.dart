@@ -167,7 +167,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
             : null,
       );
   
-      if (!data[ApiJsonKeys.updatedUser]) {
+      if (!data.containsKey(ApiJsonKeys.updatedUser)) {
         throw Exception('Failed to update user info');
       }
 

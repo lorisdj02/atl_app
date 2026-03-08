@@ -9,7 +9,7 @@ import 'repositories/field_repository.dart';
 import 'repositories/team_repository.dart';
 import 'repositories/palmares_repository.dart';
 import 'repositories/team_request_repository.dart';
-import 'repositories/team_stats_repository.dart';
+import 'repositories/football_team_stats_repository.dart';
 import 'repositories/plays_at_repository.dart';
 import 'repositories/tournament_participation_repository.dart';
 import 'repositories/callups_repository.dart';
@@ -57,7 +57,7 @@ class DB {
   static late final TeamRepository Teams;
   static late final PalmaresRepository Palmares;
   static late final TeamRequestRepository TeamRequests;
-  static late final TeamStatsRepository TeamStats;
+  static late final FootballTeamStatsRepository FootballTeamStats;
   static late final PlaysAtRepository PlaysAt;
   static late final TournamentParticipationRepository TournamentParticipations;
   static late final CallUpsRepository CallUps;
@@ -94,7 +94,7 @@ class DB {
     Teams = TeamRepository();
     Palmares = PalmaresRepository();
     TeamRequests = TeamRequestRepository();
-    TeamStats = TeamStatsRepository();
+    FootballTeamStats = FootballTeamStatsRepository();
     PlaysAt = PlaysAtRepository();
     TournamentParticipations = TournamentParticipationRepository();
     CallUps = CallUpsRepository();

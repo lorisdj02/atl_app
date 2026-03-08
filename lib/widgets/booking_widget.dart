@@ -2,7 +2,6 @@ import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../database/db_controller.dart';
 import '../models/field.dart';
 import '../utils/atl_colors.dart';
 import '../models/sport_category.dart';
@@ -329,9 +328,8 @@ class _BookingWidgetState extends State<BookingWidget> {
                             );
                           } else {
                             success =
-                                await DB.PrivateBookings.deletePrivateBooking(
+                                await DBWrite.deletePrivateBooking(
                                   widget.booking.id,
-                                  playerId,
                                 );
                           }
 

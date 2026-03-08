@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../database/db_controller.dart';
+import '../config/api_json_keys.dart';
+import '../database/db_read.dart';
 import '../models/team.dart';
 import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
@@ -79,7 +80,8 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
 
     try {
       if (widget.isTeam) {
-        _foundTeam = await DB.Teams.getById(id);
+        final data = await DBRead.searchTeamOrTournament(id, isTeam: true, isTournament: false);
+        _foundTeam = data[ApiJsonKeys.team] as Team?;
         if (_foundTeam == null) {
           _errorMessage = 'Team not found';
         } else {
@@ -88,7 +90,8 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
           return;
         }
       } else if (widget.isTournament) {
-        _foundTournament = await DB.Tournaments.getById(id);
+        final data = await DBRead.searchTeamOrTournament(id, isTeam: false, isTournament: true);
+        _foundTournament = data[ApiJsonKeys.tournament] as Tournament?;
         if (_foundTournament == null) {
           _errorMessage = 'Tournament not found';
         } else {

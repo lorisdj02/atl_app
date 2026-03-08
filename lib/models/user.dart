@@ -73,7 +73,7 @@ class User {
     this.endVip,
     this.vipType = VipType.none,
     this.status = UserStatus.active,
-    this.preferredCityId,
+    this.preferredCityId = 1,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
