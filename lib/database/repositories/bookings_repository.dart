@@ -134,4 +134,6 @@ class BookingsRepository extends BaseRepository<Booking> {
       throw UnimplementedError();
     }
   }
+
+
 }

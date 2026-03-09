@@ -119,4 +119,20 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
       throw UnimplementedError();
     }
   }
+
+    Future<int> getNumFinishedByPlayerIdAndFields(
+    int playerId,
+    List<int> fieldIds,
+  ) async {
+    if (AppConfig.isDebug) {
+      List<Booking> bookings = mockData.where((booking) {
+        return booking.status == BookingStatus.finished &&
+            booking.playerId == playerId &&
+            fieldIds.contains(booking.fieldId);
+      }).toList();
+      return bookings.length;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

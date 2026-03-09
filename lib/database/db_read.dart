@@ -698,7 +698,8 @@ class DBRead {
 
       final playerData = await getPlayersInTeam(team.id);
 
-      List<FootballTeamStats> playerStats = await DB.FootballTeamStats.getByTeamId(team.id);
+      List<FootballTeamStats> playerStats =
+          await DB.FootballTeamStats.getByTeamId(team.id);
       List<PlaysAt> playsAtEntries = await DB.PlaysAt.getByTeamId(team.id);
 
       for (var stats in playerStats) {
@@ -746,7 +747,9 @@ class DBRead {
       }
 
       List<Player> historicalPlayers = [...players];
-      List<FootballTeamStats> allStats = await DB.FootballTeamStats.getByTeamId(team.id);
+      List<FootballTeamStats> allStats = await DB.FootballTeamStats.getByTeamId(
+        team.id,
+      );
       for (var stats in allStats) {
         if ((team.vip || team.players == 0) &&
             !historicalPlayers.any((p) => p.id == stats.playerId)) {
@@ -1299,8 +1302,9 @@ class DBRead {
   }
 
   static Future<Map<String, dynamic>> getFootballMatchScreen(
-    int matchId,
-  ) async {
+    int matchId, {
+    int? refereeId,
+  }) async {
     if (AppConfig.isDebug) {
       final FootballMatch? match = await DB.FootballMatches.getById(matchId);
       if (match == null) {
@@ -1400,6 +1404,16 @@ class DBRead {
       final List<FootballMatchEvent> events = eventData[ApiJsonKeys.events];
       final bool canMatchFinish = eventData[ApiJsonKeys.canMatchFinish];
 
+      final bool refereeCheck = availableRoles
+          .isEmpty; // Se non ci sono ruoli disponibili, significa che tutti i ruoli richiesti sono stati assegnati, quindi il check è passato
+
+      bool hasRefereeLicense = false;
+      if (availableRoles.isNotEmpty && refereeId != null) {
+        if (await DB.RefereeLicenses.isRefereeLicensed(refereeId, sportId)) {
+          hasRefereeLicense = true;
+        }
+      }
+
       return {
         ApiJsonKeys.match: match,
         ApiJsonKeys.homeTeam: homeTeam,
@@ -1414,8 +1428,9 @@ class DBRead {
         ApiJsonKeys.field: field,
         ApiJsonKeys.cityName: cityName,
         ApiJsonKeys.coordinatorId: tournament.coordinatorId,
-        ApiJsonKeys.refereeCheck: availableRoles.isEmpty,
+        ApiJsonKeys.refereeCheck: refereeCheck,
         ApiJsonKeys.canMatchFinish: canMatchFinish,
+        ApiJsonKeys.hasRefereeLicense: hasRefereeLicense,
       };
     } else {
       throw UnimplementedError();
@@ -1564,14 +1579,27 @@ class DBRead {
     int? sportId,
   }) async {
     if (AppConfig.isDebug) {
+      if (sportCategory != SportCategory.football) {
+        throw Exception(
+          "Sport category not supported for available matches screen",
+        );
+      }
       List<Tournament> tournaments = await DB.Tournaments.getBySportCategory(
         sportCategory,
       );
+
+      List<Sport> sports = await DB.Sports.getByCategory(sportCategory);
 
       List<FootballMatch> availableMatches = [];
       Map<int, Team> teamsCache = {};
       Map<int, int> minutesPausePerTournament = {};
       Map<int, int> minutesRoundPerTournament = {};
+      Map<int, List<FootballMatch>> matchesPerSport = {};
+
+      matchesPerSport = {for (var sport in sports) sport.id: []};
+      final Map<int, String> sportNames = {
+        for (var sport in sports) sport.id: sport.name,
+      };
 
       if (sportId != null) {
         tournaments = tournaments
@@ -1609,6 +1637,7 @@ class DBRead {
             minutesPausePerTournament[match.tournamentId] =
                 await DB.Tournaments.getMinutesPerPauseById(match.tournamentId);
           }
+          matchesPerSport[tournament.sportId]!.add(match);
         }
       }
       return {
@@ -1616,6 +1645,8 @@ class DBRead {
         ApiJsonKeys.teamsCache: teamsCache,
         ApiJsonKeys.minutesRoundPerTournament: minutesRoundPerTournament,
         ApiJsonKeys.minutesPausePerTournament: minutesPausePerTournament,
+        ApiJsonKeys.matchesPerSport: matchesPerSport,
+        ApiJsonKeys.sportNames: sportNames,
       };
     } else {
       throw UnimplementedError();
@@ -1914,17 +1945,65 @@ class DBRead {
   }
 
   static Future<Map<String, dynamic>> getRefereeLicensesScreen(
-    int refereeId
+    int refereeId,
   ) async {
-    if(AppConfig.isDebug){
-      final List<RefereeLicense> licenses = await DB.RefereeLicenses.getByRefereeId(refereeId);
+    if (AppConfig.isDebug) {
+      final List<RefereeLicense> licenses =
+          await DB.RefereeLicenses.getByRefereeId(refereeId);
       final List<Sport> sports = await DB.Sports.getAll();
       return {
         ApiJsonKeys.refereeLicenses: licenses,
         ApiJsonKeys.sports: sports,
       };
-    }else{
+    } else {
       return throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getPersonalPlayerStats(int playerId) async {
+    if (AppConfig.isDebug) {
+      final Player? player = await DB.Players.getByPlayerId(playerId);
+      if (player == null) {
+        throw Exception("Player not found");
+      }
+
+      Map<SportCategory, dynamic> statsPerCategory = {};
+      Map<SportCategory, int> numTournamentPerCategory = {};
+      
+
+      if (player.isVip == false) {
+        throw Exception("Stats are only available for VIP players");
+      }
+
+      statsPerCategory[SportCategory.football] =
+          await DB.FootballTeamStats.getByPlayerId(playerId);
+
+      // Count number of tournaments played in per category
+      Map<SportCategory, List<Sport>> sportPerCategory = {};
+      sportPerCategory[SportCategory.football] = await DB.Sports.getByCategory(SportCategory.football);
+
+      final List<Callup> callups = await DB.CallUps.getByPlayerId(playerId);
+
+      for(var category in SportCategory.values){
+        final sports = sportPerCategory[category];
+        if(sports != null && sports.isNotEmpty){
+          for(var callUp in callups){
+            final tournament = await DB.Tournaments.getById(callUp.tournamentId);
+            if(tournament != null){
+              if(sports.any((s) => s.id == tournament.sportId)){
+                numTournamentPerCategory[category] = (numTournamentPerCategory[category] ?? 0) + 1;
+              }
+            }
+          }
+        }
+      }
+
+      return {
+        ApiJsonKeys.statsPerCategory: statsPerCategory,
+        ApiJsonKeys.numTournamentPerCategory: numTournamentPerCategory,
+      };
+    } else {
+      throw UnimplementedError();
     }
   }
 }

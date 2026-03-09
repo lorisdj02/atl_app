@@ -1,5 +1,6 @@
 import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/models/field.dart';
+import 'package:atl_app/models/referee_license.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/football_match.dart';
@@ -44,7 +45,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   late int _minutesPerRound;
   late int _minutesPerPause;
   int? _coordinatorId;
-  bool _refereeCheck = false;
+  bool _refereeCheck =
+      false; // Indica se il controllo dei ruoli arbitrali è superato (true se non ci sono ruoli disponibili, altrimenti false)
+  bool _hasRefereeLicense = false;
   List<String> _availableRefereeRoles = [];
   bool _isLoadingRefereeRoles = true;
   int _matchInfoKey = 0; // Counter to force MatchInfoCard rebuild
@@ -105,8 +108,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     try {
       // Carica la partita dal database
+      UserProvider userProvider = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      );
 
-      final data = await DBRead.getFootballMatchScreen(widget.matchId);
+      final data = await DBRead.getFootballMatchScreen(
+        widget.matchId,
+        refereeId: userProvider.isReferee ? userProvider.activeRoleId : null,
+      );
       List<FootballMatchEvent> events = data[ApiJsonKeys.events] ?? [];
 
       events.sort(
@@ -129,6 +139,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         _coordinatorId = data[ApiJsonKeys.coordinatorId];
         _refereeCheck = data[ApiJsonKeys.refereeCheck];
         _canMatchFinish = data[ApiJsonKeys.canMatchFinish];
+        _hasRefereeLicense = data[ApiJsonKeys.hasRefereeLicense];
         _isLoadingRefereeRoles = false;
         _isLoading = false;
       });
@@ -175,7 +186,31 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   }
 
   Future<void> _showRefereeMatchDialog() async {
-    if (_availableRefereeRoles.isEmpty) return;
+    if (_availableRefereeRoles.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'All referee roles for this match have already been assigned',
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!_hasRefereeLicense) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'You do not have a valid referee license for this sport',
+            ),
+          ),
+        );
+      }
+      return;
+    }
 
     final String? selectedRole = await showDialog<String>(
       context: context,
@@ -973,22 +1008,22 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     // Se è in penalty shootout, mostra il pulsante appropriato
     if (_isPenaltyShootOut) {
       if (_canMatchFinish) {
-            return ATLFloatingButton(
-              onPressed: () => _handleMatchAction('finish'),
-              backgroundColor: Colors.green,
-              icon: Icons.stop,
-              label: 'End Match',
-              heroTag: 'soccerMatchFAB',
-            );
-          } else {
-            return ATLFloatingButton(
-              onPressed: () => _showPlayerEventDialog(penaltyMode: true),
-              backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
-              icon: Icons.sports_soccer,
-              label: 'Insert Penalty',
-              heroTag: 'soccerMatchFAB',
-            );
-          }
+        return ATLFloatingButton(
+          onPressed: () => _handleMatchAction('finish'),
+          backgroundColor: Colors.green,
+          icon: Icons.stop,
+          label: 'End Match',
+          heroTag: 'soccerMatchFAB',
+        );
+      } else {
+        return ATLFloatingButton(
+          onPressed: () => _showPlayerEventDialog(penaltyMode: true),
+          backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
+          icon: Icons.sports_soccer,
+          label: 'Insert Penalty',
+          heroTag: 'soccerMatchFAB',
+        );
+      }
     }
     return null;
   }

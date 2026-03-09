@@ -24,6 +24,14 @@ class CallUpsRepository extends BaseRepository<Callup> {
   @override
   List<Callup> get mockData => _mockData;
 
+  Future<List<Callup>> getByPlayerId(int playerId) async {
+    if (AppConfig.isDebug) {
+      return _mockData.where((callup) => callup.playerId == playerId).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Ottieni convocazioni per torneo
   Future<List<Callup>> getByTournament(int tournamentId) async {
     if (AppConfig.isDebug) {
@@ -41,8 +49,7 @@ class CallUpsRepository extends BaseRepository<Callup> {
     if (AppConfig.isDebug) {
       final callups = _mockData.where(
         (callup) =>
-            callup.playerId == playerId &&
-            callup.tournamentId == tournamentId,
+            callup.playerId == playerId && callup.tournamentId == tournamentId,
       );
       return callups.isNotEmpty;
     } else {
@@ -81,7 +88,10 @@ class CallUpsRepository extends BaseRepository<Callup> {
     }
   }
 
-  Future<List<int>> getPlayersInTeamInTournament(int tournamentId, int teamId) async {
+  Future<List<int>> getPlayersInTeamInTournament(
+    int tournamentId,
+    int teamId,
+  ) async {
     if (AppConfig.isDebug) {
       final callups = _mockData.where(
         (callup) =>
@@ -127,9 +137,6 @@ class CallUpsRepository extends BaseRepository<Callup> {
     if (AppConfig.isDebug) {
       _mockData.removeWhere(
         (c) => c.tournamentId == tournamentId && c.teamId == teamId,
-      );
-      print(
-        '🔧 [DEBUG] Deleted callups for Tournament $tournamentId, Team $teamId',
       );
       return Future.value(true);
     } else {

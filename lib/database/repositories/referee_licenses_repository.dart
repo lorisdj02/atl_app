@@ -90,4 +90,36 @@ class RefereeLicensesRepository extends BaseRepository<RefereeLicense> {
       throw UnimplementedError();
     }
   }
+
+  Future<bool> verifyLicense(int refereeId, int sportId) async {
+    if (AppConfig.isDebug) {
+      final index = _mockData.indexWhere(
+        (license) =>
+            license.refereeId == refereeId &&
+            license.sportId == sportId &&
+            license.status == LicenseStatus.notVerified,
+      );
+      if (index == -1) {
+        return false;
+      }
+
+      _mockData[index].status = LicenseStatus.active;
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> isRefereeLicensed(int refereeId, int sportId) async {
+    if (AppConfig.isDebug) {
+      return _mockData.any(
+        (license) =>
+            license.sportId == sportId &&
+            license.refereeId == refereeId &&
+            license.status == LicenseStatus.active,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

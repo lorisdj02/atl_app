@@ -154,4 +154,26 @@ class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
       throw UnimplementedError();
     }
   }
+
+  Future<FootballTeamStats> getAggregatedStatsByPlayer(int playerId) async{
+    if(AppConfig.isDebug){
+      List<FootballTeamStats> playerStats = mockData.where((stats) => stats.playerId == playerId).toList();
+      int totalMotm = playerStats.fold(0, (sum, stats) => sum + stats.motm);
+      int totalGoals = playerStats.fold(0, (sum, stats) => sum + stats.goals);
+      int totalYellowCards = playerStats.fold(0, (sum, stats) => sum + stats.yellowCards);
+      int totalRedCards = playerStats.fold(0, (sum, stats) => sum + stats.redCards);
+
+      return FootballTeamStats(
+        id: 0,
+        playerId: playerId,
+        teamId: 0,
+        motm: totalMotm,
+        goals: totalGoals,
+        yellowCards: totalYellowCards,
+        redCards: totalRedCards,
+      );
+    }else{
+      throw UnimplementedError();
+    }
+  }
 }

@@ -124,31 +124,33 @@ class ApiJsonKeys {
   static const String matches = 'matches'; // List<FootballMatch>
   // FootballTournamentScreen
   static const String standings = 'standings'; // List<FootballStanding>
-  // FootballTournamentScreen, FootballMatchDetailScreen
+  // FootballTournamentScreen, FootballMatchScreen
   static const String minutesPerRound = 'minutesPerRound'; // int
-  // FootballTournamentScreen, FootballMatchDetailScreen
+  // FootballTournamentScreen, FootballMatchScreen
   static const String minutesPerPause = 'minutesPerPause'; // int
 
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String match = 'match'; // FootballMatch
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String events = 'events'; // List<FootballMatchEvent>
-  // FootballMatchDetailScreen, MatchBracket
+  // FootballMatchScreen, MatchBracket
   static const String homeTeam = 'homeTeam'; // Team?
-  // FootballMatchDetailScreen, MatchBracket
+  // FootballMatchScreen, MatchBracket
   static const String awayTeam = 'awayTeam'; // Team?
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String availableRefereeRoles = 'availableRefereeRoles'; // List<RefereeRole>
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String playersPerTeam = 'playersPerTeam'; // Map<int, List<Player>>
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String assignmentPerRefereeNameSurname = 'assignmentPerRefereeNameSurname'; // Map<int, List<RefereeAssignment>> // key: Name+Surname, value: Role
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String coordinatorId = 'coordinatorId'; // int
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String refereeCheck = 'refereeCheck'; // bool
-  // FootballMatchDetailScreen
+  // FootballMatchScreen
   static const String canMatchFinish = 'canMatchFinish'; // bool
+  // FootballMatchScreen
+  static const String hasRefereeLicense = 'hasRefereeLicense'; // bool
 
   // PayParticipationScreen
   static const String tournamentCache = 'tournamentCache'; // Map<int, Tournament>
@@ -198,4 +200,14 @@ class ApiJsonKeys {
 
   // RefereeLicensesScreen
   static const String refereeLicenses = 'refereeLicenses'; // List<RefereeLicense>
+
+  // AvailableMatchesScreen
+  static const String matchesPerSport = 'matchesPerSport'; // Map<int, List<FootballMatch>>
+  // AvailableMatchesScreen
+  static const String sportNames = 'sportNames'; // Map<int, String>
+
+  // StatsScreen
+  static const String statsPerCategory = 'statsPerCategory'; // Map<SportCategory, dynamic>
+  // StatsScreen
+  static const String numTournamentPerCategory = 'numTournamentPerCategory'; // Map<SportCategory, int>
 }

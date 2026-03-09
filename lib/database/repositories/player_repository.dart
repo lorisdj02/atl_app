@@ -1,5 +1,5 @@
 import 'package:atl_app/config/app_config.dart';
-
+import '../../models/user.dart';
 import '../../models/player.dart';
 import 'base_repository.dart';
 import '../db_controller.dart';
@@ -174,7 +174,14 @@ class PlayerRepository extends BaseRepository<Player> {
       );
       if (index == -1) return false;
 
-      _mockData.removeAt(index);
+      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].username = 'deleted_user_${_mockData[index].id}';
+      _mockData[index].email = 'deleted_user_${_mockData[index].id}';
+      _mockData[index].phone = '';
+      _mockData[index].imageUrl = null;
+      _mockData[index].surname = '';
+
+      return true;
       return true;
     } else {
       throw UnimplementedError();

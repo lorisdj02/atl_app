@@ -76,6 +76,14 @@ class FieldRepository extends BaseRepository<Field> {
     }
   }
 
+  Future<List<Field>> getAll() async {
+    if (AppConfig.isDebug) {
+      return _mockData;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Ottieni campi per organizzazione
   Future<List<Field>> getByOrganization(int organizationId) async {
     if (AppConfig.isDebug) {

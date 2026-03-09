@@ -174,7 +174,9 @@ class UserRepository extends BaseRepository<User> {
   Future<bool> deleteAccount(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
       return await DB.Players.deletePlayer(id, passwordMD5) ||
-          await DB.Coordinators.deleteCoordinator(id, passwordMD5);
+          await DB.Coordinators.deleteCoordinator(id, passwordMD5) ||
+          await DB.Referees.deleteReferee(id, passwordMD5) ||
+          await DB.Organizations.deleteOrganization(id, passwordMD5);
     } else {
       throw UnimplementedError();
     }

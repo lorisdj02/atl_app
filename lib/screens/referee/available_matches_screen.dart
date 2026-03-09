@@ -34,16 +34,8 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   List<City> _cities = [];
   City? _selectedCity;
   int? _selectedSportId;
-
-  // Map of sport types by category
-  final Map<SportCategory, Map<int, String>> _sportTypes = {
-    SportCategory.football: {
-      1: 'Football 5v5',
-      2: 'Football 7v7',
-      3: 'Football 8v8',
-      4: 'Football 11v11',
-    },
-  };
+  Map<int, List<FootballMatch>> _matchesPerSport = {};
+  Map<int, String> _sportNames = {};
 
   @override
   void initState() {
@@ -109,6 +101,8 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
           _teamsCache = data[ApiJsonKeys.teamsCache];
           _minutesRoundPerTournament = data[ApiJsonKeys.minutesRoundPerTournament];
           _minutesPausePerTournament = data[ApiJsonKeys.minutesPausePerTournament];
+          _matchesPerSport = data[ApiJsonKeys.matchesPerSport];
+          _sportNames = data[ApiJsonKeys.sportNames];
           _isLoading = false;
         });
       }
@@ -228,7 +222,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               _buildDropdown<int?>(
                 label: 'Sport Type',
                 value: _selectedSportId,
-                items: [null, ...(_sportTypes[widget.currentSport]?.keys.toList() ?? [])],
+                items: [null, ..._sportNames.keys.toList()],
                 onChanged: (value) async {
                   setState(() {
                     _selectedSportId = value;
@@ -237,10 +231,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                 },
                 itemBuilder: (sportId) {
                   if (sportId == null) return const Text('All');
-                  return Text(
-                    _sportTypes[widget.currentSport]?[sportId] ??
-                        'Sport $sportId',
-                  );
+                  return Text(_sportNames[sportId] ?? 'Sport $sportId');
                 },
               ),
             ],
@@ -315,7 +306,109 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
       return const Center(child: LoadingATL());
     }
 
-    if (_availableMatches.isEmpty) {
+    // Filtered by specific sport: flat list
+    if (_selectedSportId != null) {
+      if (_availableMatches.isEmpty) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
+                const SizedBox(height: 16),
+                Text(
+                  'No matches available',
+                  style: TextStyle(
+                    color: ATLColors.darkBlue,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'No scheduled matches for the selected filters',
+                  style: TextStyle(color: ATLColors.subtext, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _availableMatches.length,
+        itemBuilder: (context, index) {
+          final match = _availableMatches[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SmallFootballMatchWidget(
+              match: match,
+              homeTeam: _teamsCache[match.homeTeamId],
+              awayTeam: _teamsCache[match.awayTeamId],
+              currentSport: widget.currentSport,
+              minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
+              minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
+              onMatchUpdated: () => _loadMatches(),
+            ),
+          );
+        },
+      );
+    }
+
+    // All sports: grouped view
+    final List<Widget> items = [];
+    for (final sportId in _matchesPerSport.keys) {
+      final matches = _matchesPerSport[sportId] ?? [];
+      final sportName = _sportNames[sportId] ?? 'Sport $sportId';
+
+      items.add(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+          child: Text(
+            sportName,
+            style: const TextStyle(
+              color: ATLColors.darkBlue,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      );
+
+      if (matches.isEmpty) {
+        items.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'No scheduled matches in: $sportName',
+              style: TextStyle(color: ATLColors.subtext, fontSize: 14),
+            ),
+          ),
+        );
+      } else {
+        for (final match in matches) {
+          items.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SmallFootballMatchWidget(
+                match: match,
+                homeTeam: _teamsCache[match.homeTeamId],
+                awayTeam: _teamsCache[match.awayTeamId],
+                currentSport: widget.currentSport,
+                minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
+                minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
+                onMatchUpdated: () => _loadMatches(),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    if (items.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -332,37 +425,15 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'No scheduled matches for the selected filters',
-                style: TextStyle(color: ATLColors.subtext, fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
             ],
           ),
         ),
       );
     }
 
-    return ListView.builder(
+    return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _availableMatches.length,
-      itemBuilder: (context, index) {
-        final match = _availableMatches[index];
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: SmallFootballMatchWidget(
-            match: match,
-            homeTeam: _teamsCache[match.homeTeamId],
-            awayTeam: _teamsCache[match.awayTeamId],
-            currentSport: widget.currentSport,
-            minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
-            minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
-            onMatchUpdated: () => _loadMatches(),
-          ),
-        );
-      },
+      children: items,
     );
   }
 }

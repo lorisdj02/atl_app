@@ -1,4 +1,5 @@
 import '../../models/coordinator.dart';
+import '../../models/user.dart';
 import 'base_repository.dart';
 import '../../config/app_config.dart';
 
@@ -94,12 +95,17 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
   Future<bool> deleteCoordinator(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
       final index = _mockData.indexWhere(
-        (coordinator) =>
-            coordinator.id == id && coordinator.passwordMD5 == passwordMD5,
+        (u) => u.id == id && u.passwordMD5 == passwordMD5,
       );
       if (index == -1) return false;
 
-      _mockData.removeAt(index);
+      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].username = 'deleted_user_${_mockData[index].id}';
+      _mockData[index].email = 'deleted_user_${_mockData[index].id}';
+      _mockData[index].phone = '';
+      _mockData[index].imageUrl = null;
+      _mockData[index].surname = '';
+
       return true;
     } else {
       throw UnimplementedError();

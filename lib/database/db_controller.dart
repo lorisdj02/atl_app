@@ -1,5 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'package:atl_app/database/repositories/friend_invites_repository.dart';
+
 import '../config/app_config.dart';
 import 'repositories/user_repository.dart';
 import 'repositories/tournament_repository.dart';
@@ -83,6 +85,7 @@ class DB {
   static late final RefereeRolesRepository RefereeRoles;
   static late final OrdersRepository Orders;
   static late final RefereeLicensesRepository RefereeLicenses;
+  static late final FriendInvitesRepository FriendInvites;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -119,6 +122,7 @@ class DB {
     RefereeRoles = RefereeRolesRepository();
     Orders = OrdersRepository();
     RefereeLicenses = RefereeLicensesRepository();
+    FriendInvites = FriendInvitesRepository();
     // TODO: Inizializza altri repository
   }
 

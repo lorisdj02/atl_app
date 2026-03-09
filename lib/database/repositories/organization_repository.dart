@@ -1,3 +1,5 @@
+import 'package:atl_app/models/user.dart';
+
 import 'base_repository.dart';
 import '../../models/organization.dart';
 import '../../config/app_config.dart';
@@ -119,6 +121,26 @@ class OrganizationRepository extends BaseRepository<Organization> {
       if (preferredCityId != null) {
         _mockData[index].preferredCityId = preferredCityId;
       }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<bool> deleteOrganization(int id, String passwordMD5) async {
+    if (AppConfig.isDebug) {
+      final index = _mockData.indexWhere(
+        (u) => u.id == id && u.passwordMD5 == passwordMD5,
+      );
+      if (index == -1) return false;
+
+      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].username = 'deleted_user_${_mockData[index].id}';
+      _mockData[index].email = 'deleted_user_${_mockData[index].id}';
+      _mockData[index].phone = '';
+      _mockData[index].imageUrl = null;
+      _mockData[index].surname = '';
+
       return true;
     } else {
       throw UnimplementedError();

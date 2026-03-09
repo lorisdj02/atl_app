@@ -70,7 +70,8 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
         return -1; // Il campo non è libero in quel periodo
       }
 
-      final double baseCost = (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
+      final double baseCost =
+          (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
           finishTime.difference(startTime).inHours;
 
       LobbyBooking newLobbyBooking = LobbyBooking(
@@ -225,6 +226,22 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
       return _mockData
           .firstWhere((booking) => booking.id == lobbyBookingId)
           .maxPlayers;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> getNumFinishedByOwnerIdAndFields(
+    int playerId,
+    List<int> fieldIds,
+  ) async {
+    if (AppConfig.isDebug) {
+      List<Booking> bookings = mockData.where((booking) {
+        return booking.status == BookingStatus.finished &&
+            booking.ownerId == playerId &&
+            fieldIds.contains(booking.fieldId);
+      }).toList();
+      return bookings.length;
     } else {
       throw UnimplementedError();
     }
