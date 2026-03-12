@@ -81,11 +81,13 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     try {
       final data = await DBRead.getAvailableMatchesScreen(
         widget.currentSport,
+        Provider.of<UserProvider>(context, listen: false).activeRoleId!,
         cityId: _selectedCity!.id,
         sportId: _selectedSportId,
       );
 
       List<FootballMatch> availableMatches = data[ApiJsonKeys.matches];
+      
 
       // Sort matches by scheduled start time
       availableMatches.sort((a, b) {

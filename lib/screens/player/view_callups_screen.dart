@@ -40,7 +40,7 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
         widget.tournament.id,
         widget.teamId,
       );
-
+      
       if (mounted) {
         setState(() {
           _calledUpPlayers = data[ApiJsonKeys.players];

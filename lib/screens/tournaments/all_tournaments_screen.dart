@@ -63,6 +63,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   double feeMin = 0;
   double feeMax = 200;
 
+
   /// Verifica se ci sono filtri attivi
   bool get _hasActiveFilters {
     return _selectedCity != null ||

@@ -1,6 +1,7 @@
 import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../screens/shop/checkout_screen.dart';
 import '../models/tournament.dart';
 import '../models/tournament_participation.dart';
 import '../models/sport_category.dart';
@@ -203,28 +204,40 @@ class _ParticipationCardState extends State<ParticipationCard> {
 
   void _showPaymentDialog() {
     final toPay = widget.participation.toPay ?? 0;
+    final tournamentName = widget.tournament?.name ??
+        'Tournament #${widget.participation.tournamentId}';
     final amountController = TextEditingController();
 
-    showDialog(
+    showDialog<double>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Make Payment'),
+        title: Text(
+          'How much do you want to pay?',
+          style: TextStyle(
+            color: ATLColors.getPrimaryColor(widget.sportCategory),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.tournament?.name ?? 'Tournament #${widget.participation.tournamentId}',
+              tournamentName,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
-            Text('Amount due: €${toPay.toStringAsFixed(2)}'),
+            const SizedBox(height: 4),
+            Text(
+              'Amount due: €${toPay.toStringAsFixed(2)}',
+              style: const TextStyle(color: ATLColors.subtext, fontSize: 13),
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              autofocus: true,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
                 _MaxValueInputFormatter(maxValue: toPay),
@@ -232,19 +245,10 @@ class _ParticipationCardState extends State<ParticipationCard> {
               decoration: InputDecoration(
                 labelText: 'Amount to pay',
                 prefixText: '€',
-                hintText: '0.00 - ${toPay.toStringAsFixed(2)}',
+                hintText: '0.00 – ${toPay.toStringAsFixed(2)}',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'TODO: Payment integration',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.orange,
-                fontStyle: FontStyle.italic,
               ),
             ),
           ],
@@ -255,79 +259,53 @@ class _ParticipationCardState extends State<ParticipationCard> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () async {
-              final amountText = amountController.text.trim();
-              if (amountText.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter an amount')),
-                );
-                return;
-              }
-
-              final amount = double.tryParse(amountText);
-              if (amount == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid amount')),
-                );
-                return;
-              }
-
-              if (amount <= 0) {
+            onPressed: () {
+              final amount = double.tryParse(amountController.text.trim());
+              if (amount == null || amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Amount must be greater than 0'),
+                    content: Text('Enter a valid amount'),
+                    backgroundColor: Colors.red,
                   ),
                 );
                 return;
               }
-
-              if (amount > toPay) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Amount cannot exceed €${toPay.toStringAsFixed(2)}',
-                    ),
-                  ),
-                );
-                return;
-              }
-
-              // TODO: Payment integration
-              if (await DBWrite.updatePayment(
-                    widget.participation.tournamentId,
-                    widget.participation.teamId,
-                    amount,
-                  ) ==
-                  false) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error processing payment')),
-                  );
-                }
-                return;
-              }
-
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                widget.onPaymentCompleted();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Payment of €${amount.toStringAsFixed(2)} processed',
-                    ),
-                  ),
-                );
-              }
+              Navigator.of(context).pop(amount);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Pay'),
+            child: const Text('Continue'),
           ),
         ],
       ),
-    );
+    ).then((chosenAmount) {
+      if (chosenAmount == null || !mounted) return;
+
+      Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => CheckoutScreen(
+            sportCategory: widget.sportCategory,
+            totalPrice: chosenAmount,
+            genericPurchase: {
+              'name': tournamentName,
+              'description': 'Fee',
+            },
+            onPayPressed: () => DBWrite.updatePayment(
+              widget.participation.tournamentId,
+              widget.participation.teamId,
+              chosenAmount,
+            ),
+          ),
+        ),
+      ).then((result) {
+        if (result == true && mounted) {
+          // TODO: handle post-payment transition
+          widget.onPaymentCompleted();
+        }
+      });
+    });
   }
 }
 
@@ -341,20 +319,10 @@ class _MaxValueInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
-    final double? value = double.tryParse(newValue.text);
-
-    if (value == null) {
-      return oldValue;
-    }
-
-    if (value > maxValue) {
-      return oldValue;
-    }
-
+    if (newValue.text.isEmpty) return newValue;
+    final value = double.tryParse(newValue.text);
+    if (value == null) return oldValue;
+    if (value > maxValue) return oldValue;
     return newValue;
   }
 }

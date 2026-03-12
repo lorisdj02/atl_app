@@ -154,7 +154,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (userProvider.isReferee || userProvider.isCoordinator) ...[
+                    if (userProvider.isReferee ||
+                        userProvider.isCoordinator) ...[
                       const SizedBox(height: 8),
                       Text(
                         _level != null ? 'Level: $_level' : 'Loading level...',
@@ -198,10 +199,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  AchievementScreen(currentSport: widget.currentSport),
+                              builder: (context) => AchievementScreen(
+                                currentSport: widget.currentSport,
+                              ),
                             ),
                           );
+                        },
+                      ),
+                    ],
+                    if (!userProvider.isOrganization) ...[
+                      ProfileMenuItem(
+                        icon: Icons.rate_review,
+                        text: 'Reviews',
+                        onTap: () {
+                          // TODO: Implementa la logica per visualizzare le recensioni, ad esempio navigando a una schermata dedicata alle recensioni
                         },
                       ),
                     ],
@@ -228,8 +239,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                EditInfosScreen(currentSport: widget.currentSport),
+                            builder: (context) => EditInfosScreen(
+                              currentSport: widget.currentSport,
+                            ),
                           ),
                         );
                       },
@@ -256,8 +268,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  StatsScreen(currentSport: widget.currentSport),
+                              builder: (context) => StatsScreen(
+                                currentSport: widget.currentSport,
+                              ),
                             ),
                           );
                         },
@@ -270,12 +283,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                SettingsScreen(currentSport: widget.currentSport),
+                            builder: (context) => SettingsScreen(
+                              currentSport: widget.currentSport,
+                            ),
                           ),
                         );
                       },
                     ),
+                    if (!userProvider.isOrganization) ...[
+                      ProfileMenuItem(
+                        icon: Icons.share,
+                        text: 'Invite a friend!',
+                        onTap: () {
+                          // Implementa la logica per invitare un amico, ad esempio aprendo una schermata di condivisione
+                        },
+                      ),
+                    ],
                     ProfileMenuItem(
                       icon: Icons.mail,
                       text: 'Contact Us!',
@@ -283,8 +306,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ContactUsScreen(currentSport: widget.currentSport),
+                            builder: (context) => ContactUsScreen(
+                              currentSport: widget.currentSport,
+                            ),
                           ),
                         );
                       },

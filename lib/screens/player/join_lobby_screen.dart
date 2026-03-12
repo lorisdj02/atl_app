@@ -2,6 +2,7 @@ import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
+import '../shop/checkout_screen.dart';
 import 'package:provider/provider.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/sport_category.dart';
@@ -98,6 +99,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         startDateTime,
         endDateTime,
       );
+
 
       List<LobbyBooking> lobbies = data[ApiJsonKeys.bookings] as List<LobbyBooking>;
 
@@ -417,35 +419,31 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   Future<void> _joinLobby(LobbyBooking lobby, int playersPaid) async {
-    setState(() => _isLoading = true);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final playerId = userProvider.activeRoleId!;
+    final field = _fieldCache[lobby.fieldId];
+    final cityMatch = field != null
+        ? _availableCities.where((c) => c.id == field.cityId).firstOrNull
+        : null;
 
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final playerId = userProvider.activeRoleId!;
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(
+          sportCategory: widget.sportCategory,
+          totalPrice: lobby.feePerPlayer * playersPaid,
+          lobbyBooking: lobby,
+          field: field,
+          cityName: cityMatch?.name,
+          ownerUsername: _usernamePerBooking[lobby.id],
+          playersToPay: playersPaid,
+          onPayPressed: () => DBWrite.joinLobby(lobby.id, playerId, playersPaid),
+        ),
+      ),
+    );
 
-      // TODO: GUARDA BACKEND - Add payment logic here
-      bool success = await DBWrite.joinLobby(lobby.id, playerId, playersPaid);
-
-      if (mounted && success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Successfully joined lobby!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _loadLobbies();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error joining lobby: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      setState(() => _isLoading = false);
+    if (result == true && mounted) {
+      // TODO: handle post-payment transition
+      _loadLobbies();
     }
   }
 
@@ -701,8 +699,6 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final lobby = _availableLobbies[index];
-                      final isParticipating =
-                          _playersPaidPerBooking[lobby.id] == 0 ? false : true;
 
                       return Column(
                         children: [

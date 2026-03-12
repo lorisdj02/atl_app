@@ -52,6 +52,7 @@ class _TeamScreenState extends State<TeamScreen>
   bool? _tempVipFilter;
   RangeValues _tempPlayersRange = const RangeValues(1, 24);
 
+
   /// Verifica se ci sono filtri attivi
   bool get _hasActiveFilters {
     return _selectedCity != null ||

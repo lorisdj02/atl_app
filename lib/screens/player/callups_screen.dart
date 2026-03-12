@@ -42,6 +42,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
 
       setState(() {
         _teamPlayers = data[ApiJsonKeys.players];
+        _selectedPlayerIds = data[ApiJsonKeys.calledUpPlayerIds].toSet();
         _tournamentSport = data[ApiJsonKeys.sport];
         _tournament = data[ApiJsonKeys.tournament];
         _isLoading = false;

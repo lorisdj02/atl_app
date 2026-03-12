@@ -119,6 +119,8 @@ class ApiJsonKeys {
 
   // CallUpsScreen
   static const String sport = 'sport'; // Sport
+  // CallUpsScreen
+  static const String calledUpPlayerIds = 'calledUpPlayerIds'; // List<int>
 
   // FootballTournamentScreen
   static const String matches = 'matches'; // List<FootballMatch>
@@ -210,4 +212,7 @@ class ApiJsonKeys {
   static const String statsPerCategory = 'statsPerCategory'; // Map<SportCategory, dynamic>
   // StatsScreen
   static const String numTournamentPerCategory = 'numTournamentPerCategory'; // Map<SportCategory, int>
+
+  // Bottom bars
+  static const String hasUnreadNotifications = 'hasUnreadNotifications'; // bool
 }

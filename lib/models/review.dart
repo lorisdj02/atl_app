@@ -1,62 +1,69 @@
 enum ReviewType {
-  referee,
-  coordinator;
-
-  String get displayName {
-    switch (this) {
-      case ReviewType.referee:
-        return 'Referee';
-      case ReviewType.coordinator:
-        return 'Coordinator';
-    }
-  }
+  refereeToCoordinator,
+  coordinatorToReferee,
+  playerToCoordinator,
 }
+
+enum ReviewStatus { waiting, pending, committed }
 
 class Review {
   final int id;
-  final int? matchId;
-  final int? tournamentId;
-  final int reviewerUserId;
-  final int reviewedUserId;
+  final int tournamentId;
+  final int? matchId; // opzionale, se la recensione è legata a una partita specifica
   final ReviewType reviewType;
-  final String comment;
-  final int rating;
+  String? comment;
+  double? rating; // da 1 a 5
+  final int reviewerUserId; // id dell'utente
+  final int revieweeUserId; // id dell'utente recensito
+  final DateTime createdAt;
+  DateTime? committedAt; // data di commit della recensione, se è stata committata
+  double weight; // peso della recensione, da 0 a 1
+  ReviewStatus status;
 
   Review({
     required this.id,
-    this.matchId,
-    this.tournamentId,
+    required this.tournamentId,
+    required this.matchId,
     required this.reviewType,
-    required this.comment,
-    required this.rating,
+    this.comment,
+    this.rating,
     required this.reviewerUserId,
-    required this.reviewedUserId,
+    required this.createdAt,
+    this.committedAt, // default a now
+    required this.revieweeUserId,
+    this.weight = 0.5, // default a 0.5
+    this.status = ReviewStatus.waiting, // default a waiting
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
       id: json['id'],
-      matchId: json['match_id'],
-      tournamentId: json['tournament_id'],
-      reviewType: ReviewType.values.firstWhere(
-          (e) => e.displayName == json['review_type']),
+      tournamentId: json['tournamentId'],
+      reviewType: ReviewType.values[json['reviewType']],
       comment: json['comment'],
       rating: json['rating'],
-      reviewerUserId: json['reviewer_user_id'],
-      reviewedUserId: json['reviewed_user_id'],
+      reviewerUserId: json['reviewerUserId'],
+      revieweeUserId: json['revieweeUserId'],
+      matchId: json['matchId'], // può essere null
+      createdAt: DateTime.parse(json['createdAt']),
+      weight: json['weight'] ?? 0.5,
+      status: ReviewStatus.values[json['status'] ?? 0],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'match_id': matchId,
-      'tournament_id': tournamentId,
-      'review_type': reviewType.displayName,
+      'tournamentId': tournamentId,
+      'reviewType': reviewType.index,
       'comment': comment,
       'rating': rating,
-      'reviewer_user_id': reviewerUserId,
-      'reviewed_user_id': reviewedUserId,
+      'reviewerUserId': reviewerUserId,
+      'revieweeUserId': revieweeUserId,
+      'createdAt': createdAt.toIso8601String(),
+      'weight': weight,
+      'status': status.index,
+      'matchId': matchId, // può essere null
     };
   }
 }

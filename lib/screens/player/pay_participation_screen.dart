@@ -78,7 +78,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
       ),
       body: _isLoading
           ? const LoadingATL()
-          : _tournamentParticipations == null || _tournamentParticipations!.isEmpty
+          : _tournamentParticipations.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -94,9 +94,9 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _tournamentParticipations!.length,
+              itemCount: _tournamentParticipations.length,
               itemBuilder: (context, index) {
-                final participation = _tournamentParticipations![index];
+                final participation = _tournamentParticipations[index];
                 final tournament = _tournamentCache[participation.tournamentId];
                 return ParticipationCard(
                   participation: participation,

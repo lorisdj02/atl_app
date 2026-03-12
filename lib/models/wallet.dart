@@ -1,8 +1,9 @@
 class Wallet {
   final int id;
   final int userId;
-  int balance;
-  int prizeBalance;
+  double balance;
+  double prizeBalance;
+  double inviteBalance;
   DateTime? lastWithdraw;
   DateTime updatedAt;
 
@@ -11,6 +12,7 @@ class Wallet {
     required this.userId,
     this.balance = 0,
     this.prizeBalance = 0,
+    this.inviteBalance = 0,
   }) : lastWithdraw = null,
        updatedAt = DateTime.now();
 
@@ -20,6 +22,7 @@ class Wallet {
       userId: json['userId'],
       balance: json['balance'] ?? 0,
       prizeBalance: json['prizeBalance'] ?? 0,
+      inviteBalance: json['inviteBalance'] ?? 0,
     )
       ..lastWithdraw = json['lastWithdraw'] != null
           ? DateTime.parse(json['lastWithdraw'])
@@ -35,6 +38,7 @@ class Wallet {
       'prizeBalance': prizeBalance,
       'lastWithdraw': lastWithdraw?.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'inviteBalance': inviteBalance,
     };
   }
 }

@@ -62,6 +62,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   bool _isLoading = true;
   int _currentPage = 0;
 
+
   @override
   void initState() {
     super.initState();

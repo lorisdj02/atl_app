@@ -9,7 +9,6 @@ import 'player_requests_screen.dart';
 import 'pay_participation_screen.dart';
 import '../../widgets/atl_floating_button.dart';
 import 'abstract_team_screen.dart';
-import '../../database/db_write.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
 

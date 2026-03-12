@@ -14,6 +14,7 @@ import '../../models/sport_category.dart';
 import '../../database/db_write.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../shop/checkout_screen.dart';
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
 enum BookingType { none, private, lobby }
@@ -94,8 +95,14 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     try {
       final data = await DBRead.getCities();
       final cities = data[ApiJsonKeys.cities] as List<City>;
+      final preferredCityId =
+          Provider.of<UserProvider>(context, listen: false).cityId;
       setState(() {
         _cities = cities;
+        if (preferredCityId != null &&
+            cities.any((c) => c.id == preferredCityId)) {
+          _selectedCity = preferredCityId;
+        }
       });
     } catch (e) {
       if (mounted) {
@@ -440,86 +447,109 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Future<void> _createBooking() async {
-    setState(() => _isLoading = true);
-    bool success = false;
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final currentUser = userProvider.activeUser;
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (userProvider.activeUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User not found'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
-      if (currentUser == null) {
-        throw Exception('User not found');
-      }
+    final startDateTime = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _startTime!.hour,
+      _startTime!.minute,
+    );
+    final endDateTime = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _endTime!.hour,
+      _endTime!.minute,
+    );
+    final cityName =
+        _cities.firstWhere((c) => c.id == _selectedCity).name;
+    final totalToPay = _calculateTotalToPay();
 
-      final startDateTime = DateTime(
-        _selectedDate!.year,
-        _selectedDate!.month,
-        _selectedDate!.day,
-        _startTime!.hour,
-        _startTime!.minute,
+    if (_selectedBookingType == BookingType.private) {
+      final displayBooking = PrivateBooking(
+        id: 0,
+        fieldId: _selectedField!.id,
+        playerId: userProvider.activeRoleId!,
+        startTime: startDateTime,
+        finishTime: endDateTime,
+        cost: totalToPay,
       );
 
-      final endDateTime = DateTime(
-        _selectedDate!.year,
-        _selectedDate!.month,
-        _selectedDate!.day,
-        _endTime!.hour,
-        _endTime!.minute,
-      );
-
-      if (_selectedBookingType == BookingType.private) {
-
-        success = await DBWrite.createPrivateBooking(
-          userProvider.activeRoleId!,
-          _selectedField!.id,
-          startDateTime,
-          endDateTime,
-        );
-      } else {
-        final baseCost = _selectedField!.costTournament;
-        final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
-        final playersToFind = _maxPlayers - _ownerPaysFor;
-
-        final newBooking = LobbyBooking(
-          id: 0, // ID will be set by the database
-          fieldId: _selectedField!.id,
-          ownerId: userProvider.activeRoleId!,
-          maxPlayers: _maxPlayers,
-          playersToFind: playersToFind,
-          feePerPlayer: feePerPlayer,
-          startTime: startDateTime,
-          finishTime: endDateTime,
-          status: BookingStatus.booked,
-        );
-
-        success = await DBWrite.createLobby(
-          newBooking.fieldId,
-          newBooking.ownerId,
-          newBooking.maxPlayers,
-          newBooking.playersToFind,
-          newBooking.feePerPlayer,
-          newBooking.startTime,
-          newBooking.finishTime,
-        );
-      }
-
-      if (mounted && success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Prenotazione creata con successo!'),
-            backgroundColor: Colors.green,
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => CheckoutScreen(
+            sportCategory: widget.sportCategory,
+            totalPrice: totalToPay,
+            privateBooking: displayBooking,
+            field: _selectedField,
+            cityName: cityName,
+            onPayPressed: () => DBWrite.createPrivateBooking(
+              userProvider.activeRoleId!,
+              _selectedField!.id,
+              startDateTime,
+              endDateTime,
+            ),
           ),
-        );
-        Navigator.of(context).pop(true); // <-- MODIFICATO: ritorna true
+        ),
+      );
+
+      if (result == true && mounted) {
+        // TODO: handle post-payment transition
+        Navigator.of(context).pop(true);
       }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore: $e'), backgroundColor: Colors.red),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
+    } else {
+      final baseCost = _selectedField!.costTournament;
+      final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
+      final playersToFind = _maxPlayers - _ownerPaysFor;
+
+      final displayBooking = LobbyBooking(
+        id: 0,
+        fieldId: _selectedField!.id,
+        ownerId: userProvider.activeRoleId!,
+        maxPlayers: _maxPlayers,
+        playersToFind: playersToFind,
+        feePerPlayer: feePerPlayer,
+        startTime: startDateTime,
+        finishTime: endDateTime,
+        status: BookingStatus.booked,
+      );
+
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => CheckoutScreen(
+            sportCategory: widget.sportCategory,
+            totalPrice: totalToPay,
+            lobbyBooking: displayBooking,
+            field: _selectedField,
+            cityName: cityName,
+            playersToPay: _ownerPaysFor,
+            onPayPressed: () => DBWrite.createLobby(
+              displayBooking.fieldId,
+              displayBooking.ownerId,
+              displayBooking.maxPlayers,
+              displayBooking.playersToFind,
+              displayBooking.feePerPlayer,
+              displayBooking.startTime,
+              displayBooking.finishTime,
+            ),
+          ),
+        ),
+      );
+
+      if (result == true && mounted) {
+        // TODO: handle post-payment transition
+        Navigator.of(context).pop(true);
       }
     }
   }

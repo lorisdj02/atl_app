@@ -7,6 +7,7 @@ import 'package:atl_app/l10n/app_localizations.dart';
 enum TournamentStatus {
   created,
   scheduled,
+  pendingPayments,
   finished,
   canceled;
 
@@ -21,6 +22,8 @@ enum TournamentStatus {
         return l10n.statusFinished;
       case TournamentStatus.canceled:
         return l10n.statusCanceled;
+      case TournamentStatus.pendingPayments:
+        return "Pending Payments"; // TODO: aggiungere traduzione
     }
   }
 }

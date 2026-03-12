@@ -17,6 +17,7 @@ import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/referee.dart';
 import 'package:atl_app/models/referee_assignment.dart';
 import 'package:atl_app/models/referee_license.dart';
+import 'package:atl_app/models/review.dart';
 import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/team_request.dart';
@@ -364,6 +365,11 @@ class DBRead {
           }
         }
       }
+      final Player? player = await DB.Players.getByPlayerId(playerId);
+      if (player == null) {
+        throw Exception("Player not found");
+      }
+      final data = await hasNotification(player.id);
 
       return {
         ApiJsonKeys.bookings: bookings,
@@ -446,6 +452,7 @@ class DBRead {
             await DB.Tournaments.getMinutesPerPauseById(tournament.id);
       }
 
+
       return {
         ApiJsonKeys.activeTournaments: activeTournaments,
         ApiJsonKeys.matchesPerTournament: matchesByTournament,
@@ -503,6 +510,8 @@ class DBRead {
           }
         }
       }
+
+
       return {
         ApiJsonKeys.assignments: assignments,
         ApiJsonKeys.assignedMatches: assignedMatches,
@@ -844,6 +853,8 @@ class DBRead {
       Map<int, int> maxPlayersPerLobby = {};
       Map<int, int> currentPlayersPerLobby = {};
       Map<int, int> playersPaidPerBooking = {};
+      Map<int, Field> fieldCache = {};
+      Map<int, String> completeAddressPerField = {};
       List<City> availableCities = await DB.Cities.getAll();
 
       List<LobbyBooking> lobbies =
@@ -863,6 +874,9 @@ class DBRead {
             data[ApiJsonKeys.currentPlayersPerLobby];
         playersPaidPerBooking[lobby.id] =
             data[ApiJsonKeys.playersPaidPerBooking];
+        fieldCache[lobby.fieldId] = data[ApiJsonKeys.fields] as Field;
+        completeAddressPerField[lobby.fieldId] =
+            data[ApiJsonKeys.completeAddressPerField] as String;
       }
 
       return {
@@ -871,6 +885,8 @@ class DBRead {
         ApiJsonKeys.maxPlayersPerLobby: maxPlayersPerLobby,
         ApiJsonKeys.currentPlayersPerLobby: currentPlayersPerLobby,
         ApiJsonKeys.playersPaidPerBooking: playersPaidPerBooking,
+        ApiJsonKeys.fieldCache: fieldCache,
+        ApiJsonKeys.completeAddressPerField: completeAddressPerField,
         ApiJsonKeys.cities: availableCities,
       };
     } else {
@@ -949,7 +965,6 @@ class DBRead {
         feeMin = 0;
         feeMax = 0;
       }
-
       return {
         ApiJsonKeys.tournaments: tournaments,
         ApiJsonKeys.myTournaments: myTournaments,
@@ -1214,10 +1229,30 @@ class DBRead {
             teamId,
           );
 
+      final List<Callup> callups = await DB.CallUps.getByTournamentAndTeam(
+        tournamentId,
+        teamId,
+      );
+
+      List<Player> callupPlayers = [];
+      if (callups.isNotEmpty) {
+        for (var callup in callups) {
+          final player = await DB.Players.getByPlayerId(callup.playerId);
+          if (player != null) {
+            callupPlayers.add(player);
+          }
+        }
+      }
+
+      final List<int> calledUpPlayerIds = callups
+          .map((c) => c.playerId)
+          .toList();
+
       return {
         ApiJsonKeys.players: teamPlayers,
         ApiJsonKeys.sport: sport,
         ApiJsonKeys.teamParticipation: teamParticipation,
+        ApiJsonKeys.calledUpPlayerIds: calledUpPlayerIds,
         ApiJsonKeys.tournament: tournament,
       };
     } else {
@@ -1482,7 +1517,11 @@ class DBRead {
     if (AppConfig.isDebug) {
       List<TournamentParticipation> participations =
           await DB.TournamentParticipations.getByTeamId(teamId);
-      return {ApiJsonKeys.tournamentParticipations: participations};
+      return {
+        ApiJsonKeys.tournamentParticipations: participations
+            .where((p) => p.toPay != null && p.toPay! > 0)
+            .toList(),
+      };
     } else {
       throw UnimplementedError();
     }
@@ -1573,8 +1612,30 @@ class DBRead {
     }
   }
 
+  /// Loads wallet data required by CheckoutScreen at startup.
+  static Future<Map<String, dynamic>> getCheckoutData(int userId) async {
+    if (AppConfig.isDebug) {
+      final Wallet? wallet = await DB.Wallets.getByUserId(userId);
+      return {ApiJsonKeys.wallet: wallet};
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> hasNotification(int userId) async {
+    if (AppConfig.isDebug) {
+      final List<Review> reviews = await DB.Reviews.getPendingReviewsForUser(
+        userId,
+      );
+      return {ApiJsonKeys.hasUnreadNotifications: reviews.isNotEmpty};
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   static Future<Map<String, dynamic>> getAvailableMatchesScreen(
-    SportCategory sportCategory, {
+    SportCategory sportCategory,
+    int refereeId, {
     required int cityId,
     int? sportId,
   }) async {
@@ -1640,6 +1701,7 @@ class DBRead {
           matchesPerSport[tournament.sportId]!.add(match);
         }
       }
+
       return {
         ApiJsonKeys.matches: availableMatches,
         ApiJsonKeys.teamsCache: teamsCache,
@@ -1697,6 +1759,7 @@ class DBRead {
           }
         }
       }
+
 
       return {
         ApiJsonKeys.matches: matches,
@@ -1960,7 +2023,9 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> getPersonalPlayerStats(int playerId) async {
+  static Future<Map<String, dynamic>> getPersonalPlayerStats(
+    int playerId,
+  ) async {
     if (AppConfig.isDebug) {
       final Player? player = await DB.Players.getByPlayerId(playerId);
       if (player == null) {
@@ -1969,7 +2034,6 @@ class DBRead {
 
       Map<SportCategory, dynamic> statsPerCategory = {};
       Map<SportCategory, int> numTournamentPerCategory = {};
-      
 
       if (player.isVip == false) {
         throw Exception("Stats are only available for VIP players");
@@ -1980,18 +2044,23 @@ class DBRead {
 
       // Count number of tournaments played in per category
       Map<SportCategory, List<Sport>> sportPerCategory = {};
-      sportPerCategory[SportCategory.football] = await DB.Sports.getByCategory(SportCategory.football);
+      sportPerCategory[SportCategory.football] = await DB.Sports.getByCategory(
+        SportCategory.football,
+      );
 
       final List<Callup> callups = await DB.CallUps.getByPlayerId(playerId);
 
-      for(var category in SportCategory.values){
+      for (var category in SportCategory.values) {
         final sports = sportPerCategory[category];
-        if(sports != null && sports.isNotEmpty){
-          for(var callUp in callups){
-            final tournament = await DB.Tournaments.getById(callUp.tournamentId);
-            if(tournament != null){
-              if(sports.any((s) => s.id == tournament.sportId)){
-                numTournamentPerCategory[category] = (numTournamentPerCategory[category] ?? 0) + 1;
+        if (sports != null && sports.isNotEmpty) {
+          for (var callUp in callups) {
+            final tournament = await DB.Tournaments.getById(
+              callUp.tournamentId,
+            );
+            if (tournament != null) {
+              if (sports.any((s) => s.id == tournament.sportId)) {
+                numTournamentPerCategory[category] =
+                    (numTournamentPerCategory[category] ?? 0) + 1;
               }
             }
           }
