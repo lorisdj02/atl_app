@@ -760,7 +760,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     try {
       final success = await DBWrite.startTournament(
         widget.tournament.id,
-        userProvider.activeRoleId!,
       );
 
       if (!mounted) return;

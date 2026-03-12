@@ -323,6 +323,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
+        userId: user.id,
       ),
     );
   }

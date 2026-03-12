@@ -2,11 +2,13 @@ class Callup {
   final int tournamentId;
   final int teamId;
   final int playerId;
+  double? toRedeem;
 
   Callup({
     required this.tournamentId,
     required this.teamId,
     required this.playerId,
+    this.toRedeem,
   });
 
   factory Callup.fromJson(Map<String, dynamic> json) {

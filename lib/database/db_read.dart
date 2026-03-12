@@ -365,11 +365,6 @@ class DBRead {
           }
         }
       }
-      final Player? player = await DB.Players.getByPlayerId(playerId);
-      if (player == null) {
-        throw Exception("Player not found");
-      }
-      final data = await hasNotification(player.id);
 
       return {
         ApiJsonKeys.bookings: bookings,
@@ -452,7 +447,6 @@ class DBRead {
             await DB.Tournaments.getMinutesPerPauseById(tournament.id);
       }
 
-
       return {
         ApiJsonKeys.activeTournaments: activeTournaments,
         ApiJsonKeys.matchesPerTournament: matchesByTournament,
@@ -510,7 +504,6 @@ class DBRead {
           }
         }
       }
-
 
       return {
         ApiJsonKeys.assignments: assignments,
@@ -1624,9 +1617,8 @@ class DBRead {
 
   static Future<Map<String, dynamic>> hasNotification(int userId) async {
     if (AppConfig.isDebug) {
-      final List<Review> reviews = await DB.Reviews.getPendingReviewsForUser(
-        userId,
-      );
+      final List<Review> reviews =
+          await DB.Reviews.getPendingReviewsForReviewerUserId(userId);
       return {ApiJsonKeys.hasUnreadNotifications: reviews.isNotEmpty};
     } else {
       throw UnimplementedError();
@@ -1759,7 +1751,6 @@ class DBRead {
           }
         }
       }
-
 
       return {
         ApiJsonKeys.matches: matches,
@@ -2072,6 +2063,98 @@ class DBRead {
         ApiJsonKeys.numTournamentPerCategory: numTournamentPerCategory,
       };
     } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getReviewsScreen(int userId) async {
+    if (AppConfig.isDebug) {
+      /*
+      final List<Review> reviews =
+          await DB.Reviews.getPendingReviewsForReviewerId(userId);
+          */
+      final List<Review> reviews = await DB.Reviews.getByReviewerUserId(userId);
+      print("Found ${reviews.length} reviews for user $userId");
+      Map<int, User> userPerReview = {};
+      Map<int, String> matchTeamsStringPerReview = {};
+
+      for (var review in reviews) {
+        switch (review.reviewType) {
+          case ReviewType.coordinatorToReferee:
+            if (review.matchId == null) {
+              throw Exception("Match ID is null for review ${review.id}");
+            }
+            final Referee? referee = await DB.Referees.getByUserId(
+              review.revieweeUserId,
+            );
+            if (referee != null) {
+              final User? user = await DB.Users.getByUserId(referee.id);
+              if (user != null) {
+                userPerReview[review.id] = user;
+              }
+            } else {
+              throw Exception("Referee not found for review ${review.id}");
+            }
+            break;
+          case ReviewType.refereeToCoordinator ||
+              ReviewType.playerToCoordinator:
+            final Coordinator? coordinator = await DB.Coordinators.getByUserId(
+              review.revieweeUserId,
+            );
+            if (coordinator != null) {
+              final User? user = await DB.Users.getByUserId(coordinator.id);
+              if (user != null) {
+                userPerReview[review.id] = user;
+              }
+            } else {
+              throw Exception("Coordinator not found for review ${review.id}");
+            }
+            break;
+        }
+        if(review.sportCategory == SportCategory.football && review.matchId != null){
+          final FootballMatch? match = await DB.FootballMatches.getById(
+            review.matchId!,
+          );
+          if (match != null) {
+            final Team? homeTeam = match.homeTeamId != null
+                ? await DB.Teams.getById(match.homeTeamId!)
+                : null;
+            final Team? awayTeam = match.awayTeamId != null
+                ? await DB.Teams.getById(match.awayTeamId!)
+                : null;
+            matchTeamsStringPerReview[review.id] =
+                "${homeTeam?.name} vs ${awayTeam?.name}";
+          }
+        }
+      }
+      return {
+        ApiJsonKeys.reviews: reviews,
+        ApiJsonKeys.userPerReview: userPerReview,
+        ApiJsonKeys.matchTeamsStringPerReview: matchTeamsStringPerReview,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<Map<String, dynamic>> getInviteFriendsScreen(int userId) async{
+    if(AppConfig.isDebug){
+      final Wallet? wallet = await DB.Wallets.getByUserId(userId);
+      if(wallet == null){
+        throw Exception("Wallet not found");
+      }
+      final double inviteBalance = wallet.inviteBalance;
+
+      final User? user = await DB.Users.getByUserId(userId);
+      if(user == null){
+        throw Exception("User not found");
+      }
+
+      return {
+        ApiJsonKeys.inviteBalance: inviteBalance,
+        ApiJsonKeys.referralCode: user.username, // Assuming username is used as referral code
+      };
+    }else{
       throw UnimplementedError();
     }
   }

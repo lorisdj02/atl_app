@@ -127,6 +127,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
+              userId: userProvider.activeUser?.id,
             )
           : userProvider.isReferee
           ? RefereeBottomBar(
@@ -141,6 +142,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
+              userId: userProvider.activeUser?.id,
             )
           : userProvider.isOrganization
           ? OrganizationBottomBar(
@@ -155,6 +157,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
+              userId: userProvider.activeUser?.id,
             )
           : null,
     );

@@ -20,6 +20,9 @@ import '../widgets/organization_bottom_bar.dart';
 import '../database/db_read.dart';
 import 'referee/referee_licenses_screen.dart';
 import '../config/api_json_keys.dart';
+import 'profile_screens/reviews_screen.dart';
+import 'profile_screens/invite_friends_screen.dart';
+import 'profile_screens/my_growth_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -178,19 +181,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    ProfileMenuItem(
-                      icon: Icons.account_balance_wallet,
-                      text: 'Wallet',
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                WalletScreen(currentSport: widget.currentSport),
-                          ),
-                        );
-                      },
-                    ),
                     if (!userProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.emoji_events,
@@ -207,13 +197,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ],
+                    ProfileMenuItem(
+                      icon: Icons.account_balance_wallet,
+                      text: 'Wallet',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                WalletScreen(currentSport: widget.currentSport),
+                          ),
+                        );
+                      },
+                    ),
                     if (!userProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.rate_review,
                         text: 'Reviews',
-                        onTap: () {
-                          // TODO: Implementa la logica per visualizzare le recensioni, ad esempio navigando a una schermata dedicata alle recensioni
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ReviewsScreen(
+                              currentSport: widget.currentSport,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                     if (userProvider.isReferee) ...[
@@ -232,20 +240,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ],
-                    ProfileMenuItem(
-                      icon: Icons.edit,
-                      text: 'Edit infos',
-                      onTap: () {
-                        Navigator.push(
+                    if (userProvider.isReferee || userProvider.isCoordinator) ...[
+                      ProfileMenuItem(
+                        icon: Icons.trending_up,
+                        text: 'My Growth',
+                        onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => EditInfosScreen(
+                            builder: (_) => MyGrowthScreen(
                               currentSport: widget.currentSport,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                     ProfileMenuItem(
                       icon: Icons.local_shipping,
                       text: 'Orders',
@@ -276,6 +284,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ],
+                    if (!userProvider.isOrganization) ...[
+                      ProfileMenuItem(
+                        icon: Icons.share,
+                        text: 'Invite a friend!',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => InviteFriendsScreen(
+                              currentSport: widget.currentSport,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    ProfileMenuItem(
+                      icon: Icons.edit,
+                      text: 'Edit infos',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditInfosScreen(
+                              currentSport: widget.currentSport,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     ProfileMenuItem(
                       icon: Icons.settings,
                       text: 'Settings',
@@ -290,15 +326,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    if (!userProvider.isOrganization) ...[
-                      ProfileMenuItem(
-                        icon: Icons.share,
-                        text: 'Invite a friend!',
-                        onTap: () {
-                          // Implementa la logica per invitare un amico, ad esempio aprendo una schermata di condivisione
-                        },
-                      ),
-                    ],
                     ProfileMenuItem(
                       icon: Icons.mail,
                       text: 'Contact Us!',
@@ -345,6 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               currentSport: widget.currentSport,
               isHome: false,
+              userId: user.id,
             )
           : userProvider.isReferee
           ? RefereeBottomBar(
@@ -359,6 +387,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               currentSport: widget.currentSport,
               isHome: false,
+              userId: user.id,
             )
           : userProvider.isOrganization
           ? OrganizationBottomBar(
@@ -373,6 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               currentSport: widget.currentSport,
               isHome: false,
+              userId: user.id,
             )
           : null,
     );

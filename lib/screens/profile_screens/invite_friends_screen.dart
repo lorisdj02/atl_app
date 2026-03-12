@@ -1,0 +1,256 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
+import '../../models/sport_category.dart';
+import '../../utils/atl_colors.dart';
+import '../../database/db_read.dart';
+import '../../config/api_json_keys.dart';
+
+class InviteFriendsScreen extends StatefulWidget {
+  final SportCategory currentSport;
+
+  const InviteFriendsScreen({super.key, required this.currentSport});
+
+  @override
+  State<InviteFriendsScreen> createState() => _InviteFriendsScreenState();
+}
+
+class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
+  bool _isLoading = true;
+  String? _referralCode;
+  double _inviteBalance = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.activeUser;
+    if (user == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+    try {
+      final data = await DBRead().getInviteFriendsScreen(user.id);
+      if (mounted) {
+        setState(() {
+          _referralCode = data[ApiJsonKeys.referralCode] as String?;
+          _inviteBalance =
+              (data[ApiJsonKeys.inviteBalance] as num).toDouble();
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _copyCode() {
+    if (_referralCode == null) return;
+    Clipboard.setData(ClipboardData(text: _referralCode!));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Code copied to clipboard!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: ATLColors.background,
+        appBar: _buildAppBar(),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: ATLColors.background,
+      appBar: _buildAppBar(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            // Invite balance card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+              decoration: BoxDecoration(
+                color: ATLColors.darkBlue,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.account_balance_wallet,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Invite Balance',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '€${_inviteBalance.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Earn more by inviting friends!',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Referral code card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Your referral code',
+                    style: TextStyle(color: ATLColors.subtext, fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ATLColors.background,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: ATLColors.darkBlue.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _referralCode ?? '—',
+                            style: const TextStyle(
+                              color: ATLColors.darkBlue,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _copyCode,
+                          icon: const Icon(Icons.copy, color: ATLColors.darkBlue),
+                          tooltip: 'Copy code',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _copyCode,
+                      icon: const Icon(Icons.share),
+                      label: const Text('Copy & Share'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ATLColors.darkBlue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Info hint
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: ATLColors.lightBlue.withOpacity(0.35),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: ATLColors.darkBlue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Share your code with friends. When they sign up and join their first tournament, you\'ll earn an invite bonus!',
+                      style: TextStyle(
+                        color: ATLColors.darkBlue,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: ATLColors.darkBlue,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: const Text(
+        'INVITE A FRIEND',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 2,
+        ),
+      ),
+      centerTitle: true,
+    );
+  }
+}

@@ -1,3 +1,5 @@
+import 'sport_category.dart';
+
 enum ReviewType {
   refereeToCoordinator,
   coordinatorToReferee,
@@ -19,6 +21,7 @@ class Review {
   DateTime? committedAt; // data di commit della recensione, se è stata committata
   double weight; // peso della recensione, da 0 a 1
   ReviewStatus status;
+  final SportCategory sportCategory; // categoria sportiva a cui si riferisce la recensione
 
   Review({
     required this.id,
@@ -33,6 +36,7 @@ class Review {
     required this.revieweeUserId,
     this.weight = 0.5, // default a 0.5
     this.status = ReviewStatus.waiting, // default a waiting
+    this.sportCategory = SportCategory.football, // default a generic
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {

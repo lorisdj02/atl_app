@@ -234,6 +234,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
+        userId: Provider.of<UserProvider>(context, listen: false).activeUser!.id,
       ),
     );
   }

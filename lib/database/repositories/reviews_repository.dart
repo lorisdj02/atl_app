@@ -33,9 +33,15 @@ class ReviewsRepository extends BaseRepository<Review> {
 
   Future<List<Review>> getByReviewerUserId(int reviewerUserId) async {
     if (AppConfig.isDebug) {
-      return mockData
+      final List<Review> reviews = mockData
           .where((review) => review.reviewerUserId == reviewerUserId)
           .toList();
+
+      for (var review in reviews) {
+        print(
+            'Review ${review.id} - reviewerUserId: ${review.reviewerUserId}, revieweeUserId: ${review.revieweeUserId}, status: ${review.status}');
+      }
+      return reviews;
     } else {
       throw UnimplementedError();
     }
@@ -46,10 +52,10 @@ class ReviewsRepository extends BaseRepository<Review> {
     required int revieweeUserId,
     required int tournamentId,
     required ReviewType reviewType,
-    required String comment,
+    String? comment,
     required double weight,
-    int? matchId,}
-  ) async {
+    int? matchId,
+  }) async {
     if (AppConfig.isDebug) {
       final newReview = Review(
         id:
@@ -60,12 +66,12 @@ class ReviewsRepository extends BaseRepository<Review> {
         reviewerUserId: reviewerUserId,
         revieweeUserId: revieweeUserId,
         reviewType: reviewType,
-        comment: comment,
         tournamentId: tournamentId,
         matchId: matchId,
         weight: weight,
         createdAt: DateTime.now(),
       );
+
       _mockData.add(newReview);
       return true;
     } else {
@@ -73,7 +79,11 @@ class ReviewsRepository extends BaseRepository<Review> {
     }
   }
 
-  Future<bool> commitReview(int reviewId,{required double rating, String? comment}) async {
+  Future<bool> commitReview(
+    int reviewId, {
+    required double rating,
+    String? comment,
+  }) async {
     if (AppConfig.isDebug) {
       final index = _mockData.indexWhere((review) => review.id == reviewId);
       if (index != -1) {
@@ -89,12 +99,24 @@ class ReviewsRepository extends BaseRepository<Review> {
     }
   }
 
-  Future<List<Review>> getPendingReviewsForUser(int userId) async {
+  Future<Review?> getById(int reviewId) async {
+    if (AppConfig.isDebug) {
+      return Future.value(
+        _mockData.firstWhere((review) => review.id == reviewId),
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<List<Review>> getPendingReviewsForReviewerUserId(int userId) async {
     if (AppConfig.isDebug) {
       return mockData
-          .where((review) =>
-              review.revieweeUserId == userId &&
-              review.status == ReviewStatus.pending)
+          .where(
+            (review) =>
+                review.reviewerUserId == userId &&
+                review.status == ReviewStatus.pending,
+          )
           .toList();
     } else {
       throw UnimplementedError();

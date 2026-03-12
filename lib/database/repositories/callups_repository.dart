@@ -68,6 +68,20 @@ class CallUpsRepository extends BaseRepository<Callup> {
     }
   }
 
+  Future<bool> redeemPrize(int playerId, int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final int index = _mockData.indexWhere(
+        (callup) =>
+            callup.playerId == playerId && callup.tournamentId == tournamentId,
+      );
+      if (index == -1) return false;
+      _mockData[index].toRedeem = _mockData[index].toRedeem != null ? 0 : null;
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   /// Ottieni convocazione specifica per torneo e team
   Future<List<Callup>> getByTournamentAndTeam(
     int tournamentId,
@@ -98,6 +112,20 @@ class CallUpsRepository extends BaseRepository<Callup> {
             callup.tournamentId == tournamentId && callup.teamId == teamId,
       );
       return callups.map((c) => c.playerId).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<Callup?> getByPlayerAndTournament(
+    int playerId,
+    int tournamentId,
+  ) async {
+    if (AppConfig.isDebug) {
+      return _mockData.firstWhere(
+        (callup) =>
+            callup.playerId == playerId && callup.tournamentId == tournamentId,
+      );
     } else {
       throw UnimplementedError();
     }

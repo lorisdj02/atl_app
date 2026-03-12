@@ -265,7 +265,12 @@ class PlayerRepository extends BaseRepository<Player> {
 
   Future<Player?> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
-      return mockData.firstWhere((player) => player.playerId == playerId);
+      try{
+        return mockData.firstWhere((player) => player.playerId == playerId);
+      }catch(e){
+        return null;
+      }
+      
     } else {
       throw UnimplementedError();
     }

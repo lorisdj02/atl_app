@@ -52,7 +52,6 @@ class _TeamScreenState extends State<TeamScreen>
   bool? _tempVipFilter;
   RangeValues _tempPlayersRange = const RangeValues(1, 24);
 
-
   /// Verifica se ci sono filtri attivi
   bool get _hasActiveFilters {
     return _selectedCity != null ||
@@ -154,7 +153,8 @@ class _TeamScreenState extends State<TeamScreen>
 
       final data = await DBRead.getTeamsScreen(widget.currentSport);
       final Map<int, Team> teamsCache = data[ApiJsonKeys.teamsCache];
-      final Map<int, String> captainNamePerTeam = data[ApiJsonKeys.captainNamePerTeam];
+      final Map<int, String> captainNamePerTeam =
+          data[ApiJsonKeys.captainNamePerTeam];
 
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
@@ -731,6 +731,7 @@ class _TeamScreenState extends State<TeamScreen>
         },
         currentSport: widget.currentSport,
         isHome: false,
+        userId: userProvider.activeUser?.id,
       ),
     );
   }

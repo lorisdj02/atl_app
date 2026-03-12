@@ -25,6 +25,7 @@ extension SportCategoryExtension on SportCategory {
     }
   }
 
+
   /// Nome dello sport
   String get name {
     switch (this) {
@@ -45,6 +46,8 @@ extension SportCategoryExtension on SportCategory {
     switch (this) {
       case SportCategory.football:
         return Icons.sports_soccer;
+      default:
+        return Icons.sports;
       // TODO: Icone per altri sport
       // case SportCategory.basketball:
       //   return Icons.sports_basketball;

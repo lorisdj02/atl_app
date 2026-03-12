@@ -889,9 +889,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
         },
         currentSport: widget.currentSport,
         isHome: false,
+        userId: userProvider.activeUser?.id,
       ),
-    );
-  }
+    );}
 
   Widget _buildTabButton(String text, int index) {
     final isSelected = _tabController.index == index;

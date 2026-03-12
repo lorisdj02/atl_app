@@ -190,6 +190,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
         onTap: _onNavTap,
         currentSport: widget.currentSport,
         isHome: false,
+        userId: Provider.of<UserProvider>(context, listen: false).activeUser?.id,
       ),
     );
   }

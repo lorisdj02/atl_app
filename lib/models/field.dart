@@ -20,6 +20,8 @@ class Field {
   final List<int> closedWeekdays; // 1=Lunedì, 7=Domenica
   final String address;
 
+  //TODO: separa sportCategory -> ogni campo può ospitare più sport? In questo caso serve una tabella di join campo-sport
+
   Field({
     required this.id,
     required this.organizationId,

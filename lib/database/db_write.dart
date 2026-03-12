@@ -1,4 +1,12 @@
+import 'package:atl_app/models/callup.dart';
+import 'package:atl_app/models/coordinator.dart';
+import 'package:atl_app/models/player.dart';
+import 'package:atl_app/models/plays_at.dart';
+import 'package:atl_app/models/referee.dart';
+import 'package:atl_app/models/review.dart';
 import 'package:atl_app/models/team_request.dart';
+import 'package:atl_app/models/tournament.dart';
+import 'package:atl_app/models/tournament_participation.dart';
 import 'package:atl_app/models/user.dart';
 import '../../config/api_json_keys.dart';
 import 'db_controller.dart';
@@ -1520,23 +1528,26 @@ class DBWrite {
     }
   }
 
-  static Future<bool> startTournament(
-    int tournamentId,
-    int coordinatorId,
-  ) async {
+  static Future<bool> startTournament(int tournamentId) async {
     if (AppConfig.isDebug) {
-      if (await DB.Tournaments.getById(tournamentId) == null) {
+
+      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
+      if (tournament == null) {
         return false;
       }
 
-      final int? tourCoordinatorId = (await DB.Tournaments.getById(
-        tournamentId,
-      ))?.coordinatorId;
+      final int tourCoordinatorId = tournament.coordinatorId;
 
-      if (tourCoordinatorId == null || tourCoordinatorId != coordinatorId) {
+      final Coordinator? coordinator = (await DB.Coordinators.getByCoordinatorId(
+        tourCoordinatorId,
+      ));
+
+      if (coordinator == null) {
         return false;
       }
 
+
+      /*
       Map<int, double> refundPerTeams = await DB
           .TournamentParticipations.getRefundPerTeamsInTournament(tournamentId);
 
@@ -1546,11 +1557,49 @@ class DBWrite {
           false) {
         return false;
       }
-
+      */
       if (await DB.Tournaments.startTournament(tournamentId) == false) {
         return false;
       }
 
+      final List<TournamentParticipation> participations =
+          await DB.TournamentParticipations.getByTournamentId(tournamentId);
+
+      for (final participation in participations) {
+        final Team? team = await DB.Teams.getById(participation.teamId);
+        if (team == null) {
+          return false;
+        }
+        final List<PlaysAt> playersInTeam = await DB.PlaysAt.getByTeamId(
+          team.id,
+        );
+        for (final playsAt in playersInTeam) {
+          final Player? player = await DB.Players.getByPlayerId(
+            playsAt.playerId,
+          );
+          if (player == null) {
+            //return false;
+            continue; // Se il giocatore non esiste, salta al prossimo invece di fallire l'intera operazione
+          }
+
+          if (await DB.Reviews.addReview(
+                reviewerUserId: player.id,
+                revieweeUserId: coordinator.id,
+                tournamentId: tournamentId,
+                reviewType: ReviewType.playerToCoordinator,
+                weight: team.captainId == player.id
+                    ? 1
+                    : team.vice1Id == player.id
+                    ? 0.75
+                    : team.vice2Id == player.id
+                    ? 0.75
+                    : 0.5,
+              ) ==
+              false) {
+            return false;
+          }
+        }
+      }
       return true;
     } else {
       throw UnimplementedError();
@@ -1756,6 +1805,105 @@ class DBWrite {
   static Future<bool> deleteRefereeLicense(int refereeId, int sportId) async {
     if (AppConfig.isDebug) {
       return await DB.RefereeLicenses.removeLicense(refereeId, sportId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> commitReview(
+    int reviewId, {
+    required double rating,
+    String? comment,
+    required int tournamentId,
+    int? matchId,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (rating < 0.5 || rating > 5) {
+        return false; // La valutazione deve essere compresa tra 0.5 e 5
+      }
+      final Review? review = await DB.Reviews.getById(reviewId);
+      if (review == null) {
+        return false;
+      }
+
+      final User? user = await DB.Users.getByUserId(review.reviewerUserId);
+      if (user == null) {
+        return false;
+      }
+
+      switch (user.role) {
+        case UserRole.player:
+          final Player? player = await DB.Players.getByUserId(
+            review.reviewerUserId,
+          );
+          if (player == null) {
+            return false;
+          }
+
+          if (await DB.Reviews.commitReview(
+                reviewId,
+                rating: rating,
+                comment: comment,
+              ) ==
+              false) {
+            return false;
+          }
+
+          final Callup? callup = await DB.CallUps.getByPlayerAndTournament(
+            review.reviewerUserId,
+            tournamentId,
+          );
+
+          if (callup == null) {
+            return false;
+          }
+
+          if (await DB.CallUps.redeemPrize(callup.playerId, tournamentId) ==
+              false) {
+            return false;
+          }
+
+        //TODO: implementare il premio per i giocatori
+        case UserRole.coordinator:
+          final Coordinator? coordinator = await DB.Coordinators.getByUserId(
+            review.reviewerUserId,
+          );
+          if (coordinator == null) {
+            return false;
+          }
+
+          if (await DB.Reviews.commitReview(
+                reviewId,
+                rating: rating,
+                comment: comment,
+              ) ==
+              false) {
+            return false;
+          }
+
+        //TODO: implementare il premio per i coordinatori
+        case UserRole.referee:
+          final Referee? referee = await DB.Referees.getByUserId(
+            review.reviewerUserId,
+          );
+          if (referee == null) {
+            return false;
+          }
+
+          if (await DB.Reviews.commitReview(
+                reviewId,
+                rating: rating,
+                comment: comment,
+              ) ==
+              false) {
+            return false;
+          }
+
+        //TODO: implementare il premio per gli arbitri
+        default:
+          return false;
+      }
+      return true;
     } else {
       throw UnimplementedError();
     }

@@ -152,7 +152,9 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
 
   Future<Coordinator?> getByUserId(int id) async {
     if (AppConfig.isDebug) {
-      return mockData.firstWhere((coordinator) => coordinator.id == id);
+      final int index = _mockData.indexWhere((coordinator) => coordinator.id == id);
+      if (index == -1) return null;
+      return mockData[index];
     } else {
       throw UnimplementedError();
     }
@@ -160,9 +162,9 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
 
   Future<Coordinator?> getByCoordinatorId(int coordinatorId) async {
     if (AppConfig.isDebug) {
-      return mockData.firstWhere(
-        (coordinator) => coordinator.coordinatorId == coordinatorId,
-      );
+      final int index = _mockData.indexWhere((coordinator) => coordinator.coordinatorId == coordinatorId);
+      if (index == -1) return null;
+      return mockData[index];
     } else {
       throw UnimplementedError();
     }

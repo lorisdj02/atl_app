@@ -215,4 +215,16 @@ class ApiJsonKeys {
 
   // Bottom bars
   static const String hasUnreadNotifications = 'hasUnreadNotifications'; // bool
+
+  // ReviewsScreen
+  static const String reviews = 'reviews'; // List<Review>
+  // ReviewsScreen
+  static const String userPerReview = 'userPerReview'; // Map<int, User>
+  // ReviewsScreen
+  static const String matchTeamsStringPerReview = 'matchTeamsStringPerReview'; // Map<int, String>
+
+  // InviteFriendsScreen
+  static const String referralCode = 'referralCode'; // String
+  // InviteFriendsScreen
+  static const String inviteBalance = 'inviteBalance'; // double
 }

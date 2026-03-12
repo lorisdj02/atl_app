@@ -267,6 +267,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
+        userId: Provider.of<UserProvider>(context, listen: false).activeUser!.id,
       ),
     );
   }
