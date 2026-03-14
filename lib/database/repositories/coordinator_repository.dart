@@ -92,6 +92,43 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
     }
   }
 
+  Future<bool> registerCoordinator({required String email,
+    required int id,
+    required String username,
+    required String password,
+    required String name,
+    required String surname,
+    required String phone,
+    required DateTime birthdate,
+    String? profilePictureUrl,})async{
+      if(AppConfig.isDebug){
+
+        final int nextCoordinatorId = (_mockData
+               .map((u) => u.coordinatorId)
+               .fold(0, (prev, curr) => curr > prev ? curr : prev)) +
+           1;
+        final Coordinator newCoordinator = Coordinator(
+          id: id,
+          name: name,
+          surname: surname,
+          username: username,
+          email: email,
+          phone: phone,
+          firebaseUid: '',
+          createdAt: DateTime.now(),
+          coordinatorId: nextCoordinatorId,
+          level: 1, // Default level
+          birthdate: birthdate, // Default birthdate
+          passwordMD5: password, // In a real implementation, you would hash the password
+        );
+
+        _mockData.add(newCoordinator);
+        return true;
+      }else{
+        throw UnimplementedError();
+      }
+    }
+
   Future<bool> deleteCoordinator(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
       final index = _mockData.indexWhere(

@@ -1,9 +1,9 @@
 import 'booking.dart';
-
+import 'sport_category.dart';
 /// Modello PrivateBooking dal database
 
 class LobbyBooking extends Booking {
-  final int ownerId;
+  final int ownerPlayerId;
   int
   playersToFind; //numero di giocatori da trovare -> questo man mano che si iscrivono diminuisce. L'owner paga maxPlayers - playerToFind fees
   final int maxPlayers; //numero di giocatori totali -> prezzo per giocatore
@@ -12,26 +12,28 @@ class LobbyBooking extends Booking {
   LobbyBooking({
     required super.id,
     required super.fieldId,
-    required this.ownerId,
+    required this.ownerPlayerId,
     required DateTime startTime,
     required DateTime finishTime,
     super.status = BookingStatus.booked,
     required this.playersToFind,
     required this.maxPlayers,
     required this.feePerPlayer,
+    super.sportCategory = SportCategory.football,
   }) : super(startTime: startTime, finishTime: finishTime, type: BookingType.lobby);
 
   factory LobbyBooking.fromJson(Map<String, dynamic> json) {
     return LobbyBooking(
       id: json['id'],
-      fieldId: json['field_id'],
-      ownerId: json['owner_id'],
-      startTime: DateTime.parse(json['start_time']),
-      finishTime: DateTime.parse(json['finish_time']),
+      fieldId: json['fieldId'],
+      ownerPlayerId: json['ownerPlayerId'],
+      startTime: DateTime.parse(json['startTime']),
+      finishTime: DateTime.parse(json['finishTime']),
       status: BookingStatusExtension.fromString(json['status']),
-      playersToFind: json['players_to_find'],
-      maxPlayers: json['max_players'],
-      feePerPlayer: json['fee_per_player'],
+      playersToFind: json['playersToFind'],
+      maxPlayers: json['maxPlayers'],
+      feePerPlayer: json['feePerPlayer'],
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
     );
   }
 
@@ -39,14 +41,15 @@ class LobbyBooking extends Booking {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'field_id': fieldId,
-      'owner_id': ownerId,
-      'start_time': startTime.toIso8601String(),
-      'finish_time': finishTime.toIso8601String(),
+      'fieldId': fieldId,
+      'ownerPlayerId': ownerPlayerId,
+      'startTime': startTime.toIso8601String(),
+      'finishTime': finishTime.toIso8601String(),
       'status': status.toShortString(),
-      'players_to_find': playersToFind,
-      'max_players': maxPlayers,
-      'fee_per_player': feePerPlayer,
+      'playersToFind': playersToFind,
+      'maxPlayers': maxPlayers,
+      'feePerPlayer': feePerPlayer,
+      'sportCategory': sportCategory.toString(),
     };
   }
 }

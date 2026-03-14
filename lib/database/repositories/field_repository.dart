@@ -68,9 +68,13 @@ class FieldRepository extends BaseRepository<Field> {
   @override
   List<Field> get mockData => _mockData;
 
-  Future<Field> getById(int fieldId) async {
+  Future<Field?> getById(int fieldId) async {
     if (AppConfig.isDebug) {
-      return _mockData.firstWhere((field) => field.id == fieldId);
+      try {
+        return _mockData.firstWhere((field) => field.id == fieldId);
+      } catch (e) {
+        return null;
+      }
     } else {
       throw UnimplementedError();
     }

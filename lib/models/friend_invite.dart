@@ -11,16 +11,16 @@ class FriendInvite{
 
   factory FriendInvite.fromJson(Map<String, dynamic> json) {
     return FriendInvite(
-      invitedId: json['invited_id'],
-      inviterId: json['inviter_id'],
+      invitedId: json['invitedId'],
+      inviterId: json['inviterId'],
       redeemed: json['redeemed'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'invited_id': invitedId,
-      'inviter_id': inviterId,
+      'invitedId': invitedId,
+      'inviterId': inviterId,
       'redeemed': redeemed,
     };
   }

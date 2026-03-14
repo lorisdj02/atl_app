@@ -11,6 +11,7 @@ import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/booking_widget.dart';
 import '../../models/field.dart';
+import '../../models/checkout_session.dart';
 
 class JoinLobbyScreen extends StatefulWidget {
   final SportCategory sportCategory;
@@ -104,7 +105,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       List<LobbyBooking> lobbies = data[ApiJsonKeys.bookings] as List<LobbyBooking>;
 
       // Filter out lobbies where current user is the owner
-      lobbies = lobbies.where((lobby) => lobby.ownerId != playerId).toList();
+      lobbies = lobbies.where((lobby) => lobby.ownerPlayerId != playerId).toList();
 
       // Additional filter for playersToPay
       if (_maxPlayersToPay != null) {
@@ -421,22 +422,25 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   Future<void> _joinLobby(LobbyBooking lobby, int playersPaid) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final playerId = userProvider.activeRoleId!;
-    final field = _fieldCache[lobby.fieldId];
-    final cityMatch = field != null
-        ? _availableCities.where((c) => c.id == field.cityId).firstOrNull
-        : null;
+
+    final Map<String, dynamic> payload = {
+      'playerId': playerId,
+      'lobbyId': lobby.id,
+      'playersPaid': playersPaid,
+    };
+
+    final int sessionId = await DBWrite.createCheckoutSession(
+      userId: userProvider.activeUser!.id,
+      payload: payload,
+      amount: lobby.feePerPlayer * playersPaid,
+      type: CheckoutType.lobbyBookingParticipate,
+    );
 
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (context) => CheckoutScreen(
           sportCategory: widget.sportCategory,
-          totalPrice: lobby.feePerPlayer * playersPaid,
-          lobbyBooking: lobby,
-          field: field,
-          cityName: cityMatch?.name,
-          ownerUsername: _usernamePerBooking[lobby.id],
-          playersToPay: playersPaid,
-          onPayPressed: () => DBWrite.joinLobby(lobby.id, playerId, playersPaid),
+          sessionId: sessionId,
         ),
       ),
     );

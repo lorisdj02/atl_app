@@ -1,7 +1,7 @@
 class Wallet {
   final int id;
   final int userId;
-  double balance;
+  double personalBalance;
   double prizeBalance;
   double inviteBalance;
   DateTime? lastWithdraw;
@@ -10,7 +10,7 @@ class Wallet {
   Wallet({
     required this.id,
     required this.userId,
-    this.balance = 0,
+    this.personalBalance = 0,
     this.prizeBalance = 0,
     this.inviteBalance = 0,
   }) : lastWithdraw = null,
@@ -20,7 +20,7 @@ class Wallet {
     return Wallet(
       id: json['id'],
       userId: json['userId'],
-      balance: json['balance'] ?? 0,
+      personalBalance: json['personalBalance'] ?? 0,
       prizeBalance: json['prizeBalance'] ?? 0,
       inviteBalance: json['inviteBalance'] ?? 0,
     )
@@ -34,7 +34,7 @@ class Wallet {
     return {
       'id': id,
       'userId': userId,
-      'balance': balance,
+      'personalBalance': personalBalance,
       'prizeBalance': prizeBalance,
       'lastWithdraw': lastWithdraw?.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

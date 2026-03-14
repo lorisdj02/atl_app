@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
 import '../providers/user_provider.dart';
-import '../screens/player/my_team_screen.dart';
+import '../screens/teams/my_team_screen.dart';
 import '../screens/teams/team_detail_screen.dart';
 
 /// Abstract base widget for all team widgets

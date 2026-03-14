@@ -11,6 +11,7 @@ class ATLButton extends StatelessWidget {
   final Color? textColor;
   final VoidCallback onPressed;
   final bool fullWidth;
+  final Color? outlineColor;
 
   const ATLButton({
     super.key,
@@ -22,6 +23,7 @@ class ATLButton extends StatelessWidget {
     this.textColor,
     required this.onPressed,
     this.fullWidth = false,
+    this.outlineColor,
   });
 
   @override
@@ -37,7 +39,9 @@ class ATLButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: bgColor,
         foregroundColor: fgColor,
-        side: isFilled ? null : BorderSide(color: color, width: 2),
+        side: outlineColor != null
+            ? BorderSide(color: outlineColor!, width: 2)
+            : (isFilled ? null : BorderSide(color: color, width: 2)),
         padding: EdgeInsets.symmetric(
           vertical: _getVerticalPadding,
           horizontal: _getHorizontalPadding,

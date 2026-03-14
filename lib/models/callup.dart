@@ -13,17 +13,17 @@ class Callup {
 
   factory Callup.fromJson(Map<String, dynamic> json) {
     return Callup(
-      tournamentId: json['tournament_id'],
-      teamId: json['team_id'],
-      playerId: json['player_id'],
+      tournamentId: json['tournamentId'],
+      teamId: json['teamId'],
+      playerId: json['playerId'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tournament_id': tournamentId,
-      'team_id': teamId,
-      'player_id': playerId,
+      'tournamentId': tournamentId,
+      'teamId': teamId,
+      'playerId': playerId,
     };
   }
 }

@@ -36,6 +36,7 @@ import 'repositories/reviews_repository.dart';
 import 'repositories/referee_roles_repository.dart';
 import 'repositories/orders_repository.dart';
 import 'repositories/referee_licenses_repository.dart';
+import 'repositories/checkout_sessions_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
@@ -86,6 +87,7 @@ class DB {
   static late final OrdersRepository Orders;
   static late final RefereeLicensesRepository RefereeLicenses;
   static late final FriendInvitesRepository FriendInvites;
+  static late final CheckoutSessionsRepository CheckoutSessions;
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
@@ -123,6 +125,7 @@ class DB {
     Orders = OrdersRepository();
     RefereeLicenses = RefereeLicensesRepository();
     FriendInvites = FriendInvitesRepository();
+    CheckoutSessions = CheckoutSessionsRepository();
     // TODO: Inizializza altri repository
   }
 

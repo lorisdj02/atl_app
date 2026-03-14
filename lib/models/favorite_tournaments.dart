@@ -6,12 +6,12 @@ class FavoriteTournaments {
 
   factory FavoriteTournaments.fromJson(Map<String, dynamic> json) {
     return FavoriteTournaments(
-      userId: json['user_id'],
-      tournamentId: json['tournament_id'],
+      userId: json['userId'],
+      tournamentId: json['tournamentId'],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'user_id': userId, 'tournament_id': tournamentId};
+    return {'userId': userId, 'tournamentId': tournamentId};
   }
 }

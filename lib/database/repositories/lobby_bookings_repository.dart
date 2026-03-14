@@ -3,6 +3,7 @@ import 'base_repository.dart';
 import '../../models/lobby_booking.dart';
 import '../db_controller.dart';
 import '../../models/booking.dart';
+import '../../models/field.dart';
 
 /// Repository per gestire le PrivateBooking nel database
 
@@ -37,7 +38,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
   /// Ottieni private bookings per player
   Future<List<LobbyBooking>?> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
-      return _mockData.where((booking) => booking.ownerId == playerId).toList();
+      return _mockData.where((booking) => booking.ownerPlayerId == playerId).toList();
     } else {
       throw UnimplementedError();
     }
@@ -53,7 +54,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
   }
 
   Future<int> addLobbyBooking(
-    int ownerId,
+    int ownerPlayerId,
     int fieldId,
     DateTime startTime,
     DateTime finishTime,
@@ -63,20 +64,24 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
   ) async {
     if (AppConfig.isDebug) {
       List<int> freeFieldIds =
-          await DB.Bookings.getFreeFieldIds(startTime, finishTime, [fieldId]) ??
-          [];
+          await DB.Bookings.getFreeFieldIds(startTime, finishTime, [fieldId]);
 
       if (!freeFieldIds.contains(fieldId)) {
         return -1; // Il campo non è libero in quel periodo
       }
 
+      final Field? field = await DB.Fields.getById(fieldId);
+      if (field == null) {
+        return -1; // Campo non trovato
+      }
+
       final double baseCost =
-          (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
+          field.hourlyCostPrivate *
           finishTime.difference(startTime).inHours;
 
       LobbyBooking newLobbyBooking = LobbyBooking(
         id: DB.Bookings.mockGetNextId(),
-        ownerId: ownerId,
+        ownerPlayerId: ownerPlayerId,
         fieldId: fieldId,
         startTime: startTime,
         finishTime: finishTime,
@@ -139,7 +144,11 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
       } else {
         List<LobbyBooking> results = [];
         for (LobbyBooking booking in _mockData) {
-          int bookingCityId = (await DB.Fields.getById(booking.fieldId)).cityId;
+          final Field? field = await DB.Fields.getById(booking.fieldId);
+          if (field == null) {
+            continue; // Campo non trovato, salta questa prenotazione
+          }
+          int bookingCityId = field.cityId;
           if (booking.status == BookingStatus.booked) {
             if (totalPlayers != null && booking.maxPlayers < totalPlayers) {
               continue;
@@ -231,14 +240,14 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     }
   }
 
-  Future<int> getNumFinishedByOwnerIdAndFields(
+  Future<int> getNumFinishedByownerPlayerIdAndFields(
     int playerId,
     List<int> fieldIds,
   ) async {
     if (AppConfig.isDebug) {
       List<Booking> bookings = mockData.where((booking) {
         return booking.status == BookingStatus.finished &&
-            booking.ownerId == playerId &&
+            booking.ownerPlayerId == playerId &&
             fieldIds.contains(booking.fieldId);
       }).toList();
       return bookings.length;

@@ -42,27 +42,27 @@ class Field {
   factory Field.fromJson(Map<String, dynamic> json) {
     return Field(
       id: json['id'],
-      organizationId: json['organization_id'],
+      organizationId: json['organizationId'],
       name: json['name'],
-      locationLat: double.parse(json['location_lat'].toString()),
-      locationLng: double.parse(json['location_lng'].toString()),
-      costTournament: double.parse(json['cost_tournament'].toString()),
-      hourlyCostPrivate: double.parse(json['hourly_cost_private'].toString()),
-      cityId: json['city_id'] ?? 0,
-      maxPlayers: json['max_players'] ?? 0,
-      sportCategory: json['sport_category'] != null
+      locationLat: double.parse(json['locationLat'].toString()),
+      locationLng: double.parse(json['locationLng'].toString()),
+      costTournament: double.parse(json['costTournament'].toString()),
+      hourlyCostPrivate: double.parse(json['hourlyCostPrivate'].toString()),
+      cityId: json['cityId'] ?? 0,
+      maxPlayers: json['maxPlayers'] ?? 0,
+      sportCategory: json['sportCategory'] != null
           ? SportCategory.values.firstWhere(
-              (e) => e.toJSON() == json['sport_category'],
+              (e) => e.toJSON() == json['sportCategory'],
             )
           : null,
-      openingTime: json['opening_time'] != null
-          ? _timeFromString(json['opening_time'])
+      openingTime: json['openingTime'] != null
+          ? _timeFromString(json['openingTime'])
           : const TimeOfDay(hour: 8, minute: 0),
-      closingTime: json['closing_time'] != null
-          ? _timeFromString(json['closing_time'])
+      closingTime: json['closingTime'] != null
+          ? _timeFromString(json['closingTime'])
           : const TimeOfDay(hour: 23, minute: 0),
-      closedWeekdays: json['closed_weekdays'] != null
-          ? List<int>.from(json['closed_weekdays'])
+      closedWeekdays: json['closedWeekdays'] != null
+          ? List<int>.from(json['closedWeekdays'])
           : [],
     );
   }
@@ -75,20 +75,20 @@ class Field {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'organization_id': organizationId,
+      'organizationId': organizationId,
       'name': name,
-      'location_lat': locationLat,
-      'location_lng': locationLng,
-      'cost_tournament': costTournament,
-      'hourly_cost_private': hourlyCostPrivate,
-      'city_id': cityId,
-      'sport_category': sportCategory?.toJSON(),
-      'max_players': maxPlayers,
-      'opening_time':
+      'locationLat': locationLat,
+      'locationLng': locationLng,
+      'costTournament': costTournament,
+      'hourlyCostPrivate': hourlyCostPrivate,
+      'cityId': cityId,
+      'sportCategory': sportCategory?.toJSON(),
+      'maxPlayers': maxPlayers,
+      'openingTime':
           '${openingTime.hour.toString().padLeft(2, '0')}:${openingTime.minute.toString().padLeft(2, '0')}',
-      'closing_time':
+      'closingTime':
           '${closingTime.hour.toString().padLeft(2, '0')}:${closingTime.minute.toString().padLeft(2, '0')}',
-      'closed_weekdays': closedWeekdays,
+      'closedWeekdays': closedWeekdays,
     };
   }
 

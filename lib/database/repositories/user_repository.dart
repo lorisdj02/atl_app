@@ -181,4 +181,102 @@ class UserRepository extends BaseRepository<User> {
       throw UnimplementedError();
     }
   }
+
+  Future<bool> getByPhone(String phone) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((user) => user.phone == phone) != null;
+      } catch (e) {
+        return false;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> registerUser({
+    required String email,
+    required String username,
+    required String password,
+    required String name,
+    required String surname,
+    required UserRole role,
+    required String phone,
+    required DateTime birthdate,
+    String? profilePictureUrl,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (await getByEmail(email) != null) {
+        throw Exception('Email already in use');
+      }
+
+      if (await getByUsername(username) != null) {
+        throw Exception('Username already in use');
+      }
+
+      if(await getByPhone(phone) == true) {
+        throw Exception('Phone number already in use');
+      }
+
+      final int nextId =
+          (mockData
+              .map((u) => u.id)
+              .fold(0, (prev, curr) => curr > prev ? curr : prev)) +
+          1;
+
+      // TODO: firebase registration
+
+      switch (role) {
+        case UserRole.player:
+          await DB.Players.registerPlayer(
+            id: nextId,
+            email: email,
+            username: username,
+            password: password,
+            name: name,
+            surname: surname,
+            phone: phone,
+            profilePictureUrl: profilePictureUrl,
+            birthdate: birthdate,
+          );
+          break;
+        case UserRole.coordinator:
+          await DB.Coordinators.registerCoordinator(
+            id: nextId,
+            email: email,
+            username: username,
+            password: password,
+            name: name,
+            surname: surname,
+            phone: phone,
+            profilePictureUrl: profilePictureUrl,
+            birthdate: birthdate,
+          );
+          break;
+        case UserRole.referee:
+          await DB.Referees.registerReferee(
+            id: nextId,
+            email: email,
+            username: username,
+            password: password,
+            name: name,
+            surname: surname,
+            phone: phone,
+            profilePictureUrl: profilePictureUrl,
+            birthdate: birthdate,
+          );
+          break;
+        case UserRole.organization:
+          throw UnimplementedError(
+            'Organization registration not implemented yet',
+          );
+        case UserRole.guest:
+          throw Exception('Cannot register as guest');
+      }
+      
+      return nextId;
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

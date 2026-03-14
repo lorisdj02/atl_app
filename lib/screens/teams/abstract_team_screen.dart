@@ -59,7 +59,6 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     tabController.addListener(onTabChanged);
     userProvider = Provider.of<UserProvider>(context, listen: false);
     playerId = userProvider.activeRoleId;
-    loadData();
   }
 
   @override
@@ -86,52 +85,6 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
         statsLoaded = true;
       }
     });
-  }
-
-  Future<void> loadData() async {
-    final int teamId = getTeamId();
-
-    try {
-      final data = await DBRead.getAbstractTeamScreen(teamId);
-      final Team? loadedTeam = data[ApiJsonKeys.team];
-      if (loadedTeam == null) {
-        throw Exception("Team not found");
-      }
-      List<Player> loadedPlayers = data[ApiJsonKeys.players] ?? [];
-      if (loadedPlayers.isNotEmpty) {
-        // Sort players: Captain, Vice1, Vice2, then others
-        loadedPlayers.sort((a, b) {
-          if (a.playerId == loadedTeam.captainId) return -1;
-          if (b.playerId == loadedTeam.captainId) return 1;
-          if (a.playerId == loadedTeam.vice1Id) return -1;
-          if (b.playerId == loadedTeam.vice1Id) return 1;
-          if (a.playerId == loadedTeam.vice2Id) return -1;
-          if (b.playerId == loadedTeam.vice2Id) return 1;
-          return 0;
-        });
-      }
-
-      if (mounted) {
-        setState(() {
-          team = loadedTeam;
-          players = loadedPlayers;
-          palmares = data[ApiJsonKeys.palmares] ?? [];
-          tournaments = data[ApiJsonKeys.tournaments] ?? [];
-          playerStatsCache = data[ApiJsonKeys.playerStatsCache];
-          coordinatorCache = data[ApiJsonKeys.coordinatorCache];
-          fieldCache = data[ApiJsonKeys.fieldCache];
-          cityNamePerField = data[ApiJsonKeys.cityNamePerField];
-          historicalPlayers = data[ApiJsonKeys.historicalPlayers] ?? [];
-          playersLoaded = true;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
-      }
-    }
   }
 
   int getTeamId();

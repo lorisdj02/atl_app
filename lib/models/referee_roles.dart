@@ -14,19 +14,19 @@ class RefereeRoles {
 
   factory RefereeRoles.fromJson(Map<String, dynamic> json) {
     return RefereeRoles(
-      sportId: json['sport_id'],
+      sportId: json['sportId'],
       name: json['name'],
       level: json['level'],
-      payPerMatch: json['pay_per_match'].toDouble(),
+      payPerMatch: json['payPerMatch'].toDouble(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'sport_id': sportId,
+      'sportId': sportId,
       'name': name,
       'level': level,
-      'pay_per_match': payPerMatch,
+      'payPerMatch': payPerMatch,
     };
   }
 }

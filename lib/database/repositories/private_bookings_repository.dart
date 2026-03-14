@@ -3,6 +3,7 @@ import 'base_repository.dart';
 import '../../models/private_booking.dart';
 import '../db_controller.dart';
 import '../../models/booking.dart';
+import '../../models/field.dart';
 
 /// Repository per gestire le PrivateBooking nel database
 
@@ -47,8 +48,12 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
         return false; // Il campo non è libero in quel periodo
       }
 
+      final Field? field = await DB.Fields.getById(fieldId);
+      if (field == null) {
+        return false; // Campo non trovato
+      }
       final double baseCost =
-          (await DB.Fields.getById(fieldId)).hourlyCostPrivate *
+          field.hourlyCostPrivate *
           finishTime.difference(startTime).inHours;
 
       final PrivateBooking newBooking = PrivateBooking(

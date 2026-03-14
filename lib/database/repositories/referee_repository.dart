@@ -155,6 +155,44 @@ class RefereeRepository extends BaseRepository<Referee> {
     }
   }
 
+
+  Future<bool> registerReferee({required String email,
+    required int id,
+    required String username,
+    required String password,
+    required String name,
+    required String surname,
+    required String phone,
+    required DateTime birthdate,
+    String? profilePictureUrl,})async{
+      if(AppConfig.isDebug){
+
+        final int nextRefereeId = (_mockData
+               .map((u) => u.refereeId)
+               .fold(0, (prev, curr) => curr > prev ? curr : prev)) +
+           1;
+        final Referee newReferee = Referee(
+          id: id,
+          name: name,
+          surname: surname,
+          username: username,
+          email: email,
+          phone: phone,
+          firebaseUid: '',
+          createdAt: DateTime.now(),
+          refereeId: nextRefereeId,
+          level: 1, // Default level
+          birthdate: birthdate, // Default birthdate
+          passwordMD5: password, // In a real implementation, you would hash the password
+        );
+
+        _mockData.add(newReferee);
+        return true;
+      }else{
+        throw UnimplementedError();
+      }
+    }
+
   Future<bool> deleteReferee(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
       final index = _mockData.indexWhere(

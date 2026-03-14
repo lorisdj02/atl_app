@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/booking.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
-import '../../models/lobby_booking.dart';
-import '../../models/private_booking.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_button.dart';
@@ -15,6 +12,7 @@ import '../../database/db_write.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
 import '../shop/checkout_screen.dart';
+import '../../models/checkout_session.dart';
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
 enum BookingType { none, private, lobby }
@@ -95,8 +93,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     try {
       final data = await DBRead.getCities();
       final cities = data[ApiJsonKeys.cities] as List<City>;
-      final preferredCityId =
-          Provider.of<UserProvider>(context, listen: false).cityId;
+      final preferredCityId = Provider.of<UserProvider>(
+        context,
+        listen: false,
+      ).cityId;
       setState(() {
         _cities = cities;
         if (preferredCityId != null &&
@@ -201,7 +201,6 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     setState(() => _isLoading = true);
 
     try {
-
       // Create DateTime objects for the booking period
       final startDateTime = DateTime(
         _selectedDate!.year,
@@ -218,7 +217,6 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _endTime!.hour,
         _endTime!.minute,
       );
-
 
       final data = await DBRead.getFreeFieldsByPlayerAndCityAndDate(
         maxPlayers: _maxPlayers,
@@ -472,34 +470,28 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       _endTime!.hour,
       _endTime!.minute,
     );
-    final cityName =
-        _cities.firstWhere((c) => c.id == _selectedCity).name;
     final totalToPay = _calculateTotalToPay();
 
     if (_selectedBookingType == BookingType.private) {
-      final displayBooking = PrivateBooking(
-        id: 0,
-        fieldId: _selectedField!.id,
-        playerId: userProvider.activeRoleId!,
-        startTime: startDateTime,
-        finishTime: endDateTime,
-        cost: totalToPay,
+      Map<String, dynamic> payload = {
+        'playerId': userProvider.activeRoleId!,
+        'fieldId': _selectedField!.id,
+        'startDateTime': startDateTime.toIso8601String(),
+        'endDateTime': endDateTime.toIso8601String(),
+      };
+
+      final int sessionId = await DBWrite.createCheckoutSession(
+        userId: userProvider.activeUser!.id,
+        payload: payload,
+        amount: totalToPay,
+        type: CheckoutType.privateBooking,
       );
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => CheckoutScreen(
             sportCategory: widget.sportCategory,
-            totalPrice: totalToPay,
-            privateBooking: displayBooking,
-            field: _selectedField,
-            cityName: cityName,
-            onPayPressed: () => DBWrite.createPrivateBooking(
-              userProvider.activeRoleId!,
-              _selectedField!.id,
-              startDateTime,
-              endDateTime,
-            ),
+            sessionId: sessionId,
           ),
         ),
       );
@@ -513,36 +505,30 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
       final playersToFind = _maxPlayers - _ownerPaysFor;
 
-      final displayBooking = LobbyBooking(
-        id: 0,
-        fieldId: _selectedField!.id,
-        ownerId: userProvider.activeRoleId!,
-        maxPlayers: _maxPlayers,
-        playersToFind: playersToFind,
-        feePerPlayer: feePerPlayer,
-        startTime: startDateTime,
-        finishTime: endDateTime,
-        status: BookingStatus.booked,
+      Map<String, dynamic> payload = {
+        'ownerPlayerId': userProvider.activeRoleId!,
+        'fieldId': _selectedField!.id,
+        'maxPlayers': _maxPlayers,
+        'playersToFind': playersToFind,
+        'feePerPlayer': feePerPlayer,
+        'startDateTime': startDateTime.toIso8601String(),
+        'endDateTime': endDateTime.toIso8601String(),
+      };
+
+      // Ricorda che playersToPay = maxPlayers - playersToFind
+
+      final int sessionId = await DBWrite.createCheckoutSession(
+        userId: userProvider.activeUser!.id,
+        payload: payload,
+        amount: totalToPay,
+        type: CheckoutType.lobbyBookingCreate,
       );
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => CheckoutScreen(
             sportCategory: widget.sportCategory,
-            totalPrice: totalToPay,
-            lobbyBooking: displayBooking,
-            field: _selectedField,
-            cityName: cityName,
-            playersToPay: _ownerPaysFor,
-            onPayPressed: () => DBWrite.createLobby(
-              displayBooking.fieldId,
-              displayBooking.ownerId,
-              displayBooking.maxPlayers,
-              displayBooking.playersToFind,
-              displayBooking.feePerPlayer,
-              displayBooking.startTime,
-              displayBooking.finishTime,
-            ),
+            sessionId: sessionId,
           ),
         ),
       );

@@ -44,16 +44,16 @@ class Palmares {
 
   factory Palmares.fromJson(Map<String, dynamic> json) {
     return Palmares(
-      tournamentId: json['tournament_id'],
-      teamId: json['team_id'],
+      tournamentId: json['tournamentId'],
+      teamId: json['teamId'],
       position: PalmaresPosition.fromString(json['position']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tournament_id': tournamentId,
-      'team_id': teamId,
+      'tournamentId': tournamentId,
+      'teamId': teamId,
       'position': position.name,
     };
   }

@@ -10,7 +10,7 @@ import '../../utils/navigation_helper.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
-import '../player/my_team_screen.dart';
+import 'my_team_screen.dart';
 import '../player/create_team_screen.dart';
 import '../../models/user.dart';
 import '../../widgets/search_team_widget.dart';

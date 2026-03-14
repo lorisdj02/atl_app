@@ -20,25 +20,25 @@ class FootballTournamentStats {
 
   factory FootballTournamentStats.fromJson(Map<String, dynamic> json) {
     return FootballTournamentStats(
-      playerId: json['player_id'],
-      tournamentId: json['tournament_id'],
-      teamId: json['team_id'],
+      playerId: json['playerId'],
+      tournamentId: json['tournamentId'],
+      teamId: json['teamId'],
       goals: json['goals'] ?? 0,
       motm: json['motm'] ?? 0,
-      yellowCards: json['yellow_cards'] ?? 0,
-      redCards: json['red_cards'] ?? 0,
+      yellowCards: json['yellowCards'] ?? 0,
+      redCards: json['redCards'] ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'player_id': playerId,
-      'tournament_id': tournamentId,
-      'team_id': teamId,
+      'playerId': playerId,
+      'tournamentId': tournamentId,
+      'teamId': teamId,
       'goals': goals,
       'motm': motm,
-      'yellow_cards': yellowCards,
-      'red_cards': redCards,
+      'yellowCards': yellowCards,
+      'redCards': redCards,
     };
   }
 

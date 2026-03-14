@@ -1,5 +1,5 @@
 import 'booking.dart';
-
+import 'sport_category.dart';
 class MatchBooking extends Booking{
   final int coordinatorId;
   final int matchId;
@@ -12,16 +12,17 @@ class MatchBooking extends Booking{
     required DateTime startTime,
     required DateTime finishTime,
     super.status = BookingStatus.booked,
+    super.sportCategory = SportCategory.football,
   }) : super(startTime: startTime, finishTime: finishTime, type: BookingType.match);
 
   factory MatchBooking.fromJson(Map<String, dynamic> json) {
     return MatchBooking(
       id: json['id'],
-      fieldId: json['field_id'],
-      coordinatorId: json['coordinator_id'],
-      matchId: json['match_id'],
-      startTime: DateTime.parse(json['start_time']),
-      finishTime: DateTime.parse(json['finish_time']),
+      fieldId: json['fieldId'],
+      coordinatorId: json['coordinatorId'],
+      matchId: json['matchId'],
+      startTime: DateTime.parse(json['startTime']),
+      finishTime: DateTime.parse(json['finishTime']),
       status: BookingStatusExtension.fromString(json['status']),
     );
   }
@@ -30,11 +31,11 @@ class MatchBooking extends Booking{
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'field_id': fieldId,
-      'coordinator_id': coordinatorId,
-      'match_id': matchId,
-      'start_time': startTime.toIso8601String(),
-      'finish_time': finishTime.toIso8601String(),
+      'fieldId': fieldId,
+      'coordinatorId': coordinatorId,
+      'matchId': matchId,
+      'startTime': startTime.toIso8601String(),
+      'finishTime': finishTime.toIso8601String(),
       'status': status.toShortString(),
     };
   }

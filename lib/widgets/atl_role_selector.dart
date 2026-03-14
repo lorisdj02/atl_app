@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
-
-enum UserRole { coordinator, player, referee, organization }
+import '../models/user.dart';
 
 /// Widget per la selezione del ruolo utente
 class ATLRoleSelector extends StatelessWidget {
@@ -27,6 +26,8 @@ class ATLRoleSelector extends StatelessWidget {
         return Icons.gavel;
       case UserRole.organization:
         return Icons.business;
+      default:
+        return Icons.visibility;
     }
   }
 
@@ -41,6 +42,8 @@ class ATLRoleSelector extends StatelessWidget {
         return loc.referee;
       case UserRole.organization:
         return loc.organization;
+      default:
+        return '';
     }
   }
 
@@ -55,6 +58,8 @@ class ATLRoleSelector extends StatelessWidget {
         return loc.refereeDesc;
       case UserRole.organization:
         return loc.organizationDesc;
+      default:
+        return '';
     }
   }
 

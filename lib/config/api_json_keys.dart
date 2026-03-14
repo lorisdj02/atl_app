@@ -227,4 +227,27 @@ class ApiJsonKeys {
   static const String referralCode = 'referralCode'; // String
   // InviteFriendsScreen
   static const String inviteBalance = 'inviteBalance'; // double
+  // InviteFriendsScreen
+  static const String numRedeemed = "numRedeemed"; // int
+  // InviteFriendsScreen
+  static const String numInvites = "numInvites"; // int
+
+  // CheckoutScreen
+  static const String checkoutSession = 'checkoutSession'; // CheckoutSession
+  // CheckoutScreen
+  static const String tournamentName = 'tournamentName'; // String
+  // CheckoutScreen
+  static const String fieldName = 'fieldName'; // String
+  // CheckoutScreen
+  static const String fieldAddress = 'fieldAddress'; // String
+  // CheckoutScreen
+  static const String bookingUsername = 'bookingUsername'; // String
+  // CheckoutScreen
+  static const String playersToPay = 'playersToPay'; // int
+  // CheckoutScreen
+  static const String startTime = 'startTime'; // DateTime
+  // CheckoutScreen
+  static const String endTime = 'endTime'; // DateTime
+  // CheckoutScreen
+  static const String maxPlayers = 'maxPlayers'; // int
 }

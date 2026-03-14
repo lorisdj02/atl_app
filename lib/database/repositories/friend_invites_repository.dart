@@ -22,14 +22,15 @@ class FriendInvitesRepository extends BaseRepository<FriendInvite> {
     return item.toJson();
   }
 
-  Future<bool> addInvite(int inviterId, int invitedId) async {
+  Future<bool> addInvite({required int inviterUserId,required int invitedUserId}) async {
     if(AppConfig.isDebug){
-      _mockData.add(FriendInvite(inviterId: inviterId, invitedId: invitedId));
+      _mockData.add(FriendInvite(inviterId: inviterUserId, invitedId: invitedUserId));
       return true;
     }else{
       throw UnimplementedError();
     }
   }
+
 
   Future<bool> redeemInvite(int inviterId, int invitedId) async {
     if(AppConfig.isDebug){
@@ -39,6 +40,22 @@ class FriendInvitesRepository extends BaseRepository<FriendInvite> {
       );
       invite.redeemed = true;
       return true;
+    }else{
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> countRedeemedInvitesByUserId(int inviterId) async {
+    if(AppConfig.isDebug){
+      return _mockData.where((invite) => invite.inviterId == inviterId && invite.redeemed).length;
+    }else{
+      throw UnimplementedError();
+    }
+  }
+
+  Future<int> countInvitesByUserId(int inviterId) async {
+    if(AppConfig.isDebug){
+      return _mockData.where((invite) => invite.inviterId == inviterId).length;
     }else{
       throw UnimplementedError();
     }

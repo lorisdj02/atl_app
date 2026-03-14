@@ -135,5 +135,15 @@ class BookingsRepository extends BaseRepository<Booking> {
     }
   }
 
-
+  Future<Booking?> getById(int id) async {
+    if (AppConfig.isDebug) {
+      try {
+        return mockData.firstWhere((booking) => booking.id == id);
+      } catch (e) {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
 }

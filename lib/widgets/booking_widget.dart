@@ -47,7 +47,7 @@ class _BookingWidgetState extends State<BookingWidget> {
     bool isOwner = false;
     if (widget.booking is LobbyBooking) {
       _lobbyBooking = widget.booking as LobbyBooking;
-      isOwner = _lobbyBooking.ownerId == playerId;
+      isOwner = _lobbyBooking.ownerPlayerId == playerId;
     }
 
     final dateFormat = DateFormat('EEE, MMM d');

@@ -263,6 +263,42 @@ class PlayerRepository extends BaseRepository<Player> {
     return players;
   }
 
+  Future<bool> registerPlayer({required String email,
+    required int id,
+    required String username,
+    required String password,
+    required String name,
+    required String surname,
+    required String phone,
+    required DateTime birthdate,
+    String? profilePictureUrl,})async{
+      if(AppConfig.isDebug){
+
+        final int nextPlayerId = (_mockData
+               .map((u) => u.playerId)
+               .fold(0, (prev, curr) => curr > prev ? curr : prev)) +
+           1;
+        final Player newReferee = Player(
+          id: id,
+          name: name,
+          surname: surname,
+          username: username,
+          email: email,
+          phone: phone,
+          firebaseUid: '',
+          createdAt: DateTime.now(),
+          playerId: nextPlayerId,
+          birthdate: birthdate, // Default birthdate
+          passwordMD5: password, // In a real implementation, you would hash the password
+        );
+
+        _mockData.add(newReferee);
+        return true;
+      }else{
+        throw UnimplementedError();
+      }
+    }
+
   Future<Player?> getByPlayerId(int playerId) async {
     if (AppConfig.isDebug) {
       try{
@@ -270,7 +306,6 @@ class PlayerRepository extends BaseRepository<Player> {
       }catch(e){
         return null;
       }
-      
     } else {
       throw UnimplementedError();
     }

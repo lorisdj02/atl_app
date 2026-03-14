@@ -15,11 +15,11 @@ class PlaysAt {
 
   factory PlaysAt.fromJson(Map<String, dynamic> json) {
     return PlaysAt(
-      teamId: json['team_id'] as int,
-      playerId: json['player_id'] as int,
+      teamId: json['teamId'] as int,
+      playerId: json['playerId'] as int,
       joined: DateTime.parse(json['joined'] as String),
       sportCategory: SportCategory.values.firstWhere(
-        (e) => e.toString() == 'SportCategory.${json['sport_category']}',
+        (e) => e.toString() == 'SportCategory.${json['sportCategory']}',
         orElse: () => SportCategory.football,
       ),
     );
@@ -27,10 +27,10 @@ class PlaysAt {
 
   Map<String, dynamic> toJson() {
     return {
-      'team_id': teamId,
-      'player_id': playerId,
+      'teamId': teamId,
+      'playerId': playerId,
       'joined': joined.toIso8601String(),
-      'sport_category': sportCategory.toString().split('.').last,
+      'sportCategory': sportCategory.toString().split('.').last,
     };
   }
 

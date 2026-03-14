@@ -16,20 +16,20 @@ class Order{
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'client_user_id': clientUserId,
+      'clientUserId': clientUserId,
       'price': price,
-      'booking_id': bookingId,
-      'vip_subscription': vipSubscription,
+      'bookingId': bookingId,
+      'vipSubscription': vipSubscription,
     };
   }
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'],
-      clientUserId: json['client_user_id'],
+      clientUserId: json['clientUserId'],
       price: json['price'].toDouble(),
-      bookingId: json['booking_id'],
-      vipSubscription: json['vip_subscription'] ?? false,
+      bookingId: json['bookingId'],
+      vipSubscription: json['vipSubscription'] ?? false,
     );
   }
 }

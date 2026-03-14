@@ -1,4 +1,6 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/providers/user_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../screens/shop/checkout_screen.dart';
@@ -6,6 +8,7 @@ import '../models/tournament.dart';
 import '../models/tournament_participation.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
+import '../models/checkout_session.dart';
 
 class ParticipationCard extends StatefulWidget {
   final TournamentParticipation participation;
@@ -202,7 +205,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
     );
   }
 
-  void _showPaymentDialog() {
+  void _showPaymentDialog() async {
     final toPay = widget.participation.toPay ?? 0;
     final tournamentName = widget.tournament?.name ??
         'Tournament #${widget.participation.tournamentId}';
@@ -280,23 +283,37 @@ class _ParticipationCardState extends State<ParticipationCard> {
           ),
         ],
       ),
-    ).then((chosenAmount) {
+    ).then((chosenAmount) async{
       if (chosenAmount == null || !mounted) return;
 
+      final Map<String, dynamic> payload = {
+        'tournamentId': widget.participation.tournamentId,
+        'teamId': widget.participation.teamId,
+      };
+
+      UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+
+      if(userProvider.activeUser == null){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('User not logged in'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final int sessionId = await DBWrite.createCheckoutSession(
+        userId: userProvider.activeUser!.id,
+        payload: payload,
+        amount: chosenAmount,
+        type: CheckoutType.tournamentFee,
+      );
       Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => CheckoutScreen(
             sportCategory: widget.sportCategory,
-            totalPrice: chosenAmount,
-            genericPurchase: {
-              'name': tournamentName,
-              'description': 'Fee',
-            },
-            onPayPressed: () => DBWrite.updatePayment(
-              widget.participation.tournamentId,
-              widget.participation.teamId,
-              chosenAmount,
-            ),
+            sessionId: sessionId,
           ),
         ),
       ).then((result) {

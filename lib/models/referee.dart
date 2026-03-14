@@ -31,27 +31,27 @@ class Referee extends User {
       id: json['id'],
       username: json['username'],
       email: json['email'],
-      firebaseUid: json['firebase_uid'],
-      createdAt: DateTime.parse(json['created_at']),
-      stripeId: json['stripe_id'],
+      firebaseUid: json['firebaseUid'],
+      createdAt: DateTime.parse(json['createdAt']),
+      stripeId: json['stripeId'],
       isVip: json['isVip'] ?? false,
       phone: json['phone'],
-      refereeId: json['referee_id'],
+      refereeId: json['refereeId'],
       name: json['name'],
       surname: json['surname'],
       level: json['level'],
-      passwordMD5: json['password_md5'],
-      imageUrl: json['image_url'],
+      passwordMD5: json['passwordMd5'],
+      imageUrl: json['imageUrl'],
       birthdate: DateTime.parse(json['birthdate']),
-      startVip: json['start_vip'] != null ? DateTime.parse(json['start_vip']) : null,
-      endVip: json['end_vip'] != null ? DateTime.parse(json['end_vip']) : null,
-      vipType: json['vip_type'] != null ? VipType.values.firstWhere((e) => e.name == json['vip_type']) : VipType.none,
+      startVip: json['startVip'] != null ? DateTime.parse(json['startVip']) : null,
+      endVip: json['endVip'] != null ? DateTime.parse(json['endVip']) : null,
+      vipType: json['vipType'] != null ? VipType.values.firstWhere((e) => e.name == json['vipType']) : VipType.none,
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    return {...super.toJson(), 'referee_id': refereeId, 'level': level};
+    return {...super.toJson(), 'refereeId': refereeId, 'level': level};
   }
 
   String get fullName => '$name $surname';

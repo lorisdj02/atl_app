@@ -1,3 +1,5 @@
+import 'sport_category.dart';
+
 enum BookingStatus { booked, full, inProgress, finished, refound }
 
 enum BookingType { private, lobby, match }
@@ -46,6 +48,7 @@ class Booking {
   BookingStatus status;
   final BookingType type;
   final DateTime createdAt;
+  final SportCategory sportCategory;
 
   Booking({
     required this.id,
@@ -54,6 +57,7 @@ class Booking {
     required DateTime finishTime,
     this.status = BookingStatus.booked,
     required this.type,
+    this.sportCategory = SportCategory.football,
   }) : startTime = startTime.toUtc(),
        finishTime = finishTime.toUtc(),
        createdAt = DateTime.now().toUtc();
@@ -61,25 +65,27 @@ class Booking {
   fromJson(Map<String, dynamic> json) {
     return Booking(
       id: json['id'],
-      fieldId: json['field_id'],
-      startTime: DateTime.parse(json['start_time']),
-      finishTime: DateTime.parse(json['finish_time']),
+      fieldId: json['fieldId'],
+      startTime: DateTime.parse(json['startDateTime']),
+      finishTime: DateTime.parse(json['finishDateTime']),
       status: BookingStatusExtension.fromString(json['status']),
       type: BookingType.values.firstWhere(
         (e) => e.toString() == json['type'],
         orElse: () => BookingType.match,
       ),
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'field_id': fieldId,
-      'start_time': startTime.toIso8601String(),
-      'finish_time': finishTime.toIso8601String(),
+      'fieldId': fieldId,
+      'startDateTime': startTime.toIso8601String(),
+      'finishDateTime': finishTime.toIso8601String(),
       'status': status.toShortString(),
       'type': type.toString(),
+      'sportCategory': sportCategory.toString(),
     };
   }
 }

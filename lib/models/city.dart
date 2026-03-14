@@ -15,8 +15,8 @@ class City {
     return City(
       id: json['id'],
       name: json['name'],
-      centerLat: double.parse(json['center_lat'].toString()),
-      centerLng: double.parse(json['center_lng'].toString()),
+      centerLat: double.parse(json['centerLat'].toString()),
+      centerLng: double.parse(json['centerLng'].toString()),
     );
   }
 
@@ -24,8 +24,8 @@ class City {
     return {
       'id': id,
       'name': name,
-      'center_lat': centerLat,
-      'center_lng': centerLng,
+      'centerLat': centerLat,
+      'centerLng': centerLng,
     };
   }
 }

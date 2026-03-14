@@ -1,48 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../models/field.dart';
-import '../../models/lobby_booking.dart';
-import '../../models/private_booking.dart';
+import '../../models/checkout_session.dart';
 import '../../models/sport_category.dart';
 import '../../models/wallet.dart';
-import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../database/db_read.dart';
+import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final SportCategory sportCategory;
-  final double totalPrice;
-
-  // At most one of the following describes the purchase
-  final LobbyBooking? lobbyBooking;
-  final PrivateBooking? privateBooking;
-  final Map<String, dynamic>? genericPurchase;
-
-  // Display context for bookings
-  final Field? field;
-  final String? cityName;
-  final String? ownerUsername; // lobby only
-  final int? playersToPay; // lobby: how many players the current user pays for
-
-  /// Callback invoked when the user confirms payment.
-  /// Responsible for the actual DB write (booking, join lobby, pay fee, …).
-  /// Returns true on success.
-  final Future<bool> Function() onPayPressed;
+  final int sessionId;
 
   const CheckoutScreen({
     super.key,
     required this.sportCategory,
-    required this.totalPrice,
-    this.lobbyBooking,
-    this.privateBooking,
-    this.genericPurchase,
-    this.field,
-    this.cityName,
-    this.ownerUsername,
-    this.playersToPay,
-    required this.onPayPressed,
+    required this.sessionId,
   });
 
   @override
@@ -50,6 +23,7 @@ class CheckoutScreen extends StatefulWidget {
 }
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
+  CheckoutSession? _session;
   Wallet? _wallet;
   bool _isLoading = true;
   bool _isProcessing = false;
@@ -62,10 +36,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String? _appliedCode;
   String? _discountError;
 
+  // Display data loaded from getCheckoutScreen
+  String? _tournamentName;
+  String? _fieldName;
+  String? _fieldAddress;
+  String? _cityName;
+  String? _bookingUsername;
+  DateTime? _startTime;
+  DateTime? _endTime;
+  int? _maxPlayers;
+  int? _playersToPay;
+
   @override
   void initState() {
     super.initState();
-    _loadWalletData();
+    _loadData();
   }
 
   @override
@@ -74,17 +59,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
-  Future<void> _loadWalletData() async {
+  Future<void> _loadData() async {
     try {
-      final userId =
-          Provider.of<UserProvider>(context, listen: false).activeUser!.id;
-      final data = await DBRead.getCheckoutData(userId);
+      final data = await DBRead.getCheckoutScreen(widget.sessionId);
       setState(() {
+        _session = data[ApiJsonKeys.checkoutSession] as CheckoutSession;
         _wallet = data[ApiJsonKeys.wallet] as Wallet?;
+        _tournamentName = data[ApiJsonKeys.tournamentName] as String?;
+        _fieldName = data[ApiJsonKeys.fieldName] as String?;
+        _fieldAddress = data[ApiJsonKeys.fieldAddress] as String?;
+        _cityName = data[ApiJsonKeys.cityName] as String?;
+        _bookingUsername = data[ApiJsonKeys.bookingUsername] as String?;
+        _startTime = data[ApiJsonKeys.startTime] as DateTime?;
+        _endTime = data[ApiJsonKeys.endTime] as DateTime?;
+        _maxPlayers = data[ApiJsonKeys.maxPlayers] as int?;
+        _playersToPay = data[ApiJsonKeys.playersToPay] as int?;
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading checkout: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -96,9 +97,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     setState(() {
       _discountError = null;
+      final base = _session?.amount ?? 0;
       // Mock: any code starting with 'ATL' gives 10 % off
       if (code.startsWith('ATL')) {
-        _discountAmount = (widget.totalPrice * 0.10 * 100).roundToDouble() / 100;
+        _discountAmount = (base * 0.10 * 100).roundToDouble() / 100;
         _appliedCode = code;
       } else {
         _discountAmount = 0;
@@ -119,21 +121,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   // ── Wallet calculation ────────────────────────────────────────────────────
 
-  /// Returns how much can be deducted from the wallet given the remaining
-  /// amount after discount, respecting the Prize → Invite → Personal order.
   double _walletDeduction() {
-    if (!_useWallet || _wallet == null) return 0;
-    final remaining = widget.totalPrice - _discountAmount;
+    if (!_useWallet || _wallet == null || _session == null) return 0;
+    final remaining = _session!.amount - _discountAmount;
     if (remaining <= 0) return 0;
 
     double available = _wallet!.prizeBalance +
         _wallet!.inviteBalance +
-        _wallet!.balance;
+        _wallet!.personalBalance;
     return available >= remaining ? remaining : available;
   }
 
   double _finalPrice() {
-    final afterDiscount = widget.totalPrice - _discountAmount;
+    if (_session == null) return 0;
+    final afterDiscount = _session!.amount - _discountAmount;
     final afterWallet = afterDiscount - _walletDeduction();
     return afterWallet < 0 ? 0 : afterWallet;
   }
@@ -143,7 +144,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _onPay() async {
     setState(() => _isProcessing = true);
     try {
-      final success = await widget.onPayPressed();
+      final success = await DBWrite.payCheckoutSession(
+        widget.sessionId,
+        useWallet: _useWallet,
+      );
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -232,23 +236,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   // ── Order summary ─────────────────────────────────────────────────────────
 
   Widget _buildOrderSummary() {
+    if (_session == null) return const SizedBox();
     return _SectionCard(
       title: 'Order Summary',
-      child: Column(
-        children: [
-          if (widget.lobbyBooking != null) _buildLobbyDetails(),
-          if (widget.privateBooking != null) _buildPrivateDetails(),
-          if (widget.genericPurchase != null) _buildGenericDetails(),
-        ],
-      ),
+      child: switch (_session!.type) {
+        CheckoutType.tournamentFee => _buildTournamentDetails(),
+        CheckoutType.lobbyBookingCreate ||
+        CheckoutType.lobbyBookingParticipate =>
+          _buildLobbyDetails(),
+        CheckoutType.privateBooking => _buildPrivateDetails(),
+      },
     );
   }
 
   Widget _buildLobbyDetails() {
-    final lobby = widget.lobbyBooking!;
-    final total = lobby.maxPlayers;
-    final paid = widget.playersToPay ?? 1;
-
     return Column(
       children: [
         _buildDetailRow(
@@ -256,33 +257,34 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'Lobby Booking',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
-        if (widget.field != null) ...[
+        if (_fieldName != null) ...[
           const SizedBox(height: 8),
-          _buildDetailRow(Icons.stadium_outlined, widget.field!.name),
+          _buildDetailRow(Icons.stadium_outlined, _fieldName!),
           _buildDetailRow(
             Icons.location_on_outlined,
-            widget.field!.address +
-                (widget.cityName != null ? ', ${widget.cityName}' : ''),
+            '${_fieldAddress ?? ''}${_cityName != null ? ', $_cityName' : ''}',
           ),
         ],
-        const SizedBox(height: 4),
-        _buildDetailRow(
-          Icons.access_time,
-          '${_formatTime(lobby.startTime)} – ${_formatTime(lobby.finishTime)}'
-              '  •  ${_formatDate(lobby.startTime)}',
-        ),
-        _buildDetailRow(
-          Icons.group_outlined,
-          'Players: $paid paid / $total total',
-        ),
-        if (widget.ownerUsername != null)
-          _buildDetailRow(Icons.person_outlined, 'Owner: ${widget.ownerUsername}'),
+        if (_startTime != null && _endTime != null) ...[
+          const SizedBox(height: 4),
+          _buildDetailRow(
+            Icons.access_time,
+            '${_formatTime(_startTime!)} – ${_formatTime(_endTime!)}'
+                '  •  ${_formatDate(_startTime!)}',
+          ),
+        ],
+        if (_playersToPay != null && _maxPlayers != null)
+          _buildDetailRow(
+            Icons.group_outlined,
+            'Players: $_playersToPay paid / $_maxPlayers total',
+          ),
+        if (_bookingUsername != null)
+          _buildDetailRow(Icons.person_outlined, 'Owner: $_bookingUsername'),
       ],
     );
   }
 
   Widget _buildPrivateDetails() {
-    final booking = widget.privateBooking!;
     return Column(
       children: [
         _buildDetailRow(
@@ -290,41 +292,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           'Private Booking',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
-        if (widget.field != null) ...[
+        if (_fieldName != null) ...[
           const SizedBox(height: 8),
-          _buildDetailRow(Icons.stadium_outlined, widget.field!.name),
+          _buildDetailRow(Icons.stadium_outlined, _fieldName!),
           _buildDetailRow(
             Icons.location_on_outlined,
-            widget.field!.address +
-                (widget.cityName != null ? ', ${widget.cityName}' : ''),
+            '${_fieldAddress ?? ''}${_cityName != null ? ', $_cityName' : ''}',
           ),
         ],
-        const SizedBox(height: 4),
-        _buildDetailRow(
-          Icons.access_time,
-          '${_formatTime(booking.startTime)} – ${_formatTime(booking.finishTime)}'
-              '  •  ${_formatDate(booking.startTime)}',
-        ),
+        if (_startTime != null && _endTime != null) ...[
+          const SizedBox(height: 4),
+          _buildDetailRow(
+            Icons.access_time,
+            '${_formatTime(_startTime!)} – ${_formatTime(_endTime!)}'
+                '  •  ${_formatDate(_startTime!)}',
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildGenericDetails() {
-    final purchase = widget.genericPurchase!;
-    final name = purchase['name']?.toString() ?? 'Purchase';
-    final description = purchase['description']?.toString() ?? '';
+  Widget _buildTournamentDetails() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDetailRow(
           Icons.receipt_outlined,
-          name,
+          _tournamentName ?? 'Tournament',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
-        if (description.isNotEmpty) ...[
-          const SizedBox(height: 4),
-          _buildDetailRow(Icons.info_outline, description),
-        ],
+        const SizedBox(height: 4),
+        _buildDetailRow(Icons.info_outline, 'Fee'),
       ],
     );
   }
@@ -503,7 +500,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const SizedBox(height: 4),
                     _buildBalanceRow(
                         'Personal balance',
-                        _wallet?.balance ?? 0,
+                        _wallet?.personalBalance ?? 0,
                         _primaryColor),
                     const SizedBox(height: 8),
                     const Divider(height: 1),
@@ -512,7 +509,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         'Total available',
                         (_wallet?.prizeBalance ?? 0) +
                             (_wallet?.inviteBalance ?? 0) +
-                            (_wallet?.balance ?? 0),
+                            (_wallet?.personalBalance ?? 0),
                         ATLColors.darkBlue,
                         bold: true),
                   ],
@@ -532,7 +529,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ],
           if (_useWallet && _wallet != null) ...[
-            if ((_wallet!.prizeBalance + _wallet!.inviteBalance + _wallet!.balance) == 0)
+            if ((_wallet!.prizeBalance + _wallet!.inviteBalance + _wallet!.personalBalance) == 0)
               const Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text(
@@ -584,12 +581,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildPriceSummary() {
     final walletDed = _walletDeduction();
     final finalPrice = _finalPrice();
+    final baseAmount = _session?.amount ?? 0;
 
     return _SectionCard(
       title: 'Price Summary',
       child: Column(
         children: [
-          _buildPriceRow('Subtotal', widget.totalPrice),
+          _buildPriceRow('Subtotal', baseAmount),
           if (_discountAmount > 0)
             _buildPriceRow('Discount ($_appliedCode)',
                 -_discountAmount, color: Colors.green),
@@ -657,7 +655,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ],
       ),
       child: ElevatedButton(
-        onPressed: _isProcessing ? null : _onPay,
+        onPressed: (_isProcessing || _session == null) ? null : _onPay,
         style: ElevatedButton.styleFrom(
           backgroundColor: _primaryColor,
           foregroundColor: Colors.white,

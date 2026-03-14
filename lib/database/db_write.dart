@@ -1,4 +1,5 @@
 import 'package:atl_app/models/callup.dart';
+import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/plays_at.dart';
@@ -95,12 +96,12 @@ class DBWrite {
     }
   }
 
-  static Future<bool> createPrivateBooking(
-    int playerId,
-    int fieldId,
-    DateTime startDateTime,
-    DateTime endDateTime,
-  ) async {
+  static Future<bool> createPrivateBooking({
+    required int playerId,
+    required int fieldId,
+    required DateTime startDateTime,
+    required DateTime endDateTime,
+  }) async {
     if (AppConfig.isDebug == true) {
       return await DB.PrivateBookings.addPrivateBooking(
         playerId,
@@ -374,23 +375,23 @@ class DBWrite {
     }
   }
 
-  static Future<bool> createLobby(
-    int fieldId,
-    int ownerId,
-    int maxPlayers,
-    int playerToFind,
-    double feePerPlayer,
-    DateTime startDateTime,
-    DateTime endDateTime,
-  ) async {
+  static Future<bool> createLobby({
+    required int fieldId,
+    required int ownerPlayerId,
+    required int maxPlayers,
+    required int playersToFind,
+    required double feePerPlayer,
+    required DateTime startDateTime,
+    required DateTime endDateTime,
+  }) async {
     if (AppConfig.isDebug == true) {
       final id = await DB.LobbyBookings.addLobbyBooking(
-        ownerId,
+        ownerPlayerId,
         fieldId,
         startDateTime,
         endDateTime,
         maxPlayers,
-        playerToFind,
+        playersToFind,
         feePerPlayer,
       );
       if (id == -1) {
@@ -399,15 +400,12 @@ class DBWrite {
 
       if ((await DB.LobbyBookingParticipations.addParticipation(
             id,
-            ownerId,
-            maxPlayers - playerToFind,
+            ownerPlayerId,
+            maxPlayers - playersToFind,
           )) ==
           false) {
         return false;
       }
-
-      print('Lobby $id created with owner $ownerId');
-      print('Max players: $maxPlayers, Players to find: $playerToFind');
 
       return true;
     } else {
@@ -415,14 +413,14 @@ class DBWrite {
     }
   }
 
-  static Future<bool> joinLobby(
-    int lobbyBookingId,
-    int playerId,
-    int playersPaid,
-  ) async {
+  static Future<bool> joinLobby({
+    required int lobbyId,
+    required int playerId,
+    required int playersPaid,
+  }) async {
     if (AppConfig.isDebug == true) {
       if ((await DB.LobbyBookingParticipations.addParticipation(
-            lobbyBookingId,
+            lobbyId,
             playerId,
             playersPaid,
           )) ==
@@ -431,13 +429,13 @@ class DBWrite {
       }
 
       if ((await DB.LobbyBookings.decreasePlayersToFind(
-            lobbyBookingId,
+            lobbyId,
             playersPaid,
           )) ==
           false) {
         await DB.LobbyBookingParticipations.removeParticipation(
           playerId,
-          lobbyBookingId,
+          lobbyId,
         );
         return false;
       }
@@ -453,7 +451,7 @@ class DBWrite {
     deleteAccount = false,
   }) async {
     if (AppConfig.isDebug == true) {
-      if ((await DB.LobbyBookings.getById(lobbyBookingId))?.ownerId !=
+      if ((await DB.LobbyBookings.getById(lobbyBookingId))?.ownerPlayerId !=
           playerId) {
         return false;
       }
@@ -479,7 +477,7 @@ class DBWrite {
     deleteAccount = false,
   }) async {
     if (AppConfig.isDebug == true) {
-      if ((await DB.LobbyBookings.getById(lobbyBookingId))?.ownerId ==
+      if ((await DB.LobbyBookings.getById(lobbyBookingId))?.ownerPlayerId ==
           playerId) {
         return deleteLobby(
           lobbyBookingId,
@@ -611,7 +609,7 @@ class DBWrite {
     }
   }
 
-  static Future<bool> updatePayment(
+  static Future<bool> updateTournamentParticipationPayment(
     int tournamentId,
     int teamId,
     double amount,
@@ -1530,7 +1528,6 @@ class DBWrite {
 
   static Future<bool> startTournament(int tournamentId) async {
     if (AppConfig.isDebug) {
-
       final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
       if (tournament == null) {
         return false;
@@ -1538,14 +1535,12 @@ class DBWrite {
 
       final int tourCoordinatorId = tournament.coordinatorId;
 
-      final Coordinator? coordinator = (await DB.Coordinators.getByCoordinatorId(
-        tourCoordinatorId,
-      ));
+      final Coordinator? coordinator =
+          (await DB.Coordinators.getByCoordinatorId(tourCoordinatorId));
 
       if (coordinator == null) {
         return false;
       }
-
 
       /*
       Map<int, double> refundPerTeams = await DB
@@ -1810,6 +1805,170 @@ class DBWrite {
     }
   }
 
+  static Future<int> createCheckoutSession({
+    required int userId,
+    required Map<String, dynamic> payload,
+    required double amount,
+    required CheckoutType type,
+  }) async {
+    if (AppConfig.isDebug) {
+      return await DB.CheckoutSessions.createCheckoutSession(
+        userId: userId,
+        payload: jsonEncode(payload),
+        amount: amount,
+        type: type,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> payCheckoutSession(int sessionId, {bool useWallet = false}) async {
+    if (AppConfig.isDebug) {
+      final CheckoutSession? session = await DB.CheckoutSessions.getById(
+        sessionId,
+      );
+      if (session == null) {
+        return false;
+      }
+
+      if (session.status != CheckoutSessionStatus.pending) {
+        return false; // La sessione deve essere in stato "pending" per essere pagata
+      }
+
+      switch (session.type) {
+        case CheckoutType.tournamentFee:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? tournamentId = payload['tournamentId'];
+          final int? teamId = payload['teamId'];
+          if (tournamentId == null || teamId == null) {
+            return false;
+          }
+
+          // TODO: implementa il pagamento
+          print(
+            'Pagato importo ${session.amount} per la partecipazione al torneo $tournamentId della squadra $teamId',
+          );
+
+          if (await DBWrite.updateTournamentParticipationPayment(
+                tournamentId,
+                teamId,
+                session.amount,
+              ) ==
+              false) {
+            return false;
+          }
+
+          if (await DB.CheckoutSessions.updateStatus(
+                session.id,
+                CheckoutSessionStatus.completed,
+              ) ==
+              false) {
+            return false;
+          }
+
+          break;
+        case CheckoutType.privateBooking:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? fieldId = payload['fieldId'];
+          final String? startDateTimeStr = payload['startDateTime'];
+          final String? endDateTimeStr = payload['endDateTime'];
+
+          final int? playerId = payload['playerId'];
+          if (fieldId == null ||
+              startDateTimeStr == null ||
+              endDateTimeStr == null ||
+              playerId == null) {
+            return false;
+          }
+
+          final DateTime startDateTime = DateTime.parse(startDateTimeStr);
+          final DateTime endDateTime = DateTime.parse(endDateTimeStr);
+
+          // TODO: implementa il pagamento
+          print(
+            'Pagato importo ${session.amount} per la prenotazione del campo $fieldId da parte del giocatore $playerId',
+          );
+
+          if (await DBWrite.createPrivateBooking(
+                playerId: playerId,
+                fieldId: fieldId,
+                startDateTime: startDateTime,
+                endDateTime: endDateTime,
+              ) ==
+              false) {
+            return false;
+          }
+          break;
+        case CheckoutType.lobbyBookingCreate:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? fieldId = payload['fieldId'];
+          final int? ownerPlayerId = payload['ownerPlayerId'];
+          final int? maxPlayers = payload['maxPlayers'];
+          final int? playersToFind = payload['playersToFind'];
+          final double? feePerPlayer = payload['feePerPlayer'];
+          final String? startDateTimeStr = payload['startDateTime'];
+          final String? endDateTimeStr = payload['endDateTime'];
+          if (fieldId == null ||
+              ownerPlayerId == null ||
+              maxPlayers == null ||
+              playersToFind == null ||
+              feePerPlayer == null ||
+              startDateTimeStr == null ||
+              endDateTimeStr == null) {
+            return false;
+          }
+          final DateTime startDateTime = DateTime.parse(startDateTimeStr);
+          final DateTime endDateTime = DateTime.parse(endDateTimeStr);
+
+          //TODO: implementa il pagamento
+          print(
+            'Pagato importo ${session.amount} per la creazione della lobby sul campo $fieldId da parte del giocatore $ownerPlayerId',
+          );
+
+          if (await DBWrite.createLobby(
+                fieldId: fieldId,
+                ownerPlayerId: ownerPlayerId,
+                maxPlayers: maxPlayers,
+                playersToFind: playersToFind,
+                feePerPlayer: feePerPlayer,
+                startDateTime: startDateTime,
+                endDateTime: endDateTime,
+              ) ==
+              false) {
+            return false;
+          }
+          break;
+        case CheckoutType.lobbyBookingParticipate:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? lobbyId = payload['lobbyId'];
+          final int? playerId = payload['playerId'];
+          final int? playersPaid = payload['playersPaid'];
+          if (lobbyId == null || playerId == null || playersPaid == null) {
+            return false;
+          }
+
+          if (await DBWrite.joinLobby(
+                lobbyId: lobbyId,
+                playerId: playerId,
+                playersPaid: playersPaid,
+              ) ==
+              false) {
+            return false;
+          }
+          break;
+      }
+
+      return await DB.CheckoutSessions.updateStatus(
+            session.id,
+            CheckoutSessionStatus.completed,
+          ) ==
+          true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   static Future<bool> commitReview(
     int reviewId, {
     required double rating,
@@ -1903,6 +2062,56 @@ class DBWrite {
         default:
           return false;
       }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> registerUser({
+    required String email,
+    required String username,
+    required String password,
+    required String name,
+    required String surname,
+    required UserRole role,
+    required String phone,
+    required DateTime birthdate,
+    String? inviteCode,
+    String? profilePictureUrl,
+  })async {
+    if(AppConfig.isDebug){
+
+      final int newId = await DB.Users.registerUser(
+        email: email,
+        username: username,
+        password: password,
+        name: name,
+        surname: surname,
+        role: role,
+        phone: phone,
+        birthdate: birthdate,
+        profilePictureUrl: profilePictureUrl,
+      );
+
+      bool hasBeenInvited = false;
+      // Per ora, inviteCode = Username
+      if(inviteCode == null){
+        return true;
+      }
+      final User? inviterUser = await DB.Users.getByUsername(inviteCode);
+      if(inviterUser != null){
+        if(await DB.FriendInvites.addInvite(inviterUserId: inviterUser.id, invitedUserId: newId) == false){
+          return false;
+        }
+
+        hasBeenInvited = true;
+      }
+
+      if(await DB.Wallets.addWallet(userId: newId, hasBeenInvited: hasBeenInvited) == false){
+        return false;
+      }
+
       return true;
     } else {
       throw UnimplementedError();

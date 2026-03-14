@@ -20,6 +20,8 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
   bool _isLoading = true;
   String? _referralCode;
   double _inviteBalance = 0.0;
+  int _numInvites = 0;
+  int _numRedeemed = 0;
 
   @override
   void initState() {
@@ -35,12 +37,14 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       return;
     }
     try {
-      final data = await DBRead().getInviteFriendsScreen(user.id);
+      final data = await DBRead.getInviteFriendsScreen(user.id);
       if (mounted) {
         setState(() {
           _referralCode = data[ApiJsonKeys.referralCode] as String?;
           _inviteBalance =
               (data[ApiJsonKeys.inviteBalance] as num).toDouble();
+          _numInvites = (data[ApiJsonKeys.numInvites] as num).toInt();
+          _numRedeemed = (data[ApiJsonKeys.numRedeemed] as num).toInt();
           _isLoading = false;
         });
       }
@@ -57,6 +61,32 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         content: Text('Code copied to clipboard!'),
         backgroundColor: Colors.green,
       ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, color: ATLColors.darkBlue, size: 24),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: ATLColors.darkBlue,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: ATLColors.subtext),
+        ),
+      ],
     );
   }
 
@@ -193,6 +223,42 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Stats card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStatItem(
+                      icon: Icons.group_outlined,
+                      label: 'Friends joined',
+                      value: '$_numInvites',
+                    ),
+                  ),
+                  Container(width: 1, height: 48, color: Colors.grey.shade200),
+                  Expanded(
+                    child: _buildStatItem(
+                      icon: Icons.redeem_outlined,
+                      label: 'Redeems',
+                      value: '$_numRedeemed',
                     ),
                   ),
                 ],

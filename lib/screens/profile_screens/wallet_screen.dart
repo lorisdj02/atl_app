@@ -187,7 +187,7 @@ class _WalletScreenState extends State<WalletScreen> {
       );
     }
 
-    final balance = _wallet?.balance ?? 0.0;
+    final balance = _wallet?.personalBalance ?? 0.0;
     final prizeBalance = _wallet?.prizeBalance ?? 0.0;
     final netPrize = prizeBalance * 0.8; // TODO: check real tax retention
 

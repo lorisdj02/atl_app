@@ -4,7 +4,7 @@ import '../../providers/user_provider.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_floating_button.dart';
-import '../player/abstract_team_screen.dart';
+import 'abstract_team_screen.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
@@ -45,7 +45,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
 
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
-        final data = await DBRead.getTeamDetailScreen(widget.teamId, playerId!);
+        final data = await DBRead.getTeamDetailScreen(playerId!, widget.teamId);
         setState(() {
           _existingRequest = data[ApiJsonKeys.existingRequest];
           _isPlayerInTeam = data[ApiJsonKeys.isPlayerInTeam];
