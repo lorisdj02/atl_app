@@ -38,6 +38,12 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
       payPerMatch: 25.0,
     ),
     RefereeRoles(
+      sportId: 1,
+      name: 'MAIN',
+      level: 4,
+      payPerMatch: 30.0,
+    ),
+    RefereeRoles(
       sportId: 2,
       name: 'MAIN',
       level: 1,
@@ -56,6 +62,12 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
       payPerMatch: 28.0,
     ),
     RefereeRoles(
+      sportId: 2,
+      name: 'MAIN',
+      level: 4,
+      payPerMatch: 35.0,
+    ),
+    RefereeRoles(
       sportId: 3,
       name: 'MAIN',
       level: 1,
@@ -72,6 +84,12 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
       name: 'MAIN',
       level: 3,
       payPerMatch: 30.0,
+    ),
+    RefereeRoles(
+      sportId: 3,
+      name: 'MAIN',
+      level: 4,
+      payPerMatch: 35.0,
     ),
     RefereeRoles(
       sportId: 4,
@@ -93,6 +111,12 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
     ),
     RefereeRoles(
       sportId: 4,
+      name: 'MAIN',
+      level: 4,
+      payPerMatch: 50.0,
+    ),
+    RefereeRoles(
+      sportId: 4,
       name: 'ASSISTANT1',
       level: 1,
       payPerMatch: 15.0,
@@ -109,6 +133,12 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
       level: 3,
       payPerMatch: 20.0,
     ),
+      RefereeRoles(
+        sportId: 4,
+        name: 'ASSISTANT1',
+        level: 4,
+        payPerMatch: 25.0,
+      ),
     RefereeRoles(
       sportId: 4,
       name: 'ASSISTANT2',
@@ -126,6 +156,12 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
       name: 'ASSISTANT2',
       level: 3,
       payPerMatch: 20.0,
+    ),
+    RefereeRoles(
+      sportId: 4,
+      name: 'ASSISTANT2',
+      level: 4,
+      payPerMatch: 25.0,
     ),
   ];
 

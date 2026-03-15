@@ -9,6 +9,7 @@ import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/football_match_event.dart';
 import 'package:atl_app/models/football_standing.dart';
 import 'package:atl_app/models/football_tournament_stats.dart';
+import 'package:atl_app/models/growth_step.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:atl_app/models/lobby_booking_participation.dart';
 import 'package:atl_app/models/palmares.dart';
@@ -17,6 +18,7 @@ import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/referee.dart';
 import 'package:atl_app/models/referee_assignment.dart';
 import 'package:atl_app/models/referee_license.dart';
+import 'package:atl_app/models/referee_roles.dart';
 import 'package:atl_app/models/review.dart';
 import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/team.dart';
@@ -41,6 +43,127 @@ class DBRead {
   ) async {
     if (AppConfig.isDebug) {
       return await DB.Teams.isNameUniqueInCategory(teamName, category);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getBookFieldScreen() async {
+    if (AppConfig.isDebug) {
+      Map<int, TimeOfDay> minOpeningTimePerCity = {};
+      Map<int, TimeOfDay> maxClosingTimePerCity = {};
+      List<City> cities = await DB.Cities.getAll();
+
+      for (var city in cities) {
+        minOpeningTimePerCity[city.id] = TimeOfDay(hour: 23, minute: 59);
+        maxClosingTimePerCity[city.id] = TimeOfDay(hour: 0, minute: 0);
+      }
+
+      for (var city in cities) {
+        final cityFields = await DB.Fields.getByCity(city.id);
+        for (var field in cityFields) {
+          if (field.openingTime.isBefore(
+            minOpeningTimePerCity[field.cityId]!,
+          )) {
+            minOpeningTimePerCity[city.id] = TimeOfDay(
+              hour: field.openingTime.hour,
+              minute: field.openingTime.minute,
+            );
+          }
+          if (field.closingTime.isAfter(maxClosingTimePerCity[field.cityId]!)) {
+            maxClosingTimePerCity[city.id] = TimeOfDay(
+              hour: field.closingTime.hour,
+              minute: field.closingTime.minute,
+            );
+          }
+        }
+      }
+      return {
+        ApiJsonKeys.cities: cities,
+        ApiJsonKeys.minOpeningTimePerCity: minOpeningTimePerCity,
+        ApiJsonKeys.maxClosingTimePerCity: maxClosingTimePerCity,
+      };
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<Map<String, dynamic>> getMyGrowthScreen(int userId) async {
+    if (AppConfig.isDebug) {
+      final User? user = await DB.Users.getByUserId(userId);
+      if (user == null) {
+        throw Exception("User not found");
+      }
+
+      switch (user.role) {
+        case UserRole.coordinator:
+          final Coordinator? coordinator = await DB.Coordinators.getByUserId(
+            userId,
+          );
+          if (coordinator == null) {
+            throw Exception("Coordinator not found for user");
+          }
+
+          final int level = coordinator.level;
+          final List<GrowthStep> growthSteps = await DB
+              .GrowthSteps.getGrowthStepByType(GrowthStepType.coordinator);
+          return {
+            ApiJsonKeys.growthSteps: growthSteps,
+            ApiJsonKeys.level: level,
+          };
+        case UserRole.referee:
+          final Referee? referee = await DB.Referees.getByUserId(userId);
+          if (referee == null) {
+            throw Exception("Referee not found for user");
+          }
+          final int level = referee.level;
+          final List<GrowthStep> growthSteps =
+              await DB.GrowthSteps.getGrowthStepByType(GrowthStepType.referee);
+
+          Map<int, Map<SportCategory, double>>
+          minRefereePayPerCategoryPerLevel = {};
+          Map<int, Map<SportCategory, double>>
+          maxRefereePayPerCategoryPerLevel = {};
+
+          for (int x = 1; x <= growthSteps.length; x++) {
+              minRefereePayPerCategoryPerLevel[x] = {};
+              maxRefereePayPerCategoryPerLevel[x] = {};
+            }
+
+          for (var category in SportCategory.values) {
+            final List<Sport> sportsInCategory = await DB.Sports.getByCategory(
+              category,
+            );
+
+            for (var sport in sportsInCategory) {
+              final List<RefereeRoles> roles =
+                  await DB.RefereeRoles.getBySportId(sport.id);
+
+              for (var role in roles) {
+                minRefereePayPerCategoryPerLevel[role.level]!.update(
+                  category,
+                  (existing) => min(existing, role.payPerMatch),
+                  ifAbsent: () => role.payPerMatch,
+                );
+
+                maxRefereePayPerCategoryPerLevel[role.level]!.update(
+                  category,
+                  (existing) => max(existing, role.payPerMatch),
+                  ifAbsent: () => role.payPerMatch,
+                );
+              }
+            }
+          }
+
+          return {
+            ApiJsonKeys.growthSteps: growthSteps,
+            ApiJsonKeys.level: level,
+            ApiJsonKeys.minRefereePayPerCategoryPerLevel: minRefereePayPerCategoryPerLevel,
+            ApiJsonKeys.maxRefereePayPerCategoryPerLevel: maxRefereePayPerCategoryPerLevel,
+          };
+        default:
+          return {};
+      }
     } else {
       throw UnimplementedError();
     }
@@ -2204,10 +2327,10 @@ class DBRead {
       if (session == null) {
         throw Exception("Checkout session not found");
       }
-      if (session.expiresAt.isBefore(DateTime.now())){
+      if (session.expiresAt.isBefore(DateTime.now())) {
         throw Exception("Checkout session has expired");
-    }
-      if (session.status != CheckoutSessionStatus.pending){
+      }
+      if (session.status != CheckoutSessionStatus.pending) {
         throw Exception("Checkout session is not pending");
       }
 
@@ -2227,13 +2350,15 @@ class DBRead {
       switch (session.type) {
         case CheckoutType.tournamentFee:
           final int? tournamentId = payload["tournamentId"];
-          if (tournamentId == null){
-            throw Exception("Tournament ID not found in payload");}
+          if (tournamentId == null) {
+            throw Exception("Tournament ID not found in payload");
+          }
           final Tournament? tournament = await DB.Tournaments.getById(
             tournamentId,
           );
-          if (tournament == null){
-            throw Exception("Tournament not found for ID $tournamentId");}
+          if (tournament == null) {
+            throw Exception("Tournament not found for ID $tournamentId");
+          }
           tournamentName = tournament.name;
           break;
 
@@ -2243,18 +2368,21 @@ class DBRead {
           final LobbyBooking? lobby = await DB.LobbyBookings.getById(lobbyId);
           if (lobby == null) throw Exception("Lobby not found for ID $lobbyId");
           final Field? field = await DB.Fields.getById(lobby.fieldId);
-          if (field == null){
-            throw Exception("Field not found for ID ${lobby.fieldId}");}
+          if (field == null) {
+            throw Exception("Field not found for ID ${lobby.fieldId}");
+          }
           final City? city = await DB.Cities.getById(field.cityId);
-          if (city == null){
-            throw Exception("City not found for ID ${field.cityId}");}
+          if (city == null) {
+            throw Exception("City not found for ID ${field.cityId}");
+          }
           final Player? owner = await DB.Players.getByPlayerId(
             lobby.ownerPlayerId,
           );
-          if (owner == null){
+          if (owner == null) {
             throw Exception(
               "Owner player not found for ID ${lobby.ownerPlayerId}",
-            );}
+            );
+          }
           fieldName = field.name;
           fieldAddress = field.address;
           cityName = city.name;
@@ -2281,11 +2409,13 @@ class DBRead {
           final Field? field = await DB.Fields.getById(fieldId);
           if (field == null) throw Exception("Field not found for ID $fieldId");
           final City? city = await DB.Cities.getById(field.cityId);
-          if (city == null){
-            throw Exception("City not found for ID ${field.cityId}");}
+          if (city == null) {
+            throw Exception("City not found for ID ${field.cityId}");
+          }
           final Player? owner = await DB.Players.getByPlayerId(ownerPlayerId);
-          if (owner == null){
-            throw Exception("Owner player not found for ID $ownerPlayerId");}
+          if (owner == null) {
+            throw Exception("Owner player not found for ID $ownerPlayerId");
+          }
           fieldName = field.name;
           fieldAddress = field.address;
           cityName = city.name;
@@ -2308,7 +2438,7 @@ class DBRead {
           final Field? field = await DB.Fields.getById(fieldId);
           if (field == null) throw Exception("Field not found for ID $fieldId");
           final City? city = await DB.Cities.getById(field.cityId);
-          if (city == null){
+          if (city == null) {
             throw Exception("City not found for ID ${field.cityId}");
           }
           fieldName = field.name;

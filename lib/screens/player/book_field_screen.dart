@@ -44,6 +44,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   bool _isLoading = false;
   List<Field> _fields = [];
   List<City> _cities = [];
+  Map<int, TimeOfDay> _minOpeningTimePerCity = {};
+  Map<int, TimeOfDay> _maxClosingTimePerCity = {};
 
   // Available player counts
   final List<int> _availablePlayerCounts = [];
@@ -91,16 +93,20 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final data = await DBRead.getCities();
-      final cities = data[ApiJsonKeys.cities] as List<City>;
+      final data = await DBRead.getBookFieldScreen();
+
       final preferredCityId = Provider.of<UserProvider>(
         context,
         listen: false,
       ).cityId;
       setState(() {
-        _cities = cities;
+        _cities = data[ApiJsonKeys.cities] as List<City>;
+        _minOpeningTimePerCity =
+            data[ApiJsonKeys.minOpeningTimePerCity] as Map<int, TimeOfDay>;
+        _maxClosingTimePerCity =
+            data[ApiJsonKeys.maxClosingTimePerCity] as Map<int, TimeOfDay>;
         if (preferredCityId != null &&
-            cities.any((c) => c.id == preferredCityId)) {
+            _cities.any((c) => c.id == preferredCityId)) {
           _selectedCity = preferredCityId;
         }
       });
@@ -312,7 +318,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     }
   }
 
-  Future<void> _selectTime(bool isStartTime) async {
+  Future<void> _selectTime(bool isStartTime, int cityId) async {
     // Check if date is selected first
     if (_selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -333,8 +339,23 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _selectedDate!.month == now.month &&
         _selectedDate!.day == now.day;
 
-    for (int hour = 0; hour < 24; hour++) {
+    final int minHour = _minOpeningTimePerCity[cityId]?.hour ?? 0;
+    final int maxHour = _maxClosingTimePerCity[cityId]?.hour ?? 24;
+
+    final int minMinute = _minOpeningTimePerCity[cityId]?.minute ?? 0;
+    final int maxMinute = _maxClosingTimePerCity[cityId]?.minute ?? 0;
+
+    for (
+      int hour = (isStartTime ? minHour : minHour + 1);
+      hour <= (isStartTime ? maxHour - 1 : maxHour);
+      hour++
+    ) {
+      // -1 to ensure at least 1 hour booking
       for (int minute in [0, 15, 30, 45]) {
+        if ((hour == maxHour - 1 && minute > maxMinute) ||
+            (hour == minHour && minute < minMinute)) {
+          continue; // Skip time slots that would end after closing time
+        }
         final time = TimeOfDay(hour: hour, minute: minute);
 
         // Skip past times if selecting for today
@@ -756,7 +777,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Start Time Picker
         GestureDetector(
-          onTap: () => _selectTime(true),
+          onTap: () => _selectTime(true, _selectedCity!),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -789,7 +810,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // End Time Picker
         GestureDetector(
-          onTap: () => _selectTime(false),
+          onTap: () => _selectTime(false, _selectedCity!),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

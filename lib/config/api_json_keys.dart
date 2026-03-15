@@ -250,4 +250,16 @@ class ApiJsonKeys {
   static const String endTime = 'endTime'; // DateTime
   // CheckoutScreen
   static const String maxPlayers = 'maxPlayers'; // int
+
+  // BookFieldScreen
+  static const String minOpeningTimePerCity = 'minOpeningTimePerCity'; // Map<int, TimeOfDay>
+  // BookFieldScreen
+  static const String maxClosingTimePerCity = 'maxClosingTimePerCity'; // Map<int, TimeOfDay>
+
+  // GrowthScreen
+  static const String growthSteps = 'growthSteps'; // List<GrowthStep>
+  // GrowthScreen
+  static const String minRefereePayPerCategoryPerLevel = 'minRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
+  // Growth Screen
+  static const String maxRefereePayPerCategoryPerLevel = 'maxRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
 }

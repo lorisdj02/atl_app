@@ -18,14 +18,14 @@ class RegistrationScreenStep1 extends StatelessWidget {
     return Column(
       children: [
         ATLRoleSelector(
-          role: UserRole.coordinator,
-          isSelected: selectedRole == UserRole.coordinator,
-          onTap: () => onRoleSelected(UserRole.coordinator),
-        ),
-        ATLRoleSelector(
           role: UserRole.player,
           isSelected: selectedRole == UserRole.player,
           onTap: () => onRoleSelected(UserRole.player),
+        ),
+        ATLRoleSelector(
+          role: UserRole.coordinator,
+          isSelected: selectedRole == UserRole.coordinator,
+          onTap: () => onRoleSelected(UserRole.coordinator),
         ),
         ATLRoleSelector(
           role: UserRole.referee,
