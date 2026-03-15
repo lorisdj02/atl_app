@@ -1,8 +1,12 @@
+import 'package:atl_app/models/booking.dart';
 import 'package:atl_app/models/callup.dart';
 import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/coordinator.dart';
+import 'package:atl_app/models/lobby_booking.dart';
+import 'package:atl_app/models/lobby_booking_participation.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/plays_at.dart';
+import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/referee.dart';
 import 'package:atl_app/models/review.dart';
 import 'package:atl_app/models/team_request.dart';
@@ -101,6 +105,7 @@ class DBWrite {
     required int fieldId,
     required DateTime startDateTime,
     required DateTime endDateTime,
+    required SportCategory sportCategory,
   }) async {
     if (AppConfig.isDebug == true) {
       return await DB.PrivateBookings.addPrivateBooking(
@@ -108,6 +113,7 @@ class DBWrite {
         fieldId,
         startDateTime,
         endDateTime,
+        sportCategory,
       );
     } else {
       throw UnimplementedError();
@@ -383,6 +389,7 @@ class DBWrite {
     required double feePerPlayer,
     required DateTime startDateTime,
     required DateTime endDateTime,
+    required SportCategory sportCategory,
   }) async {
     if (AppConfig.isDebug == true) {
       final id = await DB.LobbyBookings.addLobbyBooking(
@@ -393,6 +400,7 @@ class DBWrite {
         maxPlayers,
         playersToFind,
         feePerPlayer,
+        sportCategory,
       );
       if (id == -1) {
         return false;
@@ -402,6 +410,7 @@ class DBWrite {
             id,
             ownerPlayerId,
             maxPlayers - playersToFind,
+            feePerPlayer * (maxPlayers - playersToFind),
           )) ==
           false) {
         return false;
@@ -419,10 +428,15 @@ class DBWrite {
     required int playersPaid,
   }) async {
     if (AppConfig.isDebug == true) {
+      final lobby = await DB.LobbyBookings.getById(lobbyId);
+      if (lobby == null) {
+        return false;
+      }
       if ((await DB.LobbyBookingParticipations.addParticipation(
             lobbyId,
             playerId,
             playersPaid,
+            lobby.feePerPlayer * playersPaid,
           )) ==
           false) {
         return false;
@@ -451,10 +465,37 @@ class DBWrite {
     deleteAccount = false,
   }) async {
     if (AppConfig.isDebug == true) {
-      if ((await DB.LobbyBookings.getById(lobbyBookingId))?.ownerPlayerId !=
-          playerId) {
+      final LobbyBooking? lobby = await DB.LobbyBookings.getById(
+        lobbyBookingId,
+      );
+
+      if (lobby == null || lobby.status != BookingStatus.booked) {
         return false;
       }
+
+      if (lobby.ownerPlayerId != playerId) {
+        return false;
+      }
+
+      final LobbyBookingParticipation? participation =
+          await DB.LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
+        playerId,
+        lobbyBookingId,
+      );
+      if (participation == null) {
+        return false;
+      }
+
+        final double priceToRefund = participation.price;
+      final Player? player = await DB.Players.getByPlayerId(playerId);
+      if (player == null) {
+        return false;
+      }
+
+      if(await DB.Wallets.modifyBalance(player.id, priceToRefund) == false){
+        return false;
+      }
+      
       if ((await DB.LobbyBookingParticipations.removeLobbyParticipation(
             lobbyBookingId,
           )) ==
@@ -477,8 +518,14 @@ class DBWrite {
     deleteAccount = false,
   }) async {
     if (AppConfig.isDebug == true) {
-      if ((await DB.LobbyBookings.getById(lobbyBookingId))?.ownerPlayerId ==
-          playerId) {
+      final LobbyBooking? lobby = await DB.LobbyBookings.getById(
+        lobbyBookingId,
+      );
+      if (lobby == null) {
+        return false;
+      }
+
+      if (lobby.ownerPlayerId == playerId) {
         return deleteLobby(
           lobbyBookingId,
           playerId,
@@ -493,6 +540,29 @@ class DBWrite {
       if (playersPaid == null) {
         return false;
       }
+
+      final LobbyBookingParticipation? participation =
+          await DB.LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
+        playerId,
+        lobbyBookingId,
+      );
+
+        if (participation == null) {
+          return false;
+        }
+
+      final double priceToRefund = participation.price;
+      final Player? player = await DB.Players.getByPlayerId(playerId);
+      if (player == null) {
+        return false;
+      }
+
+      if(await DB.Wallets.modifyBalance(player.id, priceToRefund) == false){
+        return false;
+      }
+
+      // Rimborsa il giocatore (qui si potrebbe integrare un sistema di pagamento reale in futuro)
+
       if ((await DB.LobbyBookingParticipations.removeParticipation(
             playerId,
             lobbyBookingId,
@@ -500,6 +570,8 @@ class DBWrite {
           false) {
         return false;
       }
+
+      
 
       if ((await DB.LobbyBookings.increasePlayersToFind(
             lobbyBookingId,
@@ -1774,7 +1846,26 @@ class DBWrite {
 
   static Future<bool> deletePrivateBooking(int bookingId) async {
     if (AppConfig.isDebug) {
-      return await await DB.PrivateBookings.deletePrivateBooking(bookingId);
+      final PrivateBooking? booking = await DB.PrivateBookings.getById(bookingId);
+      if (booking == null || booking.status != BookingStatus.booked) {
+        return false;
+      }
+      final double priceToRefound = booking.cost;
+
+      final Player? player = await DB.Players.getByPlayerId(booking.playerId);
+      if (player == null) {
+        return false;
+      }
+
+      if (await DB.Wallets.modifyBalance(
+            player.id,
+            priceToRefound,
+          ) ==
+          false) {
+        return false;
+      }
+
+      return await DB.PrivateBookings.deletePrivateBooking(bookingId);
     } else {
       throw UnimplementedError();
     }
@@ -1838,6 +1929,7 @@ class DBWrite {
   static Future<bool> payCheckoutSession(
     int sessionId, {
     bool useWallet = false,
+    required SportCategory sportCategory,
   }) async {
     if (AppConfig.isDebug) {
       final CheckoutSession? session = await DB.CheckoutSessions.getById(
@@ -1859,11 +1951,6 @@ class DBWrite {
           if (tournamentId == null || teamId == null) {
             return false;
           }
-
-          // TODO: implementa il pagamento
-          print(
-            'Pagato importo ${session.amount} per la partecipazione al torneo $tournamentId della squadra $teamId',
-          );
 
           if (await DBWrite.updateTournamentParticipationPayment(
                 tournamentId,
@@ -1901,15 +1988,13 @@ class DBWrite {
           final DateTime endDateTime = DateTime.parse(endDateTimeStr);
 
           // TODO: implementa il pagamento
-          print(
-            'Pagato importo ${session.amount} per la prenotazione del campo $fieldId da parte del giocatore $playerId',
-          );
 
           if (await DBWrite.createPrivateBooking(
                 playerId: playerId,
                 fieldId: fieldId,
                 startDateTime: startDateTime,
                 endDateTime: endDateTime,
+                sportCategory: sportCategory,
               ) ==
               false) {
             return false;
@@ -1937,9 +2022,6 @@ class DBWrite {
           final DateTime endDateTime = DateTime.parse(endDateTimeStr);
 
           //TODO: implementa il pagamento
-          print(
-            'Pagato importo ${session.amount} per la creazione della lobby sul campo $fieldId da parte del giocatore $ownerPlayerId',
-          );
 
           if (await DBWrite.createLobby(
                 fieldId: fieldId,
@@ -1949,6 +2031,7 @@ class DBWrite {
                 feePerPlayer: feePerPlayer,
                 startDateTime: startDateTime,
                 endDateTime: endDateTime,
+                sportCategory: sportCategory,
               ) ==
               false) {
             return false;

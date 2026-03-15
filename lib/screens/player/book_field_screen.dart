@@ -49,6 +49,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   // Available player counts
   final List<int> _availablePlayerCounts = [];
+  Map<int, int> _maxPlayerPerField = {}; // fieldId -> maxPlayers
 
   String _getSportDisplayName(int maxPlayers) {
     final playersPerSide = maxPlayers ~/ 2;
@@ -60,7 +61,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     // Mostra warning solo per le lobby, non per le prenotazioni private
     if (_selectedBookingType != BookingType.lobby) return false;
     // _maxPlayers è il numero totale di giocatori, quindi minPlayers = _maxPlayers
-    return _maxPlayers < field.maxPlayers;
+    return _maxPlayers < _maxPlayerPerField[field.id]!;
   }
 
   Future<void> _showOversizedFieldWarning(Field field) async {
@@ -68,6 +69,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       context: context,
       builder: (context) => FieldSizeAlertDialog(
         field: field,
+        maxPlayers: _maxPlayerPerField[field.id]!,
         onConfirm: () {
           setState(() {
             _selectedField = field;
@@ -229,12 +231,13 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         cityId: _selectedCity!,
         startDateTime: startDateTime,
         endDateTime: endDateTime,
+        sportCategory: widget.sportCategory,
       );
 
-      final allFields = data[ApiJsonKeys.fields] as List<Field>;
       // Filter available fields
       setState(() {
-        _fields = allFields;
+        _fields = data[ApiJsonKeys.fields];
+        _maxPlayerPerField = data[ApiJsonKeys.maxPlayersPerField] as Map<int, int>;
       });
     } catch (e) {
       if (mounted) {
@@ -1073,7 +1076,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Questo campo è per ${_getSportDisplayName(field.maxPlayers)}',
+                                  'Questo campo è per ${_getSportDisplayName(_maxPlayerPerField[field.id]!)}',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey.shade700,

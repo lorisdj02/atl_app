@@ -147,6 +147,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       final success = await DBWrite.payCheckoutSession(
         widget.sessionId,
         useWallet: _useWallet,
+        sportCategory: widget.sportCategory,
       );
       if (!mounted) return;
       if (success) {

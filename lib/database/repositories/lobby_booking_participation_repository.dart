@@ -29,6 +29,18 @@ class LobbyBookingParticipationRepository
     }
   }
 
+  Future<List<LobbyBookingParticipation>> getActiveByPlayerId(int playerId) async {
+    if (AppConfig.isDebug) {
+      return _mockdata
+          .where((participation) =>
+              participation.playerId == playerId &&
+              !participation.isRefound)
+          .toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<List<LobbyBookingParticipation>> getByLobbyBookingId(
     int lobbyBookingId,
   ) async {
@@ -52,7 +64,7 @@ class LobbyBookingParticipationRepository
         return _mockdata.firstWhere(
           (participation) =>
               participation.playerId == playerId &&
-              participation.lobbyBookingId == lobbyBookingId,
+              participation.lobbyBookingId == lobbyBookingId && !participation.isRefound,
         );
       } catch (e) {
         return null;
@@ -64,12 +76,18 @@ class LobbyBookingParticipationRepository
 
   Future<bool> removeParticipation(int playerId, int lobbyBookingId) async {
     if (AppConfig.isDebug) {
-      _mockdata.removeWhere(
+      final int index = _mockdata.indexWhere(
         (participation) =>
             participation.playerId == playerId &&
-            participation.lobbyBookingId == lobbyBookingId,
+            participation.lobbyBookingId == lobbyBookingId && !participation.isRefound,
       );
-      return true;
+
+      if (index != -1) {
+        _mockdata[index].isRefound = true;
+        return true;
+      }
+
+      return false;
     } else {
       throw UnimplementedError();
     }
@@ -80,7 +98,7 @@ class LobbyBookingParticipationRepository
       final exists = _mockdata.any(
         (participation) =>
             participation.playerId == playerId &&
-            participation.lobbyBookingId == lobbyBookingId,
+            participation.lobbyBookingId == lobbyBookingId && !participation.isRefound,
       );
       return exists;
     } else {
@@ -92,13 +110,16 @@ class LobbyBookingParticipationRepository
     int lobbyBookingId,
     int playerId,
     int? playersPaid,
+    double price,
   ) async {
     if (AppConfig.isDebug) {
       final participation = LobbyBookingParticipation(
+        id: _mockdata.length + 1,
         playerId: playerId,
         lobbyBookingId: lobbyBookingId,
         joinedAt: DateTime.now(),
         playersPaid: playersPaid ?? 1,
+        price: price,
       );
       _mockdata.add(participation);
 
@@ -111,9 +132,17 @@ class LobbyBookingParticipationRepository
 
   Future<bool> removeLobbyParticipation(int lobbyBookingId) async {
     if (AppConfig.isDebug) {
-      _mockdata.removeWhere(
-        (participation) => participation.lobbyBookingId == lobbyBookingId,
+      final List<int> indexes = [];
+      indexes.addAll(
+        _mockdata.asMap().entries.where(
+              (entry) =>
+                  entry.value.lobbyBookingId == lobbyBookingId && !entry.value.isRefound,
+            ).map((entry) => entry.key),
       );
+
+      for(final index in indexes) {
+        _mockdata[index].isRefound = true;
+      }
       return true;
     } else {
       throw UnimplementedError();
@@ -124,7 +153,7 @@ class LobbyBookingParticipationRepository
     if (AppConfig.isDebug) {
       int count = 0;
       for (var participation in _mockdata) {
-        if (participation.lobbyBookingId == lobbyBookingId) {
+        if (participation.lobbyBookingId == lobbyBookingId && !participation.isRefound) {
           count += participation.playersPaid;
         }
       }

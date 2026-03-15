@@ -1,4 +1,5 @@
 import 'package:atl_app/config/app_config.dart';
+import 'package:atl_app/models/sport_category.dart';
 import 'base_repository.dart';
 import '../../models/private_booking.dart';
 import '../db_controller.dart';
@@ -34,15 +35,34 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
     }
   }
 
+  Future<List<PrivateBooking>> getActiveByPlayerId(int playerId) async {
+    if (AppConfig.isDebug) {
+      return _mockData
+          .where(
+            (booking) =>
+                booking.playerId == playerId &&
+                booking.status != BookingStatus.refound &&
+                booking.status != BookingStatus.finished,
+          )
+          .toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> addPrivateBooking(
     int playerId,
     int fieldId,
     DateTime startTime,
     DateTime finishTime,
+    SportCategory sportCategory,
   ) async {
     if (AppConfig.isDebug) {
-      List<int> freeFieldIds =
-          await DB.Bookings.getFreeFieldIds(startTime, finishTime, [fieldId]);
+      List<int> freeFieldIds = await DB.Bookings.getFreeFieldIds(
+        startTime,
+        finishTime,
+        [fieldId],
+      );
 
       if (!freeFieldIds.contains(fieldId)) {
         return false; // Il campo non è libero in quel periodo
@@ -53,8 +73,7 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
         return false; // Campo non trovato
       }
       final double baseCost =
-          field.hourlyCostPrivate *
-          finishTime.difference(startTime).inHours;
+          field.hourlyCostPrivate * finishTime.difference(startTime).inHours;
 
       final PrivateBooking newBooking = PrivateBooking(
         id: DB.Bookings.mockGetNextId(),
@@ -64,6 +83,7 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
         finishTime: finishTime,
         cost: baseCost,
         status: BookingStatus.booked,
+        sportCategory: sportCategory,
       );
       _mockData.add(newBooking);
       return true;
@@ -115,17 +135,20 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
 
   Future<bool> deletePrivateBooking(int privateBookingId) async {
     if (AppConfig.isDebug) {
-      _mockData.removeWhere(
-        (booking) =>
-            booking.id == privateBookingId,
+      final index = _mockData.indexWhere(
+        (booking) => booking.id == privateBookingId,
       );
+      if (index == -1) {
+        return false; // Prenotazione non trovata
+      }
+      _mockData[index].status = BookingStatus.refound;
       return true;
     } else {
       throw UnimplementedError();
     }
   }
 
-    Future<int> getNumFinishedByPlayerIdAndFields(
+  Future<int> getNumFinishedByPlayerIdAndFields(
     int playerId,
     List<int> fieldIds,
   ) async {

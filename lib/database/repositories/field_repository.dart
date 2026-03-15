@@ -2,6 +2,7 @@ import '../../models/field.dart';
 import 'base_repository.dart';
 import '../../models/sport_category.dart';
 import '../../config/app_config.dart';
+import '../db_controller.dart';
 
 /// Repository per la gestione dei campi sportivi
 class FieldRepository extends BaseRepository<Field> {
@@ -24,8 +25,6 @@ class FieldRepository extends BaseRepository<Field> {
       costTournament: 150.00,
       hourlyCostPrivate: 80.00,
       cityId: 1,
-      sportCategory: SportCategory.football,
-      maxPlayers: 22,
     ),
     Field(
       id: 2,
@@ -36,8 +35,6 @@ class FieldRepository extends BaseRepository<Field> {
       costTournament: 120.00,
       hourlyCostPrivate: 60.00,
       cityId: 1,
-      sportCategory: SportCategory.football,
-      maxPlayers: 14,
     ),
     Field(
       id: 3,
@@ -48,8 +45,6 @@ class FieldRepository extends BaseRepository<Field> {
       costTournament: 200.00,
       hourlyCostPrivate: 100.00,
       cityId: 2,
-      sportCategory: SportCategory.football,
-      maxPlayers: 10,
     ),
     Field(
       id: 4,
@@ -60,8 +55,6 @@ class FieldRepository extends BaseRepository<Field> {
       costTournament: 130.00,
       hourlyCostPrivate: 70.00,
       cityId: 2,
-      sportCategory: SportCategory.football,
-      maxPlayers: 16,
     ),
   ];
 
@@ -110,19 +103,29 @@ class FieldRepository extends BaseRepository<Field> {
 
   Future<List<Field>> getBySportCategory(SportCategory category) async {
     if (AppConfig.isDebug) {
-      return _mockData
-          .where((field) => field.sportCategory == category)
-          .toList();
+      List<int> fieldIds = await DB.FieldCategories.getFieldIdsBySportCategory(
+        category,
+      );
+      return _mockData.where((field) => fieldIds.contains(field.id)).toList();
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<List<Field>> getByMaxPlayersAndCity(int maxPlayers, int cityId) async {
+  Future<List<Field>> getByMaxPlayersAndCityAndSportCategory(
+    int maxPlayers,
+    int cityId,
+    SportCategory sportCategory,
+  ) async {
     if (AppConfig.isDebug) {
+      List<int> fieldIds =
+          await DB.FieldCategories.getFieldIdsBySportCategoryAndMaxPlayers(
+            sportCategory,
+            maxPlayers,
+          );
       return _mockData
           .where(
-            (field) => field.maxPlayers >= maxPlayers && field.cityId == cityId,
+            (field) => fieldIds.contains(field.id) && field.cityId == cityId,
           )
           .toList();
     } else {

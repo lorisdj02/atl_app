@@ -179,6 +179,8 @@ class ApiJsonKeys {
   static const String prize1 = 'prize1'; // double
   // CreateTournamentScreen
   static const String prize2 = 'prize2'; // double
+  // CreateTournamentScreen
+  static const String maxPlayersPerField = 'maxPlayersPerField'; // Map<int, int>
   
   // PlayerRequestsScreen
   static const String teamRequests = 'teamRequests'; // List<TeamRequest>
@@ -214,6 +216,10 @@ class ApiJsonKeys {
   static const String statsPerCategory = 'statsPerCategory'; // Map<SportCategory, dynamic>
   // StatsScreen
   static const String numTournamentPerCategory = 'numTournamentPerCategory'; // Map<SportCategory, int>
+  // StatsScreen
+  static const String numLobbyJoinedPerCategory = 'numLobbyJoinedPerCategory'; // Map<SportCategory, int>
+  // StatsScreen
+  static const String numPrivateBookingPerCategory = 'numPrivateBookingPerCategory'; // Map<SportCategory, int>
 
   // Bottom bars
   static const String hasUnreadNotifications = 'hasUnreadNotifications'; // bool

@@ -77,6 +77,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   bool _isLoading = false;
   List<Field> _fields = [];
   List<City> _cities = [];
+  Map<int, int> _maxPlayerPerField = {};
 
   @override
   void initState() {
@@ -181,15 +182,15 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = await DBRead.getFieldsByPlayersAndCity(
+      final data = await DBRead.getFieldsByPlayersAndCityAndSportCategory(
         maxPlayers: _selectedSport!.maxPlayersPerTeam,
         cityId: _selectedCity!,
+        sportCategory: _selectedSport!.category,
       );
 
-      final List<Field> fields = data[ApiJsonKeys.fields] ?? [];
-
       setState(() {
-        _fields = fields;
+        _fields = data[ApiJsonKeys.fields];
+        _maxPlayerPerField = data[ApiJsonKeys.maxPlayersPerField];
       });
     } catch (e) {
       if (mounted) {
@@ -414,9 +415,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   bool _isFieldOversized(Field field) {
-    if (_selectedSport == null) return false;
+    if (_selectedSport == null || _maxPlayerPerField[field.id] == null) return false;
     final minPlayers = _selectedSport!.minPlayersPerTeam * 2;
-    return minPlayers < field.maxPlayers;
+    return minPlayers < _maxPlayerPerField[field.id]!;
   }
 
   Future<void> _showOversizedFieldWarning(Field field) async {
@@ -425,9 +426,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       builder: (context) => FieldSizeAlertDialog(
         field: field,
         customMessage:
-            'Il campo è pensato per più giocatori (${field.maxPlayers} totali). '
+            'Il campo è pensato per più giocatori (${_maxPlayerPerField[field.id]!} totali). '
             'Questo potrebbe significare una differente esperienza di gioco '
             'ed una fee per squadra maggiore. Vuoi continuare?',
+        maxPlayers: _maxPlayerPerField[field.id]!,
         onConfirm: () {
           setState(() {
             _selectedField = field;
@@ -1080,7 +1082,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Questo campo è per ${_getSportDisplayName(field.maxPlayers)}',
+                        'Questo campo è per ${_getSportDisplayName(_maxPlayerPerField[field.id]!)}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade700,

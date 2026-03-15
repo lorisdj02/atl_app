@@ -11,8 +11,6 @@ class Field {
   final double costTournament;
   final double hourlyCostPrivate;
   final int cityId;
-  final SportCategory? sportCategory;
-  final int maxPlayers;
 
   // Nuovi campi
   final TimeOfDay openingTime;
@@ -31,8 +29,6 @@ class Field {
     required this.costTournament,
     required this.hourlyCostPrivate,
     required this.cityId,
-    required this.sportCategory,
-    required this.maxPlayers,
     this.openingTime = const TimeOfDay(hour: 8, minute: 0), // Default 08:00
     this.closingTime = const TimeOfDay(hour: 23, minute: 0), // Default 23:00
     this.closedWeekdays = const [], // Default sempre aperto
@@ -49,12 +45,6 @@ class Field {
       costTournament: double.parse(json['costTournament'].toString()),
       hourlyCostPrivate: double.parse(json['hourlyCostPrivate'].toString()),
       cityId: json['cityId'] ?? 0,
-      maxPlayers: json['maxPlayers'] ?? 0,
-      sportCategory: json['sportCategory'] != null
-          ? SportCategory.values.firstWhere(
-              (e) => e.toJSON() == json['sportCategory'],
-            )
-          : null,
       openingTime: json['openingTime'] != null
           ? _timeFromString(json['openingTime'])
           : const TimeOfDay(hour: 8, minute: 0),
@@ -82,8 +72,6 @@ class Field {
       'costTournament': costTournament,
       'hourlyCostPrivate': hourlyCostPrivate,
       'cityId': cityId,
-      'sportCategory': sportCategory?.toJSON(),
-      'maxPlayers': maxPlayers,
       'openingTime':
           '${openingTime.hour.toString().padLeft(2, '0')}:${openingTime.minute.toString().padLeft(2, '0')}',
       'closingTime':

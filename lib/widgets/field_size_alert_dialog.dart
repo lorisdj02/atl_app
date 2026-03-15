@@ -5,6 +5,7 @@ import '../models/field.dart';
 /// that's bigger than needed for their sport/player count.
 class FieldSizeAlertDialog extends StatelessWidget {
   final Field field;
+  final int maxPlayers;
   final VoidCallback onConfirm;
   final String? customMessage;
 
@@ -12,6 +13,7 @@ class FieldSizeAlertDialog extends StatelessWidget {
     super.key,
     required this.field,
     required this.onConfirm,
+    required this.maxPlayers,
     this.customMessage,
   });
 
@@ -24,7 +26,7 @@ class FieldSizeAlertDialog extends StatelessWidget {
       ),
       content: Text(
         customMessage ??
-            'Il campo è pensato per più giocatori (${field.maxPlayers} totali). '
+            'Il campo è pensato per più giocatori (${maxPlayers} totali). '
                 'Questo potrebbe significare una differente esperienza di gioco '
                 'ed una fee maggiore. Vuoi continuare?',
       ),

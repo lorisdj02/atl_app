@@ -1,4 +1,6 @@
 import 'package:atl_app/config/app_config.dart';
+import 'package:atl_app/models/sport.dart';
+import 'package:atl_app/models/sport_category.dart';
 import 'base_repository.dart';
 import '../../models/lobby_booking.dart';
 import '../db_controller.dart';
@@ -36,7 +38,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
   }
 
   /// Ottieni private bookings per player
-  Future<List<LobbyBooking>?> getByPlayerId(int playerId) async {
+  Future<List<LobbyBooking>> getByOwnerId(int playerId) async {
     if (AppConfig.isDebug) {
       return _mockData.where((booking) => booking.ownerPlayerId == playerId).toList();
     } else {
@@ -46,7 +48,12 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
 
   Future<bool> removeLobbyBooking(int lobbyBookingId) async {
     if (AppConfig.isDebug) {
-      _mockData.removeWhere((booking) => booking.id == lobbyBookingId);
+      final index = _mockData.indexWhere((booking) => booking.id == lobbyBookingId);
+      if (index == -1) {
+        return false; // Prenotazione non trovata
+      }
+
+      _mockData[index].status = BookingStatus.refound;
       return true;
     } else {
       throw UnimplementedError();
@@ -61,6 +68,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
     int maxPlayers,
     int playersToFind,
     double feePerPlayer,
+    SportCategory sportCategory,
   ) async {
     if (AppConfig.isDebug) {
       List<int> freeFieldIds =
@@ -89,6 +97,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
         playersToFind: playersToFind,
         feePerPlayer: (baseCost / maxPlayers * 100).ceil() / 100,
         status: BookingStatus.booked,
+        sportCategory: sportCategory,
       );
       _mockData.add(newLobbyBooking);
       return newLobbyBooking.id;

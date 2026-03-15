@@ -5,6 +5,7 @@ import 'package:atl_app/models/callup.dart';
 import 'package:atl_app/models/city.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
+import 'package:atl_app/models/field_category.dart';
 import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/football_match_event.dart';
 import 'package:atl_app/models/football_standing.dart';
@@ -62,19 +63,21 @@ class DBRead {
       for (var city in cities) {
         final cityFields = await DB.Fields.getByCity(city.id);
         for (var field in cityFields) {
-          if (field.openingTime.isBefore(
-            minOpeningTimePerCity[field.cityId]!,
-          )) {
-            minOpeningTimePerCity[city.id] = TimeOfDay(
-              hour: field.openingTime.hour,
-              minute: field.openingTime.minute,
-            );
+          final openingMins =
+              field.openingTime.hour * 60 + field.openingTime.minute;
+          final minMins =
+              minOpeningTimePerCity[field.cityId]!.hour * 60 +
+              minOpeningTimePerCity[field.cityId]!.minute;
+          if (openingMins < minMins) {
+            minOpeningTimePerCity[city.id] = field.openingTime;
           }
-          if (field.closingTime.isAfter(maxClosingTimePerCity[field.cityId]!)) {
-            maxClosingTimePerCity[city.id] = TimeOfDay(
-              hour: field.closingTime.hour,
-              minute: field.closingTime.minute,
-            );
+          final closingMins =
+              field.closingTime.hour * 60 + field.closingTime.minute;
+          final maxMins =
+              maxClosingTimePerCity[field.cityId]!.hour * 60 +
+              maxClosingTimePerCity[field.cityId]!.minute;
+          if (closingMins > maxMins) {
+            maxClosingTimePerCity[city.id] = field.closingTime;
           }
         }
       }
@@ -242,16 +245,38 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> getFieldsByPlayersAndCity({
+  static Future<Map<String, dynamic>>
+  getFieldsByPlayersAndCityAndSportCategory({
     required int maxPlayers,
     required int cityId,
+    required SportCategory sportCategory,
   }) async {
     if (AppConfig.isDebug) {
-      final List<Field> fields = await DB.Fields.getByMaxPlayersAndCity(
-        maxPlayers,
-        cityId,
-      );
-      return {ApiJsonKeys.fields: fields};
+      final List<Field> fields =
+          await DB.Fields.getByMaxPlayersAndCityAndSportCategory(
+            maxPlayers,
+            cityId,
+            sportCategory,
+          );
+
+      Map<int, int> maxPlayerPerField = {};
+
+      for (var field in fields) {
+        final FieldCategory? fieldCategory =
+            await DB.FieldCategories.getByFieldIdAndSportCategory(
+              field.id,
+              sportCategory,
+            );
+        if (fieldCategory != null) {
+          maxPlayerPerField[field.id] = fieldCategory.maxPlayers;
+        } else {
+          maxPlayerPerField[field.id] = 0; // Default se non trovato
+        }
+      }
+      return {
+        ApiJsonKeys.fields: fields,
+        ApiJsonKeys.maxPlayersPerField: maxPlayerPerField,
+      };
     } else {
       throw UnimplementedError();
     }
@@ -294,11 +319,13 @@ class DBRead {
     required int cityId,
     required DateTime startDateTime,
     required DateTime endDateTime,
+    required SportCategory sportCategory,
   }) async {
     if (AppConfig.isDebug) {
-      final allFields = await DB.Fields.getByMaxPlayersAndCity(
+      final allFields = await DB.Fields.getByMaxPlayersAndCityAndSportCategory(
         maxPlayers,
         cityId,
+        sportCategory,
       );
 
       // Get free field IDs
@@ -314,7 +341,24 @@ class DBRead {
       final fields = allFields
           .where((field) => freeFieldIds.contains(field.id))
           .toList();
-      return {ApiJsonKeys.fields: fields};
+
+      Map<int, int> maxPlayerPerField = {};
+      for (var field in fields) {
+        final FieldCategory? fieldCategory =
+            await DB.FieldCategories.getByFieldIdAndSportCategory(
+              field.id,
+              sportCategory,
+            );
+        if (fieldCategory != null) {
+          maxPlayerPerField[field.id] = fieldCategory.maxPlayers;
+        } else {
+          maxPlayerPerField[field.id] = 0; // Default se non trovato
+        }
+      }
+      return {
+        ApiJsonKeys.fields: fields,
+        ApiJsonKeys.maxPlayersPerField: maxPlayerPerField,
+      };
     } else {
       throw UnimplementedError();
     }
@@ -383,9 +427,9 @@ class DBRead {
       }
 
       final List<PrivateBooking> privateBookings =
-          await DB.PrivateBookings.getByPlayerId(playerId);
+          await DB.PrivateBookings.getActiveByPlayerId(playerId);
       final List<int> lobbyBookingsIds =
-          (await DB.LobbyBookingParticipations.getByPlayerId(
+          (await DB.LobbyBookingParticipations.getActiveByPlayerId(
             playerId,
           )).map((p) => p.lobbyBookingId).toList();
       List<LobbyBooking> lobbyBookings = [];
@@ -393,7 +437,9 @@ class DBRead {
         final LobbyBooking? lobbyBooking = await DB.LobbyBookings.getById(
           lobbyBookingId,
         );
-        if (lobbyBooking != null) {
+        if (lobbyBooking != null &&
+            lobbyBooking.status != BookingStatus.refound &&
+            lobbyBooking.status != BookingStatus.finished) {
           lobbyBookings.add(lobbyBooking);
           final lobbyData = await getLobbyInfo(lobbyBookingId, playerId);
           usernamePerBooking[lobbyBooking.id] =
@@ -2238,9 +2284,40 @@ class DBRead {
         }
       }
 
+      Map<SportCategory, int> numPrivateBookingPerCategory = {};
+      Map<SportCategory, int> numLobbyJoinedPerCategory = {};
+
+      final List<PrivateBooking> privateBookings =
+          (await DB.PrivateBookings.getByPlayerId(playerId))
+              .where((booking) => booking.status != BookingStatus.refound)
+              .toList();
+
+      final List<LobbyBookingParticipation> lobbyParticipations =
+          await DB.LobbyBookingParticipations.getByPlayerId(playerId);
+
+      List<LobbyBooking> lobbyBookings = [];
+      for (var participation in lobbyParticipations) {
+        final lobbyBooking = await DB.LobbyBookings.getById(
+          participation.lobbyBookingId,
+        );
+        if (lobbyBooking != null) {
+          lobbyBookings.add(lobbyBooking);
+        }
+      }
+
+      for (var category in SportCategory.values) {
+        numPrivateBookingPerCategory[category] = privateBookings
+            .where((booking) => booking.sportCategory == category)
+            .length;
+        numLobbyJoinedPerCategory[category] = lobbyBookings
+            .where((booking) => booking.sportCategory == category)
+            .length;
+      }
       return {
         ApiJsonKeys.statsPerCategory: statsPerCategory,
         ApiJsonKeys.numTournamentPerCategory: numTournamentPerCategory,
+        ApiJsonKeys.numPrivateBookingPerCategory: numPrivateBookingPerCategory,
+        ApiJsonKeys.numLobbyJoinedPerCategory: numLobbyJoinedPerCategory,
       };
     } else {
       throw UnimplementedError();
