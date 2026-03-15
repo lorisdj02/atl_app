@@ -173,6 +173,22 @@ class RefereeRolesRepository extends BaseRepository<RefereeRoles> {
     }
   }
 
+  Future<double> getPayPerMatch(int sportId, String roleName, int level) async {
+    if (AppConfig.isDebug) {
+      try {
+        final role = mockData.firstWhere((role) =>
+            role.sportId == sportId &&
+            role.name.toUpperCase() == roleName.toUpperCase() &&
+            role.level == level);
+        return role.payPerMatch;
+      } catch (e) {
+        throw Exception('Role not found for sportId: $sportId, roleName: $roleName, level: $level');
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   Future<bool> checkRoleExists(int sportId, String roleName) async {
     if (AppConfig.isDebug) {
       return mockData.any((role) =>

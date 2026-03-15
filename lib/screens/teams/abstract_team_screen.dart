@@ -59,6 +59,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     tabController.addListener(onTabChanged);
     userProvider = Provider.of<UserProvider>(context, listen: false);
     playerId = userProvider.activeRoleId;
+    loadData();
   }
 
   @override
@@ -67,6 +68,30 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     tabController.dispose();
     clearCache();
     super.dispose();
+  }
+
+  Future<void> loadData() async {
+    try {
+      final data = await DBRead.getAbstractTeamScreen(getTeamId());
+      setState(() {
+        team = data[ApiJsonKeys.team];
+        players = data[ApiJsonKeys.players];
+        palmares = data[ApiJsonKeys.palmares];
+        tournaments = data[ApiJsonKeys.tournaments];
+        coordinatorCache = data[ApiJsonKeys.coordinatorCache] ?? {};
+        fieldCache = data[ApiJsonKeys.fieldCache] ?? {};
+        playerStatsCache = data[ApiJsonKeys.playerStatsCache] ?? {};
+        cityNamePerField = data[ApiJsonKeys.cityNamePerField] ?? {};
+        historicalPlayers = data[ApiJsonKeys.historicalPlayers] ?? [];
+        playersLoaded = true;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading team data: $e')));
+      }
+    }
   }
 
   void clearCache() {

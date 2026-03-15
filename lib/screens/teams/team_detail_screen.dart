@@ -28,15 +28,10 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   bool _isPlayerInTeam = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  @override
   int getTeamId() => widget.teamId;
 
-  Future<void> _loadData() async {
+  @override
+  Future<void> loadData() async {
     try {
       final UserProvider userProvider = Provider.of<UserProvider>(
         context,
@@ -46,21 +41,34 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
         final data = await DBRead.getTeamDetailScreen(playerId!, widget.teamId);
-        setState(() {
-          _existingRequest = data[ApiJsonKeys.existingRequest];
-          _isPlayerInTeam = data[ApiJsonKeys.isPlayerInTeam];
-        });
+        if (mounted) {
+          setState(() {
+            team = data[ApiJsonKeys.team];
+            players = data[ApiJsonKeys.players];
+            palmares = data[ApiJsonKeys.palmares];
+            tournaments = data[ApiJsonKeys.tournaments];
+            coordinatorCache = data[ApiJsonKeys.coordinatorCache] ?? {};
+            fieldCache = data[ApiJsonKeys.fieldCache] ?? {};
+            playerStatsCache = data[ApiJsonKeys.playerStatsCache] ?? {};
+            cityNamePerField = data[ApiJsonKeys.cityNamePerField] ?? {};
+            historicalPlayers = data[ApiJsonKeys.historicalPlayers] ?? [];
+            playersLoaded = true;
+            _existingRequest = data[ApiJsonKeys.existingRequest];
+            _isPlayerInTeam = data[ApiJsonKeys.isPlayerInTeam];
+            _requestLoaded = true;
+          });
+        }
+      } else {
+        await super.loadData();
+        if (mounted) setState(() => _requestLoaded = true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error loading team data: $e')));
+        setState(() => _requestLoaded = true);
       }
-    } finally {
-      setState(() {
-        _requestLoaded = true;
-      });
     }
   }
 
@@ -84,7 +92,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
         }
         return;
       }
-      await _loadData();
+      await loadData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Request sent successfully')),
@@ -125,7 +133,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
         }
         return;
       }
-      await _loadData();
+      await loadData();
       if (mounted) {
         ScaffoldMessenger.of(
           context,

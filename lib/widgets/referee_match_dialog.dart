@@ -5,11 +5,13 @@ import '../utils/atl_colors.dart';
 class RefereeMatchDialog extends StatelessWidget {
   final List<String> availableRoles;
   final SportCategory sportCategory;
+  final Map<String, double> payPerRole;
 
   const RefereeMatchDialog({
     super.key,
     required this.availableRoles,
     required this.sportCategory,
+    required this.payPerRole,
   });
 
   String _getRoleDisplayName(String role) {
@@ -71,7 +73,7 @@ class RefereeMatchDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    _getRoleDisplayName(role),
+                    '${_getRoleDisplayName(role)} - \$${payPerRole[role]?.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),

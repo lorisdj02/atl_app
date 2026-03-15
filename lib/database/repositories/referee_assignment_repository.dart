@@ -18,18 +18,20 @@ class RefereeAssignmentRepository extends BaseRepository<RefereeAssignment> {
       matchId: 1,
       refereeId: 1,
       role: 'MAIN',
+      pay: 20.0,
     ),
   ];
 
   @override
   List<RefereeAssignment> get mockData => _mockData;
 
-  Future<bool> insertAssignment(int matchId, int refereeId, String role) async {
+  Future<bool> insertAssignment(int matchId, int refereeId, String role, double pay) async {
     if (AppConfig.isDebug) {
       final newAssignment = RefereeAssignment(
         matchId: matchId,
         refereeId: refereeId,
         role: role,
+        pay: pay,
       );
       _mockData.add(newAssignment);
       return true;

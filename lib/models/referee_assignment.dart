@@ -5,11 +5,13 @@ class RefereeAssignment {
   final String role;
   final int matchId;
   PresenceStatus presenceStatus;
+  final double pay;
 
   RefereeAssignment({
     required this.refereeId,
     this.role = 'MAIN',
     required this.matchId,
+    required this.pay,
     this.presenceStatus = PresenceStatus.assigned,
   });
 
@@ -18,6 +20,7 @@ class RefereeAssignment {
       refereeId: json['refereeId'],
       role: json['role'],
       matchId: json['matchId'],
+      pay: json['pay'],
       presenceStatus: PresenceStatusExtension.fromString(json['presenceStatus']),
     );
   }
@@ -28,6 +31,7 @@ class RefereeAssignment {
       'role': role,
       'matchId': matchId,
       'presenceStatus': presenceStatus.toShortString(),
+      'pay': pay,
     };
   }
 }

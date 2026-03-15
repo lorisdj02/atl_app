@@ -153,6 +153,8 @@ class ApiJsonKeys {
   static const String canMatchFinish = 'canMatchFinish'; // bool
   // FootballMatchScreen
   static const String hasRefereeLicense = 'hasRefereeLicense'; // bool
+  // FootballMatchScreen
+  static const String payPerRole = 'payPerRole'; // Map<String, double>
 
   // PayParticipationScreen
   static const String tournamentCache = 'tournamentCache'; // Map<int, Tournament>

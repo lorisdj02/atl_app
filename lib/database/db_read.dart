@@ -126,9 +126,9 @@ class DBRead {
           maxRefereePayPerCategoryPerLevel = {};
 
           for (int x = 1; x <= growthSteps.length; x++) {
-              minRefereePayPerCategoryPerLevel[x] = {};
-              maxRefereePayPerCategoryPerLevel[x] = {};
-            }
+            minRefereePayPerCategoryPerLevel[x] = {};
+            maxRefereePayPerCategoryPerLevel[x] = {};
+          }
 
           for (var category in SportCategory.values) {
             final List<Sport> sportsInCategory = await DB.Sports.getByCategory(
@@ -158,8 +158,10 @@ class DBRead {
           return {
             ApiJsonKeys.growthSteps: growthSteps,
             ApiJsonKeys.level: level,
-            ApiJsonKeys.minRefereePayPerCategoryPerLevel: minRefereePayPerCategoryPerLevel,
-            ApiJsonKeys.maxRefereePayPerCategoryPerLevel: maxRefereePayPerCategoryPerLevel,
+            ApiJsonKeys.minRefereePayPerCategoryPerLevel:
+                minRefereePayPerCategoryPerLevel,
+            ApiJsonKeys.maxRefereePayPerCategoryPerLevel:
+                maxRefereePayPerCategoryPerLevel,
           };
         default:
           return {};
@@ -1587,6 +1589,22 @@ class DBRead {
           hasRefereeLicense = true;
         }
       }
+      Map<String, double> payPerRole = {};
+      if (refereeId != null) {
+        final Referee? referee = await DB.Referees.getByRefereeId(refereeId);
+        if (referee == null) {
+          throw Exception("Referee not found");
+        }
+
+        for (String role in requiredRoles) {
+          final double pay = await DB.RefereeRoles.getPayPerMatch(
+            sportId,
+            role,
+            referee.level,
+          );
+          payPerRole[role] = pay;
+        }
+      }
 
       return {
         ApiJsonKeys.match: match,
@@ -1605,6 +1623,7 @@ class DBRead {
         ApiJsonKeys.refereeCheck: refereeCheck,
         ApiJsonKeys.canMatchFinish: canMatchFinish,
         ApiJsonKeys.hasRefereeLicense: hasRefereeLicense,
+        ApiJsonKeys.payPerRole: payPerRole,
       };
     } else {
       throw UnimplementedError();
@@ -1935,13 +1954,24 @@ class DBRead {
           teamId,
           playerId,
         );
-        return {
-          ApiJsonKeys.existingRequest: existingRequest,
-          ApiJsonKeys.isPlayerInTeam: false,
-        };
-      } else {
-        return {ApiJsonKeys.isPlayerInTeam: true};
       }
+
+      final abstactData = await getAbstractTeamScreen(teamId);
+
+      return {
+        ApiJsonKeys.isPlayerInTeam: existingRequest != null ? false : true,
+        ApiJsonKeys.existingRequest: existingRequest,
+        ApiJsonKeys.team: abstactData[ApiJsonKeys.team],
+        ApiJsonKeys.players: abstactData[ApiJsonKeys.players],
+        ApiJsonKeys.palmares: abstactData[ApiJsonKeys.palmares],
+        ApiJsonKeys.tournaments: abstactData[ApiJsonKeys.tournaments],
+        ApiJsonKeys.coordinatorCache: abstactData[ApiJsonKeys.coordinatorCache],
+        ApiJsonKeys.fieldCache: abstactData[ApiJsonKeys.fieldCache],
+        ApiJsonKeys.playerStatsCache: abstactData[ApiJsonKeys.playerStatsCache],
+        ApiJsonKeys.cityNamePerField: abstactData[ApiJsonKeys.cityNamePerField],
+        ApiJsonKeys.historicalPlayers:
+            abstactData[ApiJsonKeys.historicalPlayers] ?? [],
+      };
     } else {
       throw UnimplementedError();
     }

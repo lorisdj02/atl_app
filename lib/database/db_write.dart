@@ -1607,6 +1607,11 @@ class DBWrite {
     String role,
   ) async {
     if (AppConfig.isDebug) {
+      final Referee? referee = await DB.Referees.getByRefereeId(refereeId);
+      if (referee == null) {
+        return false;
+      }
+
       final int sportId = (await DB.Tournaments.getById(
         (await DB.FootballMatches.getById(matchId))!.tournamentId,
       ))!.sportId;
@@ -1630,10 +1635,17 @@ class DBWrite {
         return false;
       }
 
+      final double pay = await DB.RefereeRoles.getPayPerMatch(
+        sportId,
+        role,
+        referee.level,
+      );
+
       if (await DB.RefereeAssignments.insertAssignment(
             matchId,
             refereeId,
             role,
+            pay,
           ) ==
           false) {
         return false;
@@ -1823,7 +1835,10 @@ class DBWrite {
     }
   }
 
-  static Future<bool> payCheckoutSession(int sessionId, {bool useWallet = false}) async {
+  static Future<bool> payCheckoutSession(
+    int sessionId, {
+    bool useWallet = false,
+  }) async {
     if (AppConfig.isDebug) {
       final CheckoutSession? session = await DB.CheckoutSessions.getById(
         sessionId,
@@ -2079,9 +2094,8 @@ class DBWrite {
     required DateTime birthdate,
     String? inviteCode,
     String? profilePictureUrl,
-  })async {
-    if(AppConfig.isDebug){
-
+  }) async {
+    if (AppConfig.isDebug) {
       final int newId = await DB.Users.registerUser(
         email: email,
         username: username,
@@ -2096,19 +2110,27 @@ class DBWrite {
 
       bool hasBeenInvited = false;
       // Per ora, inviteCode = Username
-      if(inviteCode == null){
+      if (inviteCode == null) {
         return true;
       }
       final User? inviterUser = await DB.Users.getByUsername(inviteCode);
-      if(inviterUser != null){
-        if(await DB.FriendInvites.addInvite(inviterUserId: inviterUser.id, invitedUserId: newId) == false){
+      if (inviterUser != null) {
+        if (await DB.FriendInvites.addInvite(
+              inviterUserId: inviterUser.id,
+              invitedUserId: newId,
+            ) ==
+            false) {
           return false;
         }
 
         hasBeenInvited = true;
       }
 
-      if(await DB.Wallets.addWallet(userId: newId, hasBeenInvited: hasBeenInvited) == false){
+      if (await DB.Wallets.addWallet(
+            userId: newId,
+            hasBeenInvited: hasBeenInvited,
+          ) ==
+          false) {
         return false;
       }
 

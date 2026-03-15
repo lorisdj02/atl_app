@@ -1,6 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/models/field.dart';
-import 'package:atl_app/models/referee_license.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/football_match.dart';
@@ -59,6 +58,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   String _cityName = '';
   Field? _field;
   bool _canMatchFinish = false;
+  Map<String, double> _payPerRole = {};
 
   bool get _isNotScheduled =>
       _match != null && _match!.status == MatchStatus.notScheduled;
@@ -140,6 +140,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         _refereeCheck = data[ApiJsonKeys.refereeCheck];
         _canMatchFinish = data[ApiJsonKeys.canMatchFinish];
         _hasRefereeLicense = data[ApiJsonKeys.hasRefereeLicense];
+        _payPerRole = data[ApiJsonKeys.payPerRole] ?? {};
         _isLoadingRefereeRoles = false;
         _isLoading = false;
       });
@@ -217,6 +218,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       builder: (context) => RefereeMatchDialog(
         availableRoles: _availableRefereeRoles,
         sportCategory: widget.currentSport,
+        payPerRole: _payPerRole,
       ),
     );
 
