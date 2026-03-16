@@ -15,6 +15,7 @@ import '../../widgets/road_to_victory_widget.dart';
 import '../../widgets/tournament_info_dialog.dart';
 import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
+import '../../l10n/app_localizations.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
   final Tournament tournament;
@@ -53,6 +54,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
   int? _minutesPerRound;
   int? _minutesPerPause;
+
+  AppLocalizations get _l10n => AppLocalizations.of(context);
 
   @override
   void initState() {
@@ -120,7 +123,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       // Handle error (e.g., show a snackbar)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
+          SnackBar(
+            content: Text(_l10n.errorLoadingDataGeneric(e.toString())),
+          ),
         );
       }
       setState(() {
@@ -185,11 +190,11 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
             height: 50,
             child: Row(
               children: [
-                Expanded(child: _buildTabButton('Fixtures', 0)),
+                Expanded(child: _buildTabButton(_l10n.fixturesTab, 0)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildTabButton('Tables', 1)),
+                Expanded(child: _buildTabButton(_l10n.tablesTab, 1)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildTabButton('Stats', 2)),
+                Expanded(child: _buildTabButton(_l10n.stats, 2)),
               ],
             ),
           ),
@@ -205,13 +210,13 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
               onPressed: () {
                 // TODO: Navigate to chat
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Chat coming soon')),
+                  SnackBar(content: Text(_l10n.chatComingSoon)),
                 );
               },
               backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
               icon: const Icon(Icons.chat_bubble, color: Colors.white),
-              label: const Text(
-                'Chat',
+              label: Text(
+                _l10n.chatLabel,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -262,7 +267,12 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     );
 
     for (int i = 1; i <= maxDay; i++) {
-      phases.add({'id': 'day_$i', 'label': 'Day $i', 'isDay': true, 'day': i});
+      phases.add({
+        'id': 'day_$i',
+        'label': _l10n.dayLabel(i),
+        'isDay': true,
+        'day': i,
+      });
     }
 
     // Add playoff phases based on qualified count
@@ -271,7 +281,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     if (qualified >= 16) {
       phases.add({
         'id': 'of',
-        'label': 'Round of 16',
+        'label': _l10n.roundOf16Label,
         'isDay': false,
         'groupPrefix': 'OF',
       });
@@ -279,7 +289,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     if (qualified >= 8) {
       phases.add({
         'id': 'qf',
-        'label': 'Quarter Finals',
+        'label': _l10n.quarterFinalsLabel,
         'isDay': false,
         'groupPrefix': 'QF',
       });
@@ -287,7 +297,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     if (qualified >= 4) {
       phases.add({
         'id': 'sf',
-        'label': 'Semifinals',
+        'label': _l10n.semiFinalsLabel,
         'isDay': false,
         'groupPrefix': 'SF',
       });
@@ -295,7 +305,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     if (qualified >= 2) {
       phases.add({
         'id': 'fi',
-        'label': 'Final',
+        'label': _l10n.finalLabel,
         'isDay': false,
         'groupPrefix': 'FI',
       });
@@ -320,10 +330,10 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     // Special case for Final (FI) which doesn't have a number
     if (groupPrefix == 'FI') {
       if (qualified == 2) {
-        return 'Teams will be determined at the end of group stage';
+        return _l10n.teamsTbdAfterGroupStage;
       } else {
         // qualified >= 4
-        return 'Winners of Semifinal 1 and Semifinal 2';
+        return _l10n.winnersOfSemifinals(1, 2);
       }
     }
 
@@ -335,28 +345,28 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
     switch (groupPrefix) {
       case 'OF': // Round of 16
-        return 'Teams will be determined at the end of group stage';
+        return _l10n.teamsTbdAfterGroupStage;
 
       case 'QF': // Quarter Finals
         if (qualified == 8) {
-          return 'Teams will be determined at the end of group stage';
+          return _l10n.teamsTbdAfterGroupStage;
         } else {
           // qualified >= 16
           // QF1 <- OF1 e OF2, QF2 <- OF3 e OF4, etc.
           final of1 = (groupNumber - 1) * 2 + 1;
           final of2 = (groupNumber - 1) * 2 + 2;
-          return 'Winners of Round of 16 #$of1 and Round of 16 #$of2';
+          return _l10n.winnersOfRoundOf16(of1, of2);
         }
 
       case 'SF': // Semifinals
         if (qualified == 4) {
-          return 'Teams will be determined at the end of group stage';
+          return _l10n.teamsTbdAfterGroupStage;
         } else {
           // qualified >= 8
           // SF1 <- QF1 e QF2, SF2 <- QF3 e QF4
           final qf1 = (groupNumber - 1) * 2 + 1;
           final qf2 = (groupNumber - 1) * 2 + 2;
-          return 'Winners of Quarter Final $qf1 and Quarter Final $qf2';
+          return _l10n.winnersOfQuarterFinals(qf1, qf2);
         }
 
       default:
@@ -370,15 +380,15 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     }
 
     if (_matches.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.sports_soccer, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.sports_soccer, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
             Text(
-              'No matches scheduled',
-              style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+              _l10n.noMatchesScheduled,
+              style: const TextStyle(fontSize: 18, color: ATLColors.subtext),
             ),
           ],
         ),
@@ -475,7 +485,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'GROUP $group',
+                _l10n.groupLabel(group),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -508,12 +518,12 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         .toList();
 
     if (playoffMatches.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Text(
-            'No matches for this phase yet',
-            style: TextStyle(fontSize: 16, color: ATLColors.subtext),
+            _l10n.noMatchesForPhaseYet,
+            style: const TextStyle(fontSize: 16, color: ATLColors.subtext),
           ),
         ),
       );
@@ -592,15 +602,15 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     }
 
     if (_standings.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.leaderboard, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.leaderboard, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
             Text(
-              'No standings available',
-              style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+              _l10n.noStandingsAvailable,
+              style: const TextStyle(fontSize: 18, color: ATLColors.subtext),
             ),
           ],
         ),
@@ -616,7 +626,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
             children: [
               Expanded(
                 child: ChoiceChip(
-                  label: const Text('Group Stage'),
+                  label: Text(_l10n.groupStageTab),
                   selected: _selectedTableView == 'group_stage',
                   onSelected: (selected) {
                     if (selected) {
@@ -639,7 +649,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: ChoiceChip(
-                  label: const Text('Road to Victory'),
+                  label: Text(_l10n.roadToVictoryTab),
                   selected: _selectedTableView == 'road_to_victory',
                   onSelected: (selected) {
                     if (selected) {
@@ -694,7 +704,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      'GROUP $group',
+                      _l10n.groupLabel(group),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -711,22 +721,22 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                     child: Row(
                       children: [
                         const SizedBox(width: 40),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Team',
-                            style: TextStyle(
+                            _l10n.teamLabel,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: ATLColors.title,
                             ),
                           ),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           width: 140,
                           child: Text(
-                            'Pts - W - D - L - GD',
+                            _l10n.standingsHeaderAbbrev,
                             textAlign: TextAlign.right,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: ATLColors.title,
@@ -784,8 +794,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: Text(
-                'Tournament ID: #${widget.tournament.id}',
-                style: TextStyle(
+                _l10n.tournamentIdLabel(widget.tournament.id),
+                style: const TextStyle(
                   color: ATLColors.subtext,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -812,15 +822,15 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     }
 
     if (_players.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.bar_chart, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.bar_chart, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
             Text(
-              'No stats available. Keep playing!',
-              style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+              _l10n.noStatsAvailable,
+              style: const TextStyle(fontSize: 18, color: ATLColors.subtext),
             ),
           ],
         ),

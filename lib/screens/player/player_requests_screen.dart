@@ -8,6 +8,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/player_request_widget.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class PlayerRequestsScreen extends StatefulWidget {
   final int teamId;
@@ -35,6 +36,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   }
 
   Future<void> _loadRequests() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final data = await DBRead.getTeamRequestsScreen(widget.teamId);
 
@@ -52,19 +54,26 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading requests: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.errorLoadingRequests(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
 
   Future<void> _acceptRequest(TeamRequest request) async {
+    final l10n = AppLocalizations.of(context);
     try {
       if ((await DBWrite.acceptTeamRequest(
             widget.teamId,
             playerId: request.playerId,
           )) ==
           false) {
-        throw Exception('Failed to accept request');
+        throw Exception(l10n.failedToAcceptRequest);
       }
 
       if (mounted) {
@@ -75,7 +84,10 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${_playersCache[request.playerId]?.username ?? "Player"} joined the team',
+              l10n.playerJoinedTeam(
+                _playersCache[request.playerId]?.username ??
+                    l10n.player,
+              ),
             ),
             backgroundColor: Colors.green,
           ),
@@ -85,12 +97,19 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error accepting request: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.errorAcceptingRequest(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
 
   Future<void> _rejectRequest(TeamRequest request) async {
+    final l10n = AppLocalizations.of(context);
     try {
       final success = await DBWrite.rejectTeamRequest(
         widget.teamId,
@@ -106,12 +125,19 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error rejecting request: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.errorRejectingRequest(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
 
   Future<void> _acceptAll() async {
+    final l10n = AppLocalizations.of(context);
     final success = await DBWrite.acceptTeamRequest(
       widget.teamId,
       allRequests: true,
@@ -123,21 +149,24 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All requests accepted'),
+        SnackBar(
+          content: Text(l10n.allRequestsAccepted),
           backgroundColor: Colors.green,
         ),
       );
     }else{
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error accepting all requests')),
+          SnackBar(
+            content: Text(l10n.errorAcceptingAllRequests),
+          ),
         );
       }
     }
   }
 
   Future<void> _rejectAll() async {
+    final l10n = AppLocalizations.of(context);
     final success = await DBWrite.rejectTeamRequest(
       widget.teamId,
       allRequests: true,
@@ -150,7 +179,9 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error rejecting all requests')),
+          SnackBar(
+            content: Text(l10n.errorRejectingAllRequests),
+          ),
         );
       }
     }
@@ -158,6 +189,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -167,8 +199,8 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Requests',
+        title: Text(
+          l10n.requestsTitle,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -180,7 +212,11 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(
+                  content: Text(
+                    l10n.darkModeComingSoonSnack,
+                  ),
+                ),
               );
             },
           ),
@@ -189,15 +225,18 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
       body: _isLoading
           ? const LoadingATL()
           : _requests.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.inbox, size: 80, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
-                    'No requests',
-                    style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+                    l10n.noRequests,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: ATLColors.subtext,
+                    ),
                   ),
                 ],
               ),
@@ -249,8 +288,8 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              'Accept all',
+                            child: Text(
+                              l10n.acceptAll,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -270,8 +309,8 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              'Reject all',
+                            child: Text(
+                              l10n.rejectAll,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,

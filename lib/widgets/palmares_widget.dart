@@ -5,6 +5,7 @@ import '../models/sport_category.dart';
 import '../models/tournament.dart';
 import '../models/coordinator.dart';
 import '../models/field.dart';
+import '../l10n/app_localizations.dart';
 
 class PalmaresWidget extends StatelessWidget {
   final Palmares palmares;
@@ -26,6 +27,7 @@ class PalmaresWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isWinner = palmares.position == PalmaresPosition.WINNER;
     final bgColor = isWinner
         ? ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
@@ -74,7 +76,7 @@ class PalmaresWidget extends StatelessWidget {
                     Icon(Icons.person, size: 14, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
                     Text(
-                      coordinator?.username ?? 'Unknown',
+                      coordinator?.username ?? l10n.unknown,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -109,8 +111,8 @@ class PalmaresWidget extends StatelessWidget {
                     Flexible(
                       child: Text(
                         field != null
-                            ? '${field!.name}, ${cityName ?? 'Unknown city'}'
-                            : 'Unknown location',
+                            ? '${field!.name}, ${cityName ?? l10n.unknownCity}'
+                            : l10n.unknownLocation,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,

@@ -3,6 +3,7 @@ import '../models/player.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class PlayersWidget extends StatelessWidget {
   final List<Player> players;
@@ -20,6 +21,7 @@ class PlayersWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -51,7 +53,7 @@ class PlayersWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          team?.name ?? 'Team',
+                          team?.name ?? l10n.teamLabel,
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -61,7 +63,7 @@ class PlayersWidget extends StatelessWidget {
                         if (team?.alias != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            "Alias: ${team!.alias} - ID: ${team!.id}",
+                            l10n.teamAliasAndId(team!.alias, team!.id),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,
@@ -110,7 +112,7 @@ class PlayersWidget extends StatelessWidget {
                   Icon(Icons.people, size: 18, color: Colors.grey.shade600),
                   const SizedBox(width: 6),
                   Text(
-                    '${players.isNotEmpty ? team?.players ?? 0 : 0}/24 Players',
+                    '${players.isNotEmpty ? team?.players ?? 0 : 0}/24 ${l10n.players}',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade700,
@@ -151,7 +153,7 @@ class PlayersWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No Players Found',
+                    l10n.noPlayersFound,
                     style: TextStyle(
                       color: ATLColors.darkBlue,
                       fontSize: 20,
@@ -160,7 +162,7 @@ class PlayersWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'This team is disabled.',
+                    l10n.teamDisabledMsg,
                     style: TextStyle(
                       color: ATLColors.subtext,
                       fontSize: 15,
@@ -217,7 +219,7 @@ class PlayersWidget extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            isCaptain ? 'C' : 'VC',
+                            isCaptain ? l10n.captainAbbr : l10n.viceCaptainAbbr,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,

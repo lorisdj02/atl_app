@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/growth_step.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-
+import '../l10n/app_localizations.dart';
 class GrowthTimelineItem extends StatelessWidget {
   final GrowthStep step;
   final bool isLast;
@@ -60,7 +60,7 @@ class GrowthTimelineItem extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
-              child: _buildStepCard(),
+              child: _buildStepCard(context),
             ),
           ),
         ],
@@ -102,7 +102,8 @@ class GrowthTimelineItem extends StatelessWidget {
     );
   }
 
-  Widget _buildStepCard() {
+  Widget _buildStepCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cardBg = _isCurrent ? catColor.withOpacity(0.07) : Colors.white;
     final borderColor = _isCurrent ? catColor : Colors.transparent;
 
@@ -147,8 +148,8 @@ class GrowthTimelineItem extends StatelessWidget {
                     color: catColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
-                    'CURRENT',
+                  child: Text(
+                    l10n.currentBadge,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 10,
@@ -160,21 +161,22 @@ class GrowthTimelineItem extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          _buildRequirements(),
+          _buildRequirements(context),
           const SizedBox(height: 10),
-          _buildPayInfo(),
+          _buildPayInfo(context),
         ],
       ),
     );
   }
 
-  Widget _buildRequirements() {
+  Widget _buildRequirements(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final color =
         _isFuture ? ATLColors.subtext.withOpacity(0.4) : ATLColors.subtext;
 
     if (step.level == 1) {
       return _reqRow(
-          Icons.flag_outlined, 'Starting level — no requirements', color);
+          Icons.flag_outlined, l10n.startingLevel, color);
     }
 
     if (isReferee) {
@@ -183,13 +185,13 @@ class GrowthTimelineItem extends StatelessWidget {
         children: [
           _reqRow(
             Icons.sports_score_outlined,
-            'Min. ${step.minRefereedGames} games refereed',
+            l10n.minGamesRefereed(step.minRefereedGames ?? 0),
             color,
           ),
           const SizedBox(height: 4),
           _reqRow(
             Icons.star_outline,
-            'Avg. rating ≥ ${step.minRatingOverLastXGames!.toStringAsFixed(1)} over last ${step.x} games',
+            l10n.avgRatingGames(step.minRatingOverLastXGames ?? 0, step.x),
             color,
           ),
         ],
@@ -202,13 +204,13 @@ class GrowthTimelineItem extends StatelessWidget {
         children: [
           _reqRow(
             Icons.emoji_events_outlined,
-            'Min. ${step.minCoordinatedTournaments} tournaments coordinated',
+            l10n.minTournamentsCoordinated(step.minCoordinatedTournaments ?? 0),
             color,
           ),
           const SizedBox(height: 4),
           _reqRow(
             Icons.star_outline,
-            'Avg. rating ≥ ${step.minRatingOverLastXTournaments!.toStringAsFixed(1)} over last ${step.x} tournaments',
+            l10n.avgRatingTournaments(step.minRatingOverLastXTournaments ?? 0, step.x),
             color,
           ),
         ],
@@ -218,13 +220,14 @@ class GrowthTimelineItem extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  Widget _buildPayInfo() {
+  Widget _buildPayInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (isReferee) {
       final chips = SportCategory.values.map((cat) {
         final min = minPay[step.level]?[cat];
         final max = maxPay[step.level]?[cat];
         if (min == null || max == null) return null;
-        return _categoryPayChip(cat, min, max);
+        return _categoryPayChip(context, cat, min, max);
       }).whereType<Widget>().toList();
 
       if (chips.isEmpty) return const SizedBox.shrink();
@@ -236,7 +239,7 @@ class GrowthTimelineItem extends StatelessWidget {
           ATLColors.darkBlue.withOpacity(_isFuture ? 0.35 : 1.0);
       return _infoChip(
         icon: Icons.payments_outlined,
-        text: '€${step.coordinatorPayPerGame!.toStringAsFixed(2)} / game',
+        text: l10n.payPerGame(step.coordinatorPayPerGame!.toStringAsFixed(2)),
         bg: ATLColors.darkBlue.withOpacity(_isFuture ? 0.05 : 0.08),
         color: color,
       );
@@ -245,12 +248,13 @@ class GrowthTimelineItem extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  Widget _categoryPayChip(SportCategory cat, double min, double max) {
+  Widget _categoryPayChip(BuildContext context, SportCategory cat, double min, double max) {
+    final l10n = AppLocalizations.of(context);
     final base = ATLColors.getPrimaryColor(cat);
     final textColor = base.withOpacity(_isFuture ? 0.35 : 1.0);
     final payText = (min == max)
-        ? '€${min.toStringAsFixed(2)} / game'
-        : '€${min.toStringAsFixed(2)} – €${max.toStringAsFixed(2)} / game';
+        ? l10n.payPerGame(min.toStringAsFixed(2))
+        : l10n.payPerGame('€${min.toStringAsFixed(2)} – €${max.toStringAsFixed(2)}');
 
     return _infoChip(
       icon: cat.icon,

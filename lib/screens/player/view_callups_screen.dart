@@ -5,6 +5,7 @@ import '../../models/player.dart';
 import '../../models/sport_category.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class ViewCallupsScreen extends StatefulWidget {
   final Tournament tournament;
@@ -33,6 +34,7 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
   }
 
   Future<void> _loadCallUps() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _isLoading = true);
 
     try {
@@ -52,13 +54,21 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading call-ups: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.errorLoadingCallups(e.toString()),
+            ),
+          ),
+        );
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
@@ -68,8 +78,8 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Call-ups',
+        title: Text(
+          l10n.callupsTitle,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -81,7 +91,11 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(
+                  content: Text(
+                    l10n.darkModeComingSoonSnack,
+                  ),
+                ),
               );
             },
           ),
@@ -90,15 +104,15 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _calledUpPlayers.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.people_outline, size: 80, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
-                    'No call-ups found',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    l10n.noCallupsFound,
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
               ),

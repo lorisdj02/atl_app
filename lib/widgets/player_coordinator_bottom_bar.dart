@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import 'abstract_bottom_bar.dart';
-
+import '../l10n/app_localizations.dart';
 /// Bottom Navigation Bar per Player e Coordinator
 class PlayerCoordinatorBottomBar extends StatelessWidget {
   final int currentIndex;
@@ -21,19 +21,20 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ATLBottomBar(
       currentIndex: currentIndex,
       onTap: onTap,
       currentSport: currentSport,
       isHome: isHome,
       userId: userId,
-      leftItems: const [
-        BottomBarItem(icon: Icons.shopping_cart, label: 'Shop', index: 0),
-        BottomBarItem(icon: Icons.emoji_events, label: 'Tournaments', index: 1),
+      leftItems: [
+        BottomBarItem(icon: Icons.shopping_cart, label: l10n.shopNavLabel, index: 0),
+        BottomBarItem(icon: Icons.emoji_events, label: l10n.tournamentsNavLabel, index: 1),
       ],
-      rightItems: const [
-        BottomBarItem(icon: Icons.group, label: 'Team', index: 2),
-        BottomBarItem(icon: Icons.person, label: 'Me', index: 3),
+      rightItems: [
+        BottomBarItem(icon: Icons.group, label: l10n.teamNavLabel, index: 2),
+        BottomBarItem(icon: Icons.person, label: l10n.meNavLabel, index: 3),
       ],
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class TransactionCard extends StatelessWidget {
   final String description;
@@ -15,13 +16,14 @@ class TransactionCard extends StatelessWidget {
     required this.isExpense,
   });
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final diff = now.difference(date).inDays;
 
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    if (diff < 7) return '$diff days ago';
+    if (diff == 0) return l10n.today;
+    if (diff == 1) return l10n.yesterday;
+    if (diff < 7) return l10n.daysAgo(diff);
     return '${date.day}/${date.month}/${date.year}';
   }
 
@@ -58,7 +60,7 @@ class TransactionCard extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          _formatDate(date),
+          _formatDate(context, date),
           style: const TextStyle(color: ATLColors.subtext, fontSize: 12),
         ),
         trailing: Text(

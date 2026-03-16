@@ -6,6 +6,7 @@ import '../../utils/atl_colors.dart';
 import '../../models/wallet.dart';
 import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
+import '../../l10n/app_localizations.dart';
 
 class WalletScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -45,21 +46,23 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   String _getInfoMessage(
+    BuildContext context,
     bool isPlayer,
     bool isReferee,
     bool isCoordinator,
     bool isOrganization,
   ) {
+    final l10n = AppLocalizations.of(context);
     if (isPlayer) {
-      return 'Personal balance contains refund money, withdrawable once a week with no commission removed. Prize balance contains winnings money and is gross. The net is written in parentheses below the prize balance. It can be withdrawn once a month.';
+      return l10n.walletInfoPlayer;
     } else if (isCoordinator) {
-      return 'The balance contains refund money and earnings for each tournament. If there is any taxation, it has already been taxed.';
+      return l10n.walletInfoCoordinator;
     } else if (isReferee) {
-      return 'The balance contains refund money and earnings for each match you refereed. If there is any taxation, it has already been taxed.';
+      return l10n.walletInfoReferee;
     } else if (isOrganization) {
-      return 'The balance contains refund money and earnings for each booking you made. If there is any taxation, it has already been taxed.';
+      return l10n.walletInfoOrganization;
     } else {
-      return 'No wallet information available.';
+      return l10n.walletInfoFallback;
     }
   }
 
@@ -71,20 +74,22 @@ class _WalletScreenState extends State<WalletScreen> {
     bool isOrganization = false,
   }) {
     final message = _getInfoMessage(
+      context,
       isPlayer,
       isReferee,
       isCoordinator,
       isOrganization,
     );
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Wallet Info'),
+        title: Text(l10n.walletInfo),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(l10n.ok),
           ),
         ],
       ),
@@ -92,6 +97,7 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   void _showWithdrawMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -100,11 +106,11 @@ class _WalletScreenState extends State<WalletScreen> {
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Text(
-              'Withdraw Options',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              l10n.withdrawOptions,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           const Divider(height: 1),
@@ -113,38 +119,34 @@ class _WalletScreenState extends State<WalletScreen> {
               Icons.account_balance_wallet,
               color: Colors.blue,
             ),
-            title: const Text('Withdraw ALL'),
+            title: Text(l10n.withdrawAll),
             onTap: () {
               Navigator.pop(context);
               // TODO: Implement withdraw all
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Withdraw ALL coming soon')),
+                SnackBar(content: Text(l10n.withdrawAllComingSoon)),
               );
             },
           ),
           ListTile(
             leading: const Icon(Icons.person, color: Colors.green),
-            title: const Text('Withdraw Personal Balance Only'),
+            title: Text(l10n.withdrawPersonalBalance),
             onTap: () {
               Navigator.pop(context);
               // TODO: Implement withdraw personal
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Withdraw Personal Balance coming soon'),
-                ),
+                SnackBar(content: Text(l10n.withdrawPersonalComingSoon)),
               );
             },
           ),
           ListTile(
             leading: const Icon(Icons.emoji_events, color: Colors.orange),
-            title: const Text('Withdraw Prize Balance Only'),
+            title: Text(l10n.withdrawPrizeBalance),
             onTap: () {
               Navigator.pop(context);
               // TODO: Implement withdraw prize
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Withdraw Prize Balance coming soon'),
-                ),
+                SnackBar(content: Text(l10n.withdrawPrizeComingSoon)),
               );
             },
           ),
@@ -157,6 +159,7 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
+    final l10n = AppLocalizations.of(context);
     final isPlayer = userProvider.isPlayer;
     final isReferee = userProvider.isReferee;
     final isCoordinator = userProvider.isCoordinator;
@@ -172,9 +175,9 @@ class _WalletScreenState extends State<WalletScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
-            'WALLET',
-            style: TextStyle(
+          title: Text(
+            l10n.walletTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -189,7 +192,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
     final balance = _wallet?.personalBalance ?? 0.0;
     final prizeBalance = _wallet?.prizeBalance ?? 0.0;
-    final netPrize = prizeBalance * 0.8; // TODO: check real tax retention
+    final netPrize = prizeBalance * 0.8;
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -200,9 +203,9 @@ class _WalletScreenState extends State<WalletScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'WALLET',
-          style: TextStyle(
+        title: Text(
+          l10n.walletTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -215,10 +218,10 @@ class _WalletScreenState extends State<WalletScreen> {
             icon: const Icon(Icons.info, color: Colors.white),
             onPressed: () => _showInfoDialog(
               context,
-              isPlayer : isPlayer,
-              isReferee : isReferee,
-              isCoordinator : isCoordinator,
-              isOrganization : isOrganization,
+              isPlayer: isPlayer,
+              isReferee: isReferee,
+              isCoordinator: isCoordinator,
+              isOrganization: isOrganization,
             ),
           ),
         ],
@@ -244,16 +247,16 @@ class _WalletScreenState extends State<WalletScreen> {
                       Expanded(
                         child: Column(
                           children: [
-                            const Text(
-                              'Personal Balance',
-                              style: TextStyle(
+                            Text(
+                              l10n.personalBalance,
+                              style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '€${balance.toStringAsFixed(2)}',
+                              '\u20AC${balance.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,
@@ -272,16 +275,16 @@ class _WalletScreenState extends State<WalletScreen> {
                       Expanded(
                         child: Column(
                           children: [
-                            const Text(
-                              'Prize Balance',
-                              style: TextStyle(
+                            Text(
+                              l10n.prizeBalance,
+                              style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 16,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '€${prizeBalance.toStringAsFixed(2)}',
+                              '\u20AC${prizeBalance.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,
@@ -290,7 +293,7 @@ class _WalletScreenState extends State<WalletScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              '(€${netPrize.toStringAsFixed(2)})', // TODO: check real tax retention
+                              '(\u20AC${netPrize.toStringAsFixed(2)})', // TODO: check real tax retention
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontSize: 14,
@@ -302,13 +305,13 @@ class _WalletScreenState extends State<WalletScreen> {
                     ],
                   ),
                 ] else ...[
-                  const Text(
-                    'Current Balance',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  Text(
+                    l10n.currentBalance,
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '€${balance.toStringAsFixed(2)}',
+                    '\u20AC${balance.toStringAsFixed(2)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 48,
@@ -325,13 +328,11 @@ class _WalletScreenState extends State<WalletScreen> {
                         : () {
                             // TODO: Implement withdraw for non-player
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Withdraw coming soon'),
-                              ),
+                              SnackBar(content: Text(l10n.withdrawComingSoon)),
                             );
                           },
                     icon: const Icon(Icons.arrow_upward),
-                    label: const Text('Withdraw'),
+                    label: Text(l10n.withdraw),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: ATLColors.darkBlue,
@@ -357,9 +358,9 @@ class _WalletScreenState extends State<WalletScreen> {
                     color: ATLColors.subtext.withOpacity(0.5),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Coming Soon',
-                    style: TextStyle(
+                  Text(
+                    l10n.comingSoon,
+                    style: const TextStyle(
                       color: ATLColors.darkBlue,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -369,7 +370,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 48),
                     child: Text(
-                      'Transaction history will be available soon!',
+                      l10n.transactionHistory,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                     ),

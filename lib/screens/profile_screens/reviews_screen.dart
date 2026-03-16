@@ -8,6 +8,7 @@ import '../../utils/atl_colors.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
 import '../../widgets/review_widget.dart';
+import '../../l10n/app_localizations.dart';
 
 class ReviewsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -59,8 +60,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         });
       }
     } catch (e) {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load reviews data: $e')),
+        SnackBar(content: Text(l10n.failedToLoadReviews(e.toString()))),
       );
       if (mounted) setState(() => _isLoading = false);
     }
@@ -117,6 +119,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   }
 
   AppBar _buildAppBar(int count) {
+    final l10n = AppLocalizations.of(context);
     return AppBar(
       backgroundColor: ATLColors.darkBlue,
       elevation: 0,
@@ -126,9 +129,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       ),
       title: Column(
         children: [
-          const Text(
-            'REVIEWS',
-            style: TextStyle(
+          Text(
+            l10n.reviewsTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -136,7 +139,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             ),
           ),
           Text(
-            '$count pending',
+            l10n.pendingCount(count),
             style: TextStyle(
               color: Colors.white.withOpacity(0.75),
               fontSize: 13,
@@ -149,6 +152,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   }
 
   Widget _buildInfoBox() {
+    final l10n = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       padding: const EdgeInsets.all(14),
@@ -164,8 +168,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'By reviewing, you improve the experience for everyone! Choose wisely!\n'
-              'Also, to redeem prizes or compensation, you must not have any pending reviews.',
+              l10n.reviewInfoText,
               style: TextStyle(
                 color: Colors.blue.shade800,
                 fontSize: 13,
@@ -203,6 +206,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   }
 
   Widget _buildEmpty() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -213,9 +217,9 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
             color: ATLColors.subtext.withOpacity(0.4),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'All caught up!',
-            style: TextStyle(
+          Text(
+            l10n.allCaughtUp,
+            style: const TextStyle(
               color: ATLColors.darkBlue,
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -223,7 +227,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'No pending reviews.',
+            l10n.noPendingReviews,
             style: TextStyle(color: ATLColors.subtext, fontSize: 16),
           ),
         ],

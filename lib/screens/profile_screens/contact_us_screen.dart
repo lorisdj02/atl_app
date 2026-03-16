@@ -3,6 +3,7 @@ import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
+import '../../l10n/app_localizations.dart';
 
 class ContactUsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -30,6 +31,26 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     'Other',
   ];
 
+  String _categoryLabel(AppLocalizations l10n, String category) {
+    switch (category) {
+      case 'General Inquiry':
+        return l10n.generalInquiry;
+      case 'Technical Issue':
+        return l10n.technicalIssue;
+      case 'Account Problem':
+        return l10n.accountProblem;
+      case 'Payment Issue':
+        return l10n.paymentIssue;
+      case 'Feature Request':
+        return l10n.featureRequest;
+      case 'Report Bug':
+        return l10n.reportBug;
+      case 'Other':
+      default:
+        return l10n.other;
+    }
+  }
+
   @override
   void dispose() {
     _subjectController.dispose();
@@ -47,11 +68,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       await Future.delayed(const Duration(seconds: 2)); // Simulating API call
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Message sent successfully! We will get back to you soon.',
-            ),
+          SnackBar(
+            content: Text(l10n.messageSentSuccessfully),
             backgroundColor: Colors.green,
           ),
         );
@@ -67,9 +87,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error sending message: $e'),
+            content: Text(l10n.errorSendingMessage(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -83,6 +104,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -92,9 +114,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'CONTACT US',
-          style: TextStyle(
+        title: Text(
+          l10n.contactUsTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -126,9 +148,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Get in Touch',
-                      style: TextStyle(
+                    Text(
+                      l10n.getInTouch,
+                      style: const TextStyle(
                         color: ATLColors.darkBlue,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -136,7 +158,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.',
+                      l10n.getInTouchSubtitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                     ),
@@ -151,7 +173,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   Expanded(
                     child: _QuickContactCard(
                       icon: Icons.email,
-                      label: 'Email',
+                      label: l10n.emailLabel,
                       value: 'support@atl.com',
                       color: ATLColors.darkBlue,
                     ),
@@ -160,7 +182,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   Expanded(
                     child: _QuickContactCard(
                       icon: Icons.phone,
-                      label: 'Phone',
+                      label: l10n.phoneLabel,
                       value: '+39 123 456 789',
                       color: ATLColors.darkBlue,
                     ),
@@ -170,9 +192,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               const SizedBox(height: 32),
 
               // Category Selection
-              const Text(
-                'Category',
-                style: TextStyle(
+              Text(
+                l10n.categoryLabel,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -196,7 +218,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   items: _categories.map((category) {
                     return DropdownMenuItem(
                       value: category,
-                      child: Text(category),
+                      child: Text(_categoryLabel(l10n, category)),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -209,9 +231,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               const SizedBox(height: 16),
 
               // Subject
-              const Text(
-                'Subject',
-                style: TextStyle(
+              Text(
+                l10n.subjectLabel,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -220,14 +242,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               const SizedBox(height: 8),
               ATLTextField(
                 controller: _subjectController,
-                hintText: 'Enter subject',
+                hintText: l10n.enterSubject,
               ),
               const SizedBox(height: 16),
 
               // Message
-              const Text(
-                'Message',
-                style: TextStyle(
+              Text(
+                l10n.messageLabel,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -242,14 +264,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 child: TextField(
                   controller: _messageController,
                   maxLines: 6,
-                  decoration: const InputDecoration(
-                    hintText: 'Type your message here...',
-                    hintStyle: TextStyle(
+                  decoration: InputDecoration(
+                    hintText: l10n.typeYourMessage,
+                    hintStyle: const TextStyle(
                       color: Color(0xFFB0B0B0),
                       fontSize: 16,
                     ),
                     border: OutlineInputBorder(borderSide: BorderSide.none),
-                    contentPadding: EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 18,
                     ),
@@ -260,7 +282,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
               // Submit Button
               ATLButton(
-                text: _isSubmitting ? 'Sending...' : 'Send Message',
+                text: _isSubmitting ? l10n.sendingText : l10n.sendMessage,
                 size: ATLButtonSize.large,
                 isFilled: true,
                 color: ATLColors.darkBlue,
@@ -275,11 +297,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   onPressed: () {
                     // TODO: Navigate to FAQ
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('FAQ coming soon')),
+                      SnackBar(content: Text(l10n.faqComingSoon)),
                     );
                   },
                   child: Text(
-                    'Check our FAQ',
+                    l10n.checkOurFaq,
                     style: TextStyle(
                       color: ATLColors.darkBlue,
                       fontSize: 14,

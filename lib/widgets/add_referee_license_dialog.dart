@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/sport.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class AddRefereeLicenseDialog extends StatefulWidget {
   final List<Sport> availableSports;
@@ -56,16 +57,17 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
     if (_selectedSport == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a sport')),
+        SnackBar(content: Text(l10n.selectSportFirst2)),
       );
       return;
     }
     if (_issuedAt == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select the issue date')),
+        SnackBar(content: Text(l10n.selectIssueDate)),
       );
       return;
     }
@@ -84,7 +86,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
         } else {
           setState(() => _isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to add license. Try again.')),
+            SnackBar(content: Text(l10n.failedToAddLicense)),
           );
         }
       }
@@ -92,7 +94,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(l10n.errorGeneric(e.toString()))),
         );
       }
     }
@@ -101,7 +103,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy');
-
+    final l10n = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -114,8 +116,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Title
-                const Text(
-                  'Add License',
+                Text(
+                  l10n.addLicenseTitle,
                   style: TextStyle(
                     color: ATLColors.darkBlue,
                     fontSize: 20,
@@ -126,8 +128,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 const SizedBox(height: 20),
 
                 // Sport dropdown
-                const Text(
-                  'Sport',
+                Text(
+                  l10n.sportLabel,
                   style: TextStyle(
                     color: ATLColors.subtext,
                     fontSize: 13,
@@ -147,7 +149,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<Sport>(
                       value: _selectedSport,
-                      hint: const Text('Select sport'),
+                      hint: Text(l10n.selectSport),
                       isExpanded: true,
                       icon: const Icon(
                         Icons.arrow_drop_down,
@@ -167,8 +169,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 const SizedBox(height: 16),
 
                 // Photo placeholder (TODO: implement actual photo picker)
-                const Text(
-                  'Photo',
+                Text(
+                  l10n.photoLabel,
                   style: TextStyle(
                     color: ATLColors.subtext,
                     fontSize: 13,
@@ -180,8 +182,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 GestureDetector(
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Photo upload — Coming soon'),
+                      SnackBar(
+                        content: Text(l10n.photoUploadComingSoon),
                       ),
                     );
                   },
@@ -206,7 +208,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Upload photo (coming soon)',
+                          l10n.uploadPhotoComingSoon,
                           style: TextStyle(
                             color: ATLColors.subtext.withOpacity(0.5),
                             fontSize: 12,
@@ -219,8 +221,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 const SizedBox(height: 16),
 
                 // License identifier
-                const Text(
-                  'License ID',
+                Text(
+                  l10n.licenseIdLabel,
                   style: TextStyle(
                     color: ATLColors.subtext,
                     fontSize: 13,
@@ -231,7 +233,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 TextFormField(
                   controller: _idController,
                   decoration: InputDecoration(
-                    hintText: 'e.g. ABC-2024-001',
+                    hintText: l10n.licenseIdHint,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 12,
@@ -255,7 +257,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter the license ID';
+                      return l10n.enterLicenseId;
                     }
                     return null;
                   },
@@ -263,8 +265,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 const SizedBox(height: 16),
 
                 // Issue date picker
-                const Text(
-                  'Issued At',
+                Text(
+                  l10n.issuedAtLabel,
                   style: TextStyle(
                     color: ATLColors.subtext,
                     fontSize: 13,
@@ -297,7 +299,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                         Text(
                           _issuedAt != null
                               ? dateFormat.format(_issuedAt!)
-                              : 'Select a date',
+                              : l10n.selectADate,
                           style: TextStyle(
                             color: _issuedAt != null
                                 ? ATLColors.subtext
@@ -318,8 +320,8 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                       child: TextButton(
                         onPressed:
                             _isLoading ? null : () => Navigator.of(context).pop(false),
-                        child: const Text(
-                          'Cancel',
+                        child: Text(
+                          l10n.cancelButton,
                           style: TextStyle(color: ATLColors.subtext),
                         ),
                       ),
@@ -344,7 +346,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text('Add'),
+                            : Text(l10n.addButton),
                       ),
                     ),
                   ],

@@ -4,6 +4,7 @@ import '../models/user.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_write.dart';
 import '../models/sport_category.dart';
+import '../l10n/app_localizations.dart';
 
 class ReviewWidget extends StatefulWidget {
   final Review review;
@@ -37,10 +38,11 @@ class _ReviewWidgetState extends State<ReviewWidget> {
   }
 
   Future<void> _commit() async {
+    final l10n = AppLocalizations.of(context);
     if (!_allRated) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please rate all fields (minimum 0.5 stars each).'),
+        SnackBar(
+          content: Text(l10n.rateAllFieldsMsg),
           backgroundColor: Colors.orange,
         ),
       );
@@ -63,8 +65,8 @@ class _ReviewWidgetState extends State<ReviewWidget> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Review submitted!'),
+        SnackBar(
+          content: Text(l10n.reviewSubmitted),
           backgroundColor: Colors.green,
         ),
       );
@@ -72,8 +74,8 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     } else {
       setState(() => _isCommitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to submit review.'),
+        SnackBar(
+          content: Text(l10n.failedToSubmitReview),
           backgroundColor: Colors.red,
         ),
       );
@@ -82,9 +84,10 @@ class _ReviewWidgetState extends State<ReviewWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final review = widget.review;
     final sportColor = ATLColors.getPrimaryColor(review.sportCategory);
-    final fields = _getFields(review.reviewType);
+    final fields = _getFields(context, review.reviewType);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -109,7 +112,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Reviewing',
+                        l10n.reviewingLabel,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.65),
                           fontSize: 12,
@@ -148,7 +151,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        _reviewTypeLabel(review.reviewType),
+                        _reviewTypeLabel(context, review.reviewType),
                         style: const TextStyle(color: Colors.white, fontSize: 11),
                       ),
                     ),
@@ -229,8 +232,8 @@ class _ReviewWidgetState extends State<ReviewWidget> {
           ),
           const SizedBox(height: 20),
           // Comment
-          const Text(
-            'Comment (optional)',
+          Text(
+            l10n.commentOptionalLabel,
             style: TextStyle(
               color: ATLColors.darkBlue,
               fontSize: 16,
@@ -253,8 +256,8 @@ class _ReviewWidgetState extends State<ReviewWidget> {
             child: TextField(
               controller: _commentController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Write a comment...',
+              decoration: InputDecoration(
+                hintText: l10n.writeACommentHint,
                 contentPadding: EdgeInsets.all(16),
                 border: InputBorder.none,
               ),
@@ -276,7 +279,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                       ),
                     )
                   : const Icon(Icons.check_circle_outline),
-              label: Text(_isCommitting ? 'Submitting...' : 'Commit Review'),
+              label: Text(_isCommitting ? l10n.submittingLabel : l10n.commitReviewButton),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ATLColors.darkBlue,
                 foregroundColor: Colors.white,
@@ -296,24 +299,26 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     );
   }
 
-  static List<String> _getFields(ReviewType type) {
+  static List<String> _getFields(BuildContext context, ReviewType type) {
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case ReviewType.coordinatorToReferee:
-        return ['Impartiality', 'Competence', 'Match management'];
+        return [l10n.impartialityField, l10n.competenceField, l10n.matchManagementField];
       case ReviewType.refereeToCoordinator:
       case ReviewType.playerToCoordinator:
-        return ['Organisation', 'Communication', 'Availability'];
+        return [l10n.organisationField, l10n.communicationField, l10n.availabilityField];
     }
   }
 
-  static String _reviewTypeLabel(ReviewType type) {
+  static String _reviewTypeLabel(BuildContext context, ReviewType type) {
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case ReviewType.coordinatorToReferee:
-        return 'Coordinator → Referee';
+        return l10n.coordinatorToRefereeLabel;
       case ReviewType.refereeToCoordinator:
-        return 'Referee → Coordinator';
+        return l10n.refereeToCoordinatorLabel;
       case ReviewType.playerToCoordinator:
-        return 'Player → Coordinator';
+        return l10n.playerToCoordinatorLabel;
     }
   }
 }

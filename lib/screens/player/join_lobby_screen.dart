@@ -9,6 +9,7 @@ import '../../models/sport_category.dart';
 import '../../models/city.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/booking_widget.dart';
 import '../../models/field.dart';
 import '../../models/checkout_session.dart';
@@ -49,6 +50,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   Future<void> _loadLobbies() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _isLoading = true);
 
     try {
@@ -128,7 +130,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading lobbies: $e'),
+            content: Text(
+              l10n.errorLoadingLobbies(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -164,9 +168,10 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   Future<void> _selectTime(bool isStartTime) async {
+    final l10n = AppLocalizations.of(context);
     if (_selectedDay == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleziona prima un giorno')),
+        SnackBar(content: Text(l10n.selectDayFirst)),
       );
       return;
     }
@@ -191,7 +196,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            isStartTime ? 'Ora inizio' : 'Ora fine',
+            isStartTime
+                ? l10n.startTimeLabel
+                : l10n.endTimeLabel,
             style: TextStyle(
               color: ATLColors.getPrimaryColor(widget.sportCategory),
               fontWeight: FontWeight.bold,
@@ -231,6 +238,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   void _showJoinDialog(LobbyBooking lobby) {
+    final l10n = AppLocalizations.of(context);
     int selectedPlayers = 1;
     final maxPlayers = lobby.playersToFind;
 
@@ -240,7 +248,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text(
-            'Join Lobby',
+            l10n.joinLobby,
             style: TextStyle(
               color: ATLColors.getPrimaryColor(widget.sportCategory),
               fontWeight: FontWeight.bold,
@@ -250,7 +258,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'There is only 1 spot left in this lobby.',
+                l10n.onlyOneSpotLeft,
                 style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
@@ -266,9 +274,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Total Fee:',
-                      style: TextStyle(
+                    Text(
+                      l10n.totalFeeLabel,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -289,7 +297,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancelText),
             ),
             ElevatedButton.icon(
               onPressed: () async {
@@ -297,7 +305,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                 await _joinLobby(lobby, 1);
               },
               icon: const Icon(Icons.attach_money),
-              label: const Text('Join'),
+              label: Text(l10n.join),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ATLColors.getPrimaryColor(
                   widget.sportCategory,
@@ -319,7 +327,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
           return AlertDialog(
             title: Text(
-              'Join Lobby',
+              l10n.joinLobby,
               style: TextStyle(
                 color: ATLColors.getPrimaryColor(widget.sportCategory),
                 fontWeight: FontWeight.bold,
@@ -329,14 +337,17 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'How many players are you paying for?',
+                  l10n.howManyPlayersPayingFor,
                   style: const TextStyle(fontSize: 16),
                 ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Players:', style: TextStyle(fontSize: 16)),
+                    Text(
+                      '${l10n.players}:',
+                      style: const TextStyle(fontSize: 16),
+                    ),
                     Text(
                       '$selectedPlayers',
                       style: TextStyle(
@@ -371,9 +382,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total Fee:',
-                        style: TextStyle(
+                      Text(
+                        l10n.totalFeeLabel,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -396,7 +407,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancelText),
               ),
               ElevatedButton.icon(
                 onPressed: () async {
@@ -404,7 +415,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                   await _joinLobby(lobby, selectedPlayers);
                 },
                 icon: const Icon(Icons.attach_money),
-                label: const Text('Join'),
+                label: Text(l10n.join),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ATLColors.getPrimaryColor(
                     widget.sportCategory,
@@ -465,6 +476,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+      final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -474,8 +486,8 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Join Lobby',
+        title: Text(
+          l10n.joinLobby,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -496,7 +508,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                   children: [
                     Expanded(
                       child: _buildFilterDropdown(
-                        hint: 'Players',
+                        hint: l10n.players,
                         value: _selectedTotalPlayers,
                         items: _availablePlayerCounts,
                         onChanged: (value) {
@@ -509,7 +521,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildFilterDropdown<int>(
-                        hint: 'City',
+                        hint: l10n.cityHint,
                         value: _selectedCity,
                         items: _availableCities.map((c) => c.id).toList(),
                         onChanged: (value) {
@@ -559,7 +571,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 _selectedDay == null
-                                    ? 'Day'
+                                    ? l10n.dayShort
                                     : '${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -576,7 +588,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: _buildFilterDropdown(
-                        hint: 'Max Pay',
+                        hint: l10n.maxPay,
                         value: _maxPlayersToPay,
                         items: List.generate(21, (i) => i + 1),
                         onChanged: (value) {
@@ -615,7 +627,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 _startTime == null
-                                    ? 'Start'
+                                    ? l10n.startShort
                                     : '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -654,7 +666,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                               const SizedBox(width: 8),
                               Text(
                                 _endTime == null
-                                    ? 'End'
+                                    ? l10n.endShort
                                     : '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   fontSize: 14,
@@ -674,7 +686,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                 TextButton.icon(
                   onPressed: _clearFilters,
                   icon: const Icon(Icons.clear_all),
-                  label: const Text('Clear Filters'),
+                  label: Text(l10n.clearFilters),
                   style: TextButton.styleFrom(
                     foregroundColor: ATLColors.getPrimaryColor(
                       widget.sportCategory,
@@ -690,10 +702,10 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _availableLobbies.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'No lobbies available',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      l10n.noLobbiesAvailable,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   )
                 : ListView.separated(
@@ -726,7 +738,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                 onPressed: () => _showJoinDialog(lobby),
                                 icon: const Icon(Icons.add_circle),
                                 label: Text(
-                                  'Join (${lobby.playersToFind} spots left)',
+                                  l10n.joinSpotsLeft(
+                                    lobby.playersToFind,
+                                  ),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ATLColors.getPrimaryColor(

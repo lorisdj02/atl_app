@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class RefereeMatchDialog extends StatelessWidget {
   final List<String> availableRoles;
@@ -14,14 +15,15 @@ class RefereeMatchDialog extends StatelessWidget {
     required this.payPerRole,
   });
 
-  String _getRoleDisplayName(String role) {
+  String _getRoleDisplayName(BuildContext context, String role) {
+    final l10n = AppLocalizations.of(context);
     switch (role) {
       case 'MAIN':
-        return 'Main Referee';
+        return l10n.mainRefereeRole;
       case 'ASSISTANT1':
-        return 'Assistant Referee 1';
+        return l10n.assistantRef1Role;
       case 'ASSISTANT2':
-        return 'Assistant Referee 2';
+        return l10n.assistantRef2Role;
       default:
         return role;
     }
@@ -29,6 +31,7 @@ class RefereeMatchDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -45,17 +48,17 @@ class RefereeMatchDialog extends StatelessWidget {
                   size: 28,
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Referee this Match',
+                    l10n.refereeThisMatchTitle,
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Select your role:',
+            Text(
+              l10n.selectYourRoleLabel,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
@@ -73,7 +76,7 @@ class RefereeMatchDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    '${_getRoleDisplayName(role)} - \$${payPerRole[role]?.toStringAsFixed(2)}',
+                    '${_getRoleDisplayName(context, role)} - \$${payPerRole[role]?.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -97,17 +100,18 @@ class RefereeMatchDialog extends StatelessWidget {
     BuildContext context,
     String role,
   ) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Assignment'),
         content: Text(
-          'Are you sure you want to referee this match as ${_getRoleDisplayName(role)}?',
+          l10n.confirmRefereeMsg(_getRoleDisplayName(context, role)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('CANCEL'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -115,7 +119,7 @@ class RefereeMatchDialog extends StatelessWidget {
               backgroundColor: ATLColors.getPrimaryColor(sportCategory),
               foregroundColor: Colors.white,
             ),
-            child: const Text('CONFIRM'),
+            child: Text(l10n.confirmButton),
           ),
         ],
       ),

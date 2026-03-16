@@ -11,6 +11,7 @@ import '../../widgets/info_row_widget.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class EditInfosScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -103,9 +104,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
     if (_oldPasswordController.text.isNotEmpty ||
         _newPasswordController.text.isNotEmpty) {
       if (_oldPasswordController.text.isEmpty) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter your current password'),
+          SnackBar(
+            content: Text(l10n.enterCurrentPassword),
             backgroundColor: Colors.red,
           ),
         );
@@ -113,9 +115,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       }
 
       if (_newPasswordController.text.isEmpty) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter a new password'),
+          SnackBar(
+            content: Text(l10n.enterNewPassword),
             backgroundColor: Colors.red,
           ),
         );
@@ -123,9 +126,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       }
 
       if (_newPasswordController.text.length < 6) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('New password must be at least 6 characters'),
+          SnackBar(
+            content: Text(l10n.newPasswordMinLength),
             backgroundColor: Colors.red,
           ),
         );
@@ -134,9 +138,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
 
       // Check if old password matches
       if (user.passwordMD5 != _oldPasswordController.text) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Current password is incorrect'),
+          SnackBar(
+            content: Text(l10n.currentPasswordIncorrect),
             backgroundColor: Colors.red,
           ),
         );
@@ -181,9 +186,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       await userProvider.updateUser(updatedUser);
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully'),
+          SnackBar(
+            content: Text(l10n.profileUpdatedSuccessfully),
             backgroundColor: Colors.green,
           ),
         );
@@ -197,9 +203,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating profile: $e'),
+            content: Text(l10n.errorUpdatingProfile(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -215,6 +222,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   Widget build(BuildContext context) {
     final user = Provider.of<UserProvider>(context).activeUser;
     final isPlayer = user is Player;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -225,9 +233,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'EDIT PROFILE',
-          style: TextStyle(
+        title: Text(
+          l10n.editProfileTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -272,9 +280,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                         onTap: () {
                           // TODO: Implement image picker
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Photo upload coming soon'),
-                            ),
+                            SnackBar(content: Text(l10n.photoUploadComingSoon)),
                           );
                         },
                         child: CircleAvatar(
@@ -296,9 +302,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               const SizedBox(height: 32),
 
               // Editable Information Section
-              const Text(
-                'Editable Information',
-                style: TextStyle(
+              Text(
+                l10n.editableInformation,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -306,22 +312,22 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               ),
               const SizedBox(height: 16),
 
-              _buildLabel('Username'),
+              _buildLabel(l10n.usernameLabel),
               ATLTextField(
                 controller: _usernameController,
-                hintText: 'Enter username',
+                hintText: l10n.enterUsername,
               ),
               const SizedBox(height: 16),
 
-              _buildLabel('Phone'),
+              _buildLabel(l10n.phoneLabel),
               ATLTextField(
                 controller: _phoneController,
-                hintText: 'Enter phone number',
+                hintText: l10n.enterPhone,
                 keyboardType: TextInputType.phone,
               ),
 
               const SizedBox(height: 16),
-              _buildLabel('Preferred City'),
+              _buildLabel(l10n.preferredCityLabel),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
@@ -332,7 +338,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<City>(
                     value: _selectedCity,
-                    hint: Text('Select city', style: TextStyle(color: ATLColors.subtext)),
+                    hint: Text(
+                      l10n.selectCityText,
+                      style: const TextStyle(color: ATLColors.subtext),
+                    ),
                     isExpanded: true,
                     icon: const Icon(Icons.arrow_drop_down, color: ATLColors.darkBlue),
                     items: _cities.map((city) {
@@ -357,9 +366,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Change Password',
-                    style: TextStyle(
+                  Text(
+                    l10n.changePassword,
+                    style: const TextStyle(
                       color: ATLColors.darkBlue,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -387,17 +396,17 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
 
               if (_showPasswordFields) ...[
                 const SizedBox(height: 16),
-                _buildLabel('Current Password'),
+                _buildLabel(l10n.currentPasswordLabel),
                 ATLTextField(
                   controller: _oldPasswordController,
-                  hintText: 'Enter current password',
+                  hintText: l10n.enterCurrentPasswordHint,
                   obscureText: true,
                 ),
                 const SizedBox(height: 16),
-                _buildLabel('New Password'),
+                _buildLabel(l10n.newPasswordLabel),
                 ATLTextField(
                   controller: _newPasswordController,
-                  hintText: 'Enter new password (min 6 characters)',
+                  hintText: l10n.enterNewPasswordHint,
                   obscureText: true,
                 ),
               ],
@@ -405,9 +414,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               const SizedBox(height: 32),
 
               // Account Details (Read-only)
-              const Text(
-                'Account Details',
-                style: TextStyle(
+              Text(
+                l10n.accountDetails,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -415,33 +424,36 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               ),
               const SizedBox(height: 16),
 
-              InfoRowWidget(label: 'Email', value: user?.email ?? 'N/A'),
+              InfoRowWidget(
+                label: l10n.emailLabel,
+                value: user?.email ?? l10n.notAvailable,
+              ),
               if (isPlayer) ...[
-                InfoRowWidget(label: 'Name', value: user.name),
-                InfoRowWidget(label: 'Surname', value: user.surname),
+                InfoRowWidget(label: l10n.nameLabel, value: user.name),
+                InfoRowWidget(label: l10n.surnameLabel, value: user.surname),
                 InfoRowWidget(
-                  label: 'Birth Date',
-                  value: _formatDate(user.birthdate),
+                  label: l10n.birthDateLabel,
+                  value: _formatDate(l10n, user.birthdate),
                 ),
               ],
               InfoRowWidget(
-                label: 'Role',
-                value: user?.roleDisplayName ?? 'N/A',
+                label: l10n.roleLabel,
+                value: user?.roleDisplayName ?? l10n.notAvailable,
               ),
               InfoRowWidget(
-                label: 'Member since',
-                value: _formatDate(user?.createdAt),
+                label: l10n.memberSinceLabel,
+                value: _formatDate(l10n, user?.createdAt),
               ),
               InfoRowWidget(
-                label: 'VIP Status',
-                value: user?.isVip == true ? 'Active' : 'Inactive',
+                label: l10n.vipStatusLabel,
+                value: user?.isVip == true ? l10n.active : l10n.inactive,
               ),
 
               const SizedBox(height: 32),
 
               // Save Button
               ATLButton(
-                text: _isLoading ? 'Saving...' : 'Save Changes',
+                text: _isLoading ? l10n.savingText : l10n.saveChanges,
                 size: ATLButtonSize.large,
                 isFilled: true,
                 color: _hasChanges ? ATLColors.darkBlue : ATLColors.subtext,
@@ -469,8 +481,8 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
     );
   }
 
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'N/A';
+  String _formatDate(AppLocalizations l10n, DateTime? date) {
+    if (date == null) return l10n.notAvailable;
     return '${date.day}/${date.month}/${date.year}';
   }
 }

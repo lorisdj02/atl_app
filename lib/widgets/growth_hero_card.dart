@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/growth_step.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class GrowthHeroCard extends StatelessWidget {
   final GrowthStep step;
@@ -19,6 +20,7 @@ class GrowthHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -35,8 +37,8 @@ class GrowthHeroCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'LVL',
+                Text(
+                  l10n.levelAbbrev,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -71,7 +73,7 @@ class GrowthHeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isReferee ? 'Referee' : 'Coordinator',
+                  isReferee ? l10n.referee : l10n.coordinator,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.6),
                     fontSize: 14,

@@ -11,6 +11,7 @@ import '../../models/city.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../utils/text_formatters.dart';
+import '../../l10n/app_localizations.dart';
 
 class CreateTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -53,7 +54,11 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel caricamento città: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorLoadingCitiesShort(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -84,7 +89,11 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel caricamento immagine: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorLoadingImage(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -98,15 +107,16 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final l10n = AppLocalizations.of(context);
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final currentUser = userProvider.activeUser;
 
       if (currentUser == null) {
-        throw Exception('User not found');
+        throw Exception(l10n.userNotFound);
       }
 
       if ((await DBRead.checkTeamNameInCategory(_nameController.text, widget.currentSport)) == false) {
-        throw Exception('Team name already in use');
+        throw Exception(l10n.teamNameAlreadyInUse);
       }
 
       // TODO: Upload immagine su server e ottenere URL
@@ -149,7 +159,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       );
 
       if (newTeamId == -1) {
-        throw Exception('Failed to create team');
+        throw Exception(l10n.failedToCreateTeam);
       }
 
       // Aggiorna l'utente con il teamId
@@ -159,8 +169,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       if (mounted) {
         print('🔧 [DEBUG] Team created successfully: ${newTeam.name}');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Team creato con successo!'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).teamCreatedSuccessfully),
             backgroundColor: Colors.green,
           ),
         );
@@ -170,7 +180,12 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorGeneric(e.toString()),
+            ),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -182,6 +197,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -191,8 +207,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Create team',
+        title: Text(
+          l10n.createTeamLabel,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -204,7 +220,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
           ),
@@ -252,7 +268,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Upload logo',
+                                      l10n.uploadLogo,
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Colors.grey.shade700,
@@ -271,7 +287,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
-                        hintText: 'Name of the team',
+                        hintText: l10n.teamName,
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -282,10 +298,10 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Inserisci il nome del team';
+                          return l10n.enterTeamName;
                         }
                         if (value.trim().length < 3) {
-                          return 'Il nome deve essere di almeno 3 caratteri';
+                          return l10n.teamNameMinChars(3);
                         }
                         return null;
                       },
@@ -298,7 +314,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       controller: _aliasController,
                       inputFormatters: [UpperCaseTextFormatter()],
                       decoration: InputDecoration(
-                        hintText: 'Team alias',
+                        hintText: l10n.teamAlias,
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -309,10 +325,10 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
-                          return 'Inserisci l\'alias del team';
+                          return l10n.enterTeamAlias;
                         }
                         if (value.trim().length < 3) {
-                          return 'L\'alias deve essere di 3 caratteri';
+                          return l10n.teamAliasExactChars(3);
                         }
                         return null;
                       },
@@ -326,7 +342,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                     TextFormField(
                       controller: _descriptionController,
                       decoration: InputDecoration(
-                        hintText: 'Team description (optional)',
+                        hintText: l10n.teamDescription,
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(
@@ -350,9 +366,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       ),
                       child: DropdownButtonFormField<int>(
                         value: _selectedCity,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Select city',
+                          hintText: l10n.selectCityHint,
                         ),
                         items: _availableCities
                             .map(
@@ -369,7 +385,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         },
                         validator: (value) {
                           if (value == null) {
-                            return 'Seleziona una città';
+                            return l10n.selectTeamCity;
                           }
                           return null;
                         },
@@ -387,16 +403,13 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                       ),
                       child: DropdownButtonFormField<bool>(
                         value: _visibility,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Visibility (Public/Private)',
+                          hintText: l10n.visibilityHint,
                         ),
-                        items: const [
-                          DropdownMenuItem(value: true, child: Text('Public')),
-                          DropdownMenuItem(
-                            value: false,
-                            child: Text('Private'),
-                          ),
+                        items: [
+                          DropdownMenuItem(value: true, child: Text(l10n.public)),
+                          DropdownMenuItem(value: false, child: Text(l10n.private)),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -420,9 +433,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'CREATE TEAM',
-                        style: TextStyle(
+                      child: Text(
+                        l10n.createTeamButton,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

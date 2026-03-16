@@ -23,6 +23,7 @@ import '../config/api_json_keys.dart';
 import 'profile_screens/reviews_screen.dart';
 import 'profile_screens/invite_friends_screen.dart';
 import 'profile_screens/my_growth_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -74,6 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final UserProvider userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.activeUser;
+    final l10n = AppLocalizations.of(context);
 
     // Add null check
     if (user == null) {
@@ -126,7 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Dark',
+                          l10n.dark,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.7),
                             fontSize: 14,
@@ -150,7 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Hi ${user.username}!',
+                      l10n.hiUser(user.username),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 28,
@@ -161,7 +163,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         userProvider.isCoordinator) ...[
                       const SizedBox(height: 8),
                       Text(
-                        _level != null ? 'Level: $_level' : 'Loading level...',
+                        _level != null
+                            ? l10n.levelLabel(_level!)
+                            : l10n.loadingLevel,
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.9),
                           fontSize: 16,
@@ -184,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (!userProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.emoji_events,
-                        text: 'Achievement',
+                        text: l10n.achievement,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -199,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     ProfileMenuItem(
                       icon: Icons.account_balance_wallet,
-                      text: 'Wallet',
+                      text: l10n.wallet,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -213,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (!userProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.rate_review,
-                        text: 'Reviews',
+                        text: l10n.reviews,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -227,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (userProvider.isReferee) ...[
                       ProfileMenuItem(
                         icon: Icons.school,
-                        text: 'Licenses',
+                        text: l10n.licenses,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -243,7 +247,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (userProvider.isReferee || userProvider.isCoordinator) ...[
                       ProfileMenuItem(
                         icon: Icons.trending_up,
-                        text: 'My Growth',
+                        text: l10n.myGrowth,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -256,7 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     ProfileMenuItem(
                       icon: Icons.local_shipping,
-                      text: 'Orders',
+                      text: l10n.orders,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -270,8 +274,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (userProvider.isPlayer) ...[
                       ProfileMenuItem(
                         icon: Icons.bar_chart,
-                        text: 'Stats',
-                        badge: 'VIP',
+                        text: l10n.stats,
+                        badge: l10n.vipBadge,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -287,7 +291,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (!userProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.share,
-                        text: 'Invite a friend!',
+                        text: l10n.inviteAFriend,
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -300,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     ProfileMenuItem(
                       icon: Icons.edit,
-                      text: 'Edit infos',
+                      text: l10n.editInfos,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -314,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     ProfileMenuItem(
                       icon: Icons.settings,
-                      text: 'Settings',
+                      text: l10n.settings,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -328,7 +332,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     ProfileMenuItem(
                       icon: Icons.mail,
-                      text: 'Contact Us!',
+                      text: l10n.contactUsMenuItem,
                       onTap: () {
                         Navigator.push(
                           context,
@@ -343,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 24),
                     // Logout button
                     ATLButton(
-                      text: 'Logout',
+                      text: l10n.logout,
                       size: ATLButtonSize.large,
                       isFilled: true,
                       color: ATLColors.darkBlue,

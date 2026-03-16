@@ -15,6 +15,7 @@ import 'referee_home_screen.dart';
 import 'past_assigned_matches_screen.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class AvailableMatchesScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -150,6 +151,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -157,9 +159,9 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'Matches',
-          style: TextStyle(
+        title: Text(
+          l10n.matchesNavLabel.toUpperCase(),
+          style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -170,7 +172,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
           GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode - Coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
             child: Container(
@@ -196,6 +198,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   }
 
   Widget _buildContent() {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading && _cities.isEmpty) {
       return const Center(child: LoadingATL());
     }
@@ -209,7 +212,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
             children: [
               // City dropdown
               _buildDropdown<City>(
-                label: 'City',
+                label: l10n.city,
                 value: _selectedCity,
                 items: _cities,
                 onChanged: (value) async {
@@ -223,7 +226,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               const SizedBox(height: 12),
               // Sport type dropdown
               _buildDropdown<int?>(
-                label: 'Sport Type',
+                label: l10n.sportLabel,
                 value: _selectedSportId,
                 items: [null, ..._sportNames.keys.toList()],
                 onChanged: (value) async {
@@ -233,8 +236,8 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                   await _loadMatches();
                 },
                 itemBuilder: (sportId) {
-                  if (sportId == null) return const Text('All');
-                  return Text(_sportNames[sportId] ?? 'Sport $sportId');
+                  if (sportId == null) return Text(l10n.allFilter);
+                  return Text(_sportNames[sportId] ?? l10n.sportWithId(sportId));
                 },
               ),
             ],
@@ -276,6 +279,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   }
 
   Widget _buildMatchesList() {
+    final l10n = AppLocalizations.of(context);
     if (_selectedCity == null) {
       return Center(
         child: Padding(
@@ -286,7 +290,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               Icon(Icons.location_on, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'Select a city',
+                l10n.selectCityToSeeMatchesTitle,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
@@ -295,7 +299,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Choose a city to see available matches',
+                l10n.selectCityToSeeMatchesSubtitle,
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
@@ -321,7 +325,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                 Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
                 const SizedBox(height: 16),
                 Text(
-                  'No matches available',
+                  l10n.noMatchesAvailable,
                   style: TextStyle(
                     color: ATLColors.darkBlue,
                     fontSize: 18,
@@ -330,7 +334,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'No scheduled matches for the selected filters',
+                  l10n.noScheduledMatchesForSelectedFilters,
                   style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
@@ -364,7 +368,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     final List<Widget> items = [];
     for (final sportId in _matchesPerSport.keys) {
       final matches = _matchesPerSport[sportId] ?? [];
-      final sportName = _sportNames[sportId] ?? 'Sport $sportId';
+      final sportName = _sportNames[sportId] ?? l10n.sportWithId(sportId);
 
       items.add(
         Padding(
@@ -386,7 +390,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              'No scheduled matches in: $sportName',
+              l10n.noScheduledMatchesInSport(sportName),
               style: TextStyle(color: ATLColors.subtext, fontSize: 14),
             ),
           ),
@@ -421,7 +425,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'No matches available',
+                l10n.noMatchesAvailable,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,

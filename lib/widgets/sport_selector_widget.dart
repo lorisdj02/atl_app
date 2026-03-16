@@ -4,6 +4,7 @@ import '../models/sport.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_read.dart';
 import '../config/api_json_keys.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget per la selezione dello sport all'interno di una categoria
 class SportSelectorWidget extends StatefulWidget {
@@ -37,6 +38,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
   }
 
   Future<void> _loadSports() async {
+    final l10n = AppLocalizations.of(context);
     try {
       final data = await DBRead.getSportsByCategory(widget.sportCategory);
       setState(() {
@@ -50,7 +52,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Errore nel caricamento degli sport: $e'),
+            content: Text(l10n.errorLoadingData(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -60,6 +62,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -74,7 +77,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'Nessuno sport disponibile',
+            l10n.noSportsAvailable,
             style: TextStyle(fontSize: 16, color: ATLColors.subtext),
           ),
         ),
@@ -85,7 +88,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          widget.title ?? 'Seleziona lo sport',
+          widget.title ?? l10n.selectSport,
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -133,6 +136,7 @@ class _SportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final primaryColor = ATLColors.getPrimaryColor(sport.category);
 
     return GestureDetector(
@@ -195,7 +199,11 @@ class _SportCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${sport.minPlayersPerTeam}-${sport.maxPlayersPerTeam} giocatori • ${sport.minutesPerRound}\' per tempo',
+                    l10n.sportPlayersMinutesLabel(
+                      sport.minPlayersPerTeam,
+                      sport.maxPlayersPerTeam,
+                      sport.minutesPerRound,
+                    ),
                     style: const TextStyle(
                       fontSize: 14,
                       color: ATLColors.subtext,

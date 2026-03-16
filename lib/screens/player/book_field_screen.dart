@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../providers/user_provider.dart';
@@ -116,7 +117,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Errore nel caricamento delle città: $e'),
+            content: Text(AppLocalizations.of(context).errorLoadingCities(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -127,8 +128,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   void _goToNextStep() {
     if (_currentStep == 1 && _selectedBookingType == BookingType.none) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seleziona un tipo di prenotazione'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).selectBookingTypeFirst),
           backgroundColor: Colors.red,
         ),
       );
@@ -137,8 +138,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
     if (_currentStep == 2 && !_canProceedFromStep2()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Compila tutti i campi obbligatori'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).fillAllFields),
           backgroundColor: Colors.red,
         ),
       );
@@ -147,8 +148,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
     if (_currentStep == 3 && _selectedField == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seleziona un campo'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).selectFieldFirst),
           backgroundColor: Colors.red,
         ),
       );
@@ -243,7 +244,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Errore nel caricamento dei campi: $e'),
+            content: Text(
+              AppLocalizations.of(context).errorLoadingFields(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -325,8 +328,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     // Check if date is selected first
     if (_selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Seleziona prima una data'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).selectDateFirst),
           backgroundColor: Colors.red,
         ),
       );
@@ -398,7 +401,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            isStartTime ? 'Seleziona ora inizio' : 'Seleziona ora fine',
+            isStartTime
+                ? AppLocalizations.of(context).startTimeLabel
+                : AppLocalizations.of(context).endTimeLabel,
             style: TextStyle(
               color: ATLColors.getPrimaryColor(widget.sportCategory),
               fontWeight: FontWeight.bold,
@@ -407,11 +412,11 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           content: SizedBox(
             width: double.maxFinite,
             height: 400,
-            child: timeSlots.isEmpty
-                ? const Center(
+                child: timeSlots.isEmpty
+                ? Center(
                     child: Text(
-                      'Nessun orario disponibile',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      AppLocalizations.of(context).noTimeSlotsAvailable,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   )
                 : ListView.builder(
@@ -438,7 +443,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
-                'Annulla',
+                AppLocalizations.of(context).cancelText,
                 style: TextStyle(
                   color: ATLColors.getPrimaryColor(widget.sportCategory),
                 ),
@@ -469,11 +474,12 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Future<void> _createBooking() async {
+    final l10n = AppLocalizations.of(context);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (userProvider.activeUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User not found'),
+        SnackBar( 
+          content: Text(l10n.userNotFound),
           backgroundColor: Colors.red,
         ),
       );
@@ -581,8 +587,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             }
           },
         ),
-        title: const Text(
-          'Prenota Campo',
+        title: Text(
+          AppLocalizations.of(context).bookAField,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -637,11 +643,12 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Widget _buildStep1() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Seleziona il tipo di prenotazione',
+          l10n.selectBookingType,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -654,9 +661,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Private Booking Option
         _BookingTypeCard(
-          title: 'Prenotazione Privata',
-          description:
-              'Paghi tutto tu, è una prenotazione privata solo per te e i tuoi amici.',
+          title: l10n.privateBooking,
+          description: l10n.privateBookingDesc,
           icon: Icons.lock_person,
           isSelected: _selectedBookingType == BookingType.private,
           categoryColor: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -671,9 +677,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Lobby Booking Option
         _BookingTypeCard(
-          title: 'Lobby Pubblica',
-          description:
-              'Crea una lobby e dividi il costo con altri giocatori. Decidi quanti giocatori partecipano e quanti ne paghi tu.',
+          title: l10n.publicLobby,
+          description: l10n.publicLobbyDesc,
           icon: Icons.groups,
           isSelected: _selectedBookingType == BookingType.lobby,
           categoryColor: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -688,7 +693,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Continue button
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueStep,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -702,11 +707,12 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Widget _buildStep2() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Inserisci i dati della prenotazione',
+          l10n.insertBookingData,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -727,9 +733,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           ),
           child: DropdownButtonFormField<int>(
             value: _selectedCity,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               border: InputBorder.none,
-              hintText: 'Seleziona città *',
+              hintText: l10n.selectCityRequired,
             ),
             items: _cities.map((city) {
               return DropdownMenuItem(value: city.id, child: Text(city.name));
@@ -764,7 +770,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                 const SizedBox(width: 12),
                 Text(
                   _selectedDate == null
-                      ? 'Seleziona data *'
+                      ? l10n.selectDateRequired
                       : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
                   style: TextStyle(
                     fontSize: 16,
@@ -797,7 +803,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                 const SizedBox(width: 12),
                 Text(
                   _startTime == null
-                      ? 'Ora inizio *'
+                      ? l10n.startTimeRequired
                       : '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')}',
                   style: TextStyle(
                     fontSize: 16,
@@ -830,7 +836,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                 const SizedBox(width: 12),
                 Text(
                   _endTime == null
-                      ? 'Ora fine *'
+                      ? l10n.endTimeRequired
                       : '${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
                   style: TextStyle(
                     fontSize: 16,
@@ -847,7 +853,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           const SizedBox(height: 24),
 
           Text(
-            'Configurazione Lobby',
+            l10n.lobbyConfiguration,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -868,9 +874,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Numero massimo giocatori',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                Text(
+                  l10n.maxPlayersLabel,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 DropdownButton<int>(
                   value: _maxPlayers,
@@ -917,9 +923,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Quanti giocatori paghi tu',
-                      style: TextStyle(
+                    Text(
+                      l10n.playersPaidByOwner,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
@@ -947,7 +953,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                   },
                 ),
                 Text(
-                  'Giocatori da trovare: ${_maxPlayers - _ownerPaysFor}',
+                  l10n.playersToFind(_maxPlayers - _ownerPaysFor),
                   style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 ),
               ],
@@ -959,7 +965,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Continue button
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueStep,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -971,11 +977,12 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Widget _buildStep3() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Seleziona il campo',
+          l10n.selectField,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -987,10 +994,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         const SizedBox(height: 32),
 
         if (_fields.isEmpty) ...[
-          const Center(
+          Center(
             child: Text(
-              'Nessun campo disponibile per questa fascia oraria',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+              l10n.noFieldsAvailable,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ),
@@ -1002,10 +1009,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'TODO: Mappa dei campi disponibili',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                l10n.availableFieldsMapTodo,
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ),
           ),
@@ -1076,7 +1083,11 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Questo campo è per ${_getSportDisplayName(_maxPlayerPerField[field.id]!)}',
+                                  l10n.fieldForSport(
+                                    _getSportDisplayName(
+                                      _maxPlayerPerField[field.id]!,
+                                    ),
+                                  ),
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey.shade700,
@@ -1119,8 +1130,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                               ),
                               Text(
                                 _selectedBookingType == BookingType.private
-                                    ? 'Totale'
-                                    : 'Per giocatore',
+                                    ? l10n.total
+                                    : l10n.perPlayer,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,
@@ -1149,7 +1160,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Campo più grande del necessario - costo maggiore',
+                                  l10n.fieldTooLargeWarning,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.orange.shade900,
@@ -1173,7 +1184,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Continue button
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueStep,
           onPressed: _selectedField != null ? () => _goToNextStep() : () {},
           size: ATLButtonSize.large,
           isFilled: true,
@@ -1185,6 +1196,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   Widget _buildStep4() {
+    final l10n = AppLocalizations.of(context);
     final totalCost = _calculateCost();
     final totalToPay = _calculateTotalToPay();
 
@@ -1192,7 +1204,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Riepilogo Prenotazione',
+          l10n.bookingSummary,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -1221,42 +1233,48 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _SummaryRow(
-                label: 'Tipo',
+                label: AppLocalizations.of(context).labelType,
                 value: _selectedBookingType == BookingType.private
-                    ? 'Prenotazione Privata'
-                    : 'Lobby Pubblica',
+                    ? AppLocalizations.of(context).privateBooking
+                    : AppLocalizations.of(context).publicLobby,
               ),
               const Divider(height: 24),
-              _SummaryRow(label: 'Campo', value: _selectedField?.name ?? ''),
+              _SummaryRow(
+                label: AppLocalizations.of(context).labelField,
+                value: _selectedField?.name ?? '',
+              ),
               const Divider(height: 24),
               FutureBuilder<String>(
                 future: _getCityName(),
                 builder: (context, snapshot) {
                   return _SummaryRow(
-                    label: 'Città',
-                    value: snapshot.data ?? 'Caricamento...',
+                    label: AppLocalizations.of(context).labelCity,
+                    value: snapshot.data ?? AppLocalizations.of(context).loading,
                   );
                 },
               ),
               const Divider(height: 24),
               _SummaryRow(
-                label: 'Data',
+                label: AppLocalizations.of(context).labelDate,
                 value:
                     '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
               ),
               const Divider(height: 24),
               _SummaryRow(
-                label: 'Orario',
+                label: AppLocalizations.of(context).labelSchedule,
                 value:
                     '${_startTime!.hour.toString().padLeft(2, '0')}:${_startTime!.minute.toString().padLeft(2, '0')} - ${_endTime!.hour.toString().padLeft(2, '0')}:${_endTime!.minute.toString().padLeft(2, '0')}',
               ),
 
               if (_selectedBookingType == BookingType.lobby) ...[
                 const Divider(height: 24),
-                _SummaryRow(label: 'Giocatori totali', value: '$_maxPlayers'),
+                _SummaryRow(
+                  label: AppLocalizations.of(context).labelTotalPlayers,
+                  value: '$_maxPlayers',
+                ),
                 const Divider(height: 24),
                 _SummaryRow(
-                  label: 'Giocatori che paghi',
+                  label: AppLocalizations.of(context).labelPlayersPaid,
                   value: '$_ownerPaysFor',
                 ),
               ],
@@ -1264,8 +1282,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               const Divider(height: 24),
               _SummaryRow(
                 label: _selectedBookingType == BookingType.private
-                    ? 'Costo Totale'
-                    : 'Costo per Giocatore',
+                    ? AppLocalizations.of(context).totalCost
+                    : AppLocalizations.of(context).costPerPlayer,
                 value: '€${totalCost.toStringAsFixed(2)}',
                 isHighlighted: true,
                 highlightColor: ATLColors.getPrimaryColor(widget.sportCategory),
@@ -1278,7 +1296,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Confirm button
         ATLButton(
-          text: 'Conferma Prenotazione - €${totalToPay.toStringAsFixed(2)}',
+          text: AppLocalizations.of(context).confirmBooking(
+            '€${totalToPay.toStringAsFixed(2)}',
+          ),
           onPressed: _createBooking,
           size: ATLButtonSize.large,
           isFilled: true,
@@ -1290,7 +1310,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Back button
         ATLButton(
-          text: 'Indietro',
+          text: AppLocalizations.of(context).back,
           onPressed: _goToPreviousStep,
           size: ATLButtonSize.large,
           isFilled: false,

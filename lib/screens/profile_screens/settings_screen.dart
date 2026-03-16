@@ -6,6 +6,7 @@ import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/atl_textfield.dart';
+import '../../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -24,8 +25,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _language = 'English';
   bool _autoPlayVideos = false;
 
+  String _languageDisplayName(AppLocalizations l10n) {
+    // Keep internal values stable for comparisons, localize only what's displayed.
+    if (_language == 'Italiano') return l10n.italianLanguage;
+    return l10n.englishLanguage;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -35,9 +43,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'SETTINGS',
-          style: TextStyle(
+        title: Text(
+          l10n.settingsTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -50,18 +58,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(24),
         children: [
           // Notifications Section
-          const _SectionHeader(title: 'Notifications'),
+          _SectionHeader(title: l10n.notifications),
           _SettingTile(
             icon: Icons.notifications,
-            title: 'Enable Notifications',
-            subtitle: 'Receive notifications about matches and tournaments',
+            title: l10n.enableNotifications,
+            subtitle: l10n.enableNotificationsSubtitle,
             trailing: Switch(
               value: _notificationsEnabled,
               onChanged: (value) {
                 setState(() => _notificationsEnabled = value);
                 // TODO: Save preference
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Settings will be saved soon')),
+                  SnackBar(content: Text(l10n.settingsSavedSoon)),
                 );
               },
               activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
@@ -70,8 +78,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           if (_notificationsEnabled) ...[
             _SettingTile(
               icon: Icons.email,
-              title: 'Email Notifications',
-              subtitle: 'Receive notifications via email',
+              title: l10n.emailNotifications,
+              subtitle: l10n.emailNotificationsSubtitle,
               trailing: Switch(
                 value: _emailNotifications,
                 onChanged: (value) {
@@ -84,8 +92,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             _SettingTile(
               icon: Icons.phone_android,
-              title: 'Push Notifications',
-              subtitle: 'Receive push notifications on your device',
+              title: l10n.pushNotifications,
+              subtitle: l10n.pushNotificationsSubtitle,
               trailing: Switch(
                 value: _pushNotifications,
                 onChanged: (value) {
@@ -101,18 +109,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Appearance Section
-          const _SectionHeader(title: 'Appearance'),
+          _SectionHeader(title: l10n.appearance),
           _SettingTile(
             icon: Icons.dark_mode,
-            title: 'Dark Mode',
-            subtitle: 'Use dark theme',
+            title: l10n.darkModeLabel,
+            subtitle: l10n.darkModeSubtitle,
             trailing: Switch(
               value: _darkMode,
               onChanged: (value) {
                 setState(() => _darkMode = value);
                 // TODO: Implement dark mode
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Dark mode coming soon')),
+                  SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
                 );
               },
               activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
@@ -120,8 +128,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           _SettingTile(
             icon: Icons.language,
-            title: 'Language',
-            subtitle: _language,
+            title: l10n.language,
+            subtitle: _languageDisplayName(l10n),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               _showLanguageDialog();
@@ -131,28 +139,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Privacy & Security Section
-          const _SectionHeader(title: 'Privacy & Security'),
+          _SectionHeader(title: l10n.privacySecurity),
           _SettingTile(
             icon: Icons.privacy_tip,
-            title: 'Privacy Policy',
-            subtitle: 'Read our privacy policy',
+            title: l10n.privacyPolicy,
+            subtitle: l10n.privacyPolicySubtitle,
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Show privacy policy
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Privacy policy coming soon')),
+                SnackBar(content: Text(l10n.privacyComingSoon)),
               );
             },
           ),
           _SettingTile(
             icon: Icons.security,
-            title: 'Terms of Service',
-            subtitle: 'Read our terms of service',
+            title: l10n.termsOfService,
+            subtitle: l10n.termsOfServiceSubtitle,
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Show terms
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Terms of service coming soon')),
+                SnackBar(content: Text(l10n.termsComingSoon)),
               );
             },
           ),
@@ -160,11 +168,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // App Preferences Section
-          const _SectionHeader(title: 'App Preferences'),
+          _SectionHeader(title: l10n.appPreferences),
           _SettingTile(
             icon: Icons.play_circle,
-            title: 'Auto-play Videos',
-            subtitle: 'Automatically play videos in feed',
+            title: l10n.autoPlayVideos,
+            subtitle: l10n.autoPlayVideosSubtitle,
             trailing: Switch(
               value: _autoPlayVideos,
               onChanged: (value) {
@@ -177,34 +185,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // About Section
-          const _SectionHeader(title: 'About'),
+          _SectionHeader(title: l10n.about),
           _SettingTile(
             icon: Icons.info,
-            title: 'App Version',
+            title: l10n.appVersion,
             subtitle: '1.0.0',
             trailing: const SizedBox(),
           ),
           _SettingTile(
             icon: Icons.help,
-            title: 'Help & Support',
-            subtitle: 'Get help with the app',
+            title: l10n.helpAndSupport,
+            subtitle: l10n.helpAndSupportSubtitle,
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Show help
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Help & support coming soon')),
+                SnackBar(content: Text(l10n.helpComingSoon)),
               );
             },
           ),
           _SettingTile(
             icon: Icons.rate_review,
-            title: 'Rate Us',
-            subtitle: 'Rate us on the app store',
+            title: l10n.rateUs,
+            subtitle: l10n.rateUsSubtitle,
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Open app store
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Rate us coming soon')),
+                SnackBar(content: Text(l10n.rateUsComingSoon)),
               );
             },
           ),
@@ -212,11 +220,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // Danger Zone
-          const _SectionHeader(title: 'Danger Zone'),
+          _SectionHeader(title: l10n.dangerZone),
           _SettingTile(
             icon: Icons.delete_forever,
-            title: 'Delete Account',
-            subtitle: 'Permanently delete your account',
+            title: l10n.deleteAccount,
+            subtitle: l10n.deleteAccountSubtitle,
             titleColor: Colors.red,
             trailing: const Icon(
               Icons.arrow_forward_ios,
@@ -236,15 +244,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showLanguageDialog() {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
+        title: Text(l10n.selectLanguage),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _LanguageOption(
-              language: 'English',
+              languageLabel: l10n.englishLanguage,
               isSelected: _language == 'English',
               onTap: () {
                 setState(() => _language = 'English');
@@ -252,13 +261,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             _LanguageOption(
-              language: 'Italiano',
+              languageLabel: l10n.italianLanguage,
               isSelected: _language == 'Italiano',
               onTap: () {
                 setState(() => _language = 'Italiano');
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Language support coming soon')),
+                  SnackBar(content: Text(l10n.languageComingSoon)),
                 );
               },
             ),
@@ -270,27 +279,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<bool> _showDeleteAccountDialog() async {
     final passwordController = TextEditingController();
+    final l10n = AppLocalizations.of(context);
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(
-          'Delete Account',
-          style: TextStyle(color: Colors.red),
+        title: Text(
+          l10n.deleteAccountTitle,
+          style: const TextStyle(color: Colors.red),
         ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'This action cannot be undone. All your data will be permanently deleted.',
-                style: TextStyle(color: ATLColors.subtext),
+              Text(
+                l10n.deleteAccountWarning,
+                style: const TextStyle(color: ATLColors.subtext),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Please enter your password to confirm:',
-                style: TextStyle(
+              Text(
+                l10n.pleaseEnterPassword,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontWeight: FontWeight.w600,
                 ),
@@ -298,7 +308,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 8),
               ATLTextField(
                 controller: passwordController,
-                hintText: 'Enter your password',
+                hintText: l10n.enterYourPassword,
                 obscureText: true,
               ),
             ],
@@ -309,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () {
               Navigator.pop(context, false);
             },
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -317,8 +327,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               if (password.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter your password'),
+                  SnackBar(
+                    content: Text(l10n.pleaseEnterPassword),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -339,8 +349,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Check if password matches
               if (user.passwordMD5 != password) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Incorrect password'),
+                  SnackBar(
+                    content: Text(l10n.incorrectPassword),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -350,9 +360,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Password is correct, close dialog and confirm
               Navigator.pop(context, true);
             },
-            child: const Text(
-              'Delete Account',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            child: Text(
+              l10n.deleteAccountButton,
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -381,20 +394,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account deleted successfully'),
+          SnackBar(
+            content: Text(l10n.accountDeletedSuccessfully),
             backgroundColor: Colors.green,
           ),
         );
       }
     } else {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Failed to delete account. Check if your owned teams have Vice Captains assigned.',
-            ),
+          SnackBar(
+            content: Text(l10n.failedToDeleteAccount),
             backgroundColor: Colors.red,
           ),
         );
@@ -477,12 +490,12 @@ class _SettingTile extends StatelessWidget {
 }
 
 class _LanguageOption extends StatelessWidget {
-  final String language;
+  final String languageLabel;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _LanguageOption({
-    required this.language,
+    required this.languageLabel,
     required this.isSelected,
     required this.onTap,
   });
@@ -490,7 +503,7 @@ class _LanguageOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(language),
+      title: Text(languageLabel),
       trailing: isSelected
           ? const Icon(Icons.check, color: Colors.green)
           : null,

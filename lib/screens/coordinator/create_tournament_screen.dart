@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/sport.dart';
 import '../../models/field.dart';
@@ -7,6 +8,7 @@ import '../../models/sport_category.dart';
 import '../../models/tournament.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/sport_selector_widget.dart';
 import '../../widgets/atl_button.dart';
@@ -21,20 +23,7 @@ enum Round2Option {
   none,
   groupStageOnly,
   finalStageOnly,
-  both;
-
-  String get displayName {
-    switch (this) {
-      case Round2Option.none:
-        return 'Solo andata';
-      case Round2Option.groupStageOnly:
-        return 'A/R solo ai gironi';
-      case Round2Option.finalStageOnly:
-        return 'A/R solo nella fase finale';
-      case Round2Option.both:
-        return 'A/R per tutto il torneo';
-    }
-  }
+  both,
 }
 
 class CreateTournamentScreen extends StatefulWidget {
@@ -59,7 +48,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   int? _selectedCity; // cityId
   bool _isPublic = true;
   bool _hasProfit = true;
-  String? _selectedMonth; // "now" or "YYYY-MM"
+  String? _selectedMonth; // 'asap' or 'YYYY-MM'
 
   // Step 2 - Tournament details
   int _numTeams = 8;
@@ -93,29 +82,31 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   void _goToNextStep() {
+    final l10n = AppLocalizations.of(context);
+
     // Validation for each step
     if (_currentStep == 0 && _selectedSport == null) {
-      _showError('Seleziona uno sport per continuare');
+      _showError(l10n.selectSportFirst);
       return;
     }
 
     if (_currentStep == 1 && !_canProceedFromStep1()) {
-      _showError('Compila tutti i campi obbligatori');
+      _showError(l10n.fillAllFields);
       return;
     }
 
     if (_currentStep == 2 && !_canProceedFromStep2()) {
-      _showError('Completa tutti i dettagli del torneo');
+      _showError(l10n.completeTournamentDetails);
       return;
     }
 
     if (_currentStep == 3 && _selectedField == null) {
-      _showError('Seleziona un campo per continuare');
+      _showError(l10n.selectFieldFirst2);
       return;
     }
 
     if (_currentStep == 4 && !_canProceedFromStep4()) {
-      _showError('Inserisci nome e descrizione del torneo');
+      _showError(l10n.insertNameAndDescription);
       return;
     }
 
@@ -169,7 +160,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       });
     } catch (e) {
       if (mounted) {
-        _showError('Errore nel caricamento delle città: $e');
+        _showError(AppLocalizations.of(context).errorLoadingCities(e.toString()));
       }
     }
   }
@@ -196,7 +187,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Errore nel caricamento dei campi: $e'),
+            content: Text(
+              AppLocalizations.of(context).errorLoadingFieldsShort(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -236,16 +229,15 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     if (userProvider.activeUser == null ||
         userProvider.activeRoleId == null ||
         userProvider.isCoordinator == false) {
-      throw Exception('Coordinator not found');
+      throw Exception(AppLocalizations.of(context).coordinatorNotFound);
     }
 
     // Parse start date
     DateTime? startDate;
-    if (_selectedMonth != null && _selectedMonth != 'Appena possibile') {
-      final parts = _selectedMonth!.split(' ');
-      final monthName = parts[0];
-      final year = int.parse(parts[1]);
-      final month = _getMonthNumber(monthName);
+    if (_selectedMonth != null && _selectedMonth != 'asap') {
+      final parts = _selectedMonth!.split('-');
+      final year = int.parse(parts[0]);
+      final month = int.parse(parts[1]);
       startDate = DateTime(year, month, 1);
     }
 
@@ -277,36 +269,16 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   List<String> _getAvailableMonths() {
-    List<String> months = ['Appena possibile'];
+    List<String> months = ['asap'];
     final now = DateTime.now();
 
     // Add current month and next 2 months
     for (int i = 0; i < 3; i++) {
       final date = DateTime(now.year, now.month + i, 1);
-      final monthName = _getMonthName(date.month);
-      final year = date.year;
-      months.add('$monthName $year');
+      months.add('${date.year}-${date.month.toString().padLeft(2, '0')}');
     }
 
     return months;
-  }
-
-  String _getMonthName(int month) {
-    const months = [
-      'Gennaio',
-      'Febbraio',
-      'Marzo',
-      'Aprile',
-      'Maggio',
-      'Giugno',
-      'Luglio',
-      'Agosto',
-      'Settembre',
-      'Ottobre',
-      'Novembre',
-      'Dicembre',
-    ];
-    return months[month - 1];
   }
 
   Future<void> _createTournament() async {
@@ -319,7 +291,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       if (currentUser == null ||
           userProvider.activeRoleId == null ||
           userProvider.isCoordinator == false) {
-        throw Exception('Coordinator not found');
+        throw Exception(AppLocalizations.of(context).coordinatorNotFound);
       }
 
       // Parse round2 options
@@ -332,11 +304,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
       // Parse start date
       DateTime? startDate;
-      if (_selectedMonth != null && _selectedMonth != 'Appena possibile') {
-        final parts = _selectedMonth!.split(' ');
-        final monthName = parts[0];
-        final year = int.parse(parts[1]);
-        final month = _getMonthNumber(monthName);
+      if (_selectedMonth != null && _selectedMonth != 'asap') {
+        final parts = _selectedMonth!.split('-');
+        final year = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
         startDate = DateTime(year, month, 1);
       }
 
@@ -361,8 +332,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
       if (mounted && success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Torneo creato con successo!'),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).tournamentCreatedSuccessfully,
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -372,7 +345,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Errore nella creazione del torneo: $e'),
+            content: Text(
+              AppLocalizations.of(context).errorCreatingTournament(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -382,24 +357,6 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  int _getMonthNumber(String monthName) {
-    const months = {
-      'Gennaio': 1,
-      'Febbraio': 2,
-      'Marzo': 3,
-      'Aprile': 4,
-      'Maggio': 5,
-      'Giugno': 6,
-      'Luglio': 7,
-      'Agosto': 8,
-      'Settembre': 9,
-      'Ottobre': 10,
-      'Novembre': 11,
-      'Dicembre': 12,
-    };
-    return months[monthName] ?? 1;
   }
 
   int _getSportId() {
@@ -420,15 +377,37 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     return minPlayers < _maxPlayerPerField[field.id]!;
   }
 
+  String _formatMonthOption(AppLocalizations l10n, String value) {
+    if (value == 'asap') return l10n.asSoonAsPossible;
+
+    final parts = value.split('-');
+    final year = int.parse(parts[0]);
+    final month = int.parse(parts[1]);
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('MMMM yyyy', locale).format(DateTime(year, month, 1));
+  }
+
+  String _round2OptionLabel(AppLocalizations l10n, Round2Option option) {
+    switch (option) {
+      case Round2Option.none:
+        return l10n.roundFormatSingleMatch;
+      case Round2Option.groupStageOnly:
+        return l10n.roundFormatHomeAwayGroups;
+      case Round2Option.finalStageOnly:
+        return l10n.roundFormatHomeAwayFinals;
+      case Round2Option.both:
+        return l10n.roundFormatFullHomeAway;
+    }
+  }
+
   Future<void> _showOversizedFieldWarning(Field field) async {
     return showDialog(
       context: context,
       builder: (context) => FieldSizeAlertDialog(
         field: field,
-        customMessage:
-            'Il campo è pensato per più giocatori (${_maxPlayerPerField[field.id]!} totali). '
-            'Questo potrebbe significare una differente esperienza di gioco '
-            'ed una fee per squadra maggiore. Vuoi continuare?',
+        customMessage: AppLocalizations.of(context).oversizedFieldDialogMessage(
+          _maxPlayerPerField[field.id]!,
+        ),
         maxPlayers: _maxPlayerPerField[field.id]!,
         onConfirm: () {
           setState(() {
@@ -441,6 +420,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -456,8 +437,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             }
           },
         ),
-        title: const Text(
-          'Crea Torneo',
+        title: Text(
+          l10n.createTournamentTitle,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -517,11 +498,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
               );
             }
             if (snapshot.hasError) {
+              final l10n = AppLocalizations.of(context);
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
                   child: Text(
-                    'Errore nel caricamento: ${snapshot.error}',
+                    l10n.errorLoadingData(snapshot.error.toString()),
                     style: const TextStyle(color: Colors.red),
                     textAlign: TextAlign.center,
                   ),
@@ -537,6 +519,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Widget _buildStep0() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         SportSelectorWidget(
@@ -547,12 +530,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
               _selectedSport = sport;
             });
           },
-          title: 'Seleziona lo sport',
-          subtitle: 'Scegli la categoria sportiva per il tuo torneo',
+          title: l10n.selectSportStep,
+          subtitle: l10n.chooseSportCategory,
         ),
         const SizedBox(height: 32),
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.currentSport),
@@ -564,11 +547,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Widget _buildStep1() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Dettagli logistici',
+          l10n.logisticsDetailsTitle,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -589,9 +573,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Premio 1° posto',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                l10n.firstPlacePrize,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               Switch(
                 value: _prize1,
@@ -624,9 +608,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Premio 2° posto',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                l10n.secondPlacePrize,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               Switch(
                 value: _prize2,
@@ -657,7 +641,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             child: DropdownButton<int>(
               isExpanded: true,
               value: _selectedCity,
-              hint: const Text('Città'),
+              hint: Text(l10n.cityHint),
               items: _cities.map((city) {
                 return DropdownMenuItem(value: city.id, child: Text(city.name));
               }).toList(),
@@ -684,14 +668,14 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Visibilità',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                l10n.visibilityLabel,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               SegmentedButton<bool>(
-                segments: const [
-                  ButtonSegment(value: true, label: Text('Pubblico')),
-                  ButtonSegment(value: false, label: Text('Privato')),
+                segments: [
+                  ButtonSegment(value: true, label: Text(l10n.publicTournament)),
+                  ButtonSegment(value: false, label: Text(l10n.privateTournament)),
                 ],
                 selected: {_isPublic},
                 onSelectionChanged: (Set<bool> newSelection) {
@@ -717,9 +701,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Torneo a scopo di lucro',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Text(
+                l10n.forProfitTournament,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               Switch(
                 value: _hasProfit,
@@ -751,9 +735,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             child: DropdownButton<String>(
               isExpanded: true,
               value: _selectedMonth,
-              hint: const Text('Data inizio (mese)'),
-              items: _getAvailableMonths().map((month) {
-                return DropdownMenuItem(value: month, child: Text(month));
+              hint: Text(l10n.startMonthHint),
+              items: _getAvailableMonths().map((monthValue) {
+                return DropdownMenuItem(
+                  value: monthValue,
+                  child: Text(_formatMonthOption(l10n, monthValue)),
+                );
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -767,7 +754,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.currentSport),
@@ -779,6 +766,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Widget _buildStep2() {
+    final l10n = AppLocalizations.of(context);
     final validGroups = _getValidGroupCounts();
     final validQualified = _getValidQualifiedCounts();
 
@@ -786,7 +774,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Dettagli del torneo',
+          l10n.tournamentDetails,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -798,7 +786,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
         // Number of teams
         _buildSliderField(
-          label: 'Numero di squadre',
+          label: l10n.numberOfTeamsLabel,
           value: _numTeams.toDouble(),
           min: 6,
           max: 20,
@@ -877,11 +865,11 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             child: DropdownButton<int>(
               isExpanded: true,
               value: _numGroups,
-              hint: const Text('Numero di gironi'),
+              hint: Text(l10n.numberOfGroupsHint),
               items: validGroups.map((count) {
                 return DropdownMenuItem(
                   value: count,
-                  child: Text('$count gironi'),
+                  child: Text(l10n.groupsCount(count)),
                 );
               }).toList(),
               onChanged: (value) {
@@ -912,11 +900,11 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             child: DropdownButton<Round2Option>(
               isExpanded: true,
               value: _round2Option,
-              hint: const Text('Andata e ritorno'),
+              hint: Text(l10n.homeAndAwayHint),
               items: Round2Option.values.map((option) {
                 return DropdownMenuItem(
                   value: option,
-                  child: Text(option.displayName),
+                  child: Text(_round2OptionLabel(l10n, option)),
                 );
               }).toList(),
               onChanged: (value) {
@@ -945,11 +933,11 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
               child: DropdownButton<int>(
                 isExpanded: true,
                 value: _qualified,
-                hint: const Text('Squadre qualificate'),
+                hint: Text(l10n.qualifiedTeamsHint),
                 items: validQualified.map((count) {
                   return DropdownMenuItem(
                     value: count,
-                    child: Text('$count squadre qualificate'),
+                    child: Text(l10n.qualifiedTeamsCount(count)),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -966,7 +954,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.currentSport),
@@ -978,11 +966,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Widget _buildStep3() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Seleziona il campo',
+          l10n.selectField,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -995,7 +984,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         if (_fields.isEmpty) ...[
           Center(
             child: Text(
-              'Nessun campo disponibile per i criteri selezionati',
+              l10n.noFieldsAvailableForCriteria,
               style: TextStyle(fontSize: 16, color: ATLColors.subtext),
               textAlign: TextAlign.center,
             ),
@@ -1008,10 +997,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'TODO: Mappa dei campi disponibili',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                l10n.availableFieldsMapTodo,
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ),
           ),
@@ -1082,7 +1071,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Questo campo è per ${_getSportDisplayName(_maxPlayerPerField[field.id]!)}',
+                        l10n.fieldForSport(
+                          _getSportDisplayName(_maxPlayerPerField[field.id]!),
+                        ),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade700,
@@ -1116,7 +1107,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Campo più grande del necessario',
+                                  l10n.fieldTooLargeWarning,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.orange.shade900,
@@ -1140,7 +1131,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.currentSport),
@@ -1152,11 +1143,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Widget _buildStep4() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Inserisci descrizione',
+          l10n.insertDescriptionTitle,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -1167,7 +1159,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         // Tournament name
-        ATLTextField(controller: _nameController, hintText: 'Nome del torneo'),
+        ATLTextField(controller: _nameController, hintText: l10n.tournamentNameHint),
 
         const SizedBox(height: 16),
 
@@ -1180,9 +1172,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           child: TextField(
             controller: _descriptionController,
             maxLines: 6,
-            decoration: const InputDecoration(
-              hintText: 'Inserisci le regole e i dettagli del torneo...',
-              hintStyle: TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
+            decoration: InputDecoration(
+              hintText: l10n.tournamentDescHint,
+              hintStyle: const TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
               border: OutlineInputBorder(borderSide: BorderSide.none),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 20,
@@ -1195,7 +1187,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         ATLButton(
-          text: 'Continua',
+          text: l10n.continueButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.currentSport),
@@ -1207,6 +1199,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Future<Widget> _buildStep5() async {
+    final l10n = AppLocalizations.of(context);
     final fictitiousTournament = _createFictitiousTournament();
 
     final Map<String, dynamic> data = await DBRead.calculateTournamentParameters(
@@ -1229,7 +1222,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Riepilogo torneo',
+          l10n.tournamentSummaryTitle,
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -1248,7 +1241,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           prize1Value: prize1Value,
           prize2Value: prize2Value,
           totalMatches: _calculateTotalMatches(),
-          round2Display: _round2Option.displayName,
+          round2Display: _round2OptionLabel(l10n, _round2Option),
           primaryColor: ATLColors.getPrimaryColor(widget.currentSport),
         ),
 
@@ -1270,7 +1263,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
           child: Column(
             children: [
               Text(
-                'Revenue totale',
+                l10n.totalRevenueLabel,
                 style: TextStyle(fontSize: 16, color: ATLColors.subtext),
               ),
               const SizedBox(height: 8),
@@ -1289,7 +1282,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         ATLButton(
-          text: 'CREA +',
+          text: l10n.createTournamentButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.currentSport),

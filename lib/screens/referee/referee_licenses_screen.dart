@@ -12,6 +12,7 @@ import '../../widgets/atl_floating_button.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class RefereeLicensesScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -76,35 +77,38 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
   }
 
   Future<void> _handleDelete(RefereeLicense license) async {
+    final l10n = AppLocalizations.of(context);
     if (license.status != LicenseStatus.notVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You can't delete a license that is not in 'Not Verified' status."),
-        ),
+        SnackBar(content: Text(l10n.cannotDeleteLicenseNotVerifiedStatus)),
       );
       return;
     }
 
     final sport = _sportById(license.sportId);
+    final licenseName = sport?.name ?? l10n.licenseGenericName;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Delete License',
-          style: TextStyle(
+        title: Text(
+          l10n.deleteLicenseTitle,
+          style: const TextStyle(
             color: ATLColors.darkBlue,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
-          'Are you sure you want to delete the ${sport?.name ?? 'license'} license (ID: ${license.id})?\nThis action cannot be undone.',
+          l10n.confirmDeleteLicense(licenseName, license.id),
           style: const TextStyle(color: ATLColors.subtext),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: ATLColors.subtext)),
+            child: Text(
+              l10n.cancel,
+              style: const TextStyle(color: ATLColors.subtext),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -115,7 +119,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.deleteText),
           ),
         ],
       ),
@@ -131,24 +135,25 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
         if (success) {
           await _loadData();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('License deleted successfully.')),
+            SnackBar(content: Text(l10n.licenseDeletedSuccessfully)),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to delete license. Try again.')),
+            SnackBar(content: Text(l10n.failedToDeleteLicense)),
           );
         }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text(l10n.errorText(e.toString()))),
         );
       }
     }
   }
 
   Future<void> _openAddDialog() async {
+    final l10n = AppLocalizations.of(context);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final refereeId = userProvider.activeRoleId!;
 
@@ -159,9 +164,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
 
     if (availableSports.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('You already have a license for all available sports.'),
-        ),
+        SnackBar(content: Text(l10n.alreadyHasLicenseAllSports)),
       );
       return;
     }
@@ -183,6 +186,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Build category filter tabs from available sport categories in _sports
     final categories = _sports.map((s) => s.category).toSet().toList();
 
@@ -195,9 +199,9 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'LICENSES',
-          style: TextStyle(
+        title: Text(
+          l10n.licenses.toUpperCase(),
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -210,7 +214,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
         onPressed: _isLoading ? () {} : _openAddDialog,
         backgroundColor: ATLColors.darkBlue,
         icon: Icons.add,
-        label: 'Add License',
+        label: l10n.addLicenseTitle,
       ),
       body: _isLoading
           ? const Center(child: LoadingATL())
@@ -224,7 +228,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _filterChip(null, 'All'),
+                          _filterChip(null, l10n.allFilter),
                           ...categories.map(
                             (cat) => _filterChip(cat, cat.name),
                           ),
@@ -265,6 +269,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
   }
 
   Widget _buildList() {
+    final l10n = AppLocalizations.of(context);
     final licenses = _filteredLicenses;
 
     if (licenses.isEmpty) {
@@ -280,9 +285,9 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
                 color: ATLColors.subtext.withOpacity(0.4),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'No Licenses',
-                style: TextStyle(
+              Text(
+                l10n.noLicensesTitle,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -292,7 +297,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
-                  'Tap the + button to add your first license.',
+                  l10n.noLicensesSubtitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: ATLColors.subtext, fontSize: 15),
                 ),

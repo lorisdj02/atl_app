@@ -7,6 +7,7 @@ import '../utils/atl_colors.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../database/db_write.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare una card torneo
 
@@ -45,6 +46,7 @@ class _TournamentCardStatus extends State<TournamentCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Use provided attributes directly (no DB calls for display)
     final coordinatorUsername = widget.coordinator.username;
     final fieldName = widget.field.name;
@@ -128,9 +130,9 @@ class _TournamentCardStatus extends State<TournamentCard> {
                       setState(() {
                         if (widget.tournament.isParticipating) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                'Cannot change favorite status while participating.',
+                                l10n.cannotChangeFavMsg,
                               ),
                               duration: Duration(seconds: 2),
                             ),

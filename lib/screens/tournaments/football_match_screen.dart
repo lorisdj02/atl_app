@@ -20,6 +20,7 @@ import '../../widgets/referee_match_dialog.dart';
 import '../../providers/user_provider.dart';
 import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
+import '../../l10n/app_localizations.dart';
 
 class FootballMatchScreen extends StatefulWidget {
   final int matchId;
@@ -36,6 +37,16 @@ class FootballMatchScreen extends StatefulWidget {
 }
 
 class _FootballMatchScreenState extends State<FootballMatchScreen> {
+  static const String _menuScheduleMatch = 'schedule_match';
+  static const String _menuRescheduleMatch = 'reschedule_match';
+  static const String _menuStartMatch = 'start_match';
+  static const String _menuHalftime = 'halftime';
+  static const String _menuStartSecondHalf = 'start_second_half';
+  static const String _menuAddPlayerEvent = 'add_player_event';
+  static const String _menuInsertPenalty = 'insert_penalty';
+  static const String _menuStartPenaltyShootout = 'start_penalty_shootout';
+  static const String _menuFinishMatch = 'finish_match';
+
   FootballMatch? _match;
   Team? _homeTeam;
   Team? _awayTeam;
@@ -58,6 +69,58 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   String _cityName = '';
   Field? _field;
   bool _canMatchFinish = false;
+
+  AppLocalizations get _l10n => AppLocalizations.of(context);
+
+  String _menuActionLabel(String actionId) {
+    switch (actionId) {
+      case _menuScheduleMatch:
+        return _l10n.scheduleMatchLabel;
+      case _menuRescheduleMatch:
+        return _l10n.rescheduleMatchLabel;
+      case _menuStartMatch:
+        return _l10n.startMatchTitle;
+      case _menuHalftime:
+        return _l10n.halftimeTitle;
+      case _menuStartSecondHalf:
+        return _l10n.startSecondHalf;
+      case _menuAddPlayerEvent:
+        return _l10n.addPlayerEventLabel;
+      case _menuInsertPenalty:
+        return _l10n.insertPenalty;
+      case _menuStartPenaltyShootout:
+        return _l10n.startPenaltyShootoutTitle;
+      case _menuFinishMatch:
+        return _l10n.finishMatchTitle;
+      default:
+        return actionId;
+    }
+  }
+
+  IconData _menuActionIcon(String actionId) {
+    switch (actionId) {
+      case _menuScheduleMatch:
+        return Icons.schedule;
+      case _menuRescheduleMatch:
+        return Icons.update;
+      case _menuStartMatch:
+        return Icons.play_arrow;
+      case _menuHalftime:
+        return Icons.pause;
+      case _menuStartSecondHalf:
+        return Icons.play_arrow;
+      case _menuAddPlayerEvent:
+        return Icons.add;
+      case _menuInsertPenalty:
+        return Icons.sports_soccer;
+      case _menuStartPenaltyShootout:
+        return Icons.sports;
+      case _menuFinishMatch:
+        return Icons.stop;
+      default:
+        return Icons.circle;
+    }
+  }
   Map<String, double> _payPerRole = {};
 
   bool get _isNotScheduled =>
@@ -190,11 +253,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (_availableRefereeRoles.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'All referee roles for this match have already been assigned',
-            ),
-          ),
+          SnackBar(content: Text(_l10n.allRefereeRolesAssigned)),
         );
       }
       return;
@@ -203,11 +262,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (!_hasRefereeLicense) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'You do not have a valid referee license for this sport',
-            ),
-          ),
+          SnackBar(content: Text(_l10n.noValidRefereeLicense)),
         );
       }
       return;
@@ -230,7 +285,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (refereeId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: Referee ID not found')),
+          SnackBar(content: Text(_l10n.errorRefereeNotFound)),
         );
       }
       return;
@@ -250,13 +305,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         _loadMatchData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Assignment created successfully')),
+            SnackBar(content: Text(_l10n.assignmentCreated)),
           );
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to create assignment')),
+            SnackBar(content: Text(_l10n.failedToCreateAssignment)),
           );
         }
       }
@@ -264,7 +319,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       print('Error creating assignment: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error creating assignment')),
+          SnackBar(content: Text(_l10n.errorCreatingAssignment)),
         );
       }
     }
@@ -274,9 +329,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (_field == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error: Field information not available'),
-          ),
+          SnackBar(content: Text(_l10n.errorFieldNotAvailable)),
         );
       }
       return;
@@ -314,8 +367,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           SnackBar(
             content: Text(
               wasScheduled
-                  ? 'Match rescheduled successfully'
-                  : 'Match scheduled successfully',
+                  ? _l10n.matchRescheduledSuccessfully
+                  : _l10n.matchScheduledSuccessfully,
             ),
           ),
         );
@@ -326,8 +379,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           SnackBar(
             content: Text(
               _canReschedule
-                  ? 'Failed to schedule match. The field might not be available.'
-                  : 'Cannot reschedule match within 24 hours of start time',
+                  ? _l10n.failedToScheduleFieldUnavailable
+                  : _l10n.cannotRescheduleWithin24h,
             ),
           ),
         );
@@ -344,7 +397,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('CANCEL'),
+                child: Text(_l10n.cancelButton),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -354,7 +407,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                   ),
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('CONFIRM'),
+                child: Text(_l10n.confirmButton),
               ),
             ],
           ),
@@ -368,24 +421,28 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     // Mostra dialog di conferma
     String title = '';
     String message = '';
+    String actionLabel = '';
 
     switch (action) {
       case 'start':
-        title = 'Start Match';
-        message = 'Are you sure you want to start the match?';
+        title = _l10n.startMatchTitle;
+        message = _l10n.startMatchConfirm;
+        actionLabel = _l10n.startMatchTitle;
         break;
       case 'halftime':
-        title = 'Go to Halftime';
-        message = 'Are you sure you want to end the first half?';
+        title = _l10n.halftimeTitle;
+        message = _l10n.halftimeConfirm;
+        actionLabel = _l10n.halftimeTitle;
         break;
       case 'startHalf':
-        title = 'Start Second Half';
-        message = 'Are you sure you want to start the second half?';
+        title = _l10n.startSecondHalf;
+        message = _l10n.startSecondHalfConfirm;
+        actionLabel = _l10n.startSecondHalf;
         break;
       case 'finish':
-        title = 'Finish Match';
-        message =
-            'Are you sure you want to finish the match? This action cannot be undone.';
+        title = _l10n.finishMatchTitle;
+        message = _l10n.finishMatchConfirm;
+        actionLabel = _l10n.finishMatchTitle;
         break;
     }
 
@@ -417,13 +474,17 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Match ${action} successfully')));
+        ).showSnackBar(
+          SnackBar(content: Text(_l10n.matchActionSuccess(actionLabel))),
+        );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to ${action} match')));
+        ).showSnackBar(
+          SnackBar(content: Text(_l10n.failedToMatchAction(actionLabel))),
+        );
       }
     }
   }
@@ -432,38 +493,38 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     List<String> actions = [];
 
     if (_isNotScheduled) {
-      actions.add('Schedule Match');
+      actions.add(_menuScheduleMatch);
     } else if (_isScheduled) {
       if (_canReschedule) {
-        actions.add('Reschedule Match');
+        actions.add(_menuRescheduleMatch);
       }
       if (_canStartMatch) {
-        actions.add('Start Match');
+        actions.add(_menuStartMatch);
       }
     } else if (_isInProgress) {
       // Go to Halftime solo se il match è in stato 'started' (primo tempo)
       if (_match?.status == MatchStatus.started) {
-        actions.add('Go to Halftime');
+        actions.add(_menuHalftime);
       }
-      actions.add('Add Player Event');
+      actions.add(_menuAddPlayerEvent);
 
       // Se siamo nel secondo tempo (startHalf), controlla se il match può finire
       if (_match?.status == MatchStatus.startHalf) {
         if (_canMatchFinish) {
-          actions.add('Finish Match');
+          actions.add(_menuFinishMatch);
         } else {
-          actions.add('Start Penalty ShootOut');
+          actions.add(_menuStartPenaltyShootout);
         }
       }
       // Nel primo tempo NON può finire
     } else if (_isHalftime) {
-      actions.add('Start Second Half');
+      actions.add(_menuStartSecondHalf);
     } else if (_isPenaltyShootOut) {
       // Durante i rigori, verifica se il match può finire
       if (_canMatchFinish) {
-        actions.add('Finish Match');
+        actions.add(_menuFinishMatch);
       } else {
-        actions.add('Insert Penalty');
+        actions.add(_menuInsertPenalty);
       }
     }
 
@@ -480,45 +541,14 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: actions.map((action) {
-              IconData icon;
-              switch (action) {
-                case 'Schedule Match':
-                  icon = Icons.schedule;
-                  break;
-                case 'Reschedule Match':
-                  icon = Icons.update;
-                  break;
-                case 'Start Match':
-                  icon = Icons.play_arrow;
-                  break;
-                case 'Go to Halftime':
-                  icon = Icons.pause;
-                  break;
-                case 'Start Second Half':
-                  icon = Icons.play_arrow;
-                  break;
-                case 'Add Player Event':
-                  icon = Icons.add;
-                  break;
-                case 'Insert Penalty':
-                  icon = Icons.sports_soccer;
-                  break;
-                case 'Start Penalty ShootOut':
-                  icon = Icons.sports;
-                  break;
-                case 'Finish Match':
-                  icon = Icons.stop;
-                  break;
-                default:
-                  icon = Icons.circle;
-              }
+              final icon = _menuActionIcon(action);
 
               return ListTile(
                 leading: Icon(
                   icon,
                   color: ATLColors.getPrimaryColor(widget.currentSport),
                 ),
-                title: Text(action),
+                title: Text(_menuActionLabel(action)),
                 onTap: () => Navigator.pop(context, action),
               );
             }).toList(),
@@ -530,29 +560,29 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (result == null) return;
 
     switch (result) {
-      case 'Schedule Match':
-      case 'Reschedule Match':
+      case _menuScheduleMatch:
+      case _menuRescheduleMatch:
         _showScheduleDialog();
         break;
-      case 'Start Match':
+      case _menuStartMatch:
         _handleMatchAction('start');
         break;
-      case 'Go to Halftime':
+      case _menuHalftime:
         _handleMatchAction('halftime');
         break;
-      case 'Start Second Half':
+      case _menuStartSecondHalf:
         _handleMatchAction('startHalf');
         break;
-      case 'Add Player Event':
+      case _menuAddPlayerEvent:
         _showPlayerEventDialog();
         break;
-      case 'Insert Penalty':
+      case _menuInsertPenalty:
         _showPlayerEventDialog(penaltyMode: true);
         break;
-      case 'Start Penalty ShootOut':
+      case _menuStartPenaltyShootout:
         _startPenaltyShootOut();
         break;
-      case 'Finish Match':
+      case _menuFinishMatch:
         _handleMatchAction('finish');
         break;
     }
@@ -590,8 +620,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (_coordinatorId == null) return;
 
     final confirmed = await _showConfirmationDialog(
-      'Start Penalty Shootout',
-      'Are you sure you want to start the penalty shootout?',
+      _l10n.startPenaltyShootoutTitle,
+      _l10n.startPenaltyShootoutConfirm,
     );
     if (!confirmed) return;
 
@@ -603,13 +633,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Penalty shootout started')),
+          SnackBar(content: Text(_l10n.penaltyShootoutStarted)),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to start penalty shootout')),
+          SnackBar(content: Text(_l10n.failedToStartPenalty)),
         );
       }
     }
@@ -655,14 +685,14 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       _loadMatchData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('MOTM added successfully')),
+          SnackBar(content: Text(_l10n.motmAdded)),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to add MOTM')));
+        ).showSnackBar(SnackBar(content: Text(_l10n.failedToAddMotm)));
       }
     }
   }
@@ -675,9 +705,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (!isCoordinator || _coordinatorId != userProvider.activeRoleId) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Only the tournament coordinator can delete events'),
-          ),
+          SnackBar(content: Text(_l10n.onlyCoordinatorCanDelete)),
         );
       }
       return;
@@ -687,9 +715,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (_events.isEmpty || _events.first.id != event.id) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cannot delete event if it\'s not the last one'),
-          ),
+          SnackBar(content: Text(_l10n.cannotDeleteNotLast)),
         );
       }
       return;
@@ -707,7 +733,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (forbiddenTypes.contains(event.type)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You can only delete player events')),
+          SnackBar(content: Text(_l10n.onlyPlayerEventsCanBeDeleted)),
         );
       }
       return;
@@ -718,17 +744,17 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Delete Event'),
-            content: const Text('Do you want to delete this event?'),
+            title: Text(_l10n.deleteEventTitle),
+            content: Text(_l10n.deleteEventConfirm),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(_l10n.cancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text(
-                  'Delete',
+                child: Text(
+                  _l10n.deleteText,
                   style: TextStyle(color: Colors.red),
                 ),
               ),
@@ -749,14 +775,14 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       _refreshEvents();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Event deleted successfully')),
+          SnackBar(content: Text(_l10n.eventDeleted)),
         );
       }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to delete event')));
+        ).showSnackBar(SnackBar(content: Text(_l10n.failedToDeleteEvent)));
       }
     }
   }
@@ -776,18 +802,18 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(_hasChanges),
         ),
-        title: const Text(
-          'Match Details',
+        title: Text(
+          _l10n.matchDetailsTitle,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: _isLoading
           ? const Center(child: LoadingATL())
           : _match == null
-          ? const Center(
+          ? Center(
               child: Text(
-                'Match not found',
-                style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+                _l10n.matchNotFound,
+                style: const TextStyle(fontSize: 18, color: ATLColors.subtext),
               ),
             )
           : SingleChildScrollView(
@@ -836,8 +862,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'EVENTS',
+                          Text(
+                            _l10n.eventsTitle.toUpperCase(),
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -859,10 +885,10 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                                     const SizedBox(height: 12),
                                     Text(
                                       _homeTeam == null && _awayTeam == null
-                                          ? 'Both teams must be determined from previous phase results. Keep playing!'
+                                          ? _l10n.bothTeamsTbdMessage
                                           : _homeTeam == null
-                                          ? 'Home team must be determined from previous phase results. Keep playing!'
-                                          : 'Away team must be determined from previous phase results. Keep playing!',
+                                          ? _l10n.homeTeamTbdMessage
+                                          : _l10n.awayTeamTbdMessage,
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 14,
@@ -874,12 +900,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                               ),
                             )
                           else if (_events.isEmpty)
-                            const Center(
+                            Center(
                               child: Padding(
-                                padding: EdgeInsets.all(16.0),
+                                padding: const EdgeInsets.all(16.0),
                                 child: Text(
-                                  'No events yet',
-                                  style: TextStyle(
+                                  _l10n.noEventsYet,
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     color: ATLColors.subtext,
                                   ),
@@ -907,8 +933,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: Text(
-                          'Match ID: #${widget.matchId}',
-                          style: TextStyle(
+                          _l10n.matchIdLabel(widget.matchId),
+                          style: const TextStyle(
                             color: ATLColors.subtext,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -943,7 +969,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         onPressed: _showMotmDialog,
         backgroundColor: Colors.orange,
         icon: Icons.star,
-        label: 'Select MOTM',
+        label: _l10n.selectMotmLabel,
         heroTag: 'soccerMatchFAB',
       );
     }
@@ -954,7 +980,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         onPressed: _showMatchActionsMenu,
         backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         icon: Icons.schedule,
-        label: 'Schedule Match',
+        label: _l10n.scheduleMatchLabel,
         heroTag: 'soccerMatchFAB',
       );
     }
@@ -967,7 +993,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
             onPressed: () => _handleMatchAction('start'),
             backgroundColor: Colors.orange,
             icon: Icons.play_arrow,
-            label: 'DEBUG - Start Match',
+            label: _l10n.startMatchTitle,
             heroTag: 'soccerMatchFAB',
           );
         }
@@ -980,7 +1006,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         onPressed: _showMatchActionsMenu,
         backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         icon: Icons.update,
-        label: 'Reschedule Match',
+        label: _l10n.rescheduleMatchLabel,
         heroTag: 'soccerMatchFAB',
       );
     }
@@ -991,7 +1017,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         onPressed: _showMatchActionsMenu,
         backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         icon: Icons.add,
-        label: 'Manage Match',
+        label: _l10n.manageMatchLabel,
         heroTag: 'soccerMatchFAB',
       );
     }
@@ -1002,7 +1028,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         onPressed: _showMatchActionsMenu,
         backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
         icon: Icons.play_arrow,
-        label: 'Start Second Half',
+        label: _l10n.startSecondHalf,
         heroTag: 'soccerMatchFAB',
       );
     }
@@ -1014,7 +1040,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           onPressed: () => _handleMatchAction('finish'),
           backgroundColor: Colors.green,
           icon: Icons.stop,
-          label: 'End Match',
+          label: _l10n.endMatch,
           heroTag: 'soccerMatchFAB',
         );
       } else {
@@ -1022,7 +1048,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           onPressed: () => _showPlayerEventDialog(penaltyMode: true),
           backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
           icon: Icons.sports_soccer,
-          label: 'Insert Penalty',
+          label: _l10n.insertPenalty,
           heroTag: 'soccerMatchFAB',
         );
       }
@@ -1051,15 +1077,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       source = EventSource.match;
       String eventName = '';
       if (event.type == FootballMatchEventType.start) {
-        eventName = 'Match started';
+        eventName = _l10n.matchStartedEvent;
       } else if (event.type == FootballMatchEventType.halftime) {
-        eventName = 'Halftime';
+        eventName = _l10n.halftimeEvent;
       } else if (event.type == FootballMatchEventType.startHalf) {
-        eventName = 'Second half started';
+        eventName = _l10n.secondHalfStartedEvent;
       } else if (event.type == FootballMatchEventType.finish) {
-        eventName = 'Full time';
+        eventName = _l10n.fullTimeEvent;
       } else if (event.type == FootballMatchEventType.penaltyShootOut) {
-        eventName = 'Penalty Shootout';
+        eventName = _l10n.penaltyShootoutEvent;
       }
 
       return GestureDetector(
@@ -1143,7 +1169,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       return firstName;
     }
 
-    return 'Unknown Player';
+    return _l10n.unknownPlayer;
   }
 
   Widget _buildRefereeFloatingActionButton() {
@@ -1151,7 +1177,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       onPressed: _showRefereeMatchDialog,
       backgroundColor: Colors.blue,
       icon: Icons.sports,
-      label: 'Referee the Match',
+      label: _l10n.refereeTheMatch,
       heroTag: 'refereeMatchFAB',
     );
   }

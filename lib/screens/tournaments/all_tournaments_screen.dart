@@ -140,7 +140,11 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading tournaments: $e')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorLoadingTournaments(e.toString()),
+            ),
+          ),
         );
       }
     }
@@ -382,7 +386,12 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                   setState(() => _isLoading = false);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error applying filters: $e')),
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(context)
+                              .errorApplyingFilters(e.toString()),
+                        ),
+                      ),
                     );
                   }
                 }
@@ -551,8 +560,8 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                       ),
                       child: TextButton.icon(
                         icon: const Icon(Icons.search, color: Colors.white),
-                        label: const Text(
-                          'ID',
+                        label: Text(
+                          AppLocalizations.of(context).idLabel,
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
@@ -623,9 +632,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Guest mode: Login to interact with tournaments',
+                        AppLocalizations.of(context).guestModeLoginTournaments,
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 12,
@@ -805,7 +814,8 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                             _coordinatorCache[tournament.coordinatorId]!,
                         cityName:
                             _cityNamePerField[tournament.fieldId] ??
-                            'Unknown City', // Usa la mappa cityNamePerField
+                            AppLocalizations.of(context)
+                                .unknownCity, // Usa la mappa cityNamePerField
                         onFavoriteToggle: () {
                           setState(() {
                             tournament.isFavorite = !tournament.isFavorite;
@@ -872,7 +882,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                 },
                 backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.add,
-                label: 'New',
+                label: AppLocalizations.of(context).newLabel,
               ),
             ),
         ],

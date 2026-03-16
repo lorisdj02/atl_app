@@ -4,6 +4,7 @@ import '../database/db_read.dart';
 import '../models/team.dart';
 import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 typedef SearchResultCallback = void Function(Team? team, Tournament? tournament);
 
@@ -51,10 +52,11 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
   }
 
   Future<void> _search() async {
+    final l10n = AppLocalizations.of(context);
     final idText = _idController.text.trim();
     if (idText.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter an ID';
+        _errorMessage = l10n.pleaseEnterIdError;
         _foundTeam = null;
         _foundTournament = null;
       });
@@ -64,7 +66,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
     final id = int.tryParse(idText);
     if (id == null) {
       setState(() {
-        _errorMessage = 'Invalid ID format';
+        _errorMessage = l10n.invalidIdFormatError;
         _foundTeam = null;
         _foundTournament = null;
       });
@@ -83,7 +85,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
         final data = await DBRead.searchTeamOrTournament(id, isTeam: true, isTournament: false);
         _foundTeam = data[ApiJsonKeys.team] as Team?;
         if (_foundTeam == null) {
-          _errorMessage = 'Team not found';
+          _errorMessage = l10n.teamNotFoundError;
         } else {
           widget.onFound?.call(_foundTeam, null);
           //Navigator.of(context).pop();
@@ -93,7 +95,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
         final data = await DBRead.searchTeamOrTournament(id, isTeam: false, isTournament: true);
         _foundTournament = data[ApiJsonKeys.tournament] as Tournament?;
         if (_foundTournament == null) {
-          _errorMessage = 'Tournament not found';
+          _errorMessage = l10n.tournamentNotFoundError;
         } else {
           widget.onFound?.call(null, _foundTournament);
           //Navigator.of(context).pop();
@@ -101,7 +103,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
         }
       }
     } catch (e) {
-      _errorMessage = 'Error searching: $e';
+      _errorMessage = l10n.errorSearching(e.toString());
     } finally {
       setState(() {
         _isLoading = false;
@@ -111,9 +113,10 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
       backgroundColor: ATLColors.background,
-      title: Text('Search By ${widget.isTeam ? 'Team' : 'Tournament'} ID'),
+      title: Text(widget.isTeam? l10n.searchByTeamId : l10n.searchByTournamentId),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -121,8 +124,8 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
             TextField(
               controller: _idController,
               decoration: InputDecoration(
-                labelText: 'ID',
-                hintText: 'Enter ${widget.isTeam ? 'Team' : 'Tournament'} ID',
+                labelText: l10n.idLabel,
+                hintText: widget.isTeam? l10n.enterTeamIdHint : l10n.enterTournamentIdHint,
                 border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
@@ -141,11 +144,11 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancelButton),
         ),
         ElevatedButton(
           onPressed: _search,
-          child: const Text('Search'),
+          child: Text(l10n.searchButton),
         ),
       ],
     );

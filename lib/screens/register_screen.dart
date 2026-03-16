@@ -6,6 +6,7 @@ import 'registration/registration_screen_step1.dart';
 import 'registration/registration_screen_step2.dart';
 import 'registration/registration_screen_step3.dart';
 import '../../widgets/atl_button.dart';
+import '../l10n/app_localizations.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -75,8 +76,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (_birthday == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select your birthday.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).selectBirthday),
           backgroundColor: Colors.red,
         ),
       );
@@ -105,7 +106,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorText(e.toString())),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -205,7 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     if (_currentStep == 1)
                       ATLButton(
-                        text: 'Continue',
+                        text: AppLocalizations.of(context).continueButton,
                         size: ATLButtonSize.medium,
                         isFilled: true,
                         color: Colors.white,

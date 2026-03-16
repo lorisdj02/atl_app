@@ -7,6 +7,7 @@ import '../widgets/loading_atl.dart';
 import 'match_bracket.dart';
 import '../database/db_read.dart';
 import '../config/api_json_keys.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare il tabellone Road to Victory di un torneo
 class RoadToVictoryWidget extends StatefulWidget {
@@ -102,14 +103,15 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return const LoadingATL();
     }
 
     if (_tournament == null) {
-      return const Center(
+      return Center(
         child: Text(
-          'Tournament not found',
+          l10n.tournamentNotFoundError,
           style: TextStyle(fontSize: 16, color: ATLColors.subtext),
         ),
       );
@@ -122,6 +124,7 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
   }
 
   Widget _buildBracket(int qualified) {
+    final l10n = AppLocalizations.of(context);
     switch (qualified) {
       case 16:
         return _buildBracket16();
@@ -132,9 +135,9 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
       case 2:
         return _buildBracket2();
       default:
-        return const Center(
+        return Center(
           child: Text(
-            'Invalid bracket configuration',
+            l10n.invalidBracketConfig,
             style: TextStyle(fontSize: 16, color: ATLColors.subtext),
           ),
         );
@@ -270,6 +273,7 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
   }
 
   Widget _buildMatchWidget(String group, {bool isFinal = false}) {
+    final l10n = AppLocalizations.of(context);
     final matches = _matchesByGroup[group] ?? [];
     if (matches.isEmpty) {
       return Container(
@@ -299,8 +303,8 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
-                'TBD',
+              Text(
+                l10n.tbd,
                 style: TextStyle(fontSize: 12, color: ATLColors.subtext),
               ),
             ],
@@ -387,14 +391,15 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
   }
 
   String _getPhaseLabel(String group) {
+    final l10n = AppLocalizations.of(context);
     if (group.startsWith('OF')) {
-      return 'Round of 16 #${group.substring(2)}';
+      return l10n.roundOf16NumLabel(group.substring(2));
     } else if (group.startsWith('QF')) {
-      return 'Quarter Final ${group.substring(2)}';
+      return l10n.quarterFinalNumLabel(group.substring(2));
     } else if (group.startsWith('SF')) {
-      return 'Semifinal ${group.substring(2)}';
+      return l10n.semifinalNumLabel(group.substring(2));
     } else if (group == 'FI') {
-      return 'Final';
+      return l10n.finalLabel;
     }
     return group;
   }

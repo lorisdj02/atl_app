@@ -9,6 +9,7 @@ import '../models/tournament_participation.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../models/checkout_session.dart';
+import '../l10n/app_localizations.dart';
 
 class ParticipationCard extends StatefulWidget {
   final TournamentParticipation participation;
@@ -42,6 +43,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final double toPay = widget.participation.toPay ?? 0;
     final double totalCost = widget.tournament?.fee ?? toPay;
     final double paid = totalCost - toPay;
@@ -61,7 +63,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                 Expanded(
                   child: Text(
                     widget.tournament?.name ??
-                        'Tournament #${widget.participation.tournamentId}',
+                        '${l10n.tournamentLabel} #${widget.participation.tournamentId}',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -85,7 +87,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -95,7 +97,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          'Called up',
+                          l10n.calledUpLabel,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -115,7 +117,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                       color: Colors.grey[600],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -125,7 +127,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          'Not called up',
+                          l10n.notCalledUpLabel,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -142,7 +144,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '€${paid.toStringAsFixed(0)} out of €${totalCost.toStringAsFixed(0)}',
+                  l10n.payOutOf(paid.toStringAsFixed(0), totalCost.toStringAsFixed(0)),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -188,8 +190,8 @@ class _ParticipationCardState extends State<ParticipationCard> {
                       ),
                     ),
                     icon: const Icon(Icons.payment),
-                    label: const Text(
-                      'Pay',
+                    label: Text(
+                      l10n.payButton,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -206,16 +208,17 @@ class _ParticipationCardState extends State<ParticipationCard> {
   }
 
   void _showPaymentDialog() async {
+    final l10n = AppLocalizations.of(context);
     final toPay = widget.participation.toPay ?? 0;
     final tournamentName = widget.tournament?.name ??
-        'Tournament #${widget.participation.tournamentId}';
+        '${l10n.tournamentLabel} #${widget.participation.tournamentId}';
     final amountController = TextEditingController();
 
     showDialog<double>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'How much do you want to pay?',
+          l10n.howMuchToPayTitle,
           style: TextStyle(
             color: ATLColors.getPrimaryColor(widget.sportCategory),
             fontWeight: FontWeight.bold,
@@ -232,7 +235,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Amount due: €${toPay.toStringAsFixed(2)}',
+              l10n.amountDueLabel(toPay),
               style: const TextStyle(color: ATLColors.subtext, fontSize: 13),
             ),
             const SizedBox(height: 16),
@@ -246,7 +249,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                 _MaxValueInputFormatter(maxValue: toPay),
               ],
               decoration: InputDecoration(
-                labelText: 'Amount to pay',
+                labelText: l10n.amountToPayLabel,
                 prefixText: '€',
                 hintText: '0.00 – ${toPay.toStringAsFixed(2)}',
                 border: OutlineInputBorder(
@@ -259,15 +262,15 @@ class _ParticipationCardState extends State<ParticipationCard> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () {
               final amount = double.tryParse(amountController.text.trim());
               if (amount == null || amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Enter a valid amount'),
+                  SnackBar(
+                    content: Text(l10n.enterValidAmount),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -279,7 +282,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
               backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Continue'),
+            child: Text(l10n.continueButton),
           ),
         ],
       ),
@@ -295,8 +298,8 @@ class _ParticipationCardState extends State<ParticipationCard> {
 
       if(userProvider.activeUser == null){
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User not logged in'),
+          SnackBar(
+            content: Text(l10n.userNotLoggedIn),
             backgroundColor: Colors.red,
           ),
         );

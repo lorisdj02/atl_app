@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
@@ -27,9 +28,9 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
   void _onNavTap(int index) {
     if (index == 4) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Other sports coming soon! Football only for now.'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).otherSportsComingSoon),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
@@ -65,6 +66,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final color = ATLColors.getPrimaryColor(_currentSport);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -72,8 +74,8 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'WELCOME TO ATL',
+        title: Text(
+          l10n.welcomeToAtl,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -89,8 +91,8 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
           children: [
             _buildHeroCard(color),
             const SizedBox(height: 28),
-            const Text(
-              'CHOOSE YOUR ROLE',
+            Text(
+              l10n.chooseYourRole,
               style: TextStyle(
                 color: ATLColors.darkBlue,
                 fontSize: 13,
@@ -99,7 +101,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            ..._roles.map((role) => _buildRoleCard(role, color)),
+            ..._buildRoles(l10n).map((role) => _buildRoleCard(role, color)),
             const SizedBox(height: 8),
           ],
         ),
@@ -114,6 +116,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
   }
 
   Widget _buildHeroCard(Color color) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -153,9 +156,9 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                         letterSpacing: 3,
                       ),
                     ),
-                    const Text(
-                      'Amateur Tournaments League',
-                      style: TextStyle(
+                    Text(
+                      l10n.amateurTournamentsLeague,
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
                         letterSpacing: 0.5,
@@ -167,9 +170,9 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
-            'The platform for amateur sports. Find matches, join tournaments, book fields and grow your athletic career — all in one place.',
-            style: TextStyle(
+          Text(
+            l10n.guestHomeDescription,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
               height: 1.6,
@@ -189,7 +192,7 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
                 Icon(Icons.lock_open, color: color, size: 14),
                 const SizedBox(width: 6),
                 Text(
-                  'Browse as guest — register to unlock all features',
+                  l10n.browseAsGuestHint,
                   style: TextStyle(color: color, fontSize: 11),
                 ),
               ],
@@ -280,50 +283,52 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
       ),
     );
   }
-}
 
-const _roles = [
-  _RoleInfo(
-    title: 'Player',
-    icon: Icons.person,
-    description: 'Play, grow and connect with your teammates.',
-    features: [
-      'Book fields at your favourite venues',
-      'Join or create amateur teams',
-      'Participate in ranked tournaments',
-    ],
-  ),
-  _RoleInfo(
-    title: 'Coordinator',
-    icon: Icons.groups,
-    description: 'Organise and run tournaments end-to-end.',
-    features: [
-      'Create and manage tournaments',
-      'Schedule matches and brackets',
-      'Coordinate teams and venues',
-    ],
-  ),
-  _RoleInfo(
-    title: 'Referee',
-    icon: Icons.sports,
-    description: 'Officiate matches and track your career.',
-    features: [
-      'Receive match officiating assignments',
-      'Report match events in real time',
-      'Track earnings and schedule',
-    ],
-  ),
-  _RoleInfo(
-    title: 'Organization',
-    icon: Icons.business,
-    description: 'Manage your club, venues and events.',
-    features: [
-      'List and manage your fields',
-      'Handle memberships and events',
-      'Oversee all club activities',
-    ],
-  ),
-];
+  List<_RoleInfo> _buildRoles(AppLocalizations l10n) {
+    return [
+      _RoleInfo(
+        title: l10n.player,
+        icon: Icons.person,
+        description: l10n.guestRolePlayerDesc,
+        features: [
+          l10n.guestRolePlayerFeature1,
+          l10n.guestRolePlayerFeature2,
+          l10n.guestRolePlayerFeature3,
+        ],
+      ),
+      _RoleInfo(
+        title: l10n.coordinator,
+        icon: Icons.groups,
+        description: l10n.guestRoleCoordinatorDesc,
+        features: [
+          l10n.guestRoleCoordinatorFeature1,
+          l10n.guestRoleCoordinatorFeature2,
+          l10n.guestRoleCoordinatorFeature3,
+        ],
+      ),
+      _RoleInfo(
+        title: l10n.referee,
+        icon: Icons.sports,
+        description: l10n.guestRoleRefereeDesc,
+        features: [
+          l10n.guestRoleRefereeFeature1,
+          l10n.guestRoleRefereeFeature2,
+          l10n.guestRoleRefereeFeature3,
+        ],
+      ),
+      _RoleInfo(
+        title: l10n.organization,
+        icon: Icons.business,
+        description: l10n.guestRoleOrganizationDesc,
+        features: [
+          l10n.guestRoleOrganizationFeature1,
+          l10n.guestRoleOrganizationFeature2,
+          l10n.guestRoleOrganizationFeature3,
+        ],
+      ),
+    ];
+  }
+}
 
 class _RoleInfo {
   final String title;

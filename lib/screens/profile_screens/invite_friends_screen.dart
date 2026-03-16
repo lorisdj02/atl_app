@@ -6,6 +6,7 @@ import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class InviteFriendsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -55,10 +56,11 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
 
   void _copyCode() {
     if (_referralCode == null) return;
+    final l10n = AppLocalizations.of(context);
     Clipboard.setData(ClipboardData(text: _referralCode!));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Code copied to clipboard!'),
+      SnackBar(
+        content: Text(l10n.codeCopied),
         backgroundColor: Colors.green,
       ),
     );
@@ -92,6 +94,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return Scaffold(
         backgroundColor: ATLColors.background,
@@ -123,13 +126,13 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                     size: 40,
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Invite Balance',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  Text(
+                    l10n.inviteBalance,
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '€${_inviteBalance.toStringAsFixed(2)}',
+                    '\u20AC${_inviteBalance.toStringAsFixed(2)}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 40,
@@ -138,7 +141,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Earn more by inviting friends!',
+                    l10n.earnMoreByInviting,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.6),
                       fontSize: 13,
@@ -166,9 +169,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Your referral code',
-                    style: TextStyle(color: ATLColors.subtext, fontSize: 14),
+                  Text(
+                    l10n.yourReferralCode,
+                    style: const TextStyle(color: ATLColors.subtext, fontSize: 14),
                   ),
                   const SizedBox(height: 12),
                   Container(
@@ -187,7 +190,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            _referralCode ?? '—',
+                            _referralCode ?? '\u2014',
                             style: const TextStyle(
                               color: ATLColors.darkBlue,
                               fontSize: 22,
@@ -199,7 +202,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                         IconButton(
                           onPressed: _copyCode,
                           icon: const Icon(Icons.copy, color: ATLColors.darkBlue),
-                          tooltip: 'Copy code',
+                          tooltip: l10n.copyCode,
                         ),
                       ],
                     ),
@@ -210,7 +213,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _copyCode,
                       icon: const Icon(Icons.share),
-                      label: const Text('Copy & Share'),
+                      label: Text(l10n.copyAndShare),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ATLColors.darkBlue,
                         foregroundColor: Colors.white,
@@ -249,7 +252,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   Expanded(
                     child: _buildStatItem(
                       icon: Icons.group_outlined,
-                      label: 'Friends joined',
+                      label: l10n.friendsJoined,
                       value: '$_numInvites',
                     ),
                   ),
@@ -257,7 +260,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                   Expanded(
                     child: _buildStatItem(
                       icon: Icons.redeem_outlined,
-                      label: 'Redeems',
+                      label: l10n.redeems,
                       value: '$_numRedeemed',
                     ),
                   ),
@@ -281,10 +284,10 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
                     size: 20,
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Share your code with friends. When they sign up and join their first tournament, you\'ll earn an invite bonus!',
-                      style: TextStyle(
+                      l10n.shareCodeInfo,
+                      style: const TextStyle(
                         color: ATLColors.darkBlue,
                         fontSize: 14,
                       ),
@@ -300,6 +303,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
   }
 
   AppBar _buildAppBar() {
+    final l10n = AppLocalizations.of(context);
     return AppBar(
       backgroundColor: ATLColors.darkBlue,
       elevation: 0,
@@ -307,9 +311,9 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text(
-        'INVITE A FRIEND',
-        style: TextStyle(
+      title: Text(
+        l10n.inviteAFriendTitle,
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,

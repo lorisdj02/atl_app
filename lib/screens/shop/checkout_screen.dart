@@ -7,6 +7,7 @@ import '../../widgets/loading_atl.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final SportCategory sportCategory;
@@ -47,6 +48,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int? _maxPlayers;
   int? _playersToPay;
 
+  AppLocalizations get _l10n => AppLocalizations.of(context);
+
   @override
   void initState() {
     super.initState();
@@ -81,7 +84,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading checkout: $e'),
+            content: Text(_l10n.errorLoadingCheckout(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -105,7 +108,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       } else {
         _discountAmount = 0;
         _appliedCode = null;
-        _discountError = 'Invalid discount code.';
+        _discountError = _l10n.invalidDiscountCode;
       }
     });
   }
@@ -152,16 +155,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!mounted) return;
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment completed successfully!'),
+          SnackBar(
+            content: Text(_l10n.paymentCompletedSuccessfully),
             backgroundColor: Colors.green,
           ),
         );
         Navigator.of(context).pop(true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment failed. Please try again.'),
+          SnackBar(
+            content: Text(_l10n.paymentFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -170,7 +173,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
+          content: Text(_l10n.errorText(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -195,9 +198,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Checkout',
-          style: TextStyle(
+        title: Text(
+          _l10n.checkoutTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -239,7 +242,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildOrderSummary() {
     if (_session == null) return const SizedBox();
     return _SectionCard(
-      title: 'Order Summary',
+      title: _l10n.orderSummary,
       child: switch (_session!.type) {
         CheckoutType.tournamentFee => _buildTournamentDetails(),
         CheckoutType.lobbyBookingCreate ||
@@ -255,7 +258,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       children: [
         _buildDetailRow(
           Icons.sports_soccer,
-          'Lobby Booking',
+          _l10n.lobbyBookingType,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         if (_fieldName != null) ...[
@@ -277,10 +280,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         if (_playersToPay != null && _maxPlayers != null)
           _buildDetailRow(
             Icons.group_outlined,
-            'Players: $_playersToPay paid / $_maxPlayers total',
+            _l10n.playersDetail(_playersToPay!, _maxPlayers!),
           ),
         if (_bookingUsername != null)
-          _buildDetailRow(Icons.person_outlined, 'Owner: $_bookingUsername'),
+          _buildDetailRow(Icons.person_outlined, _l10n.ownerDetail(_bookingUsername!)),
       ],
     );
   }
@@ -290,7 +293,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       children: [
         _buildDetailRow(
           Icons.lock_outlined,
-          'Private Booking',
+          _l10n.privateBookingType,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         if (_fieldName != null) ...[
@@ -318,11 +321,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       children: [
         _buildDetailRow(
           Icons.receipt_outlined,
-          _tournamentName ?? 'Tournament',
+          _tournamentName ?? _l10n.tournamentType,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const SizedBox(height: 4),
-        _buildDetailRow(Icons.info_outline, 'Fee'),
+        _buildDetailRow(Icons.info_outline, _l10n.feeLabel),
       ],
     );
   }
@@ -351,7 +354,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildDiscountSection() {
     return _SectionCard(
-      title: 'Discount Code',
+      title: _l10n.discountCode,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -361,7 +364,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 child: TextField(
                   controller: _discountController,
                   decoration: InputDecoration(
-                    hintText: 'Enter discount code',
+                    hintText: _l10n.enterDiscountCode,
                     hintStyle:
                         const TextStyle(color: Colors.grey, fontSize: 14),
                     isDense: true,
@@ -393,7 +396,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text('Apply'),
+                child: Text(_l10n.applyButton),
               ),
             ],
           ),
@@ -404,7 +407,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const Icon(Icons.check_circle, color: Colors.green, size: 16),
                 const SizedBox(width: 6),
                 Text(
-                  'Code "$_appliedCode" applied  –  €${_discountAmount.toStringAsFixed(2)}',
+                  _l10n.discountApplied(
+                      _appliedCode!, '€${_discountAmount.toStringAsFixed(2)}'),
                   style: const TextStyle(
                       color: Colors.green,
                       fontSize: 13,
@@ -422,7 +426,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildWalletSection() {
     return _SectionCard(
-      title: 'Wallet',
+      title: _l10n.walletSection,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -430,10 +434,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Use wallet balance',
+              Text(
+                _l10n.useWalletBalance,
                 style:
-                    TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Switch(
                 value: _useWallet,
@@ -467,10 +471,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       const Icon(Icons.info_outline,
                           size: 16, color: ATLColors.darkBlue),
                       const SizedBox(width: 6),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Wallets are applied in order: Prize → Invite → Personal.',
-                          style: TextStyle(
+                          _l10n.walletOrderInfo,
+                          style: const TextStyle(
                               fontSize: 12,
                               color: ATLColors.darkBlue,
                               fontWeight: FontWeight.w500),
@@ -490,24 +494,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const Divider(height: 1),
                     const SizedBox(height: 8),
                     _buildBalanceRow(
-                        'Prize balance',
+                        _l10n.prizeBalanceLabel,
                         _wallet?.prizeBalance ?? 0,
                         Colors.amber.shade700),
                     const SizedBox(height: 4),
                     _buildBalanceRow(
-                        'Invite balance',
+                        _l10n.inviteBalanceLabel,
                         _wallet?.inviteBalance ?? 0,
                         Colors.teal),
                     const SizedBox(height: 4),
                     _buildBalanceRow(
-                        'Personal balance',
+                        _l10n.personalBalanceLabel,
                         _wallet?.personalBalance ?? 0,
                         _primaryColor),
                     const SizedBox(height: 8),
                     const Divider(height: 1),
                     const SizedBox(height: 6),
                     _buildBalanceRow(
-                        'Total available',
+                        _l10n.totalAvailable,
                         (_wallet?.prizeBalance ?? 0) +
                             (_wallet?.inviteBalance ?? 0) +
                             (_wallet?.personalBalance ?? 0),
@@ -522,7 +526,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (_useWallet && _walletDeduction() > 0) ...[
             const SizedBox(height: 8),
             Text(
-              '€${_walletDeduction().toStringAsFixed(2)} will be deducted from your wallet.',
+              _l10n.walletDeduction('€${_walletDeduction().toStringAsFixed(2)}'),
               style: TextStyle(
                   fontSize: 13,
                   color: _primaryColor,
@@ -531,11 +535,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ],
           if (_useWallet && _wallet != null) ...[
             if ((_wallet!.prizeBalance + _wallet!.inviteBalance + _wallet!.personalBalance) == 0)
-              const Padding(
-                padding: EdgeInsets.only(top: 6),
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  'No wallet balance available.',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                  _l10n.noWalletBalance,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               ),
           ],
@@ -585,19 +589,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final baseAmount = _session?.amount ?? 0;
 
     return _SectionCard(
-      title: 'Price Summary',
+      title: _l10n.priceSummary,
       child: Column(
         children: [
-          _buildPriceRow('Subtotal', baseAmount),
+          _buildPriceRow(_l10n.subtotal, baseAmount),
           if (_discountAmount > 0)
-            _buildPriceRow('Discount ($_appliedCode)',
+            _buildPriceRow(_l10n.discount(_appliedCode!),
                 -_discountAmount, color: Colors.green),
           if (walletDed > 0)
-            _buildPriceRow('Wallet deduction', -walletDed,
+            _buildPriceRow(_l10n.walletDeductionLabel, -walletDed,
                 color: _primaryColor),
           const Divider(height: 20),
           _buildPriceRow(
-            'Total to pay',
+            _l10n.totalToPay,
             finalPrice,
             bold: true,
             fontSize: 17,
@@ -675,8 +679,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               )
             : Text(
                 finalPrice == 0
-                    ? 'Confirm (Free)'
-                    : 'Pay  €${finalPrice.toStringAsFixed(2)}',
+                    ? _l10n.confirmFree
+                    : _l10n.payAmount('€${finalPrice.toStringAsFixed(2)}'),
                 style: const TextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold),
               ),

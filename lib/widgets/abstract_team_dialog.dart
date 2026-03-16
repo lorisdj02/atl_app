@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 /// Classe astratta per i dialog che permettono la selezione di un team
 abstract class AbstractTeamDialog extends StatefulWidget {
@@ -121,6 +122,7 @@ mixin TeamDialogMixin<T extends AbstractTeamDialog> on State<T> {
 
   /// Costruisce il widget di avviso quando non è stato selezionato un team
   Widget buildNoTeamSelectedWarning() {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -134,7 +136,7 @@ mixin TeamDialogMixin<T extends AbstractTeamDialog> on State<T> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Please select a team first',
+              l10n.pleaseSelectTeamFirst,
               style: TextStyle(color: Colors.blue.shade700, fontSize: 14),
             ),
           ),

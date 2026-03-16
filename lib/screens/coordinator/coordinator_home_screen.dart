@@ -9,6 +9,7 @@ import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/football_match_widget.dart';
 import '../shop_screen.dart';
@@ -140,17 +141,19 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   }
 
   String _getDateLabel(DateTime date) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     final difference = dateOnly.difference(today).inDays;
 
-    if (difference == 0) return 'Today';
-    if (difference == 1) return 'Tomorrow';
-    if (difference == -1) return 'Yesterday';
+    if (difference == 0) return l10n.today;
+    if (difference == 1) return l10n.tomorrow;
+    if (difference == -1) return l10n.yesterday;
 
-    return DateFormat('EEE d').format(date);
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('EEE d', locale).format(date);
   }
 
   void _onNavTap(int index) {
@@ -188,8 +191,8 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
     // TODO: Riabilitare quando ci saranno più sport
     // Per ora mostra solo un messaggio
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Other sports coming soon! Football only for now.'),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).otherSportsComingSoon),
         duration: Duration(seconds: 2),
       ),
     );
@@ -234,8 +237,8 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'HOME',
+        title: Text(
+          AppLocalizations.of(context).home,
           style: TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -247,7 +250,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
           GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode - Coming soon')),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context).darkModeComingSoonSnack),
+                ),
               );
             },
             child: Container(
@@ -386,7 +391,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('d MMM').format(day),
+                    DateFormat(
+                      'd MMM',
+                      Localizations.localeOf(context).toString(),
+                    ).format(day),
                     style: TextStyle(
                       color: isSelected ? Colors.white : ATLColors.darkBlue,
                       fontSize: 12,
@@ -448,7 +456,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               Icon(Icons.event_busy, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'No tournaments',
+                AppLocalizations.of(context).noTournaments,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
@@ -457,7 +465,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'You are not coordinating any tournaments yet',
+                AppLocalizations.of(context).notCoordinatingAnyTournamentsYet,
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
@@ -486,7 +494,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'No matches scheduled',
+                AppLocalizations.of(context).noMatchesScheduled,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
@@ -495,7 +503,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'No matches on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
+                AppLocalizations.of(context).noMatchesOn(
+                  DateFormat.yMMMd(Localizations.localeOf(context).toString())
+                      .format(_selectedDate),
+                ),
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
               ),
             ],

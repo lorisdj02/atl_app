@@ -9,6 +9,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/football_stat_card.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class StatsScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -59,6 +60,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final userProvider = Provider.of<UserProvider>(context);
     final user = userProvider.activeUser;
     final isVip = user?.isVip ?? false;
@@ -79,9 +81,9 @@ class _StatsScreenState extends State<StatsScreen> {
                   color: ATLColors.subtext.withOpacity(0.5),
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'VIP Feature',
-                  style: TextStyle(
+                Text(
+                  l10n.vipFeature,
+                  style: const TextStyle(
                     color: ATLColors.darkBlue,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -89,7 +91,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'This feature is available for VIP members only. Upgrade to VIP to access detailed statistics and analytics.',
+                  l10n.vipFeatureDesc,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
@@ -97,7 +99,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('VIP upgrade coming soon')),
+                      SnackBar(content: Text(l10n.vipUpgradeComingSoon)),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -108,9 +110,12 @@ class _StatsScreenState extends State<StatsScreen> {
                       vertical: 16,
                     ),
                   ),
-                  child: const Text(
-                    'Upgrade to VIP',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    l10n.upgradeToVip,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -168,6 +173,7 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   AppBar _buildAppBar({required bool showVipBadge}) {
+    final l10n = AppLocalizations.of(context);
     return AppBar(
       backgroundColor: ATLColors.darkBlue,
       elevation: 0,
@@ -179,9 +185,9 @@ class _StatsScreenState extends State<StatsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'STATS',
-            style: TextStyle(
+          Text(
+            l10n.statsTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -196,8 +202,8 @@ class _StatsScreenState extends State<StatsScreen> {
                 color: Colors.amber,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
-                'VIP',
+              child: Text(
+                l10n.vipBadge,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 12,
@@ -223,6 +229,7 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Widget _buildFootballStats(int numTournaments, List<FootballTeamStats>? statsList) {
+    final l10n = AppLocalizations.of(context);
     int totalGoals = 0;
     int totalMotm = 0;
     int totalYellow = 0;
@@ -265,9 +272,9 @@ class _StatsScreenState extends State<StatsScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Text(
-                      'Tournaments played',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    Text(
+                      l10n.tournamentsPlayed,
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                   ],
                 ),
@@ -275,9 +282,9 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Career Stats',
-            style: TextStyle(
+          Text(
+            l10n.careerStats,
+            style: const TextStyle(
               color: ATLColors.darkBlue,
               fontSize: 16,
               fontWeight: FontWeight.bold,

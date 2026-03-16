@@ -6,6 +6,7 @@ import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class RegistrationScreenStep2 extends StatefulWidget {
   final TextEditingController nameController;
@@ -95,16 +96,22 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         // Name *
-        ATLTextField(controller: widget.nameController, hintText: 'Name *'),
+        ATLTextField(
+          controller: widget.nameController,
+          hintText: l10n.nameRequired,
+        ),
 
         const SizedBox(height: 16),
 
         // Surname *
         ATLTextField(
-            controller: widget.surnameController, hintText: 'Surname *'),
+          controller: widget.surnameController,
+          hintText: l10n.surnameRequired,
+        ),
 
         const SizedBox(height: 16),
 
@@ -132,7 +139,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
                   const SizedBox(width: 10),
                   Text(
                     widget.birthday == null
-                        ? 'Birthday *'
+                        ? l10n.birthdayRequired
                         : '${widget.birthday!.day.toString().padLeft(2, '0')}/'
                             '${widget.birthday!.month.toString().padLeft(2, '0')}/'
                             '${widget.birthday!.year}',
@@ -157,7 +164,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
         const SizedBox(height: 30),
 
         ATLButton(
-          text: 'Continue',
+          text: l10n.continueButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.darkBlue,
@@ -168,6 +175,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
   }
 
   Widget _buildPhoneField() {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -211,9 +219,9 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
                 controller: widget.phoneController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: 'Phone number',
+                  hintText: l10n.enterPhone,
                   hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ),
@@ -225,6 +233,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
   }
 
   Widget _buildCityDropdown() {
+    final l10n = AppLocalizations.of(context);
     if (_loadingCities) {
       return const Center(
           child: SizedBox(
@@ -242,8 +251,10 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
       child: DropdownButtonFormField<int>(
         value: widget.preferredCityId,
         decoration: const InputDecoration(border: InputBorder.none),
-        hint: const Text('Preferred city (optional)',
-            style: TextStyle(color: Colors.grey, fontSize: 16)),
+        hint: Text(
+          l10n.preferredCityOptional,
+          style: const TextStyle(color: Colors.grey, fontSize: 16),
+        ),
         items: _cities
             .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
             .toList(),

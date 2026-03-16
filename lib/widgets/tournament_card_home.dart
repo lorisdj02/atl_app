@@ -7,6 +7,7 @@ import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'football_match_widget.dart';
 import 'home_team_widget.dart';
+import '../l10n/app_localizations.dart';
 
 class TournamentCardHome extends StatelessWidget {
   final Tournament tournament;
@@ -32,6 +33,7 @@ class TournamentCardHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Se il torneo è in stato "created", mostra messaggio di attesa
     if (tournament.status == TournamentStatus.created) {
       return Center(
@@ -47,7 +49,7 @@ class TournamentCardHome extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Stai partecipando al torneo. Quando sarà al completo, vedrai le tue prossime partite!',
+                l10n.participatingInTournamentMsg,
                 style: TextStyle(
                   color: ATLColors.title,
                   fontSize: 18,
@@ -95,7 +97,7 @@ class TournamentCardHome extends StatelessWidget {
           // Next match card
           if (nextMatch != null) ...[
             Text(
-              'GROUP ${userStanding.group}',
+              l10n.groupLabel(userStanding.group),
               style: TextStyle(
                 color: ATLColors.subtext,
                 fontSize: 12,

@@ -6,6 +6,7 @@ import '../utils/atl_colors.dart';
 import '../database/db_read.dart';
 import '../config/api_json_keys.dart';
 import '../database/db_write.dart';
+import '../l10n/app_localizations.dart';
 
 class PlayersRequestsWidget extends StatefulWidget {
   final int teamId;
@@ -31,10 +32,11 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
   @override
   void initState() {
     super.initState();
-    _loadRequests();
+    _loadRequests(context);
   }
 
-  Future<void> _loadRequests() async {
+  Future<void> _loadRequests(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     try {
       final data = await DBRead.getPlayerRequests(widget.teamId);
 
@@ -52,12 +54,13 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
         });
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading requests: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingData(e.toString()))));
       }
     }
   }
 
   Future<void> _acceptRequest(TeamRequest request) async {
+    final l10n = AppLocalizations.of(context);
     try {
       final bool success = await DBWrite.acceptTeamRequest(
         widget.teamId,
@@ -73,7 +76,7 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${_playersCache[request.playerId]?.username ?? "Player"} joined the team',
+              l10n.playerJoinedTeam(_playersCache[request.playerId]?.username ?? l10n.player),
             ),
             backgroundColor: Colors.green,
           ),
@@ -83,12 +86,13 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error accepting request: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorAcceptingRequest(e.toString()))));
       }
     }
   }
 
   Future<void> _rejectRequest(TeamRequest request) async {
+    final l10n = AppLocalizations.of(context);
     try {
       await DBWrite.rejectTeamRequest(
         widget.teamId,
@@ -105,12 +109,13 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error rejecting request: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorRejectingRequest(e.toString()))));
       }
     }
   }
 
   Future<void> _acceptAll() async {
+    final l10n = AppLocalizations.of(context);
     final bool success = await DBWrite.acceptTeamRequest(
       widget.teamId,
       allRequests: true,
@@ -123,8 +128,8 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
       widget.onRequestsChanged();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('All requests accepted'),
+        SnackBar(
+          content: Text(l10n.allRequestsAccepted),
           backgroundColor: Colors.green,
         ),
       );
@@ -132,6 +137,7 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
   }
 
   Future<void> _rejectAll() async {
+    final l10n = AppLocalizations.of(context);
     final bool success = await DBWrite.rejectTeamRequest(
       widget.teamId,
       allRequests: true,
@@ -146,6 +152,7 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
       decoration: const BoxDecoration(
@@ -169,9 +176,9 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Requests',
+                    l10n.requestsTitle,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -184,7 +191,7 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
                   icon: const Icon(Icons.dark_mode, color: Colors.white),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Dark mode coming soon')),
+                      SnackBar(content: Text(l10n.darkModeComingSoonMsg)),
                     );
                   },
                 ),
@@ -197,14 +204,14 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _requests.isEmpty
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.inbox, size: 80, color: Colors.grey),
                         SizedBox(height: 16),
                         Text(
-                          'No requests',
+                          l10n.noRequests,
                           style: TextStyle(
                             fontSize: 18,
                             color: ATLColors.subtext,
@@ -270,7 +277,7 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
                             Expanded(
                               child: Text(
                                 player?.username ??
-                                    'Player ${request.playerId}',
+                                    '${l10n.player} ${request.playerId}',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -348,8 +355,8 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Accept all',
+                      child: Text(
+                        l10n.acceptAll,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -369,8 +376,8 @@ class _PlayersRequestsWidgetState extends State<PlayersRequestsWidget> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        'Reject all',
+                      child: Text(
+                        l10n.rejectAll,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'abstract_team_widget.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare un team nella pagina dei ranks
 class RanksTeamWidget extends AbstractTeamWidget {
@@ -21,6 +22,7 @@ class RanksTeamWidget extends AbstractTeamWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bool isTop3 = rank <= 3;
     final accent = color; // il colore passato dallo screen (primary/secondary/tertiary)
 
@@ -106,7 +108,7 @@ class RanksTeamWidget extends AbstractTeamWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Captain: ${captainName ?? '—'}',
+                            l10n.captainLabel(captainName ?? '—'),
                             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
                         ],

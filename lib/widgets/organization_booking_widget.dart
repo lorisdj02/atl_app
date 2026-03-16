@@ -8,6 +8,7 @@ import '../models/sport_category.dart';
 import '../models/team.dart';
 import '../models/booking.dart';
 import '../models/field.dart';
+import '../l10n/app_localizations.dart';
 
 // OrganizationBookingWidget: shows a booking card for match, lobby, or private booking
 class OrganizationBookingWidget extends StatefulWidget {
@@ -87,6 +88,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
   }
 
   Widget _buildBookingCard() {
+    final l10n = AppLocalizations.of(context);
     final dateFormat = DateFormat('EEE, MMM d');
     final timeFormat = DateFormat('HH:mm');
 
@@ -114,7 +116,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Tournament Match',
+                    l10n.tournamentMatchLabel,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -134,7 +136,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Lobby Booking',
+                        l10n.lobbyBookingType,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -163,7 +165,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Private Booking',
+                        l10n.privateBookingType,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -195,7 +197,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
               children: [
                 _buildTeam(widget.homeTeam),
                 Text(
-                  'VS',
+                  l10n.vsLabel,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -252,7 +254,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Coordinator: ${widget.coordinatorString ?? 'N/A'}',
+                    l10n.coordinatorPrefix(widget.coordinatorString ?? 'N/A'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -274,7 +276,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Owner: ${widget.playerString ?? 'N/A'}',
+                    l10n.ownerDetail(widget.playerString ?? 'N/A'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -310,8 +312,8 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'FULL LOBBY',
+                    child: Text(
+                      l10n.fullLobby.toUpperCase(),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -333,7 +335,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Player: ${widget.playerString ?? 'N/A'}',
+                    l10n.playerPrefix(widget.playerString ?? 'N/A'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -364,7 +366,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
         ),
         const SizedBox(height: 8),
         Text(
-          team?.name ?? 'TBD',
+          team?.name ?? 'N/A',
           textAlign: TextAlign.center,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,

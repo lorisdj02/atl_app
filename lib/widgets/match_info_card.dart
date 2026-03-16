@@ -5,6 +5,7 @@ import '../models/sport_category.dart';
 import '../models/field.dart';
 import '../utils/atl_colors.dart';
 import 'info_row_with_icon.dart';
+import '../l10n/app_localizations.dart';
 
 class MatchInfoCard extends StatefulWidget {
   final FootballMatch match;
@@ -47,6 +48,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
   Widget build(BuildContext context) {
     // Permetti di collassare solo se il match non è notScheduled o scheduled
     final bool canCollapse = !widget.isNotScheduled && !widget.isScheduled;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -80,9 +82,9 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                   size: 24,
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Match Information',
+                    l10n.matchInformationTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -113,7 +115,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                     Icon(Icons.schedule, color: Colors.grey.shade600, size: 20),
                     const SizedBox(width: 12),
                     Text(
-                      'Match not scheduled yet',
+                      l10n.matchNotScheduledYet,
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade700,
@@ -129,7 +131,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                 children: [
                   InfoRowWithIcon(
                     icon: Icons.calendar_today,
-                    label: 'Date',
+                    label: l10n.labelDate,
                     value: DateFormat(
                       'EEEE, MMMM d, y',
                     ).format(widget.match.scheduledStart!),
@@ -138,7 +140,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                   const Divider(height: 24),
                   InfoRowWithIcon(
                     icon: Icons.access_time,
-                    label: 'Time',
+                    label: l10n.timeLabel,
                     value: DateFormat(
                       'HH:mm',
                     ).format(widget.match.scheduledStart!),
@@ -146,36 +148,36 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                   ),
                   const Divider(height: 24),
                   _isLoadingField
-                      ? const InfoRowWithIcon(
+                      ? InfoRowWithIcon(
                           icon: Icons.location_on,
-                          label: 'Field',
-                          value: 'Loading...',
+                          label: l10n.fieldLabel,
+                          value: l10n.loading,
                           color: Colors.orange,
                         )
                       : InfoRowWithIcon(
                           icon: Icons.location_on,
-                          label: 'Field',
+                          label: l10n.fieldLabel,
                           value: "${widget.field.name} - ${widget.cityName}",
                           color: Colors.orange,
                         ),
                   const Divider(height: 24),
                   _isLoadingReferees
-                      ? const InfoRowWithIcon(
+                      ? InfoRowWithIcon(
                           icon: Icons.sports,
-                          label: 'Referees',
-                          value: 'Loading...',
+                          label: l10n.refereesLabel,
+                          value: l10n.loading,
                           color: Colors.blue,
                         )
                       : (widget.assignmentPerRefereeNameSurname.isEmpty)
-                      ? const InfoRowWithIcon(
+                      ? InfoRowWithIcon(
                           icon: Icons.sports,
-                          label: 'Referees',
-                          value: 'No referees assigned',
+                          label: l10n.refereesLabel,
+                          value: l10n.noRefereesAssigned,
                           color: Colors.blue,
                         )
                       : InfoRowWithIcon(
                           icon: Icons.sports,
-                          label: 'Referees',
+                          label: l10n.refereesLabel,
                           multipleValues: widget.assignmentPerRefereeNameSurname,
                           color: Colors.blue,
                         ),

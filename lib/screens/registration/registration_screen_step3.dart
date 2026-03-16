@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
+import '../../l10n/app_localizations.dart';
 
 class RegistrationScreenStep3 extends StatefulWidget {
   final TextEditingController emailController;
@@ -38,21 +39,22 @@ class _RegistrationScreenStep3State extends State<RegistrationScreenStep3> {
   bool _obscurePassword = true;
 
   Future<void> _pickProfileImage() async {
+    final l10n = AppLocalizations.of(context);
     final ImageSource? source = await showDialog<ImageSource>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select image source'),
+        title: Text(l10n.selectImageSource),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Gallery'),
+              title: Text(l10n.gallery),
               onTap: () => Navigator.of(context).pop(ImageSource.gallery),
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Camera'),
+              title: Text(l10n.camera),
               onTap: () => Navigator.of(context).pop(ImageSource.camera),
             ),
           ],
@@ -73,6 +75,7 @@ class _RegistrationScreenStep3State extends State<RegistrationScreenStep3> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         // Profile image picker
@@ -119,7 +122,7 @@ class _RegistrationScreenStep3State extends State<RegistrationScreenStep3> {
         // Email *
         ATLTextField(
           controller: widget.emailController,
-          hintText: 'Email *',
+          hintText: l10n.emailRequired,
           keyboardType: TextInputType.emailAddress,
         ),
 
@@ -128,7 +131,7 @@ class _RegistrationScreenStep3State extends State<RegistrationScreenStep3> {
         // Username *
         ATLTextField(
           controller: widget.usernameController,
-          hintText: 'Username *',
+          hintText: l10n.usernameRequired,
         ),
 
         const SizedBox(height: 16),
@@ -136,7 +139,7 @@ class _RegistrationScreenStep3State extends State<RegistrationScreenStep3> {
         // Password *
         ATLTextField(
           controller: widget.passwordController,
-          hintText: 'Password *',
+          hintText: l10n.passwordRequired,
           obscureText: _obscurePassword,
           suffixIcon: IconButton(
             icon: Icon(
@@ -153,14 +156,14 @@ class _RegistrationScreenStep3State extends State<RegistrationScreenStep3> {
         // Invite code (optional)
         ATLTextField(
           controller: widget.inviteCodeController,
-          hintText: 'Invite code (optional)',
+          hintText: l10n.inviteCodeOptional,
         ),
 
         const SizedBox(height: 30),
 
         // Register button
         ATLButton(
-          text: widget.isLoading ? 'Registering...' : 'Register',
+          text: widget.isLoading ? l10n.registering : l10n.registerButton,
           size: ATLButtonSize.large,
           isFilled: true,
           color: Colors.white,

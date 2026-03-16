@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../database/db_read.dart';
+import '../l10n/app_localizations.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../config/api_json_keys.dart';
@@ -137,7 +138,9 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        widget.isHome ? widget.currentSport.name : 'Home',
+                        widget.isHome
+                            ? widget.currentSport.name
+                            : AppLocalizations.of(context).home,
                         style: TextStyle(
                           color: ATLColors.getPrimaryColor(widget.currentSport),
                           fontSize: 9,

@@ -7,6 +7,7 @@ import '../widgets/player_coordinator_bottom_bar.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
+import '../l10n/app_localizations.dart';
 
 class ShopScreen extends StatelessWidget {
   final SportCategory currentSport;
@@ -16,6 +17,7 @@ class ShopScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final UserProvider userProvider = Provider.of<UserProvider>(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -24,9 +26,9 @@ class ShopScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'SHOP',
-          style: TextStyle(
+        title: Text(
+          l10n.shopTitle,
+          style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -47,7 +49,7 @@ class ShopScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Shop',
+                  l10n.shopLabel,
                   style: TextStyle(
                     color: ATLColors.darkBlue,
                     fontSize: 24,
@@ -56,14 +58,14 @@ class ShopScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Coming soon',
+                  l10n.shopComingSoon,
                   style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
                 if (userProvider.isGuest) ...[
                   const SizedBox(height: 24),
-                  const Text(
-                    'Login to purchase items',
-                    style: TextStyle(
+                  Text(
+                    l10n.loginToPurchase,
+                    style: const TextStyle(
                       color: Colors.orange,
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -97,7 +99,7 @@ class ShopScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Guest mode: Login required to purchase',
+                        l10n.guestLoginRequired,
                         style: TextStyle(
                           color: Colors.orange.shade900,
                           fontSize: 12,

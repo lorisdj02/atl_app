@@ -5,6 +5,7 @@ import '../models/player.dart';
 import '../utils/atl_colors.dart';
 import 'square_team_widget.dart';
 import 'abstract_team_dialog.dart';
+import '../l10n/app_localizations.dart';
 
 enum EventType { goal, penalty, missedPenalty, ownGoal, yellowCard, redCard, redYellowCard }
 
@@ -36,21 +37,22 @@ class _MatchEventDialogState extends State<MatchEventDialog>
   List<Player> _availablePlayers = [];
 
   String _getEventTypeName(EventType type) {
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case EventType.goal:
-        return 'Goal';
+        return l10n.eventGoal;
       case EventType.penalty:
-        return 'Penalty';
+        return l10n.eventPenalty;
       case EventType.missedPenalty:
-        return 'Missed Penalty';
+        return l10n.eventMissedPenalty;
       case EventType.ownGoal:
-        return 'Own Goal';
+        return l10n.eventOwnGoal;
       case EventType.yellowCard:
-        return 'Yellow Card';
+        return l10n.eventYellowCard;
       case EventType.redCard:
-        return 'Red Card';
+        return l10n.eventRedCard;
       case EventType.redYellowCard:
-        return 'Double Yellow Card';
+        return l10n.eventDoubleYellowCard;
     }
   }
 
@@ -84,6 +86,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
   }
 
   Future<void> _submitEvent() async {
+    final l10n = AppLocalizations.of(context);
     if (selectedTeam == null ||
         _selectedEventType == null ||
         _selectedPlayer == null) {
@@ -96,12 +99,12 @@ class _MatchEventDialogState extends State<MatchEventDialog>
       builder: (context) => AlertDialog(
         title: const Text('Confirm Event'),
         content: Text(
-          'Are you sure you want to add ${_getEventTypeName(_selectedEventType!)} for ${_selectedPlayer!.name} ${_selectedPlayer!.surname}?',
+          l10n.confirmEventMsg(_getEventTypeName(_selectedEventType!), "${_selectedPlayer!.name} ${_selectedPlayer!.surname}"),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -109,7 +112,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
               backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Confirm'),
+            child: Text(l10n.confirmButton),
           ),
         ],
       ),
@@ -133,7 +136,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
         } else {
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Failed to add event')));
+          ).showSnackBar(SnackBar(content: Text(l10n.failedToAddEvent)));
           setState(() => isLoading = false);
         }
       }
@@ -141,7 +144,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorGeneric(e.toString()))));
         setState(() => isLoading = false);
       }
     }
@@ -149,6 +152,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -159,7 +163,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            buildDialogHeader(title: widget.penaltyMode ? 'Insert Penalty' : 'Add Event'),
+            buildDialogHeader(title: widget.penaltyMode ? l10n.insertPenalty : l10n.addEventButton),
             const SizedBox(height: 24),
 
             // Teams
@@ -175,8 +179,8 @@ class _MatchEventDialogState extends State<MatchEventDialog>
 
             // Event Type Selector - Mostra solo se un team è stato selezionato
             if (selectedTeam != null) ...[
-              const Text(
-                'Event Type',
+              Text(
+                l10n.eventTypeLabel,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -195,7 +199,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
                     vertical: 12,
                   ),
                 ),
-                hint: const Text('Select event type'),
+                hint: Text(l10n.selectEventType),
                 items: EventType.values
                     .where((type) {
                       // Filtra redYellowCard sempre
@@ -232,8 +236,8 @@ class _MatchEventDialogState extends State<MatchEventDialog>
 
             // Player Selector
             if (_selectedEventType != null) ...[
-              const Text(
-                'Player',
+              Text(
+                l10n.selectPlayer,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -244,8 +248,8 @@ class _MatchEventDialogState extends State<MatchEventDialog>
               if (isLoading)
                 const Center(child: CircularProgressIndicator())
               else if (_availablePlayers.isEmpty)
-                const Text(
-                  'No players available',
+                Text(
+                  l10n.noPlayersAvailable,
                   style: TextStyle(color: ATLColors.subtext),
                 )
               else
@@ -260,7 +264,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
                       vertical: 12,
                     ),
                   ),
-                  hint: const Text('Select player'),
+                  hint: Text(l10n.selectPlayer),
                   items: _availablePlayers.map((player) {
                     return DropdownMenuItem(
                       value: player,
@@ -303,8 +307,8 @@ class _MatchEventDialogState extends State<MatchEventDialog>
                         valueColor: AlwaysStoppedAnimation(Colors.white),
                       ),
                     )
-                  : const Text(
-                      'Add Event',
+                  : Text(
+                      l10n.addEventButton,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

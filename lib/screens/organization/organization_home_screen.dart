@@ -9,6 +9,7 @@ import '../../widgets/organization_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../providers/user_provider.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../widgets/loading_atl.dart';
 import '../shop_screen.dart';
 import '../../models/field.dart';
@@ -153,17 +154,19 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   }
 
   String _getDateLabel(DateTime date) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     final difference = dateOnly.difference(today).inDays;
 
-    if (difference == 0) return 'Today';
-    if (difference == 1) return 'Tomorrow';
-    if (difference == -1) return 'Yesterday';
+    if (difference == 0) return l10n.today;
+    if (difference == 1) return l10n.tomorrow;
+    if (difference == -1) return l10n.yesterday;
 
-    return DateFormat('EEE d').format(date);
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('EEE d', locale).format(date);
   }
 
   void _onNavTap(int index) {
@@ -194,6 +197,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -201,8 +205,8 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'HOME',
+        title: Text(
+          l10n.home,
           style: TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -214,7 +218,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
           GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode - Coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
             child: Container(
@@ -353,7 +357,10 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('d MMM').format(day),
+                    DateFormat(
+                      'd MMM',
+                      Localizations.localeOf(context).toString(),
+                    ).format(day),
                     style: TextStyle(
                       color: isSelected ? Colors.white : ATLColors.darkBlue,
                       fontSize: 12,
@@ -405,6 +412,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   }
 
   Widget _buildMatchesList() {
+    final l10n = AppLocalizations.of(context);
     final selectedDateOnly = DateTime(
       _selectedDate.year,
       _selectedDate.month,
@@ -428,6 +436,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
     }
 
     if (flatList.isEmpty) {
+      
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -437,7 +446,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'No fields booked',
+                l10n.noFieldsBooked,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
@@ -446,7 +455,10 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'No bookings on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
+                l10n.noBookingsOn(
+                  DateFormat.yMMMd(Localizations.localeOf(context).toString())
+                      .format(_selectedDate),
+                ),
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
@@ -467,7 +479,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
             child: Text(
-              "${field.name} (${_cityNamePerField[field.cityId] ?? 'Unknown'})",
+              "${field.name} (${_cityNamePerField[field.cityId] ?? l10n.unknown})",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

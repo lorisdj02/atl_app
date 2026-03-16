@@ -66,12 +66,13 @@ class FootballMatchWidget extends AbstractFootballMatchWidget {
         children: [
           if (needsMotm)
             buildMotmWarning(
+              context,
               fontSize: 12,
               iconSize: 16,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               margin: const EdgeInsets.only(bottom: 12),
             ),
-          buildContent(),
+          buildContent(context),
         ],
       ),
     );

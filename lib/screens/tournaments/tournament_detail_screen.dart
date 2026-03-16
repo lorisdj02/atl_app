@@ -19,6 +19,7 @@ import '../player/view_callups_screen.dart';
 import './football_tournament_screen.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
   final Tournament tournament;
@@ -45,6 +46,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Coordinator? _tournamentCoordinator;
   bool _isTeamParticipating = false;
   TournamentParticipation? _teamParticipation;
+
+  AppLocalizations get _l10n => AppLocalizations.of(context);
 
   @override
   void initState() {
@@ -89,7 +92,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading tournament details: $e')),
+        SnackBar(
+          content: Text(_l10n.errorLoadingTournamentDetails(e.toString())),
+        ),
       );
     }
 
@@ -162,7 +167,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             icon: const Icon(Icons.dark_mode, color: ATLColors.darkBlue),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(content: Text(_l10n.darkModeComingSoonSnack)),
               );
             },
           ),
@@ -245,7 +250,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      'Coordinator',
+                                      _l10n.coordinator,
                                       style: TextStyle(
                                         color: ATLColors.subtext,
                                         fontSize: 12,
@@ -265,7 +270,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Text(
-                                        'Lv. ${_tournamentCoordinator!.level}',
+                                        '${_l10n.levelAbbrev} ${_tournamentCoordinator!.level}',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -310,7 +315,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Full info',
+                                    _l10n.fullInfoLabel,
                                     style: TextStyle(
                                       color: ATLColors.getPrimaryColor(
                                         widget.currentSport,
@@ -377,7 +382,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'PRIZES',
+                                    _l10n.prizesTitle.toUpperCase(),
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -406,7 +411,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                            '1st Place',
+                                            _l10n.firstPlacePrize,
                                             style: TextStyle(
                                               color: Colors.white.withOpacity(
                                                 0.9,
@@ -448,7 +453,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
-                                              '2nd Place',
+                                              _l10n.secondPlacePrize,
                                               style: TextStyle(
                                                 color: Colors.white.withOpacity(
                                                   0.9,
@@ -498,28 +503,28 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                             children: [
                               _buildInfoRow(
                                 Icons.calendar_today,
-                                'Date',
+                                _l10n.dateLabel,
                                 widget.tournament.startDate != null
                                     ? DateFormat(
                                         'MMMM yyyy',
                                       ).format(widget.tournament.startDate!)
-                                    : 'TBA',
+                                    : _l10n.tba,
                               ),
                               const SizedBox(height: 12),
                               _buildInfoRow(
                                 Icons.location_on,
-                                'Location',
-                                '${_tournamentField?.name ?? 'TBA'} - ${_cityName ?? 'TBA'}',
+                                _l10n.locationLabel,
+                                '${_tournamentField?.name ?? _l10n.tba} - ${_cityName ?? _l10n.tba}',
                               ),
                               const SizedBox(height: 12),
                               _buildInfoRow(
                                 widget.tournament.isATL
                                     ? Icons.verified
                                     : Icons.public,
-                                'Type',
+                                _l10n.typeLabel,
                                 widget.tournament.isATL
-                                    ? 'ATL Event'
-                                    : 'Tournament',
+                                    ? _l10n.atlEventType
+                                    : _l10n.tournamentType,
                               ),
                             ],
                           ),
@@ -557,7 +562,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Description',
+                                      _l10n.descriptionLabel,
                                       style: TextStyle(
                                         color: ATLColors.darkBlue,
                                         fontSize: 16,
@@ -616,7 +621,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    'Entry Fee',
+                                    _l10n.feePerTeam,
                                     style: TextStyle(
                                       color: ATLColors.darkBlue,
                                       fontSize: 16,
@@ -668,7 +673,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: Text(
-                              'Tournament ID: #${widget.tournament.id}',
+                              _l10n.tournamentIdLabel(widget.tournament.id),
                               style: TextStyle(
                                 color: ATLColors.subtext,
                                 fontSize: 12,
@@ -695,8 +700,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       child: ElevatedButton.icon(
         onPressed: _handleStartTournament,
         icon: const Icon(Icons.play_arrow, color: Colors.white, size: 28),
-        label: const Text(
-          'START TOURNAMENT',
+        label: Text(
+          _l10n.startTournamentTitle.toUpperCase(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -726,14 +731,12 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Start Tournament'),
-        content: const Text(
-          'Are you sure you want to start this tournament? This action cannot be undone.',
-        ),
+        title: Text(_l10n.startTournamentTitle),
+        content: Text(_l10n.startTournamentConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(_l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -741,7 +744,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
               foregroundColor: Colors.white,
             ),
-            child: const Text('Start'),
+            child: Text(_l10n.startButton),
           ),
         ],
       ),
@@ -781,8 +784,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to start tournament. Please try again.'),
+          SnackBar(
+            content: Text(_l10n.failedToStartTournament),
             backgroundColor: Colors.red,
           ),
         );
@@ -791,7 +794,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       if (!mounted) return;
       Navigator.pop(context); // Remove loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(_l10n.errorText(e.toString())),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -813,7 +819,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               Icon(Icons.block, color: Colors.red.shade700, size: 28),
               const SizedBox(width: 16),
               Text(
-                'Tournament Full',
+                _l10n.tournamentFull,
                 style: TextStyle(
                   color: Colors.red.shade900,
                   fontSize: 15,
@@ -841,7 +847,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: Text(
-                'Join a team to manage call-ups',
+                _l10n.joinTeamToManageCalups,
                 style: TextStyle(
                   color: Colors.orange.shade900,
                   fontSize: 15,
@@ -875,8 +881,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             );
           },
           icon: const Icon(Icons.people, color: Colors.white),
-          label: const Text(
-            'VIEW CALL-UPS',
+          label: Text(
+            _l10n.viewCallUps,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -909,7 +915,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: Text(
-                'Contact your team captain or vice-captains to manage call-ups',
+                _l10n.contactCaptain,
                 style: TextStyle(
                   color: Colors.blue.shade900,
                   fontSize: 15,
@@ -941,16 +947,14 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                 if (result == true) {
                   await _loadAllData();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Call-ups updated successfully'),
-                    ),
+                    SnackBar(content: Text(_l10n.callUpsUpdated)),
                   );
                 }
               }
             },
             icon: const Icon(Icons.people, color: Colors.white),
-            label: const Text(
-              'SELECT CALL-UPS',
+            label: Text(
+              _l10n.selectCallUps,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -986,8 +990,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               );
             },
             icon: const Icon(Icons.people, color: Colors.white),
-            label: const Text(
-              'VIEW CALL-UPS',
+            label: Text(
+              _l10n.viewCallUps,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -1024,8 +1028,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   );
                 },
                 icon: const Icon(Icons.people, color: Colors.white),
-                label: const Text(
-                  'MODIFY CALL-UPS',
+                label: Text(
+                  _l10n.modifyCallUps,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1053,19 +1057,17 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Delete Call-ups'),
-                      content: const Text(
-                        'Are you sure you want to delete all call-ups for this tournament?',
-                      ),
+                      title: Text(_l10n.deleteCallUpsTitle),
+                      content: Text(_l10n.deleteCallUpsConfirm),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
+                          child: Text(_l10n.cancel),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
-                            'Delete',
+                          child: Text(
+                            _l10n.deleteText,
                             style: TextStyle(color: Colors.red),
                           ),
                         ),
@@ -1080,15 +1082,13 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                     );
                     if (mounted && success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Call-ups deleted successfully'),
-                        ),
+                        SnackBar(content: Text(_l10n.callUpsDeleted)),
                       );
                       await _loadAllData();
                     } else if (mounted && !success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to delete call-ups'),
+                        SnackBar(
+                          content: Text(_l10n.failedToDeleteCallUps),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -1096,8 +1096,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   }
                 },
                 icon: const Icon(Icons.delete, color: Colors.white),
-                label: const Text(
-                  'DELETE CALL-UPS',
+                label: Text(
+                  _l10n.deleteCallUpsTitle.toUpperCase(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1135,7 +1135,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Login to manage call-ups',
+              _l10n.loginToManageCallUps,
               style: TextStyle(
                 color: Colors.grey.shade800,
                 fontSize: 15,
@@ -1182,11 +1182,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         height: 200,
         width: double.infinity,
         color: Colors.white,
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 40,
                 height: 40,
                 child: CircularProgressIndicator(
@@ -1194,10 +1194,10 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                   color: ATLColors.darkBlue,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
-                'Loading teams...',
-                style: TextStyle(
+                _l10n.loadingTeams,
+                style: const TextStyle(
                   color: ATLColors.subtext,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -1223,7 +1223,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               Icon(Icons.groups, size: 60, color: Colors.grey[400]),
               const SizedBox(height: 12),
               Text(
-                'No participating teams',
+                _l10n.noParticipatingTeams,
                 style: TextStyle(color: Colors.grey[600], fontSize: 16),
               ),
             ],
@@ -1240,7 +1240,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         children: [
           Center(
             child: Text(
-              'PARTICIPATING TEAMS',
+              _l10n.participatingTeamsTitle.toUpperCase(),
               style: TextStyle(
                 color: ATLColors.subtext,
                 fontSize: 14,

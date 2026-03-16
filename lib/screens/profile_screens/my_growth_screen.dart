@@ -10,6 +10,7 @@ import '../../widgets/growth_timeline_item.dart';
 import '../../widgets/growth_pay_note.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class MyGrowthScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -85,8 +86,8 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'MY GROWTH',
+        title: Text(
+          AppLocalizations.of(context).myGrowth.toUpperCase(),
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -99,10 +100,10 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
       body: _isLoading
           ? const Center(child: LoadingATL())
           : _growthSteps.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'No data available',
-                    style: TextStyle(color: ATLColors.subtext),
+                    AppLocalizations.of(context).noDataAvailable,
+                    style: const TextStyle(color: ATLColors.subtext),
                   ),
                 )
               : SingleChildScrollView(
@@ -118,8 +119,8 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
                           isReferee: _isReferee,
                         ),
                       const SizedBox(height: 28),
-                      const Text(
-                        'GROWTH PATH',
+                      Text(
+                        AppLocalizations.of(context).growthPath.toUpperCase(),
                         style: TextStyle(
                           color: ATLColors.darkBlue,
                           fontSize: 13,

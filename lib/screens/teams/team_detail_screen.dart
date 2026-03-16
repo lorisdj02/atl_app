@@ -8,6 +8,7 @@ import 'abstract_team_screen.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class TeamDetailScreen extends AbstractTeamScreen {
   final int teamId;
@@ -66,7 +67,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading team data: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingTeamData(e.toString()))));
         setState(() => _requestLoaded = true);
       }
     }
@@ -87,7 +88,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       if (await DBWrite.createTeamRequest(widget.teamId, playerId!) == false) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error sending request')),
+            SnackBar(content: Text(l10n.errorSendingRequest)),
           );
         }
         return;
@@ -95,14 +96,14 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       await loadData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request sent successfully')),
+          SnackBar(content: Text(l10n.requestSentSuccessfully)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error sending request: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorSendingRequestDetail(e.toString()))));
       }
     }
   }
@@ -128,7 +129,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
           false) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error cancelling request')),
+            SnackBar(content: Text(l10n.errorCancellingRequest)),
           );
         }
         return;
@@ -137,13 +138,13 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Request cancelled')));
+        ).showSnackBar(SnackBar(content: Text(l10n.requestCancelled)));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error cancelling request: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorCancellingRequestDetail(e.toString()))));
       }
     }
   }
@@ -160,7 +161,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          team?.name ?? 'Team Details',
+          team?.name ?? l10n.teamDetailsTitle,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -172,7 +173,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
           ),
@@ -184,11 +185,11 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
             height: 50,
             child: Row(
               children: [
-                Expanded(child: buildTabButton('Players', 0)),
+                Expanded(child: buildTabButton(l10n.players, 0)),
                 const SizedBox(width: 12),
-                Expanded(child: buildTabButton('Palmares', 1)),
+                Expanded(child: buildTabButton(l10n.palmaresTab, 1)),
                 const SizedBox(width: 12),
-                Expanded(child: buildTabButton('Stats', 2)),
+                Expanded(child: buildTabButton(l10n.statsTab, 2)),
               ],
             ),
           ),
@@ -210,7 +211,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
                   ? Colors.red
                   : ATLColors.getPrimaryColor(widget.currentSport),
               icon: _existingRequest != null ? Icons.cancel : Icons.add,
-              label: _existingRequest != null ? 'Cancel Request' : 'Join Team',
+              label: _existingRequest != null ? l10n.cancelRequest : l10n.joinTeam,
             )
           : null,
     );

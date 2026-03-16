@@ -17,6 +17,7 @@ import '../../widgets/search_team_widget.dart';
 import '../../widgets/ranks_team_widget.dart';
 import '../../widgets/search_dialog_widget.dart';
 import 'team_detail_screen.dart';
+import '../../l10n/app_localizations.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -58,6 +59,8 @@ class _TeamScreenState extends State<TeamScreen>
         _vipFilter != null ||
         _playersRange != const RangeValues(1, 24);
   }
+
+  AppLocalizations get _l10n => AppLocalizations.of(context);
 
   @override
   void initState() {
@@ -176,7 +179,7 @@ class _TeamScreenState extends State<TeamScreen>
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading teams: $e')));
+        ).showSnackBar(SnackBar(content: Text(_l10n.errorLoadingTeams(e.toString()))));
       }
     }
   }
@@ -192,16 +195,16 @@ class _TeamScreenState extends State<TeamScreen>
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: ATLColors.background,
-          title: const Text('Filtri'),
+          title: Text(_l10n.filtersTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Filtro Città
-                const Text(
-                  'Città',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  _l10n.city,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -215,13 +218,13 @@ class _TeamScreenState extends State<TeamScreen>
                     value: _tempSelectedCity,
                     isExpanded: true,
                     underline: const SizedBox(),
-                    hint: const Text('Seleziona città'),
+                    hint: Text(_l10n.selectCity),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Tutte')),
+                      DropdownMenuItem(value: null, child: Text(_l10n.allCities)),
                       ...['1', '2', '3'].map((city) {
                         return DropdownMenuItem(
                           value: city,
-                          child: Text('Città $city'),
+                          child: Text('${_l10n.city} $city'),
                         );
                       }),
                     ],
@@ -236,9 +239,9 @@ class _TeamScreenState extends State<TeamScreen>
                 const SizedBox(height: 16),
 
                 // Filtro VIP
-                const Text(
-                  'VIP',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  _l10n.vipBadge,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -252,11 +255,11 @@ class _TeamScreenState extends State<TeamScreen>
                     value: _tempVipFilter,
                     isExpanded: true,
                     underline: const SizedBox(),
-                    hint: const Text('Tutti'),
-                    items: const [
-                      DropdownMenuItem(value: null, child: Text('Tutti')),
-                      DropdownMenuItem(value: true, child: Text('Solo VIP')),
-                      DropdownMenuItem(value: false, child: Text('Non VIP')),
+                    hint: Text(_l10n.all),
+                    items: [
+                      DropdownMenuItem(value: null, child: Text(_l10n.all)),
+                      DropdownMenuItem(value: true, child: Text(_l10n.vipOnly)),
+                      DropdownMenuItem(value: false, child: Text(_l10n.nonVip)),
                     ],
                     onChanged: (value) {
                       setDialogState(() {
@@ -269,9 +272,9 @@ class _TeamScreenState extends State<TeamScreen>
                 const SizedBox(height: 16),
 
                 // Filtro Numero Giocatori
-                const Text(
-                  'Numero Giocatori',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  _l10n.numberOfPlayersLabel,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 RangeSlider(
@@ -291,7 +294,7 @@ class _TeamScreenState extends State<TeamScreen>
                   },
                 ),
                 Text(
-                  '${_tempPlayersRange.start.round()} - ${_tempPlayersRange.end.round()} giocatori',
+                  _l10n.playersRangeLabel(_tempPlayersRange.start.round(), _tempPlayersRange.end.round()),
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -309,7 +312,7 @@ class _TeamScreenState extends State<TeamScreen>
                 _loadTeams();
               },
               style: TextButton.styleFrom(foregroundColor: ATLColors.darkBlue),
-              child: const Text('Reset'),
+              child: Text(_l10n.resetText),
             ),
             TextButton(
               onPressed: () {
@@ -321,7 +324,7 @@ class _TeamScreenState extends State<TeamScreen>
                 Navigator.pop(context);
               },
               style: TextButton.styleFrom(foregroundColor: ATLColors.darkBlue),
-              child: const Text('Applica'),
+              child: Text(_l10n.applyText),
             ),
           ],
         ),
@@ -362,6 +365,7 @@ class _TeamScreenState extends State<TeamScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final UserProvider userProvider = Provider.of<UserProvider>(context);
     final isPlayer = userProvider.activeUser?.role == UserRole.player;
     final isGuest = userProvider.isGuest;
@@ -387,18 +391,15 @@ class _TeamScreenState extends State<TeamScreen>
                     context: context,
                     builder: (context) => AlertDialog(
                       backgroundColor: ATLColors.background,
-                      title: const Text('Ranks Info'),
-                      content: const Text(
-                        'I team sono ordinati per punti ranking (Rank Pts). '
-                        'Più alto è il punteggio, migliore è la posizione in classifica.',
-                      ),
+                      title: Text(_l10n.ranksInfo),
+                      content: Text(_l10n.ranksInfoDescription),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           style: TextButton.styleFrom(
                             foregroundColor: ATLColors.darkBlue,
                           ),
-                          child: const Text('OK'),
+                          child: Text(_l10n.ok),
                         ),
                       ],
                     ),
@@ -407,7 +408,7 @@ class _TeamScreenState extends State<TeamScreen>
               )
             : null,
         title: Text(
-          '${widget.currentSport.name.toUpperCase()} TEAMS',
+          widget.currentSport == SportCategory.football ? l10n.footballTeamsTitle.toUpperCase() : '',
           style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -420,7 +421,7 @@ class _TeamScreenState extends State<TeamScreen>
             icon: const Icon(Icons.dark_mode, color: ATLColors.darkBlue),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(content: Text(_l10n.darkModeComingSoonSnack)),
               );
             },
           ),
@@ -435,15 +436,15 @@ class _TeamScreenState extends State<TeamScreen>
                 height: 44,
                 child: Row(
                   children: [
-                    Expanded(child: _buildTabButton('Search', 0)),
+                    Expanded(child: _buildTabButton(_l10n.search, 0)),
                     // My team - SOLO per player (non guest)
                     if (showMyTeamTab) ...[
                       const SizedBox(width: 12),
-                      Expanded(child: _buildTabButton('My team', 1)),
+                      Expanded(child: _buildTabButton(_l10n.myTeamTab, 1)),
                     ],
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildTabButton('Ranks', showMyTeamTab ? 2 : 1),
+                      child: _buildTabButton(_l10n.ranksTab, showMyTeamTab ? 2 : 1),
                     ),
                   ],
                 ),
@@ -462,7 +463,7 @@ class _TeamScreenState extends State<TeamScreen>
                           child: TextField(
                             controller: _searchController,
                             decoration: InputDecoration(
-                              hintText: 'Name (Alias)',
+                              hintText: _l10n.nameAlias,
                               hintStyle: TextStyle(color: Colors.grey[400]),
                               filled: true,
                               fillColor: Colors.white,
@@ -505,8 +506,8 @@ class _TeamScreenState extends State<TeamScreen>
                         ),
                         child: TextButton.icon(
                           icon: const Icon(Icons.search, color: Colors.white),
-                          label: const Text(
-                            'ID',
+                          label: Text(
+                            _l10n.idLabel,
                             style: TextStyle(color: Colors.white),
                           ),
                           onPressed: () {
@@ -560,9 +561,9 @@ class _TeamScreenState extends State<TeamScreen>
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Guest mode: Login to create/join teams',
+                        _l10n.guestModeLoginTeams,
                         style: TextStyle(
                           color: Colors.black87,
                           fontSize: 12,
@@ -591,9 +592,9 @@ class _TeamScreenState extends State<TeamScreen>
                           size: 80,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Nessun team disponibile',
-                          style: TextStyle(
+                        Text(
+                          _l10n.noTeamsAvailable,
+                          style: const TextStyle(
                             color: ATLColors.darkBlue,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -601,9 +602,9 @@ class _TeamScreenState extends State<TeamScreen>
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Torna più tardi',
-                          style: TextStyle(
+                        Text(
+                          _l10n.comeBackLater,
+                          style: const TextStyle(
                             color: ATLColors.subtext,
                             fontSize: 16,
                           ),
@@ -623,9 +624,9 @@ class _TeamScreenState extends State<TeamScreen>
                           size: 80,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Nessun team trovato',
-                          style: TextStyle(
+                        Text(
+                          _l10n.noTeamsFound,
+                          style: const TextStyle(
                             color: ATLColors.darkBlue,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -635,8 +636,8 @@ class _TeamScreenState extends State<TeamScreen>
                         const SizedBox(height: 8),
                         Text(
                           _hasActiveFilters
-                              ? 'Prova a modificare i filtri'
-                              : 'Torna più tardi',
+                              ? _l10n.tryChangingFilters
+                              : _l10n.comeBackLater,
                           style: const TextStyle(
                             color: ATLColors.subtext,
                             fontSize: 16,
@@ -703,7 +704,7 @@ class _TeamScreenState extends State<TeamScreen>
                   );
 
                   // Se il team è stato creato, ricarica completamente lo screen
-                  if (mounted) {
+                  if (mounted && result == true) {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
                         builder: (context) =>
@@ -714,7 +715,7 @@ class _TeamScreenState extends State<TeamScreen>
                 },
                 backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.add,
-                label: 'Crea',
+                label: _l10n.createTeamLabel,
               ),
             ),
         ],

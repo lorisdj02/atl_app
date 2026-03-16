@@ -7,6 +7,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/participation_card.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class PayParticipationScreen extends StatefulWidget {
   final int teamId;
@@ -58,6 +59,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -67,8 +69,8 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Pending Payments',
+        title: Text(
+          l10n.pendingPaymentsTitle,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -79,15 +81,18 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
       body: _isLoading
           ? const LoadingATL()
           : _tournamentParticipations.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.check_circle, size: 80, color: Colors.green),
                   SizedBox(height: 16),
                   Text(
-                    'No pending payments',
-                    style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+                    l10n.noPendingPayments,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: ATLColors.subtext,
+                    ),
                   ),
                 ],
               ),

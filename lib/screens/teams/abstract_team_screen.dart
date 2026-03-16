@@ -16,6 +16,7 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/palmares_widget.dart';
 import '../../widgets/players_widget.dart';
 import '../../widgets/players_stats_widget.dart';
+import '../../l10n/app_localizations.dart';
 
 abstract class AbstractTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -51,6 +52,8 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   bool palmaresLoaded = false;
   bool statsLoaded = false;
   bool statsShowAll = false;
+
+  AppLocalizations get l10n => AppLocalizations.of(context);
 
   @override
   void initState() {
@@ -89,7 +92,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading team data: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingTeamData(e.toString()))));
       }
     }
   }
@@ -191,7 +194,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
               border: Border.all(color: ATLColors.darkBlue.withOpacity(0.12)),
             ),
             child: Text(
-              'Actual Players',
+              l10n.actualPlayersToggle,
               style: TextStyle(
                 color: statsShowAll ? ATLColors.darkBlue : Colors.white,
                 fontWeight: FontWeight.bold,
@@ -216,7 +219,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
               border: Border.all(color: ATLColors.darkBlue.withOpacity(0.12)),
             ),
             child: Text(
-              'All Players',
+              l10n.allPlayersToggle,
               style: TextStyle(
                 color: statsShowAll ? Colors.white : ATLColors.darkBlue,
                 fontWeight: FontWeight.bold,
@@ -278,9 +281,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                 color: ATLColors.subtext.withOpacity(0.5),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'VIP Feature',
-                style: TextStyle(
+              Text(
+                l10n.vipFeature,
+                style: const TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -288,7 +291,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                'This section is available for VIP teams only. Upgrade to VIP to view the team palmares.',
+                l10n.vipPalmaresDesc,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: ATLColors.subtext, fontSize: 16),
               ),
@@ -296,7 +299,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
               ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('VIP upgrade coming soon')),
+                    SnackBar(content: Text(l10n.vipUpgradeComingSoonTeam)),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -309,9 +312,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                     vertical: 12,
                   ),
                 ),
-                child: const Text(
-                  'Upgrade to VIP',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  l10n.upgradeToVip,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -321,15 +324,15 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     }
 
     if (palmares == null || palmares!.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.emoji_events, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
+            const Icon(Icons.emoji_events, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
             Text(
-              'No trophies yet',
-              style: TextStyle(fontSize: 18, color: ATLColors.subtext),
+              l10n.noTrophiesYet,
+              style: const TextStyle(fontSize: 18, color: ATLColors.subtext),
             ),
           ],
         ),

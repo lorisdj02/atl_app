@@ -113,7 +113,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         options.add(
           ListTile(
             leading: const Icon(Icons.arrow_upward, color: Colors.green),
-            title: const Text('Promote to Vice Captain'),
+            title: Text(l10n.promoteToBViceCaptain),
             onTap: () {
               Navigator.pop(context);
               _promoteToViceCaptain(player);
@@ -124,7 +124,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         options.add(
           ListTile(
             leading: const Icon(Icons.arrow_downward, color: Colors.orange),
-            title: const Text('Demote'),
+            title: Text(l10n.demote),
             onTap: () {
               Navigator.pop(context);
               _demoteViceCaptain(player);
@@ -138,7 +138,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
       options.add(
         ListTile(
           leading: const Icon(Icons.person_remove, color: Colors.red),
-          title: const Text('Expel from Team'),
+          title: Text(l10n.expelFromTeam),
           onTap: () {
             Navigator.pop(context);
             _expelPlayer(player);
@@ -178,8 +178,8 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
     if (hasVice1 && hasVice2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Maximum 2 Vice Captains allowed. Demote one first.'),
+        SnackBar(
+          content: Text(l10n.maxViceCaptains),
         ),
       );
       return;
@@ -195,21 +195,21 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${player.username} promoted to Vice Captain'),
+            content: Text(l10n.promotedToVC(player.username)),
           ),
         );
         await loadPlayersData(team!.id);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to promote player to Vice Captain'),
+          SnackBar(
+            content: Text(l10n.failedToPromote),
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text(l10n.errorText(e.toString()))));
     }
   }
 
@@ -224,17 +224,17 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
       if (success && mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('${player.username} demoted')));
+        ).showSnackBar(SnackBar(content: Text(l10n.demoted(player.username))));
         await loadPlayersData(team!.id);
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to demote player')),
+          SnackBar(content: Text(l10n.failedToDemote)),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text(l10n.errorText(e.toString()))));
     }
   }
 
@@ -242,19 +242,17 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Expel Player'),
-        content: Text(
-          'Are you sure you want to expel ${player.username} from the team?',
-        ),
+        title: Text(l10n.expelPlayerTitle),
+        content: Text(l10n.expelPlayerConfirm(player.username)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Expel'),
+            child: Text(l10n.expelButton),
           ),
         ],
       ),
@@ -267,18 +265,18 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${player.username} expelled from team')),
+          SnackBar(content: Text(l10n.expelled(player.username))),
         );
         await loadPlayersData(team!.id);
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to expel player')));
+        ).showSnackBar(SnackBar(content: Text(l10n.failedToExpel)));
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text(l10n.errorText(e.toString()))));
     }
   }
 
@@ -286,12 +284,12 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave Team'),
-        content: const Text('Are you sure you want to leave this team?'),
+        title: Text(l10n.leaveTeamTitle),
+        content: Text(l10n.leaveTeamConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -299,18 +297,14 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
               if ((await DBWrite.leaveTeam(team!.id, playerId!)) == false) {
                 if (team!.captainId == playerId) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Captains cannot leave the team. Please assign a vice-captain before leaving.',
-                      ),
+                    SnackBar(
+                      content: Text(l10n.captainCannotLeaveTeam),
                     ),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Error leaving the team. Please try again later.',
-                      ),
+                    SnackBar(
+                      content: Text(l10n.errorLeavingTeam),
                     ),
                   );
                 }
@@ -331,7 +325,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
                 }
               }
             },
-            child: const Text('Leave', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.leaveButton, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -349,9 +343,9 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'My team',
-          style: TextStyle(
+        title: Text(
+          l10n.myTeamTab,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -362,7 +356,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
           ),
@@ -374,11 +368,11 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
             height: 50,
             child: Row(
               children: [
-                Expanded(child: buildTabButton('Players', 0)),
+                Expanded(child: buildTabButton(l10n.players, 0)),
                 const SizedBox(width: 12),
-                Expanded(child: buildTabButton('Palmares', 1)),
+                Expanded(child: buildTabButton(l10n.palmaresTab, 1)),
                 const SizedBox(width: 12),
-                Expanded(child: buildTabButton('Stats', 2)),
+                Expanded(child: buildTabButton(l10n.statsTab, 2)),
               ],
             ),
           ),
@@ -409,7 +403,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
                       ),
                       icon: const Icon(Icons.payment, size: 24),
                       label: Text(
-                        'Pending Payments ($_pendingPaymentsCount)',
+                        l10n.pendingPaymentsCount(_pendingPaymentsCount),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -434,7 +428,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
               onPressed: _showLeaveTeamDialog,
               backgroundColor: Colors.red,
               icon: Icons.exit_to_app,
-              label: 'Leave Team',
+              label: l10n.leaveTeamLabel,
             ),
           ),
           if (tabController.index == 0)
@@ -446,7 +440,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
                 onPressed: _showRequestsScreen,
                 backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
                 icon: Icons.inbox,
-                label: 'Requests',
+                label: l10n.requestsLabel,
               ),
             ),
         ],

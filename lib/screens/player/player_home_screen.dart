@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_read.dart';
+import '../../l10n/app_localizations.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/user.dart';
@@ -137,7 +138,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
           if (mounted) {
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+            ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).errorLoadingData(e.toString()))));
           }
         });
       }
@@ -178,11 +179,12 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   }
 
   void _showSportSelector() {
+    final l10n = AppLocalizations.of(context);
     // TODO: Riabilitare quando ci saranno più sport
     // Per ora mostra solo un messaggio
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Other sports coming soon! Football only for now.'),
+      SnackBar(
+        content: Text(l10n.otherSportsComingSoon),
         duration: Duration(seconds: 2),
       ),
     );
@@ -220,6 +222,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Calcola il numero totale di pagine (tornei + 1 pagina booking + pagina "need more")
     final tournamentsCount = _activeTournaments?.length ?? 0;
     final bookingsCount = _bookings.length;
@@ -255,8 +258,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     await _loadPlayerData();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Field booked successfully!'),
+                        SnackBar(
+                          content: Text(l10n.fieldBookedSuccessfully),
                         ),
                       );
                     }
@@ -268,13 +271,13 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     color: ATLColors.darkBlue,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.stadium, color: Colors.white, size: 18),
                       SizedBox(height: 2),
                       Text(
-                        'Book a field',
+                        l10n.bookAField,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
@@ -289,8 +292,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               )
             : null,
         centerTitle: true,
-        title: const Text(
-          'HOME',
+        title: Text(
+          l10n.home,
           style: TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -303,7 +306,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             onTap: () {
               // TODO: Implementare dark mode
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode - Coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
             child: Container(
@@ -343,7 +346,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
           child: Text(
-            _getPageTitle(),
+            _getPageTitle(context),
             style: TextStyle(
               color: ATLColors.darkBlue,
               fontSize: 28,
@@ -415,7 +418,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     );
   }
 
-  String _getPageTitle() {
+  String _getPageTitle(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tournamentsCount = _activeTournaments?.length ?? 0;
     final bookingsCount = _bookings.length;
     final hasBookings = bookingsCount > 0;
@@ -423,13 +427,14 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     if (_currentPage < tournamentsCount) {
       return _activeTournaments![_currentPage].name.toUpperCase();
     } else if (hasBookings && _currentPage == tournamentsCount) {
-      return 'BOOKINGS';
+      return l10n.bookings;
     } else {
-      return 'NEED MORE?';
+      return l10n.needMore;
     }
   }
 
   Widget _buildBookingsPage() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ListView.separated(
@@ -445,7 +450,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             key: ValueKey('${isPrivate ? 'private' : 'lobby'}_$bookingId'),
             field: _fieldCache[booking.fieldId]!,
             completeAddress:
-                _completeAddressPerField[booking.fieldId] ?? 'Unknown address',
+                _completeAddressPerField[booking.fieldId] ?? l10n.unknownAddress,
             booking: booking,
             startTime: isPrivate
                 ? booking.startTime
@@ -472,6 +477,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   }
 
   Widget _buildNeedMorePage() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -484,8 +490,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
               size: 80,
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Looking for more passion?',
+            Text(
+              l10n.lookingForMorePassion,
               style: TextStyle(
                 color: ATLColors.title,
                 fontSize: 20,
@@ -514,8 +520,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     await _loadPlayerData();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Booking created successfully!'),
+                        SnackBar(
+                          content: Text(l10n.bookingCreatedSuccessfully),
                           backgroundColor: Colors.green,
                         ),
                       );
@@ -523,8 +529,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   }
                 },
                 icon: const Icon(Icons.stadium, size: 28),
-                label: const Text(
-                  'BOOK A FIELD',
+                label: Text(
+                  l10n.bookAField,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -559,8 +565,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                   );
                 },
                 icon: Icon(_currentSport.icon, size: 28),
-                label: const Text(
-                  'BROWSE TOURNAMENTS',
+                label: Text(
+                  l10n.browseTournaments,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -595,8 +601,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                       .then((_) => _loadPlayerData());
                 },
                 icon: const Icon(Icons.groups, size: 28),
-                label: const Text(
-                  'JOIN LOBBY',
+                label: Text(
+                  l10n.joinLobby,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

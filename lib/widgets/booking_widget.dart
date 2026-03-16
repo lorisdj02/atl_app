@@ -2,6 +2,7 @@ import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../models/field.dart';
 import '../utils/atl_colors.dart';
 import '../models/sport_category.dart';
@@ -41,6 +42,7 @@ class BookingWidget extends StatefulWidget {
 class _BookingWidgetState extends State<BookingWidget> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final playerId = userProvider.activeRoleId!;
     LobbyBooking? _lobbyBooking;
@@ -95,8 +97,8 @@ class _BookingWidgetState extends State<BookingWidget> {
                           ),
                           Text(
                             widget.completeAddress.isNotEmpty
-                                ? 'Location: ${widget.completeAddress}'
-                                : 'Location info not available',
+                                ? '${l10n.locationLabel}: ${widget.completeAddress}'
+                                : l10n.unknownAddress,
                             style: TextStyle(
                               fontSize: 14,
                               color: ATLColors.subtext,
@@ -161,7 +163,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                       Icon(Icons.person, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
                       Text(
-                        'Owner: ${widget.ownerUsername ?? 'Unknown'}',
+                        l10n.ownerDetail(widget.ownerUsername ?? l10n.unknown),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -180,7 +182,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                       Icon(Icons.group, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
                       Text(
-                        '${_lobbyBooking.maxPlayers - _lobbyBooking.playersToFind}/${_lobbyBooking.maxPlayers} players',
+                        '${_lobbyBooking.maxPlayers - _lobbyBooking.playersToFind}/${_lobbyBooking.maxPlayers} ${l10n.players}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -198,9 +200,9 @@ class _BookingWidgetState extends State<BookingWidget> {
                             color: Colors.red,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Text(
-                            'FULL LOBBY',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.fullLobby.toUpperCase(),
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -220,7 +222,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                       Icon(Icons.payment, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
                       Text(
-                        'You paid for ${widget.playersPaid} player${widget.playersPaid! > 1 ? 's' : ''}',
+                        l10n.youPaidForPlayers(widget.playersPaid!),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -241,13 +243,13 @@ class _BookingWidgetState extends State<BookingWidget> {
                       onPressed: () {
                         // TODO: Implementare chat
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Chat - Coming soon')),
+                          SnackBar(content: Text(l10n.chatComingSoonWidget)),
                         );
                       },
                       icon: const Icon(Icons.chat_bubble_outline),
-                      label: const Text(
-                        'OPEN CHAT',
-                        style: TextStyle(
+                      label: Text(
+                        l10n.openChat.toUpperCase(),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1,
@@ -280,18 +282,15 @@ class _BookingWidgetState extends State<BookingWidget> {
 
                         if (isLobby) {
                           if (isOwner) {
-                            title = 'Delete Lobby';
-                            message =
-                                'Are you sure you want to delete this lobby? All participants will be removed.';
+                            title = l10n.deleteLobbyTitle;
+                            message = l10n.deleteLobbyMessage;
                           } else {
-                            title = 'Leave Lobby';
-                            message =
-                                'Are you sure you want to leave this lobby?';
+                            title = l10n.leaveLobbyTitle;
+                            message = l10n.leaveLobbyMessage;
                           }
                         } else {
-                          title = 'Delete Booking';
-                          message =
-                              'Are you sure you want to delete this private booking?';
+                          title = l10n.deleteBookingTitle;
+                          message = l10n.deleteBookingMessage;
                         }
 
                         // Mostra il dialogo di conferma
@@ -304,7 +303,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                               TextButton(
                                 onPressed: () =>
                                     Navigator.of(context).pop(false),
-                                child: const Text('CANCEL'),
+                                child: Text(l10n.cancel.toUpperCase()),
                               ),
                               TextButton(
                                 onPressed: () =>
@@ -312,7 +311,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.red,
                                 ),
-                                child: const Text('CONFIRM'),
+                                child: Text(l10n.confirmButton),
                               ),
                             ],
                           ),
@@ -341,10 +340,10 @@ class _BookingWidgetState extends State<BookingWidget> {
                                 SnackBar(
                                   content: Text(
                                     isLobby && isOwner
-                                        ? 'Lobby deleted'
+                                        ? l10n.lobbyDeleted
                                         : isLobby
-                                        ? 'Lobby left'
-                                        : 'Booking deleted',
+                                        ? l10n.lobbyLeft
+                                        : l10n.bookingDeleted,
                                   ),
                                 ),
                               );
@@ -354,11 +353,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Failed to delete ${isLobby && isOwner
-                                        ? 'lobby'
+                                    isLobby && isOwner
+                                        ? l10n.failedToDeleteLobby
                                         : isLobby
-                                        ? 'lobby participation'
-                                        : 'booking'}',
+                                        ? l10n.failedToLeavelobby
+                                        : l10n.failedToDeleteBooking,
                                   ),
                                 ),
                               );
@@ -369,10 +368,10 @@ class _BookingWidgetState extends State<BookingWidget> {
                       icon: const Icon(Icons.delete_outline),
                       label: Text(
                         isLobby && isOwner
-                            ? 'DELETE LOBBY'
+                            ? l10n.deleteLobbyTitle.toUpperCase()
                             : isLobby
-                            ? 'LEAVE LOBBY'
-                            : 'DELETE BOOKING',
+                            ? l10n.leaveLobbyTitle.toUpperCase()
+                            : l10n.deleteBookingTitle.toUpperCase(),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

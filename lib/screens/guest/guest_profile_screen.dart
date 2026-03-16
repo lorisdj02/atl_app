@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 import '../../utils/navigation_helper.dart';
 import '../login_screen.dart';
 
@@ -19,8 +20,8 @@ class GuestProfileScreen extends StatelessWidget {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'PROFILE',
+        title: Text(
+          AppLocalizations.of(context).meNavLabel.toUpperCase(),
           style: TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -45,8 +46,8 @@ class GuestProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Guest User',
+            Text(
+              AppLocalizations.of(context).guestUserLabel,
               style: TextStyle(
                 color: ATLColors.darkBlue,
                 fontSize: 24,
@@ -61,7 +62,7 @@ class GuestProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                'Limited Access',
+                AppLocalizations.of(context).limitedAccessLabel,
                 style: TextStyle(
                   color: Colors.orange.shade700,
                   fontSize: 14,
@@ -89,9 +90,9 @@ class GuestProfileScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'LOG IN',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context).logIn.toUpperCase(),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -102,7 +103,7 @@ class GuestProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Login to access all features',
+              AppLocalizations.of(context).loginToAccessAllFeatures,
               style: TextStyle(color: ATLColors.subtext, fontSize: 14),
             ),
           ],

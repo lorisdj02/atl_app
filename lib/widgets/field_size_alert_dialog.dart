@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/field.dart';
 
 /// Dialog to warn users when they select an oversized field
@@ -19,28 +20,26 @@ class FieldSizeAlertDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text(
-        'Campo sovradimensionato',
-        style: TextStyle(fontWeight: FontWeight.bold),
+      title: Text(
+        l10n.oversizedFieldDialogTitle,
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       content: Text(
-        customMessage ??
-            'Il campo è pensato per più giocatori (${maxPlayers} totali). '
-                'Questo potrebbe significare una differente esperienza di gioco '
-                'ed una fee maggiore. Vuoi continuare?',
+        customMessage ?? l10n.oversizedFieldDialogMessage(maxPlayers),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Annulla'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
             onConfirm();
           },
-          child: const Text('Continua'),
+          child: Text(l10n.continueButton),
         ),
       ],
     );

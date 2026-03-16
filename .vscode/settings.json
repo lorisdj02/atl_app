@@ -1,5 +1,6 @@
 {
     "window.density.editorTabHeight": "default",
     "workbench.editor.tabActionCloseVisibility": true,
-    "workbench.editor.tabSizing": "fit"
+    "workbench.editor.tabSizing": "fit",
+    "cmake.ignoreCMakeListsMissing": true
 }

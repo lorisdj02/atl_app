@@ -14,6 +14,7 @@ import 'referee_home_screen.dart';
 import 'available_matches_screen.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class PastAssignedMatchesScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -116,6 +117,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -123,9 +125,9 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'History',
-          style: TextStyle(
+        title: Text(
+          l10n.historyNavLabel.toUpperCase(),
+          style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -136,7 +138,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
           GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode - Coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
             child: Container(
@@ -162,6 +164,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
   }
 
   Widget _buildContent() {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) {
       return const Center(child: LoadingATL());
     }
@@ -176,7 +179,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
               Icon(Icons.history, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'No match history',
+                l10n.noMatchHistoryTitle,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
@@ -185,7 +188,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'You have not been assigned to any matches yet',
+                l10n.noMatchHistorySubtitle,
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,
               ),

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_read.dart';
-import '../config/api_json_keys.dart';
 import 'abstract_team_dialog.dart';
+import '../l10n/app_localizations.dart';
 
 class FootballMotmSelectorDialog extends AbstractTeamDialog {
   Map<int, List<Player>> playersByTeam = {};
@@ -28,6 +27,7 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
   List<Player> _availablePlayers = [];
 
   Future<void> _loadPlayers() async {
+    final l10n = AppLocalizations.of(context);
     if (selectedTeam == null) return;
 
     setState(() {
@@ -44,13 +44,14 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
         setState(() => isLoading = false);
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading players: $e')));
+        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingPlayers(e.toString()))));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -61,7 +62,7 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            buildDialogHeader(title: 'Select Man of the Match'),
+            buildDialogHeader(title: l10n.selectMotmTitle),
             const SizedBox(height: 24),
 
             // Team Selection
@@ -101,15 +102,15 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
             ] else if (isLoading) ...[
               const Center(child: CircularProgressIndicator()),
             ] else if (_availablePlayers.isEmpty) ...[
-              const Center(
+              Center(
                 child: Text(
-                  'No players available',
+                  l10n.noPlayersAvailable,
                   style: TextStyle(color: ATLColors.subtext),
                 ),
               ),
             ] else ...[
-              const Text(
-                'Select Player',
+              Text(
+                l10n.selectPlayer,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

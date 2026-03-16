@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_read.dart';
-import '../database/db_write.dart';
 import '../config/api_json_keys.dart';
 import '../models/booking.dart';
+import '../l10n/app_localizations.dart';
 
 class ScheduleMatchDialog extends StatefulWidget {
   final int tournamentId;
@@ -42,6 +42,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   }
 
   Future<void> _loadTournamentData() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _isLoading = true);
 
     try {
@@ -63,7 +64,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
           _isLoading = false;
         });
       } else {
-        throw Exception('Failed to load tournament time data');
+        throw Exception(l10n.failedToLoadTimeData);
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -72,6 +73,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   }
 
   Future<void> _loadAvailableSlots(DateTime date) async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _isLoading = true);
 
     try {
@@ -134,7 +136,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading available slots: $e');
+      print(l10n.failedToLoadTimeData);
       setState(() {
         _availableSlots = [];
         _isLoading = false;
@@ -149,6 +151,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   }
 
   String _getBookingInfo() {
+      final l10n = AppLocalizations.of(context);
     if (_selectedDate == null || _selectedTime == null) return '';
 
     final kickoffTime = DateTime(
@@ -167,12 +170,17 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     final dateFormat = DateFormat('MMM dd, yyyy');
     final timeFormat = DateFormat('HH:mm');
 
-    return 'Field booked from ${timeFormat.format(arrivalTime)} to ${timeFormat.format(endTime)} '
-        'on ${dateFormat.format(_selectedDate!)} with kickoff scheduled at ${timeFormat.format(kickoffTime)}';
+    return l10n.fieldBookedInfo(
+      timeFormat.format(arrivalTime),
+      timeFormat.format(endTime),
+      dateFormat.format(_selectedDate!),
+      timeFormat.format(kickoffTime),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -192,8 +200,8 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
                 const SizedBox(width: 12),
                 Text(
                   widget.currentScheduledStart == null
-                      ? 'Schedule Match'
-                      : 'Reschedule Match',
+                      ? l10n.scheduleMatchLabel
+                      : l10n.rescheduleMatchLabel,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -224,7 +232,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
               icon: const Icon(Icons.calendar_today),
               label: Text(
                 _selectedDate == null
-                    ? 'Select Date'
+                    ? l10n.selectDateButton
                     : DateFormat('EEEE, MMMM dd, yyyy').format(_selectedDate!),
               ),
               style: ElevatedButton.styleFrom(
@@ -238,8 +246,8 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
 
             // Available Time Slots
             if (_selectedDate != null) ...[
-              const Text(
-                'Available Time Slots (Kickoff Time):',
+              Text(
+                l10n.availableTimeSlotsLabel,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
@@ -252,10 +260,10 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
                   ),
                 )
               else if (_availableSlots.isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(20),
                   child: Text(
-                    'No available time slots for this date',
+                    l10n.noAvailableTimeSlotsForDate,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
@@ -349,7 +357,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('CANCEL'),
+                    child: Text(l10n.cancelButton),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -374,7 +382,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('CONFIRM'),
+                    child: Text(l10n.confirmButton),
                   ),
                 ),
               ],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../l10n/app_localizations.dart';
 import '../models/player.dart';
 import '../models/sport_category.dart';
 import '../models/football_team_stats.dart';
@@ -24,15 +24,16 @@ class PlayersStatsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (players.isEmpty || (playerStats.isEmpty && inTournament)) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.bar_chart, size: 80, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'No stats available. Keep playing!',
+              l10n.noStatsAvailable,
               style: TextStyle(fontSize: 18, color: ATLColors.subtext),
             ),
           ],
@@ -63,8 +64,8 @@ class PlayersStatsWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // GOALS Section
-          const Text(
-            'GOALS',
+          Text(
+            l10n.goalsLabel.toUpperCase(),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -87,8 +88,8 @@ class PlayersStatsWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // MOTM Section
-          const Text(
-            'MOTM',
+          Text(
+            l10n.motmLabel.toUpperCase(),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

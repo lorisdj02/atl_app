@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../l10n/app_localizations.dart';
 import '../models/player.dart';
 import '../models/team_request.dart';
 
@@ -19,6 +19,7 @@ class PlayerRequestWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -63,7 +64,7 @@ class PlayerRequestWidget extends StatelessWidget {
           // Player name
           Expanded(
             child: Text(
-              player?.username ?? 'Player ${request.playerId}',
+              player?.username ?? '${l10n.player} ${request.playerId}',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,

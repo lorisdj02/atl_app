@@ -8,6 +8,7 @@ import '../../models/sport_category.dart';
 import '../../models/sport.dart';
 import '../../database/db_write.dart';
 import '../../models/team.dart';
+import '../../l10n/app_localizations.dart';
 
 class CallupsScreen extends StatefulWidget {
   final Tournament tournament;
@@ -49,7 +50,11 @@ class _CallupsScreenState extends State<CallupsScreen> {
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading call-ups data: $e')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).errorLoadingCallupsData(e.toString()),
+          ),
+        ),
       );
     }
   }
@@ -74,13 +79,13 @@ class _CallupsScreenState extends State<CallupsScreen> {
         }
         if (!isThereCaptain && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('At least one captain or vice must be selected'),
-            ),
+            SnackBar(content: Text(AppLocalizations.of(context).atLeastOneCaptain)),
           );
         } else if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error confirming call-ups')),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).errorConfirmingCalups),
+            ),
           );
         }
       }
@@ -108,6 +113,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Show loading if sport is not yet loaded
     if (_tournamentSport == null) {
       return Scaffold(
@@ -119,8 +125,8 @@ class _CallupsScreenState extends State<CallupsScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
-            'Call-ups',
+          title: Text(
+            l10n.callupsTitle,
             style: TextStyle(
               color: Colors.white,
               fontSize: 20,
@@ -141,8 +147,8 @@ class _CallupsScreenState extends State<CallupsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Call-ups',
+        title: Text(
+          l10n.callupsTitle,
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -154,7 +160,11 @@ class _CallupsScreenState extends State<CallupsScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode coming soon')),
+                SnackBar(
+                  content: Text(
+                    l10n.darkModeComingSoonSnack,
+                  ),
+                ),
               );
             },
           ),
@@ -169,14 +179,19 @@ class _CallupsScreenState extends State<CallupsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Selected: ${_selectedPlayerIds.length}',
+                  l10n.selectedCount(
+                    _selectedPlayerIds.length,
+                  ),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Min ${_tournamentSport!.minPlayersPerTeam} players, Max ${_tournamentSport!.maxPlayersPerTeam} players',
+                  l10n.minMaxPlayers(
+                    _tournamentSport!.minPlayersPerTeam,
+                    _tournamentSport!.maxPlayersPerTeam,
+                  ),
                   style: TextStyle(
                     fontSize: 16,
                     color: _canConfirm() ? Colors.green : Colors.orange,
@@ -190,10 +205,10 @@ class _CallupsScreenState extends State<CallupsScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _teamPlayers.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'No players found in this team',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      l10n.noPlayersFoundInTeam,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   )
                 : ListView.builder(
@@ -287,9 +302,9 @@ class _CallupsScreenState extends State<CallupsScreen> {
                 ),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              child: const Text(
-                'Confirm and partecipate',
-                style: TextStyle(
+              child: Text(
+                l10n.confirmAndParticipate,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

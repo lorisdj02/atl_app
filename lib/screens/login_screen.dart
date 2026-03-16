@@ -95,9 +95,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
 
-    print(
-      'Logged in as: ${user.username}, Team ID: ${userProvider.currentTeamId}',
-    );
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => HomeRouter.getHomeScreen(user)),
     );
@@ -111,14 +108,14 @@ class _LoginScreenState extends State<LoginScreen> {
     userProvider.setActiveUser(
       User(
         id: 0,
-        username: 'Guest',
+        username: AppLocalizations.of(context).guestUserLabel,
         email: '',
         passwordMD5: '',
         role: UserRole.guest,
         firebaseUid: '',
         createdAt: DateTime.now(),
         phone: '',
-        name: 'Guest',
+        name: AppLocalizations.of(context).guestUserLabel,
         surname: '',
         birthdate: DateTime.now(),
       ),
@@ -187,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Username or Email TextField
                     ATLTextField(
                       controller: _emailController,
-                      hintText: 'Username or Email',
+                      hintText: AppLocalizations.of(context).usernameOrEmail,
                       keyboardType: TextInputType.text,
                     ),
 

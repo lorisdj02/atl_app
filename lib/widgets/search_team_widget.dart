@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
 import 'abstract_team_widget.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare un team nella ricerca
 class SearchTeamWidget extends AbstractTeamWidget {
@@ -18,6 +19,7 @@ class SearchTeamWidget extends AbstractTeamWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () => handleTeamTap(context),
       child: Container(
@@ -70,7 +72,7 @@ class SearchTeamWidget extends AbstractTeamWidget {
 
                   const SizedBox(height: 4),
                   Text(
-                    'Captain: ${captainName ?? 'Loading...'}',
+                    l10n.captainLabel(captainName ?? l10n.loading),
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
                 ],

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
-
+import '../l10n/app_localizations.dart';
 class GrowthPayNote extends StatelessWidget {
   const GrowthPayNote({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -14,13 +15,12 @@ class GrowthPayNote extends StatelessWidget {
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Icon(Icons.info_outline, color: ATLColors.darkBlue, size: 18),
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Pay may vary by role within the same sport category. '
-              'Figures shown are the min–max range across all roles for that level.',
+              l10n.growthPayNote,
               style: TextStyle(color: ATLColors.darkBlue, fontSize: 13),
             ),
           ),

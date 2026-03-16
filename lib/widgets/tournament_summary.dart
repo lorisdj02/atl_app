@@ -5,6 +5,7 @@ import '../models/field.dart';
 import '../widgets/info_row_widget.dart';
 import '../database/db_read.dart';
 import '../config/api_json_keys.dart';
+import '../l10n/app_localizations.dart';
 
 /// Widget for displaying tournament summary information
 class TournamentSummary extends StatelessWidget {
@@ -40,41 +41,44 @@ class TournamentSummary extends StatelessWidget {
     return '$sportName ${playersPerSide}v$playersPerSide';
   }
 
-  String _getStartDateDisplay() {
+  String _getStartDateDisplay(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (tournament.startDate == null) {
-      return 'Appena possibile';
+      return l10n.asSoonAsPossible;
     }
     final date = tournament.startDate!;
-    return '${_getMonthName(date.month)} ${date.year}';
+    return '${_getMonthName(context, date.month)} ${date.year}';
   }
 
-  String _getMonthName(int month) {
-    const months = [
-      'Gennaio',
-      'Febbraio',
-      'Marzo',
-      'Aprile',
-      'Maggio',
-      'Giugno',
-      'Luglio',
-      'Agosto',
-      'Settembre',
-      'Ottobre',
-      'Novembre',
-      'Dicembre',
+  String _getMonthName(BuildContext context, int month) {
+    final l10n = AppLocalizations.of(context);
+    List<String> months = [
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
     return months[month - 1];
   }
 
-  String _getRound2Display() {
+  String _getRound2Display(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (tournament.round2GroupStage && tournament.round2FinalStage) {
-      return 'Per tutto il torneo';
+      return l10n.formatFullHomeAndAway;
     } else if (tournament.round2GroupStage) {
-      return 'Solo ai gironi';
+      return l10n.formatHomeAndAwayGroupStage;
     } else if (tournament.round2FinalStage) {
-      return 'Solo nella fase finale';
+      return l10n.formatHomeAndAwayKnockoutStage;
     }
-    return 'No';
+    return l10n.formatSingleMatchOnly;
   }
 
   int _calculateTotalMatches() {
@@ -93,7 +97,7 @@ class TournamentSummary extends StatelessWidget {
     return groupMatchesTotal + knockoutMatchesTotal;
   }
 
-  Future<Map<String, dynamic>> _fetchData() async {
+  Future<Map<String, dynamic>> _fetchData(BuildContext context) async {
     final data = await DBRead.getTournamentSummary(tournament.id);
 
 
@@ -105,7 +109,7 @@ class TournamentSummary extends StatelessWidget {
     final prize1Data = prize1Value ?? tournament.prize1;
     final prize2Data = prize2Value ?? tournament.prize2;
     final totalMatchesData = totalMatches ?? _calculateTotalMatches();
-    final round2DisplayData = round2Display ?? _getRound2Display();
+    final round2DisplayData = round2Display ?? _getRound2Display(context);
 
     return {
       'sport': sportData,
@@ -121,8 +125,9 @@ class TournamentSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return FutureBuilder<Map<String, dynamic>>(
-      future: _fetchData(),
+      future: _fetchData(context),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
@@ -142,7 +147,7 @@ class TournamentSummary extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Text('Errore: ${snapshot.error}'),
+            child: Text(l10n.errorLoadingData(snapshot.error.toString())),
           );
         }
 
@@ -172,51 +177,51 @@ class TournamentSummary extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InfoRowWidget(label: 'Nome', value: tournament.name),
+              InfoRowWidget(label: l10n.name, value: tournament.name),
               InfoRowWidget(
-                label: '1° posto',
+                label: l10n.firstPlaceLabel,
                 value: prize1Data != null
                     ? '🏆 €${prize1Data.toStringAsFixed(2)}'
                     : '❌ No',
               ),
               InfoRowWidget(
-                label: '2° posto',
+                label: l10n.secondPlaceLabel,
                 value: prize2Data != null
                     ? '💰 €${prize2Data.toStringAsFixed(2)}'
                     : '❌ No',
               ),
               InfoRowWidget(
-                label: 'Quota per squadra',
+                label: l10n.feeLabel,
                 value: '💵 €${feeData.toStringAsFixed(2)}',
               ),
               InfoRowWidget(
-                label: 'Campo',
+                label: l10n.fieldLabel,
                 value: '${fieldData?.name ?? 'N/A'}, $cityNameData',
               ),
               InfoRowWidget(
-                label: 'Sport',
+                label: l10n.sportLabel,
                 value: _getSportDisplayName(sportData),
               ),
-              InfoRowWidget(label: 'Inizio', value: _getStartDateDisplay()),
-              InfoRowWidget(label: 'Squadre', value: '${tournament.numTeams}'),
-              InfoRowWidget(label: 'Gironi', value: '${tournament.numGroups}'),
+              InfoRowWidget(label: l10n.selectDateRequired, value: _getStartDateDisplay(context)),
+              InfoRowWidget(label: l10n.teamsLabel, value: '${tournament.numTeams}'),
+              InfoRowWidget(label: l10n.groupsLabel, value: '${tournament.numGroups}'),
               InfoRowWidget(
-                label: 'Squadre qualificate alla fase finale',
+                label: l10n.qualifiedTeamsLabel,
                 value: '${tournament.qualified}',
               ),
               InfoRowWidget(
-                label: 'Partite totali',
+                label: l10n.totalMatchesLabel,
                 value: totalMatchesData.toString(),
               ),
               InfoRowWidget(
-                label: 'Andata e ritorno',
+                label: l10n.round2Label,
                 value: round2DisplayData,
               ),
               InfoRowWidget(
-                label: 'Descrizione',
+                label: l10n.descriptionLabel,
                 value: tournament.description.isNotEmpty
                     ? tournament.description
-                    : 'Nessuna descrizione fornita',
+                    : l10n.noDescriptionProvided,
               ),
             ],
           ),

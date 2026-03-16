@@ -135,7 +135,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     // Send email button
                     ATLButton(
                       text: _isWaiting
-                          ? 'Wait ${_secondsRemaining}s...'
+                          ? AppLocalizations.of(context)
+                              .waitSecondsCount(_secondsRemaining)
                           : AppLocalizations.of(context).sendEmail,
                       size: ATLButtonSize.large,
                       isFilled: !_isWaiting,

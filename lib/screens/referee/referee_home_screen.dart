@@ -15,6 +15,7 @@ import '../profile_screen.dart';
 import 'available_matches_screen.dart';
 import 'past_assigned_matches_screen.dart';
 import '../../config/api_json_keys.dart';
+import '../../l10n/app_localizations.dart';
 
 class RefereeHomeScreen extends StatefulWidget {
   const RefereeHomeScreen({super.key});
@@ -141,18 +142,20 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
     }
   }
 
-  String _getDateLabel(DateTime date) {
+  String _getDateLabel(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     final difference = dateOnly.difference(today).inDays;
 
-    if (difference == 0) return 'Today';
-    if (difference == 1) return 'Tomorrow';
-    if (difference == -1) return 'Yesterday';
+    if (difference == 0) return l10n.today;
+    if (difference == 1) return l10n.tomorrow;
+    if (difference == -1) return l10n.yesterday;
 
-    return DateFormat('EEE d').format(date);
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('EEE d', locale).format(date);
   }
 
   void _onNavTap(int index) {
@@ -189,6 +192,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -196,9 +200,9 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
-          'HOME',
-          style: TextStyle(
+        title: Text(
+          l10n.home.toUpperCase(),
+          style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -209,7 +213,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
           GestureDetector(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Dark mode - Coming soon')),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
             child: Container(
@@ -338,7 +342,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _getDateLabel(day),
+                    _getDateLabel(context, day),
                     style: TextStyle(
                       color: isSelected ? Colors.white : ATLColors.darkBlue,
                       fontSize: 10,
@@ -348,7 +352,10 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('d MMM').format(day),
+                    DateFormat(
+                      'd MMM',
+                      Localizations.localeOf(context).toString(),
+                    ).format(day),
                     style: TextStyle(
                       color: isSelected ? Colors.white : ATLColors.darkBlue,
                       fontSize: 12,
@@ -400,6 +407,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
   }
 
   Widget _buildMatchesList() {
+    final l10n = AppLocalizations.of(context);
     // Prendi solo i match del giorno selezionato
     final selectedDateOnly = DateTime(
       _selectedDate.year,
@@ -409,6 +417,8 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
     final matchesForDay = _matchesPerDate[selectedDateOnly] ?? [];
 
     if (matchesForDay.isEmpty) {
+      final locale = Localizations.localeOf(context).toString();
+      final formattedDate = DateFormat('MMM d, yyyy', locale).format(_selectedDate);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -418,7 +428,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               Icon(Icons.sports_soccer, size: 64, color: ATLColors.subtext),
               const SizedBox(height: 16),
               Text(
-                'No matches assigned',
+                l10n.noMatchesScheduled,
                 style: TextStyle(
                   color: ATLColors.darkBlue,
                   fontSize: 18,
@@ -427,7 +437,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'No matches assigned on ${DateFormat('MMM d, yyyy').format(_selectedDate)}',
+                l10n.noMatchesOn(formattedDate),
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/atl_colors.dart';
 
 class FootballStatCard extends StatelessWidget {
@@ -17,6 +18,7 @@ class FootballStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -42,25 +44,25 @@ class FootballStatCard extends StatelessWidget {
             icon: Icons.sports_soccer,
             color: ATLColors.darkBlue,
             value: goals,
-            label: 'Goals',
+            label: l10n.goalsLabel,
           ),
           _StatItem(
             icon: Icons.star_rounded,
             color: Colors.amber,
             value: motm,
-            label: 'MOTM',
+            label: l10n.motmLabel,
           ),
           _StatItem(
             icon: Icons.rectangle,
             color: Colors.amber.shade700,
             value: yellowCards,
-            label: 'Yellow Cards',
+            label: l10n.yellowCardsLabel,
           ),
           _StatItem(
             icon: Icons.rectangle,
             color: Colors.red,
             value: redCards,
-            label: 'Red Cards',
+            label: l10n.redCardsLabel,
           ),
         ],
       ),

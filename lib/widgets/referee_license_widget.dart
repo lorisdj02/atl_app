@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/referee_license.dart';
 import '../models/sport.dart';
 import '../utils/atl_colors.dart';
+import '../l10n/app_localizations.dart';
 
 class RefereeLicenseWidget extends StatelessWidget {
   final RefereeLicense license;
@@ -29,21 +30,23 @@ class RefereeLicenseWidget extends StatelessWidget {
     }
   }
 
-  String _statusLabel(LicenseStatus status) {
+  String _statusLabel(BuildContext context, LicenseStatus status) {
+    final l10n = AppLocalizations.of(context);
     switch (status) {
       case LicenseStatus.active:
-        return 'Active';
+        return l10n.active;
       case LicenseStatus.notVerified:
-        return 'Not Verified';
+        return l10n.licenseStatusNotVerified;
       case LicenseStatus.suspended:
-        return 'Suspended';
+        return l10n.licenseStatusSuspended;
       case LicenseStatus.revoked:
-        return 'Revoked';
+        return l10n.licenseStatusRevoked;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final sportCategory = sport?.category;
     final primaryColor = sportCategory != null
         ? ATLColors.getPrimaryColor(sportCategory)
@@ -57,9 +60,7 @@ class RefereeLicenseWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border(
-            left: BorderSide(color: primaryColor, width: 4),
-          ),
+          border: Border(left: BorderSide(color: primaryColor, width: 4)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),
@@ -96,7 +97,7 @@ class RefereeLicenseWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _statusLabel(license.status),
+                      _statusLabel(context, license.status),
                       style: TextStyle(
                         color: _statusColor(license.status),
                         fontSize: 12,
@@ -108,26 +109,26 @@ class RefereeLicenseWidget extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               // License ID
-              _infoRow(Icons.badge_outlined, 'ID', license.id),
+              _infoRow(Icons.badge_outlined, l10n.idLabel, license.id),
               const SizedBox(height: 6),
               // Issued at
               _infoRow(
                 Icons.calendar_today_outlined,
-                'Issued',
+                l10n.licenseIssuedLabel,
                 dateFormat.format(license.issuedAt),
               ),
               const SizedBox(height: 6),
               // Created at
               _infoRow(
                 Icons.access_time_outlined,
-                'Submitted',
+                l10n.licenseSubmittedLabel,
                 dateFormat.format(license.createdAt),
               ),
               if (license.verifiedAt != null) ...[
                 const SizedBox(height: 6),
                 _infoRow(
                   Icons.verified_outlined,
-                  'Verified',
+                  l10n.licenseVerifiedLabel,
                   dateFormat.format(license.verifiedAt!),
                   color: ATLColors.footballGreen,
                 ),
@@ -136,7 +137,7 @@ class RefereeLicenseWidget extends StatelessWidget {
                 const SizedBox(height: 6),
                 _infoRow(
                   Icons.cancel_outlined,
-                  'Revoked',
+                  l10n.licenseStatusRevoked,
                   dateFormat.format(license.revokedAt!),
                   color: Colors.red,
                 ),
@@ -152,7 +153,7 @@ class RefereeLicenseWidget extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Hold to delete',
+                      l10n.holdToDeleteHint,
                       style: TextStyle(
                         color: ATLColors.subtext.withOpacity(0.5),
                         fontSize: 12,
@@ -169,12 +170,7 @@ class RefereeLicenseWidget extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(
-    IconData icon,
-    String label,
-    String value, {
-    Color? color,
-  }) {
+  Widget _infoRow(IconData icon, String label, String value, {Color? color}) {
     return Row(
       children: [
         Icon(icon, size: 16, color: color ?? ATLColors.subtext),
@@ -190,10 +186,7 @@ class RefereeLicenseWidget extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              color: color ?? ATLColors.subtext,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: color ?? ATLColors.subtext, fontSize: 13),
           ),
         ),
       ],

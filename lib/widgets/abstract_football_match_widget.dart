@@ -6,6 +6,7 @@ import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'football_live_minute_widget.dart';
 import '../screens/tournaments/football_match_screen.dart';
+import '../l10n/app_localizations.dart';
 
 abstract class AbstractFootballMatchWidget extends StatelessWidget {
   final FootballMatch match;
@@ -44,7 +45,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   double get minuteFontSize;
   EdgeInsets get minutePadding;
 
-  Widget _buildStatusHeader() {
+  Widget _buildStatusHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     switch (match.status) {
       case MatchStatus.scheduled:
         if (match.matchDate != null) {
@@ -84,7 +86,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
           );
         }
         return Text(
-          'Scheduled (${DateFormat('dd/MM/yy').format(match.scheduledStart!)} at ${DateFormat('HH:mm').format(match.scheduledStart!)})',
+          l10n.matchStatusScheduled(DateFormat('dd/MM/yy').format(match.scheduledStart!), DateFormat('HH:mm').format(match.scheduledStart!)),
           style: TextStyle(
             fontSize: statusFontSize,
             fontWeight: FontWeight.bold,
@@ -108,7 +110,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'Live',
+                l10n.matchStatusLive,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -135,7 +137,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'Halftime',
+                l10n.matchStatusHalftime,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -162,7 +164,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'Live - 2nd Half',
+                l10n.matchStatusLive2ndHalf,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -189,7 +191,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'Penalty shoot-out',
+                l10n.matchStatusPenaltyShootout,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -201,7 +203,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
         );
       case MatchStatus.finished:
         return Text(
-          'Full-time',
+          l10n.matchStatusFullTime,
           style: TextStyle(
             fontSize: statusFontSize,
             fontWeight: FontWeight.bold,
@@ -225,7 +227,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'To be scheduled',
+                l10n.matchStatusToBeScheduled,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -253,7 +255,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'Retired',
+                l10n.matchStatusRetired,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -280,7 +282,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.33),
               Text(
-                'Canceled',
+                l10n.matchStatusCanceled,
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -430,12 +432,13 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   }
 
   // Build MOTM warning widget
-  Widget buildMotmWarning({
+  Widget buildMotmWarning(BuildContext context, {
     required double fontSize,
     required double iconSize,
     required EdgeInsets padding,
     required EdgeInsets margin,
   }) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       margin: margin,
       padding: padding,
@@ -450,7 +453,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
           Icon(Icons.warning, color: Colors.orange.shade700, size: iconSize),
           SizedBox(width: iconSize * 0.5),
           Text(
-            'Warning: MOTM missing',
+            l10n.motmWarningMsg,
             style: TextStyle(
               color: Colors.orange.shade700,
               fontSize: fontSize,
@@ -462,11 +465,11 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
     );
   }
 
-  Widget buildContent() {
+  Widget buildContent(BuildContext context) {
     return Column(
       children: [
         // Date/Status header
-        _buildStatusHeader(),
+        _buildStatusHeader(context),
         SizedBox(height: teamIconSize * 0.343),
         // Match row
         Row(

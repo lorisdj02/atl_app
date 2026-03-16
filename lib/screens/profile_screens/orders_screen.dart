@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class OrdersScreen extends StatelessWidget {
   final SportCategory currentSport;
@@ -9,6 +10,7 @@ class OrdersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -18,9 +20,9 @@ class OrdersScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'ORDERS',
-          style: TextStyle(
+        title: Text(
+          l10n.ordersTitle,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -39,9 +41,9 @@ class OrdersScreen extends StatelessWidget {
               color: ATLColors.subtext.withOpacity(0.5),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Coming Soon',
-              style: TextStyle(
+            Text(
+              l10n.comingSoon,
+              style: const TextStyle(
                 color: ATLColors.darkBlue,
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -51,7 +53,7 @@ class OrdersScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 48),
               child: Text(
-                'Your orders will be displayed here soon!',
+                l10n.ordersComingSoon,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: ATLColors.subtext, fontSize: 16),
               ),

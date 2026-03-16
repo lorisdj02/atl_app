@@ -113,6 +113,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -181,7 +182,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                     // Email TextField
                     ATLTextField(
                       controller: _emailController,
-                      hintText: 'Email',
+                      hintText: l10n.emailLabel,
                       keyboardType: TextInputType.emailAddress,
                     ),
 
@@ -190,7 +191,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                     // Phone TextField
                     ATLTextField(
                       controller: _phoneController,
-                      hintText: 'Phone',
+                      hintText: l10n.phoneLabel,
                       keyboardType: TextInputType.phone,
                     ),
 
@@ -210,7 +211,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
                         controller: _messageController,
                         maxLines: 6,
                         decoration: InputDecoration(
-                          hintText: 'Your message',
+                          hintText: l10n.typeYourMessage,
                           hintStyle: TextStyle(
                             color: Colors.grey[400],
                             fontSize: 16,
@@ -228,7 +229,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
 
                     // Contact us button
                     ATLButton(
-                      text: 'Contact us!',
+                      text: l10n.sendMessage,
                       size: ATLButtonSize.large,
                       isFilled: true,
                       color: ATLColors.darkBlue,
@@ -239,7 +240,7 @@ class _OrganizationContactScreenState extends State<OrganizationContactScreen> {
 
                     // Cancel button
                     ATLButton(
-                      text: AppLocalizations.of(context).cancel,
+                      text: l10n.cancel,
                       size: ATLButtonSize.medium,
                       isFilled: false,
                       color: ATLColors.darkBlue,
