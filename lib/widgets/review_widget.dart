@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/review.dart';
-import '../models/user.dart';
+import '../models/account.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_write.dart';
 import '../models/sport_category.dart';
@@ -8,14 +8,14 @@ import '../l10n/app_localizations.dart';
 
 class ReviewWidget extends StatefulWidget {
   final Review review;
-  final User? reviewee;
+  final Account? reviewed;
   final String? matchTeamsString;
   final VoidCallback onCommitted;
 
   const ReviewWidget({
     super.key,
     required this.review,
-    required this.reviewee,
+    required this.reviewed,
     this.matchTeamsString,
     required this.onCommitted,
   });
@@ -119,7 +119,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                         ),
                       ),
                       Text(
-                        widget.reviewee?.username ?? '—',
+                        widget.reviewed?.username ?? '—',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,

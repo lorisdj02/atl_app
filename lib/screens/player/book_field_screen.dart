@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/atl_step_indicator.dart';
@@ -98,7 +98,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     try {
       final data = await DBRead.getBookFieldScreen();
 
-      final preferredCityId = Provider.of<UserProvider>(
+      final preferredCityId = Provider.of<AccountProvider>(
         context,
         listen: false,
       ).cityId;
@@ -475,8 +475,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _createBooking() async {
     final l10n = AppLocalizations.of(context);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (userProvider.activeUser == null) {
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    if (userProvider.activeAccount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar( 
           content: Text(l10n.userNotFound),
@@ -511,7 +511,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       };
 
       final int sessionId = await DBWrite.createCheckoutSession(
-        userId: userProvider.activeUser!.id,
+        userId: userProvider.activeAccount!.id,
         payload: payload,
         amount: totalToPay,
         type: CheckoutType.privateBooking,
@@ -548,7 +548,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       // Ricorda che playersToPay = maxPlayers - playersToFind
 
       final int sessionId = await DBWrite.createCheckoutSession(
-        userId: userProvider.activeUser!.id,
+        userId: userProvider.activeAccount!.id,
         payload: payload,
         amount: totalToPay,
         type: CheckoutType.lobbyBookingCreate,

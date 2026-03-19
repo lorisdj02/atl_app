@@ -21,25 +21,25 @@ class ReviewsRepository extends BaseRepository<Review> {
   @override
   List<Review> get mockData => _mockData;
 
-  Future<List<Review>> getByReviewedUserId(int revieweeUserId) async {
+  Future<List<Review>> getByReviewedAccountId(int revieweeAccountId) async {
     if (AppConfig.isDebug) {
       return mockData
-          .where((review) => review.revieweeUserId == revieweeUserId)
+          .where((review) => review.reviewedAccountId == revieweeAccountId)
           .toList();
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<List<Review>> getByReviewerUserId(int reviewerUserId) async {
+  Future<List<Review>> getByReviewerAccountId(int reviewerAccountId) async {
     if (AppConfig.isDebug) {
       final List<Review> reviews = mockData
-          .where((review) => review.reviewerUserId == reviewerUserId)
+          .where((review) => review.reviewerAccountId == reviewerAccountId)
           .toList();
 
       for (var review in reviews) {
         print(
-            'Review ${review.id} - reviewerUserId: ${review.reviewerUserId}, revieweeUserId: ${review.revieweeUserId}, status: ${review.status}');
+            'Review ${review.id} - reviewerAccountId: ${review.reviewerAccountId}, reviewedAccountId: ${review.reviewedAccountId}, status: ${review.status}');
       }
       return reviews;
     } else {
@@ -48,8 +48,8 @@ class ReviewsRepository extends BaseRepository<Review> {
   }
 
   Future<bool> addReview({
-    required int reviewerUserId,
-    required int revieweeUserId,
+    required int reviewerAccountId,
+    required int reviewedAccountId,
     required int tournamentId,
     required ReviewType reviewType,
     String? comment,
@@ -63,8 +63,8 @@ class ReviewsRepository extends BaseRepository<Review> {
                 .map((e) => e.id)
                 .fold(0, (prev, element) => element > prev ? element : prev) +
             1,
-        reviewerUserId: reviewerUserId,
-        revieweeUserId: revieweeUserId,
+        reviewerAccountId: reviewerAccountId,
+        reviewedAccountId: reviewedAccountId,
         reviewType: reviewType,
         tournamentId: tournamentId,
         matchId: matchId,
@@ -109,12 +109,12 @@ class ReviewsRepository extends BaseRepository<Review> {
     }
   }
 
-  Future<List<Review>> getPendingReviewsForReviewerUserId(int userId) async {
+  Future<List<Review>> getPendingReviewsForReviewerAccountId(int accountId) async {
     if (AppConfig.isDebug) {
       return mockData
           .where(
             (review) =>
-                review.reviewerUserId == userId &&
+                review.reviewerAccountId == accountId &&
                 review.status == ReviewStatus.pending,
           )
           .toList();

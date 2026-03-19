@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'atl_controller.dart';
 import 'database/db_controller.dart';
-import 'providers/user_provider.dart';
+import 'providers/account_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +12,7 @@ void main() async {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
+      providers: [ChangeNotifierProvider(create: (_) => AccountProvider())],
       child: const AtlController(),
     ),
   );

@@ -53,7 +53,7 @@ class LobbyBookingsRepository extends BaseRepository<LobbyBooking> {
         return false; // Prenotazione non trovata
       }
 
-      _mockData[index].status = BookingStatus.refound;
+      _mockData[index].status = BookingStatus.refund;
       return true;
     } else {
       throw UnimplementedError();

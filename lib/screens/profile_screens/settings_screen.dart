@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -335,11 +335,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 return;
               }
 
-              final userProvider = Provider.of<UserProvider>(
+              final userProvider = Provider.of<AccountProvider>(
                 context,
                 listen: false,
               );
-              final user = userProvider.activeUser;
+              final user = userProvider.activeAccount;
 
               if (user == null) {
                 Navigator.pop(context, false);
@@ -376,8 +376,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _handleDeletion() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
 
     if (user == null) return;
 

@@ -1,4 +1,4 @@
-import 'package:atl_app/models/user.dart';
+import 'package:atl_app/models/account.dart';
 
 import 'base_repository.dart';
 import '../../models/referee.dart';
@@ -64,7 +64,7 @@ class RefereeRepository extends BaseRepository<Referee> {
     }
   }
 
-  Future<int> getRefereeIdByUserId(int userId) async{
+  Future<int> getRefereeIdByAccountId(int userId) async{
     if (AppConfig.isDebug) {
       try {
         final referee = _mockData.firstWhere(
@@ -102,7 +102,7 @@ class RefereeRepository extends BaseRepository<Referee> {
     }
   }
 
-  Future<Referee?> getByUserId(int userId) async{
+  Future<Referee?> getByAccountId(int userId) async{
     if (AppConfig.isDebug) {
       try {
         final referee = _mockData.firstWhere(
@@ -117,7 +117,7 @@ class RefereeRepository extends BaseRepository<Referee> {
     }
   }
 
-  Future<bool> updateUserInfo({
+  Future<bool> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -200,7 +200,7 @@ class RefereeRepository extends BaseRepository<Referee> {
       );
       if (index == -1) return false;
 
-      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].status = AccountStatus.deleted;
       _mockData[index].username = 'deleted_user_${_mockData[index].id}';
       _mockData[index].email = 'deleted_user_${_mockData[index].id}';
       _mockData[index].phone = '';

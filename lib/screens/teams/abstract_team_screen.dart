@@ -10,7 +10,7 @@ import '../../models/tournament.dart';
 import '../../models/coordinator.dart';
 import '../../models/field.dart';
 import '../../models/football_team_stats.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/palmares_widget.dart';
@@ -29,7 +29,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
   Team? team;
-  late UserProvider userProvider;
+  late AccountProvider userProvider;
   late int? playerId;
 
   List<Player>? players;
@@ -60,7 +60,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     super.initState();
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(onTabChanged);
-    userProvider = Provider.of<UserProvider>(context, listen: false);
+    userProvider = Provider.of<AccountProvider>(context, listen: false);
     playerId = userProvider.activeRoleId;
     loadData();
   }

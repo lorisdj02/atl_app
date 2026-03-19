@@ -1,7 +1,7 @@
-import 'user.dart';
+import 'account.dart';
 
 /// Modello Organization dal database
-class Organization extends User {
+class Organization extends Account {
   final int organizationId;
   final String orgName;
 
@@ -24,7 +24,7 @@ class Organization extends User {
     super.startVip,
     super.endVip,
     super.vipType = VipType.none,
-  }) : super(role: UserRole.organization);
+  }) : super(role: AccountRole.organization);
 
   factory Organization.fromJson(Map<String, dynamic> json) {
     return Organization(

@@ -9,7 +9,7 @@ import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/square_team_widget.dart';
 import '../../models/field.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/player.dart';
 import '../../models/coordinator.dart';
 import '../../models/tournament_participation.dart';
@@ -57,18 +57,18 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   Future<void> _loadAllData() async {
     setState(() => _isLoading = true);
-    UserProvider userProvider = Provider.of<UserProvider>(
+    AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
 
     try {
       final Map<String, dynamic> data;
-      if (userProvider.isPlayer && userProvider.activeUser != null) {
+      if (userProvider.isPlayer && userProvider.activeAccount != null) {
         data = await DBRead.getTournamentDetailScreen(
           widget.tournament.id,
           widget.currentSport,
-          userProvider.activeUser!.id,
+          userProvider.activeAccount!.id,
         );
       } else {
         data = await DBRead.getTournamentDetailScreen(
@@ -111,7 +111,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   }
 
   bool _canStartTournament() {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
@@ -139,7 +139,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
+    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
     final isPlayer = userProvider.isPlayer;
     final isGuest = userProvider.isGuest;
 
@@ -722,7 +722,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   }
 
   Future<void> _handleStartTournament() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );

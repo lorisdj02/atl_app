@@ -34,7 +34,7 @@ class LobbyBookingParticipationRepository
       return _mockdata
           .where((participation) =>
               participation.playerId == playerId &&
-              !participation.isRefound)
+              !participation.isRefund)
           .toList();
     } else {
       throw UnimplementedError();
@@ -64,7 +64,7 @@ class LobbyBookingParticipationRepository
         return _mockdata.firstWhere(
           (participation) =>
               participation.playerId == playerId &&
-              participation.lobbyBookingId == lobbyBookingId && !participation.isRefound,
+              participation.lobbyBookingId == lobbyBookingId && !participation.isRefund,
         );
       } catch (e) {
         return null;
@@ -79,11 +79,11 @@ class LobbyBookingParticipationRepository
       final int index = _mockdata.indexWhere(
         (participation) =>
             participation.playerId == playerId &&
-            participation.lobbyBookingId == lobbyBookingId && !participation.isRefound,
+            participation.lobbyBookingId == lobbyBookingId && !participation.isRefund,
       );
 
       if (index != -1) {
-        _mockdata[index].isRefound = true;
+        _mockdata[index].isRefund = true;
         return true;
       }
 
@@ -98,7 +98,7 @@ class LobbyBookingParticipationRepository
       final exists = _mockdata.any(
         (participation) =>
             participation.playerId == playerId &&
-            participation.lobbyBookingId == lobbyBookingId && !participation.isRefound,
+            participation.lobbyBookingId == lobbyBookingId && !participation.isRefund,
       );
       return exists;
     } else {
@@ -119,7 +119,7 @@ class LobbyBookingParticipationRepository
         lobbyBookingId: lobbyBookingId,
         joinedAt: DateTime.now(),
         playersPaid: playersPaid ?? 1,
-        price: price,
+        cost: price,
       );
       _mockdata.add(participation);
 
@@ -136,12 +136,12 @@ class LobbyBookingParticipationRepository
       indexes.addAll(
         _mockdata.asMap().entries.where(
               (entry) =>
-                  entry.value.lobbyBookingId == lobbyBookingId && !entry.value.isRefound,
+                  entry.value.lobbyBookingId == lobbyBookingId && !entry.value.isRefund,
             ).map((entry) => entry.key),
       );
 
       for(final index in indexes) {
-        _mockdata[index].isRefound = true;
+        _mockdata[index].isRefund = true;
       }
       return true;
     } else {
@@ -153,7 +153,7 @@ class LobbyBookingParticipationRepository
     if (AppConfig.isDebug) {
       int count = 0;
       for (var participation in _mockdata) {
-        if (participation.lobbyBookingId == lobbyBookingId && !participation.isRefound) {
+        if (participation.lobbyBookingId == lobbyBookingId && !participation.isRefund) {
           count += participation.playersPaid;
         }
       }

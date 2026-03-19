@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
-import '../models/user.dart';
+import '../models/account.dart';
 
 /// Widget per la selezione del ruolo utente
 class ATLRoleSelector extends StatelessWidget {
-  final UserRole role;
+  final AccountRole role;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -18,13 +18,13 @@ class ATLRoleSelector extends StatelessWidget {
 
   IconData get _icon {
     switch (role) {
-      case UserRole.coordinator:
+      case AccountRole.coordinator:
         return Icons.assignment;
-      case UserRole.player:
+      case AccountRole.player:
         return Icons.person;
-      case UserRole.referee:
+      case AccountRole.referee:
         return Icons.gavel;
-      case UserRole.organization:
+      case AccountRole.organization:
         return Icons.business;
       default:
         return Icons.visibility;
@@ -34,13 +34,13 @@ class ATLRoleSelector extends StatelessWidget {
   String _getTitle(BuildContext context) {
     final loc = AppLocalizations.of(context);
     switch (role) {
-      case UserRole.coordinator:
+      case AccountRole.coordinator:
         return loc.coordinator;
-      case UserRole.player:
+      case AccountRole.player:
         return loc.player;
-      case UserRole.referee:
+      case AccountRole.referee:
         return loc.referee;
-      case UserRole.organization:
+      case AccountRole.organization:
         return loc.organization;
       default:
         return '';
@@ -50,13 +50,13 @@ class ATLRoleSelector extends StatelessWidget {
   String _getSubtitle(BuildContext context) {
     final loc = AppLocalizations.of(context);
     switch (role) {
-      case UserRole.coordinator:
+      case AccountRole.coordinator:
         return loc.coordinatorDesc;
-      case UserRole.player:
+      case AccountRole.player:
         return loc.playerDesc;
-      case UserRole.referee:
+      case AccountRole.referee:
         return loc.refereeDesc;
-      case UserRole.organization:
+      case AccountRole.organization:
         return loc.organizationDesc;
       default:
         return '';

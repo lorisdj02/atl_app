@@ -8,7 +8,7 @@ import '../../config/api_json_keys.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
 import '../../models/city.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../utils/text_formatters.dart';
 import '../../l10n/app_localizations.dart';
@@ -108,8 +108,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
     try {
       final l10n = AppLocalizations.of(context);
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final currentUser = userProvider.activeUser;
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
+      final currentUser = userProvider.activeAccount;
 
       if (currentUser == null) {
         throw Exception(l10n.userNotFound);
@@ -163,8 +163,8 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       }
 
       // Aggiorna l'utente con il teamId
-      final updatedUser = currentUser.copyWith(teamId: newTeamId);
-      await userProvider.updateUser(updatedUser);
+      final updatedAccount = currentUser.copyWith(teamId: newTeamId);
+      await userProvider.updateAccount(updatedAccount);
       userProvider.setCurrentTeamId(newTeamId);
       if (mounted) {
         print('🔧 [DEBUG] Team created successfully: ${newTeam.name}');

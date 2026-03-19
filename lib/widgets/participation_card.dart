@@ -1,5 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
-import 'package:atl_app/providers/user_provider.dart';
+import 'package:atl_app/providers/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -294,9 +294,9 @@ class _ParticipationCardState extends State<ParticipationCard> {
         'teamId': widget.participation.teamId,
       };
 
-      UserProvider userProvider = Provider.of<UserProvider>(context, listen: false);
+      AccountProvider userProvider = Provider.of<AccountProvider>(context, listen: false);
 
-      if(userProvider.activeUser == null){
+      if(userProvider.activeAccount == null){
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.userNotLoggedIn),
@@ -307,7 +307,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
       }
 
       final int sessionId = await DBWrite.createCheckoutSession(
-        userId: userProvider.activeUser!.id,
+        userId: userProvider.activeAccount!.id,
         payload: payload,
         amount: chosenAmount,
         type: CheckoutType.tournamentFee,

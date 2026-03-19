@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../models/growth_step.dart';
 import '../../utils/atl_colors.dart';
@@ -37,8 +37,8 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
   }
 
   Future<void> _loadData() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
     if (user == null) {
       setState(() => _isLoading = false);
       return;

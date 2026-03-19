@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../database/db_read.dart';
@@ -31,8 +31,8 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
   }
 
   Future<void> _loadData() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
     if (user == null) {
       setState(() => _isLoading = false);
       return;

@@ -1,27 +1,27 @@
 import 'package:atl_app/config/app_config.dart';
-import '../../models/user.dart';
+import '../../models/account.dart';
 import 'base_repository.dart';
 import '../db_controller.dart';
 
-class UserRepository extends BaseRepository<User> {
+class AccountRepository extends BaseRepository<Account> {
   @override
   String get endpoint => 'users';
 
   @override
-  User fromJson(Map<String, dynamic> json) => User.fromJson(json);
+  Account fromJson(Map<String, dynamic> json) => Account.fromJson(json);
 
   @override
-  Map<String, dynamic> toJson(User item) => item.toJson();
+  Map<String, dynamic> toJson(Account item) => item.toJson();
 
   @override
-  List<User> get mockData => [
+  List<Account> get mockData => [
     ...DB.Players.mockData,
     ...DB.Coordinators.mockData,
     ...DB.Referees.mockData,
     ...DB.Organizations.mockData,
   ];
 
-  Future<T?> getByUserId<T extends User>(int id) async {
+  Future<T?> getByAccountId<T extends Account>(int id) async {
     if (AppConfig.isDebug) {
       try {
         final user = mockData.firstWhere((user) => user.id == id);
@@ -42,14 +42,14 @@ class UserRepository extends BaseRepository<User> {
     if (AppConfig.isDebug) {
       try {
         final user = mockData.firstWhere((user) => user.id == userId);
-        if (user.role == UserRole.player) {
-          return DB.Players.getPlayerIdByUserId(user.id);
-        } else if (user.role == UserRole.coordinator) {
-          return DB.Coordinators.getCoordinatorIdByUserId(user.id);
-        } else if (user.role == UserRole.referee) {
-          return DB.Referees.getRefereeIdByUserId(user.id);
-        } else if (user.role == UserRole.organization) {
-          return DB.Organizations.getOrganizationIdByUserId(user.id);
+        if (user.role == AccountRole.player) {
+          return DB.Players.getPlayerIdByAccountId(user.id);
+        } else if (user.role == AccountRole.coordinator) {
+          return DB.Coordinators.getCoordinatorIdByAccountId(user.id);
+        } else if (user.role == AccountRole.referee) {
+          return DB.Referees.getRefereeIdByAccountId(user.id);
+        } else if (user.role == AccountRole.organization) {
+          return DB.Organizations.getOrganizationIdByAccountId(user.id);
         } else {
           return null;
         }
@@ -62,7 +62,7 @@ class UserRepository extends BaseRepository<User> {
   }
 
   /// Metodo custom: ottieni user per username
-  Future<User?> getByUsername(String username) async {
+  Future<Account?> getByUsername(String username) async {
     if (AppConfig.isDebug) {
       try {
         return mockData.firstWhere((user) => user.username == username);
@@ -75,7 +75,7 @@ class UserRepository extends BaseRepository<User> {
   }
 
   /// Metodo custom: ottieni user per email
-  Future<User?> getByEmail(String email) async {
+  Future<Account?> getByEmail(String email) async {
     if (AppConfig.isDebug) {
       try {
         return mockData.firstWhere((user) => user.email == email);
@@ -88,7 +88,7 @@ class UserRepository extends BaseRepository<User> {
   }
 
   /// Metodo custom: ottieni user per email o username
-  Future<User?> getByEmailOrUsername(String identifier, String password) async {
+  Future<Account?> getByEmailOrUsername(String identifier, String password) async {
     if (AppConfig.isDebug) {
       try {
         return mockData.firstWhere(
@@ -104,7 +104,7 @@ class UserRepository extends BaseRepository<User> {
     }
   }
 
-  Future<bool> updateUserInfo({
+  Future<bool> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -117,10 +117,10 @@ class UserRepository extends BaseRepository<User> {
     if (AppConfig.isDebug) {
       // Update mock data
 
-      final User? user = await getByUserId(id);
+      final Account? user = await getByAccountId(id);
       if (user == null) return false;
-      if (user.role == UserRole.player) {
-        return await DB.Players.updateUserInfo(
+      if (user.role == AccountRole.player) {
+        return await DB.Players.updateAccountInfo(
           id: id,
           username: username,
           phone: phone,
@@ -130,8 +130,8 @@ class UserRepository extends BaseRepository<User> {
           imgUrl: imgUrl,
           preferredCityId: preferredCityId,
         );
-      } else if (user.role == UserRole.coordinator) {
-        return await DB.Coordinators.updateUserInfo(
+      } else if (user.role == AccountRole.coordinator) {
+        return await DB.Coordinators.updateAccountInfo(
           id: id,
           username: username,
           phone: phone,
@@ -141,8 +141,8 @@ class UserRepository extends BaseRepository<User> {
           imgUrl: imgUrl,
           preferredCityId: preferredCityId,
         );
-      } else if (user.role == UserRole.referee) {
-        return await DB.Referees.updateUserInfo(
+      } else if (user.role == AccountRole.referee) {
+        return await DB.Referees.updateAccountInfo(
           id: id,
           username: username,
           phone: phone,
@@ -152,8 +152,8 @@ class UserRepository extends BaseRepository<User> {
           imgUrl: imgUrl,
           preferredCityId: preferredCityId,
         );
-      } else if (user.role == UserRole.organization) {
-        return await DB.Organizations.updateUserInfo(
+      } else if (user.role == AccountRole.organization) {
+        return await DB.Organizations.updateAccountInfo(
           id: id,
           username: username,
           phone: phone,
@@ -194,13 +194,13 @@ class UserRepository extends BaseRepository<User> {
     }
   }
 
-  Future<int> registerUser({
+  Future<int> registerAccount({
     required String email,
     required String username,
     required String password,
     required String name,
     required String surname,
-    required UserRole role,
+    required AccountRole role,
     required String phone,
     required DateTime birthdate,
     String? profilePictureUrl,
@@ -227,7 +227,7 @@ class UserRepository extends BaseRepository<User> {
       // TODO: firebase registration
 
       switch (role) {
-        case UserRole.player:
+        case AccountRole.player:
           await DB.Players.registerPlayer(
             id: nextId,
             email: email,
@@ -240,7 +240,7 @@ class UserRepository extends BaseRepository<User> {
             birthdate: birthdate,
           );
           break;
-        case UserRole.coordinator:
+        case AccountRole.coordinator:
           await DB.Coordinators.registerCoordinator(
             id: nextId,
             email: email,
@@ -253,7 +253,7 @@ class UserRepository extends BaseRepository<User> {
             birthdate: birthdate,
           );
           break;
-        case UserRole.referee:
+        case AccountRole.referee:
           await DB.Referees.registerReferee(
             id: nextId,
             email: email,
@@ -266,11 +266,11 @@ class UserRepository extends BaseRepository<User> {
             birthdate: birthdate,
           );
           break;
-        case UserRole.organization:
+        case AccountRole.organization:
           throw UnimplementedError(
             'Organization registration not implemented yet',
           );
-        case UserRole.guest:
+        case AccountRole.guest:
           throw Exception('Cannot register as guest');
       }
       

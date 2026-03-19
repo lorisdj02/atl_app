@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../models/user.dart';
+import '../../models/account.dart';
 import '../../widgets/atl_role_selector.dart';
 import '../organization_contact_screen.dart';
 
 class RegistrationScreenStep1 extends StatelessWidget {
-  final UserRole? selectedRole;
-  final Function(UserRole) onRoleSelected;
+  final AccountRole? selectedRole;
+  final Function(AccountRole) onRoleSelected;
 
   const RegistrationScreenStep1({
     super.key,
@@ -18,23 +18,23 @@ class RegistrationScreenStep1 extends StatelessWidget {
     return Column(
       children: [
         ATLRoleSelector(
-          role: UserRole.player,
-          isSelected: selectedRole == UserRole.player,
-          onTap: () => onRoleSelected(UserRole.player),
+          role: AccountRole.player,
+          isSelected: selectedRole == AccountRole.player,
+          onTap: () => onRoleSelected(AccountRole.player),
         ),
         ATLRoleSelector(
-          role: UserRole.coordinator,
-          isSelected: selectedRole == UserRole.coordinator,
-          onTap: () => onRoleSelected(UserRole.coordinator),
+          role: AccountRole.coordinator,
+          isSelected: selectedRole == AccountRole.coordinator,
+          onTap: () => onRoleSelected(AccountRole.coordinator),
         ),
         ATLRoleSelector(
-          role: UserRole.referee,
-          isSelected: selectedRole == UserRole.referee,
-          onTap: () => onRoleSelected(UserRole.referee),
+          role: AccountRole.referee,
+          isSelected: selectedRole == AccountRole.referee,
+          onTap: () => onRoleSelected(AccountRole.referee),
         ),
         ATLRoleSelector(
-          role: UserRole.organization,
-          isSelected: selectedRole == UserRole.organization,
+          role: AccountRole.organization,
+          isSelected: selectedRole == AccountRole.organization,
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(

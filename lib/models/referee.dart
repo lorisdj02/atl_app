@@ -1,7 +1,7 @@
-import 'user.dart';
+import 'account.dart';
 
 /// Modello Referee dal database
-class Referee extends User {
+class Referee extends Account {
   final int refereeId;
   final int level;
 
@@ -24,7 +24,7 @@ class Referee extends User {
     super.startVip,
     super.endVip,
     super.vipType = VipType.none,
-  }) : super(role: UserRole.referee);
+  }) : super(role: AccountRole.referee);
 
   factory Referee.fromJson(Map<String, dynamic> json) {
     return Referee(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/team.dart';
 import '../models/sport_category.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 import '../screens/teams/my_team_screen.dart';
 import '../screens/teams/team_detail_screen.dart';
 
@@ -23,7 +23,7 @@ abstract class AbstractTeamWidget extends StatelessWidget {
   /// Handles team tap navigation
   /// Checks if player is part of the team and navigates accordingly
   Future<void> handleTeamTap(BuildContext context) async {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );

@@ -22,7 +22,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 1,
       homeTeamId: 1,
       awayTeamId: 5,
-      status: MatchStatus.startHalf,
+      status: FootballMatchStatus.startHalf,
       tournamentId: 8,
       group: 'A',
       day: 1,
@@ -37,7 +37,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 2,
       homeTeamId: 6,
       awayTeamId: 7,
-      status: MatchStatus.finished,
+      status: FootballMatchStatus.finished,
       tournamentId: 8,
       group: 'A',
       day: 1,
@@ -50,7 +50,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 3,
       homeTeamId: 8,
       awayTeamId: 9,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'B',
       day: 1,
@@ -59,7 +59,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 4,
       homeTeamId: 10,
       awayTeamId: 11,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'B',
       day: 1,
@@ -68,7 +68,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 5,
       homeTeamId: 1,
       awayTeamId: 6,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'A',
       day: 2,
@@ -77,7 +77,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 6,
       homeTeamId: 5,
       awayTeamId: 7,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'A',
       day: 2,
@@ -86,7 +86,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 7,
       homeTeamId: 8,
       awayTeamId: 10,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'B',
       day: 2,
@@ -95,7 +95,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 8,
       homeTeamId: 9,
       awayTeamId: 11,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'B',
       day: 2,
@@ -104,7 +104,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 9,
       homeTeamId: 1,
       awayTeamId: 7,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'A',
       day: 3,
@@ -113,7 +113,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 10,
       homeTeamId: 5,
       awayTeamId: 6,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'A',
       day: 3,
@@ -122,7 +122,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 11,
       homeTeamId: 8,
       awayTeamId: 11,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'B',
       day: 3,
@@ -131,38 +131,38 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       id: 12,
       homeTeamId: 9,
       awayTeamId: 10,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'B',
       day: 3,
     ),
     FootballMatch(
       id: 14,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'SF1',
     ),
     FootballMatch(
       id: 15,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'SF1',
     ),
     FootballMatch(
       id: 16,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'SF2',
     ),
     FootballMatch(
       id: 17,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'SF2',
     ),
     FootballMatch(
       id: 18,
-      status: MatchStatus.notScheduled,
+      status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
       group: 'FI',
     ),
@@ -187,7 +187,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         tournamentId: tournamentId,
         group: group,
         day: day,
-        status: MatchStatus.notScheduled,
+        status: FootballMatchStatus.notScheduled,
       );
       _mockData.add(newMatch);
       return true;
@@ -445,7 +445,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
         matches.remove(match);
 
-        return matches[0].status == MatchStatus.finished;
+        return matches[0].status == FootballMatchStatus.finished;
       } catch (e) {
         return false;
       }
@@ -493,7 +493,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           (match) => match.id == matchId,
         );
 
-        if (match.status != MatchStatus.finished) {
+        if (match.status != FootballMatchStatus.finished) {
           return -1;
         }
 
@@ -530,7 +530,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           (match) => match.id == matchId,
         );
 
-        match.status = MatchStatus.penaltyShootOut;
+        match.status = FootballMatchStatus.penaltyShootOut;
         _mockData[index] = match;
         return true;
       } catch (e) {
@@ -587,12 +587,12 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           (match) => match.id == matchId,
         );
 
-        if (match.status != MatchStatus.startHalf &&
-            match.status != MatchStatus.penaltyShootOut) {
+        if (match.status != FootballMatchStatus.startHalf &&
+            match.status != FootballMatchStatus.penaltyShootOut) {
           return false;
         }
 
-        if (match.group.length <= 2 && match.status == MatchStatus.startHalf) {
+        if (match.group.length <= 2 && match.status == FootballMatchStatus.startHalf) {
           // Fase a gironi
           return true;
         }
@@ -602,7 +602,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
         if (!isRound2) {
           // Non è andata e ritorno, devo ritornare vero se non è in parità
-          if (match.status == MatchStatus.penaltyShootOut) {
+          if (match.status == FootballMatchStatus.penaltyShootOut) {
             return _handlePenaltyScore(match);
           } else {
             return match.scoreHome != match.scoreAway;
@@ -614,7 +614,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           } else {
             // Andata e ritorno, seconda partita, controllo il risultato aggregato
             // Round 2 e seconda partita, posso finire solo se il risultato aggregato non è in parità
-            if (match.status == MatchStatus.penaltyShootOut) {
+            if (match.status == FootballMatchStatus.penaltyShootOut) {
               return _handlePenaltyScore(match);
             }
 
@@ -643,7 +643,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           (match) => match.id == matchId,
         );
 
-        return match.status == MatchStatus.penaltyShootOut;
+        return match.status == FootballMatchStatus.penaltyShootOut;
       } catch (e) {
         return false;
       }
@@ -664,7 +664,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           (match) => match.id == matchId,
         );
 
-        if (match.status != MatchStatus.penaltyShootOut) {
+        if (match.status != FootballMatchStatus.penaltyShootOut) {
           return {};
         }
 
@@ -751,7 +751,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           nextGroup,
         );
 
-        if (match.status != MatchStatus.penaltyShootOut) {
+        if (match.status != FootballMatchStatus.penaltyShootOut) {
           if (isRound2) {
             final FootballMatch otherLeg = (await getOtherLegFinalPhase(
               matchId,
@@ -774,9 +774,9 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         ];
 
         if ((aggregateScoreAway == aggregateScoreHome &&
-                match.status == MatchStatus.penaltyShootOut) ||
+                match.status == FootballMatchStatus.penaltyShootOut) ||
             (match.penaltyScoreHome == match.missedPenaltyAway &&
-                match.status == MatchStatus.penaltyShootOut)) {
+                match.status == FootballMatchStatus.penaltyShootOut)) {
           // Pareggio, imposto a null i match successivi
           if (willBeHome) {
             result.add(
@@ -868,7 +868,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
     }
 
     for (var match in phaseMatches) {
-      if (match.status != MatchStatus.finished) {
+      if (match.status != FootballMatchStatus.finished) {
         return false; // C'è ancora un match non finito
       }
     }
@@ -885,7 +885,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         }
 
         _mockData[index].scheduledStart = scheduledStart;
-        _mockData[index].status = MatchStatus.scheduled;
+        _mockData[index].status = FootballMatchStatus.scheduled;
         return true;
       } catch (e) {
         return false;
@@ -905,7 +905,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         final FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
-        match.status = MatchStatus.canceled;
+        match.status = FootballMatchStatus.canceled;
         _mockData[index] = match;
         return true;
       } catch (e) {
@@ -950,7 +950,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         if (match.homeTeamId != teamId) {
           return false;
         }
-        match.status = MatchStatus.homeRetired;
+        match.status = FootballMatchStatus.homeRetired;
         _mockData[index] = match;
         return true;
       } catch (e) {
@@ -974,7 +974,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         if (match.homeTeamId != teamId) {
           return false;
         }
-        match.status = MatchStatus.awayRetired;
+        match.status = FootballMatchStatus.awayRetired;
         _mockData[index] = match;
         return true;
       } catch (e) {
@@ -995,7 +995,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         final FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
-        match.status = MatchStatus.started;
+        match.status = FootballMatchStatus.started;
         match.startMatch = DateTime.now();
         _mockData[index] = match;
         return true;
@@ -1017,7 +1017,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         final FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
-        match.status = MatchStatus.halftime;
+        match.status = FootballMatchStatus.halftime;
         match.halfTime = DateTime.now();
         _mockData[index] = match;
         return true;
@@ -1039,7 +1039,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         final FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
-        match.status = MatchStatus.startHalf;
+        match.status = FootballMatchStatus.startHalf;
         match.startHalf = DateTime.now();
         _mockData[index] = match;
         return true;
@@ -1061,7 +1061,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         final FootballMatch match = mockData.firstWhere(
           (match) => match.id == matchId,
         );
-        match.status = MatchStatus.finished;
+        match.status = FootballMatchStatus.finished;
         match.endMatch = DateTime.now();
         _mockData[index] = match;
         return true;
@@ -1153,7 +1153,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           .where(
             (match) =>
                 match.tournamentId == tournamentId &&
-                (match.status == MatchStatus.scheduled),
+                (match.status == FootballMatchStatus.scheduled),
           )
           .toList();
     } else {

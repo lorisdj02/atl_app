@@ -22,9 +22,9 @@ class FriendInvitesRepository extends BaseRepository<FriendInvite> {
     return item.toJson();
   }
 
-  Future<bool> addInvite({required int inviterUserId,required int invitedUserId}) async {
+  Future<bool> addInvite({required int inviterAccountId,required int invitedAccountId}) async {
     if(AppConfig.isDebug){
-      _mockData.add(FriendInvite(inviterId: inviterUserId, invitedId: invitedUserId));
+      _mockData.add(FriendInvite(inviterAccountId: inviterAccountId, invitedAccountId: invitedAccountId));
       return true;
     }else{
       throw UnimplementedError();
@@ -32,10 +32,10 @@ class FriendInvitesRepository extends BaseRepository<FriendInvite> {
   }
 
 
-  Future<bool> redeemInvite(int inviterId, int invitedId) async {
+  Future<bool> redeemInvite(int inviterAccountId, int invitedAccountId) async {
     if(AppConfig.isDebug){
       final invite = _mockData.firstWhere(
-        (invite) => invite.inviterId == inviterId && invite.invitedId == invitedId,
+        (invite) => invite.inviterAccountId == inviterAccountId && invite.invitedAccountId == invitedAccountId,
         orElse: () => throw Exception('Invite not found'),
       );
       invite.redeemed = true;
@@ -45,25 +45,25 @@ class FriendInvitesRepository extends BaseRepository<FriendInvite> {
     }
   }
 
-  Future<int> countRedeemedInvitesByUserId(int inviterId) async {
+  Future<int> countRedeemedInvitesByAccountId(int inviterAccountId) async {
     if(AppConfig.isDebug){
-      return _mockData.where((invite) => invite.inviterId == inviterId && invite.redeemed).length;
+      return _mockData.where((invite) => invite.inviterAccountId == inviterAccountId && invite.redeemed).length;
     }else{
       throw UnimplementedError();
     }
   }
 
-  Future<int> countInvitesByUserId(int inviterId) async {
+  Future<int> countInvitesByAccountId(int inviterAccountId) async {
     if(AppConfig.isDebug){
-      return _mockData.where((invite) => invite.inviterId == inviterId).length;
+      return _mockData.where((invite) => invite.inviterAccountId == inviterAccountId).length;
     }else{
       throw UnimplementedError();
     }
   }
 
-  Future<List<FriendInvite>> getInvitedForUser(int inviterId) async {
+  Future<List<FriendInvite>> getInvitedForAccount(int inviterAccountId) async {
     if(AppConfig.isDebug){
-      return _mockData.where((invite) => invite.inviterId == inviterId).toList();
+      return _mockData.where((invite) => invite.inviterAccountId == inviterAccountId).toList();
     }else{
       throw UnimplementedError();
     }

@@ -1,4 +1,4 @@
-import 'package:atl_app/models/user.dart';
+import 'package:atl_app/models/account.dart';
 
 import 'base_repository.dart';
 import '../../models/organization.dart';
@@ -51,7 +51,7 @@ class OrganizationRepository extends BaseRepository<Organization> {
   List<Organization> get mockData => _mockData;
 
 
-  Future<int> getOrganizationIdByUserId(int userId) async{
+  Future<int> getOrganizationIdByAccountId(int userId) async{
     if (AppConfig.isDebug) {
       try {
         final organization = _mockData.firstWhere(
@@ -89,7 +89,7 @@ class OrganizationRepository extends BaseRepository<Organization> {
     }
   }
 
-  Future<bool> updateUserInfo({
+  Future<bool> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -134,7 +134,7 @@ class OrganizationRepository extends BaseRepository<Organization> {
       );
       if (index == -1) return false;
 
-      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].status = AccountStatus.deleted;
       _mockData[index].username = 'deleted_user_${_mockData[index].id}';
       _mockData[index].email = 'deleted_user_${_mockData[index].id}';
       _mockData[index].phone = '';

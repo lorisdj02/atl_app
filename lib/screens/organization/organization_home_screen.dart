@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/organization_bottom_bar.dart';
 import '../../models/sport_category.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/loading_atl.dart';
@@ -95,7 +95,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final organizationId = userProvider.activeRoleId;
 
       if (organizationId == null) {
@@ -238,7 +238,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<UserProvider>(context, listen: false).activeUser!.id,
+        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount!.id,
       ),
     );
   }

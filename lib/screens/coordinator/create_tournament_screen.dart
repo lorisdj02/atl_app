@@ -6,7 +6,7 @@ import '../../models/field.dart';
 import '../../models/city.dart';
 import '../../models/sport_category.dart';
 import '../../models/tournament.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/atl_step_indicator.dart';
@@ -224,9 +224,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Tournament _createFictitiousTournament() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
 
-    if (userProvider.activeUser == null ||
+    if (userProvider.activeAccount == null ||
         userProvider.activeRoleId == null ||
         userProvider.isCoordinator == false) {
       throw Exception(AppLocalizations.of(context).coordinatorNotFound);
@@ -285,8 +285,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final currentUser = userProvider.activeUser;
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
+      final currentUser = userProvider.activeAccount;
 
       if (currentUser == null ||
           userProvider.activeRoleId == null ||

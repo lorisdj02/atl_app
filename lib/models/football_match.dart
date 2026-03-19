@@ -1,7 +1,7 @@
 import 'match.dart';
 import 'presence_status.dart';
 
-enum MatchStatus {
+enum FootballMatchStatus {
   scheduled,
   started,
   halftime,
@@ -21,7 +21,7 @@ class FootballMatch extends Match {
   int? awayTeamId;
   DateTime? halfTime;
   DateTime? startHalf;
-  MatchStatus status;
+  FootballMatchStatus status;
   int? penaltyScoreHome;
   int? missedPenaltyHome;
   int? penaltyScoreAway;
@@ -41,7 +41,7 @@ class FootballMatch extends Match {
     this.halfTime,
     this.startHalf,
     super.endMatch,
-    this.status = MatchStatus.notScheduled,
+    this.status = FootballMatchStatus.notScheduled,
     super.scheduledStart,
     super.coordinatorStatus = PresenceStatus.assigned,
     super.motmPlayerId,
@@ -66,9 +66,9 @@ class FootballMatch extends Match {
           : null,
       homeTeamId: json['homeTeamId'],
       awayTeamId: json['awayTeamId'],
-      status: MatchStatus.values.firstWhere(
+      status: FootballMatchStatus.values.firstWhere(
         (e) => e.toString().split('.').last == json['status'],
-        orElse: () => MatchStatus.notScheduled,
+        orElse: () => FootballMatchStatus.notScheduled,
       ),
       halfTime: json['halfTime'] != null
           ? DateTime.parse(json['halfTime'])
@@ -76,6 +76,15 @@ class FootballMatch extends Match {
       startHalf: json['startHalf'] != null
           ? DateTime.parse(json['startHalf'])
           : null, 
+      coordinatorStatus: PresenceStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == json['coordinatorStatus'],
+        orElse: () => PresenceStatus.assigned,
+      ),
+      motmPlayerId: json['motmPlayerId'],
+      penaltyScoreHome: json['penaltyScoreHome'],
+      missedPenaltyHome: json['missedPenaltyHome'],
+      penaltyScoreAway: json['penaltyScoreAway'],
+      missedPenaltyAway: json['missedPenaltyAway'],
     );
   }
 
@@ -90,6 +99,10 @@ class FootballMatch extends Match {
       'startHalf': startHalf?.toIso8601String(),
       'coordinatorStatus': coordinatorStatus.toString().split('.').last,
       'motmPlayerId': motmPlayerId,
+      'penaltyScoreHome': penaltyScoreHome,
+      'missedPenaltyHome': missedPenaltyHome,
+      'penaltyScoreAway': penaltyScoreAway,
+      'missedPenaltyAway': missedPenaltyAway,
     };
   }
 }

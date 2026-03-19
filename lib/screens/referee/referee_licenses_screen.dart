@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/referee_license.dart';
 import '../../models/sport.dart';
 import '../../models/sport_category.dart';
@@ -38,7 +38,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
       assert(userProvider.isReferee, 'Only referees can access this screen');
       final refereeId = userProvider.activeRoleId!;
 
@@ -128,7 +128,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
     if (confirmed != true) return;
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final refereeId = userProvider.activeRoleId!;
       final success = await DBWrite.deleteRefereeLicense(refereeId, license.sportId);
       if (mounted) {
@@ -154,7 +154,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
 
   Future<void> _openAddDialog() async {
     final l10n = AppLocalizations.of(context);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final refereeId = userProvider.activeRoleId!;
 
     // Sports the referee does NOT yet have a license for

@@ -12,7 +12,7 @@ import 'package:atl_app/models/review.dart';
 import 'package:atl_app/models/team_request.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:atl_app/models/tournament_participation.dart';
-import 'package:atl_app/models/user.dart';
+import 'package:atl_app/models/account.dart';
 import '../../config/api_json_keys.dart';
 import 'db_controller.dart';
 import '../config/app_config.dart';
@@ -22,7 +22,7 @@ import 'dart:math';
 import 'dart:convert';
 
 class DBWrite {
-  static Future<Map<String, dynamic>> updateUserInfo({
+  static Future<Map<String, dynamic>> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -33,7 +33,7 @@ class DBWrite {
     int? preferredCityId,
   }) async {
     if (AppConfig.isDebug) {
-      final bool success = await DB.Users.updateUserInfo(
+      final bool success = await DB.Accounts.updateAccountInfo(
         id: id,
         username: username,
         phone: phone,
@@ -48,11 +48,11 @@ class DBWrite {
         return {ApiJsonKeys.updatedUser: null};
       }
 
-      final User? updatedUser = await DB.Users.getByUserId(id);
-      if (updatedUser == null) {
+      final Account? updatedAccount = await DB.Accounts.getByAccountId(id);
+      if (updatedAccount == null) {
         return {ApiJsonKeys.updatedUser: null};
       }
-      return {ApiJsonKeys.updatedUser: updatedUser};
+      return {ApiJsonKeys.updatedUser: updatedAccount};
     } else {
       throw UnimplementedError();
     }
@@ -486,7 +486,7 @@ class DBWrite {
         return false;
       }
 
-        final double priceToRefund = participation.price;
+        final double priceToRefund = participation.cost;
       final Player? player = await DB.Players.getByPlayerId(playerId);
       if (player == null) {
         return false;
@@ -551,7 +551,7 @@ class DBWrite {
           return false;
         }
 
-      final double priceToRefund = participation.price;
+      final double priceToRefund = participation.cost;
       final Player? player = await DB.Players.getByPlayerId(playerId);
       if (player == null) {
         return false;
@@ -640,12 +640,12 @@ class DBWrite {
 
   static Future<bool> deleteAccount(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
-      if ((await DB.Users.getByUserId(id))?.passwordMD5 != passwordMD5) {
+      if ((await DB.Accounts.getByAccountId(id))?.passwordMD5 != passwordMD5) {
         return false;
       }
 
-      if ((await DB.Users.getByUserId(id))!.isPlayer) {
-        final playerId = (await DB.Players.getByUserId(id))!.playerId;
+      if ((await DB.Accounts.getByAccountId(id))!.isPlayer) {
+        final playerId = (await DB.Players.getByAccountId(id))!.playerId;
         final List<int> teamIds = await DB.PlaysAt.getByPlayerId(
           playerId,
         ).then((playsAtList) => playsAtList!.map((pa) => pa.teamId).toList());
@@ -671,7 +671,7 @@ class DBWrite {
         }
       }
 
-      if (await DB.Users.deleteAccount(id, passwordMD5) == false) {
+      if (await DB.Accounts.deleteAccount(id, passwordMD5) == false) {
         return false;
       }
 
@@ -1650,8 +1650,8 @@ class DBWrite {
           }
 
           if (await DB.Reviews.addReview(
-                reviewerUserId: player.id,
-                revieweeUserId: coordinator.id,
+                reviewerAccountId: player.id,
+                reviewedAccountId: coordinator.id,
                 tournamentId: tournamentId,
                 reviewType: ReviewType.playerToCoordinator,
                 weight: team.captainId == player.id
@@ -2083,15 +2083,15 @@ class DBWrite {
         return false;
       }
 
-      final User? user = await DB.Users.getByUserId(review.reviewerUserId);
+      final Account? user = await DB.Accounts.getByAccountId(review.reviewerAccountId);
       if (user == null) {
         return false;
       }
 
       switch (user.role) {
-        case UserRole.player:
-          final Player? player = await DB.Players.getByUserId(
-            review.reviewerUserId,
+        case AccountRole.player:
+          final Player? player = await DB.Players.getByAccountId(
+            review.reviewerAccountId,
           );
           if (player == null) {
             return false;
@@ -2107,7 +2107,7 @@ class DBWrite {
           }
 
           final Callup? callup = await DB.CallUps.getByPlayerAndTournament(
-            review.reviewerUserId,
+            review.reviewerAccountId,
             tournamentId,
           );
 
@@ -2121,9 +2121,9 @@ class DBWrite {
           }
 
         //TODO: implementare il premio per i giocatori
-        case UserRole.coordinator:
-          final Coordinator? coordinator = await DB.Coordinators.getByUserId(
-            review.reviewerUserId,
+        case AccountRole.coordinator:
+          final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
+            review.reviewerAccountId,
           );
           if (coordinator == null) {
             return false;
@@ -2139,9 +2139,9 @@ class DBWrite {
           }
 
         //TODO: implementare il premio per i coordinatori
-        case UserRole.referee:
-          final Referee? referee = await DB.Referees.getByUserId(
-            review.reviewerUserId,
+        case AccountRole.referee:
+          final Referee? referee = await DB.Referees.getByAccountId(
+            review.reviewerAccountId,
           );
           if (referee == null) {
             return false;
@@ -2166,20 +2166,20 @@ class DBWrite {
     }
   }
 
-  static Future<bool> registerUser({
+  static Future<bool> registerAccount({
     required String email,
     required String username,
     required String password,
     required String name,
     required String surname,
-    required UserRole role,
+    required AccountRole role,
     required String phone,
     required DateTime birthdate,
     String? inviteCode,
     String? profilePictureUrl,
   }) async {
     if (AppConfig.isDebug) {
-      final int newId = await DB.Users.registerUser(
+      final int newId = await DB.Accounts.registerAccount(
         email: email,
         username: username,
         password: password,
@@ -2192,15 +2192,15 @@ class DBWrite {
       );
 
       bool hasBeenInvited = false;
-      // Per ora, inviteCode = Username
+      // Per ora, inviteCode = Accountname
       if (inviteCode == null) {
         return true;
       }
-      final User? inviterUser = await DB.Users.getByUsername(inviteCode);
-      if (inviterUser != null) {
+      final Account? inviterAccount = await DB.Accounts.getByUsername(inviteCode);
+      if (inviterAccount != null) {
         if (await DB.FriendInvites.addInvite(
-              inviterUserId: inviterUser.id,
-              invitedUserId: newId,
+              inviterAccountId: inviterAccount.id,
+              invitedAccountId: newId,
             ) ==
             false) {
           return false;
@@ -2210,7 +2210,7 @@ class DBWrite {
       }
 
       if (await DB.Wallets.addWallet(
-            userId: newId,
+            accountId: newId,
             hasBeenInvited: hasBeenInvited,
           ) ==
           false) {

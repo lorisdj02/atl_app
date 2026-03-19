@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../../models/lobby_booking.dart';
 import '../../models/sport_category.dart';
 import '../../models/city.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/booking_widget.dart';
@@ -54,7 +54,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final playerId = userProvider.activeRoleId!;
 
       DateTime? startDateTime;
@@ -431,7 +431,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   Future<void> _joinLobby(LobbyBooking lobby, int playersPaid) async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final playerId = userProvider.activeRoleId!;
 
     final Map<String, dynamic> payload = {
@@ -441,7 +441,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
     };
 
     final int sessionId = await DBWrite.createCheckoutSession(
-      userId: userProvider.activeUser!.id,
+      userId: userProvider.activeAccount!.id,
       payload: payload,
       amount: lobby.feePerPlayer * playersPaid,
       type: CheckoutType.lobbyBookingParticipate,

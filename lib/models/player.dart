@@ -1,9 +1,7 @@
-import 'package:atl_app/models/team.dart';
-
-import 'user.dart';
+import 'account.dart';
 
 /// Modello Player dal database
-class Player extends User {
+class Player extends Account {
   final int playerId;
 
   Player({
@@ -24,7 +22,7 @@ class Player extends User {
     super.startVip,
     super.endVip,
     super.vipType = VipType.none,
-  }) : super(role: UserRole.player);
+  }) : super(role: AccountRole.player);
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(

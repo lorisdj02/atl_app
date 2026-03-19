@@ -5,7 +5,7 @@ import 'referee.dart';
 import 'organization.dart';
 
 /// Enum per i ruoli utente
-enum UserRole {
+enum AccountRole {
   player,
   coordinator,
   referee,
@@ -14,15 +14,15 @@ enum UserRole {
 
   String get displayName {
     switch (this) {
-      case UserRole.player:
+      case AccountRole.player:
         return 'Player';
-      case UserRole.coordinator:
+      case AccountRole.coordinator:
         return 'Coordinator';
-      case UserRole.referee:
+      case AccountRole.referee:
         return 'Referee';
-      case UserRole.organization:
+      case AccountRole.organization:
         return 'Organization';
-      case UserRole.guest:
+      case AccountRole.guest:
         return 'Guest';
     }
   }
@@ -30,10 +30,10 @@ enum UserRole {
 
 enum VipType { none, monthly, yearly }
 
-enum UserStatus { active, inactive, deleted }
+enum AccountStatus { active, inactive, deleted }
 
-/// Modello astratto User dal database
-class User {
+/// Modello astratto Account dal database
+class Account {
   final int id;
   String username;
   int? preferredCityId;
@@ -41,7 +41,7 @@ class User {
   String firebaseUid;
   final DateTime createdAt;
   String? stripeId;
-  final UserRole role;
+  final AccountRole role;
   String phone;
   String? passwordMD5;
   String? imageUrl;
@@ -52,9 +52,9 @@ class User {
   DateTime? startVip;
   DateTime? endVip;
   VipType vipType;
-  UserStatus status;
+  AccountStatus status;
 
-  User({
+  Account({
     required this.id,
     required this.username,
     required this.email,
@@ -72,24 +72,24 @@ class User {
     this.startVip,
     this.endVip,
     this.vipType = VipType.none,
-    this.status = UserStatus.active,
+    this.status = AccountStatus.active,
     this.preferredCityId = 1,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory Account.fromJson(Map<String, dynamic> json) {
     final role = _roleFromString(json['role']);
 
     switch (role) {
-      case UserRole.player:
+      case AccountRole.player:
         return Player.fromJson(json);
-      case UserRole.coordinator:
+      case AccountRole.coordinator:
         return Coordinator.fromJson(json);
-      case UserRole.referee:
+      case AccountRole.referee:
         return Referee.fromJson(json);
-      case UserRole.organization:
+      case AccountRole.organization:
         return Organization.fromJson(json);
-      case UserRole.guest:
+      case AccountRole.guest:
         return throw Exception('Guest role cannot be instantiated from JSON');
     }
   }
@@ -121,22 +121,22 @@ class User {
   /// Nome visualizzato del ruolo
   String get roleDisplayName => role.displayName;
 
-  static UserRole _roleFromString(String role) {
+  static AccountRole _roleFromString(String role) {
     switch (role.toUpperCase()) {
       case 'PLAYER':
-        return UserRole.player;
+        return AccountRole.player;
       case 'COORDINATOR':
-        return UserRole.coordinator;
+        return AccountRole.coordinator;
       case 'REFEREE':
-        return UserRole.referee;
+        return AccountRole.referee;
       case 'ORGANIZATION':
-        return UserRole.organization;
+        return AccountRole.organization;
       default:
         throw Exception('Unknown role: $role');
     }
   }
 
-  User copyWith({
+  Account copyWith({
     int? id,
     String? username,
     String? email,
@@ -145,7 +145,7 @@ class User {
     double? balance,
     DateTime? lastWithdraw,
     String? stripeId,
-    UserRole? role,
+    AccountRole? role,
     bool? isVip,
     String? phone,
     String? passwordMD5,
@@ -157,10 +157,10 @@ class User {
     DateTime? startVip,
     DateTime? endVip,
     VipType? vipType,
-    UserStatus? status,
+    AccountStatus? status,
     int? preferredCityId,
   }) {
-    return User(
+    return Account(
       id: id ?? this.id,
       username: username ?? this.username,
       email: email ?? this.email,
@@ -183,9 +183,9 @@ class User {
     );
   }
 
-  bool get isGuest => role == UserRole.guest;
-  bool get isPlayer => role == UserRole.player;
-  bool get isCoordinator => role == UserRole.coordinator;
-  bool get isReferee => role == UserRole.referee;
-  bool get isOrganization => role == UserRole.organization;
+  bool get isGuest => role == AccountRole.guest;
+  bool get isPlayer => role == AccountRole.player;
+  bool get isCoordinator => role == AccountRole.coordinator;
+  bool get isReferee => role == AccountRole.referee;
+  bool get isOrganization => role == AccountRole.organization;
 }

@@ -1,7 +1,7 @@
 import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../widgets/referee_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../models/football_match.dart';
@@ -51,7 +51,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
       final data = await DBRead.getCities();
       if (mounted) {
         final preferredCityId =
-            Provider.of<UserProvider>(context, listen: false).cityId;
+            Provider.of<AccountProvider>(context, listen: false).cityId;
         final cities = data[ApiJsonKeys.cities] as List<City>;
         City? defaultCity;
         if (preferredCityId != null) {
@@ -82,7 +82,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     try {
       final data = await DBRead.getAvailableMatchesScreen(
         widget.currentSport,
-        Provider.of<UserProvider>(context, listen: false).activeRoleId!,
+        Provider.of<AccountProvider>(context, listen: false).activeRoleId!,
         cityId: _selectedCity!.id,
         sportId: _selectedSportId,
       );
@@ -192,7 +192,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
         onTap: _onNavTap,
         currentSport: widget.currentSport,
         isHome: false,
-        userId: Provider.of<UserProvider>(context, listen: false).activeUser?.id,
+        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount?.id,
       ),
     );
   }

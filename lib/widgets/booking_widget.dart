@@ -7,7 +7,7 @@ import '../models/field.dart';
 import '../utils/atl_colors.dart';
 import '../models/sport_category.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 
 class BookingWidget extends StatefulWidget {
   final Field field;
@@ -43,7 +43,7 @@ class _BookingWidgetState extends State<BookingWidget> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final playerId = userProvider.activeRoleId!;
     LobbyBooking? _lobbyBooking;
     bool isOwner = false;

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/team.dart';
 import '../../models/sport_category.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../utils/navigation_helper.dart';
 import '../../widgets/loading_atl.dart';
@@ -12,7 +12,7 @@ import '../../widgets/atl_floating_button.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import 'my_team_screen.dart';
 import '../player/create_team_screen.dart';
-import '../../models/user.dart';
+import '../../models/account.dart';
 import '../../widgets/search_team_widget.dart';
 import '../../widgets/ranks_team_widget.dart';
 import '../../widgets/search_dialog_widget.dart';
@@ -74,7 +74,7 @@ class _TeamScreenState extends State<TeamScreen>
     _tabController?.dispose();
 
     setState(() {
-      final UserProvider userProvider = Provider.of<UserProvider>(
+      final AccountProvider userProvider = Provider.of<AccountProvider>(
         context,
         listen: false,
       );
@@ -148,11 +148,11 @@ class _TeamScreenState extends State<TeamScreen>
   Future<void> _loadTeams() async {
     setState(() => _isLoading = true);
     try {
-      final UserProvider userProvider = Provider.of<UserProvider>(
+      final AccountProvider userProvider = Provider.of<AccountProvider>(
         context,
         listen: false,
       );
-      final isPlayer = userProvider.activeUser?.role == UserRole.player;
+      final isPlayer = userProvider.activeAccount?.role == AccountRole.player;
 
       final data = await DBRead.getTeamsScreen(widget.currentSport);
       final Map<int, Team> teamsCache = data[ApiJsonKeys.teamsCache];
@@ -366,8 +366,8 @@ class _TeamScreenState extends State<TeamScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
-    final isPlayer = userProvider.activeUser?.role == UserRole.player;
+    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
+    final isPlayer = userProvider.activeAccount?.role == AccountRole.player;
     final isGuest = userProvider.isGuest;
     final currentTab = _tabController?.index ?? 0;
     final int? teamId = userProvider.currentTeamId;
@@ -732,7 +732,7 @@ class _TeamScreenState extends State<TeamScreen>
         },
         currentSport: widget.currentSport,
         isHome: false,
-        userId: userProvider.activeUser?.id,
+        userId: userProvider.activeAccount?.id,
       ),
     );
   }

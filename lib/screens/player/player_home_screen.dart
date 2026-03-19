@@ -2,7 +2,7 @@ import 'package:atl_app/database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/private_booking.dart';
-import 'package:atl_app/models/user.dart';
+import 'package:atl_app/models/account.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../models/sport_category.dart';
@@ -17,7 +17,7 @@ import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
 import '../profile_screen.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import 'book_field_screen.dart';
 import '../../widgets/booking_widget.dart';
 import '../../models/lobby_booking.dart';
@@ -33,11 +33,11 @@ class PlayerHomeScreen extends StatefulWidget {
 }
 
 class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(
+  late final AccountProvider userProvider = Provider.of<AccountProvider>(
     context,
     listen: false,
   );
-  late final User user = userProvider.activeUser!;
+  late final Account user = userProvider.activeAccount!;
   late final int? teamId = userProvider.currentTeamId;
   late final int playerId = userProvider.activeRoleId!;
   late final SportCategory _currentSport =

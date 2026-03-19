@@ -6,11 +6,11 @@ import '../widgets/atl_button.dart';
 import '../widgets/atl_textfield.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
-import '../models/user.dart';
+import '../models/account.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import '../utils/home_router.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 
 // TODO: Rimuovi db_controller
 
@@ -55,13 +55,13 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
     // Replace mock user creation with DB call
     final loginData = await DBRead.handleLogin(usernameOrEmail, password);
-    final User? user = loginData[ApiJsonKeys.user];
+    final Account? user = loginData[ApiJsonKeys.user];
 
     if (user == null || user.passwordMD5 != password) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,9 +84,9 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    userProvider.setActiveUser(user, roleId: roleId);
+    userProvider.setActiveAccount(user, roleId: roleId);
 
-    if (user.role == UserRole.player) {
+    if (user.role == AccountRole.player) {
       final int? teamId = loginData[ApiJsonKeys.team];
       if (teamId != null) {
         userProvider.setCurrentTeamId(teamId);
@@ -101,17 +101,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleGuestUser() {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
-    userProvider.setActiveUser(
-      User(
+    userProvider.setActiveAccount(
+      Account(
         id: 0,
         username: AppLocalizations.of(context).guestUserLabel,
         email: '',
         passwordMD5: '',
-        role: UserRole.guest,
+        role: AccountRole.guest,
         firebaseUid: '',
         createdAt: DateTime.now(),
         phone: '',
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) =>
-            HomeRouter.getHomeScreen(userProvider.activeUser!),
+            HomeRouter.getHomeScreen(userProvider.activeAccount!),
       ),
     );
   }

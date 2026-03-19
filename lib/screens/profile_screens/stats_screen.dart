@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../models/player.dart';
 import '../../models/football_team_stats.dart';
@@ -35,14 +35,14 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   void initState() {
     super.initState();
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (userProvider.isPlayer && (userProvider.activeUser?.isVip ?? false)) {
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    if (userProvider.isPlayer && (userProvider.activeAccount?.isVip ?? false)) {
       _loadStats(userProvider);
     }
   }
 
-  Future<void> _loadStats(UserProvider userProvider) async {
-    final player = userProvider.activeUser as Player;
+  Future<void> _loadStats(AccountProvider userProvider) async {
+    final player = userProvider.activeAccount as Player;
     setState(() => _isLoading = true);
     try {
       final data = await DBRead.getPersonalPlayerStats(player.playerId);
@@ -61,8 +61,8 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final userProvider = Provider.of<UserProvider>(context);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
     final isVip = user?.isVip ?? false;
 
     if (!isVip) {

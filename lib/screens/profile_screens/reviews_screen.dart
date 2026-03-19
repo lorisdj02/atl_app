@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../models/review.dart';
-import '../../models/user.dart';
+import '../../models/account.dart';
 import '../../utils/atl_colors.dart';
 import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
@@ -22,7 +22,7 @@ class ReviewsScreen extends StatefulWidget {
 class _ReviewsScreenState extends State<ReviewsScreen> {
   bool _isLoading = true;
   List<Review> _reviews = [];
-  Map<int, User> _userPerReview = {};
+  Map<int, Account> _userPerReview = {};
   Map<int, String> _matchTeamsStringPerReview = {};
 
   final PageController _pageController = PageController();
@@ -41,8 +41,8 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   }
 
   Future<void> _loadData() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
     if (user == null) {
       setState(() => _isLoading = false);
       return;
@@ -53,7 +53,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
         setState(() {
           _reviews = data[ApiJsonKeys.reviews] as List<Review>;
           _userPerReview =
-              Map<int, User>.from(data[ApiJsonKeys.userPerReview]);
+              Map<int, Account>.from(data[ApiJsonKeys.userPerReview]);
           _matchTeamsStringPerReview = Map<int, String>.from(
               data[ApiJsonKeys.matchTeamsStringPerReview]);
           _isLoading = false;
@@ -105,7 +105,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       final review = _reviews[index];
                       return ReviewWidget(
                         review: review,
-                        reviewee: _userPerReview[review.id],
+                        reviewed: _userPerReview[review.id],
                         matchTeamsString:
                             _matchTeamsStringPerReview[review.id],
                         onCommitted: () => _onReviewCommitted(review.id),

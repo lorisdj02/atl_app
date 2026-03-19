@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_floating_button.dart';
@@ -34,7 +34,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   @override
   Future<void> loadData() async {
     try {
-      final UserProvider userProvider = Provider.of<UserProvider>(
+      final AccountProvider userProvider = Provider.of<AccountProvider>(
         context,
         listen: false,
       );
@@ -74,7 +74,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _handleJoinTeam() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
@@ -109,7 +109,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   }
 
   Future<void> _handleCancelRequest() async {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );

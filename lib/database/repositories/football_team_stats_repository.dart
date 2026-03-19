@@ -13,14 +13,14 @@ class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
   Map<String, dynamic> toJson(FootballTeamStats item) => item.toJson();
 
   List<FootballTeamStats> _mockData = [
-    FootballTeamStats(id: 1, playerId: 1, teamId: 1, motm: 15, goals: 23),
-    FootballTeamStats(id: 2, playerId: 2, teamId: 1, motm: 12, goals: 18),
-    FootballTeamStats(id: 3, playerId: 3, teamId: 1, motm: 8, goals: 14),
-    FootballTeamStats(id: 4, playerId: 4, teamId: 1, motm: 10, goals: 12),
-    FootballTeamStats(id: 5, playerId: 5, teamId: 1, motm: 6, goals: 9),
-    FootballTeamStats(id: 6, playerId: 6, teamId: 2, motm: 14, goals: 21),
-    FootballTeamStats(id: 7, playerId: 7, teamId: 2, motm: 11, goals: 16),
-    FootballTeamStats(id: 8, playerId: 8, teamId: 3, motm: 9, goals: 15),
+    FootballTeamStats(playerId: 1, teamId: 1, motm: 15, goals: 23),
+    FootballTeamStats(playerId: 2, teamId: 1, motm: 12, goals: 18),
+    FootballTeamStats(playerId: 3, teamId: 1, motm: 8, goals: 14),
+    FootballTeamStats(playerId: 4, teamId: 1, motm: 10, goals: 12),
+    FootballTeamStats(playerId: 5, teamId: 1, motm: 6, goals: 9),
+    FootballTeamStats(playerId: 6, teamId: 2, motm: 14, goals: 21),
+    FootballTeamStats(playerId: 7, teamId: 2, motm: 11, goals: 16),
+    FootballTeamStats(playerId: 8, teamId: 3, motm: 9, goals: 15),
   ];
 
   @override
@@ -52,7 +52,6 @@ class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
       if (index == -1) {
         // Non esiste, crealo
         FootballTeamStats newStats = FootballTeamStats(
-          id: _mockData.length + 1,
           playerId: playerId,
           teamId: teamId,
           goals: goalsIncrement,
@@ -121,7 +120,7 @@ class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
       return mockData.firstWhere(
         (stats) => stats.playerId == playerId && stats.teamId == teamId,
         orElse: () =>
-            FootballTeamStats(id: 0, playerId: playerId, teamId: teamId, motm: 0, goals: 0),
+            FootballTeamStats(playerId: playerId, teamId: teamId, motm: 0, goals: 0),
       );
     } else {
       throw UnimplementedError();
@@ -140,7 +139,6 @@ class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
     }
 
     final stats = FootballTeamStats(
-      id: _mockData.length + 1,
       playerId: playerId,
       teamId: teamId,
       motm: motm,
@@ -164,7 +162,6 @@ class FootballTeamStatsRepository extends BaseRepository<FootballTeamStats> {
       int totalRedCards = playerStats.fold(0, (sum, stats) => sum + stats.redCards);
 
       return FootballTeamStats(
-        id: 0,
         playerId: playerId,
         teamId: 0,
         motm: totalMotm,

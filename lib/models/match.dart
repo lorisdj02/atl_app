@@ -1,5 +1,6 @@
+import 'package:atl_app/models/sport_category.dart';
+
 import 'presence_status.dart';
-import 'sport.dart';
 
 
 class Match {
@@ -17,6 +18,7 @@ class Match {
   int? motmPlayerId;
 
   PresenceStatus coordinatorStatus;
+  SportCategory sportCategory;
 
   Match({
     required this.id,
@@ -31,6 +33,7 @@ class Match {
     this.scheduledStart,
     this.coordinatorStatus = PresenceStatus.assigned,
     this.motmPlayerId,
+      this.sportCategory = SportCategory.football,
   });
 
   Map<String, dynamic> toJson() {
@@ -43,6 +46,9 @@ class Match {
       'day': day,
       'group': group,
       'scheduledStart': scheduledStart?.toIso8601String(),
+      'presenceStatus': coordinatorStatus.toShortString(),
+      'motmPlayerId': motmPlayerId,
+      'sportCategory': sportCategory.toString(),
     };
   }
 
@@ -59,6 +65,13 @@ class Match {
       scheduledStart: json['scheduledStart'] != null
           ? DateTime.parse(json['scheduledStart'])
           : null,
+      coordinatorStatus: PresenceStatusExtension.fromString(json['presenceStatus']),
+      motmPlayerId: json['motmPlayerId'],
+      sportCategory: SportCategory.values.firstWhere(
+        (e) => e.toString() == json['sportCategory'],
+        orElse: () => SportCategory.football,
+      ),
+
     );
   }
 }

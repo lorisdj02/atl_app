@@ -6,7 +6,7 @@ import '../../widgets/referee_bottom_bar.dart';
 import '../../models/sport_category.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/football_match_widget.dart';
@@ -89,7 +89,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final refereeId = userProvider.activeRoleId;
 
       if (refereeId == null) {
@@ -233,7 +233,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<UserProvider>(context, listen: false).activeUser!.id,
+        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount!.id,
       ),
     );
   }

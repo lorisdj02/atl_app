@@ -1,6 +1,6 @@
 import 'sport_category.dart';
 
-enum BookingStatus { booked, full, inProgress, finished, refound }
+enum BookingStatus { booked, full, inProgress, finished, refund, canceled }
 
 enum BookingType { private, lobby, match }
 
@@ -15,8 +15,10 @@ extension BookingStatusExtension on BookingStatus {
         return 'In Progress';
       case BookingStatus.finished:
         return 'Finished';
-      case BookingStatus.refound:
-        return 'Refound';
+      case BookingStatus.refund:
+        return 'Refund';
+      case BookingStatus.canceled: // Aggiunto per i match cancellati
+        return 'Canceled';
     }
   }
 

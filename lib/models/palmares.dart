@@ -1,24 +1,24 @@
 enum PalmaresPosition {
-  WINNER,
-  FINALIST,
-  SEMI,
-  ROUND8,
-  ROUND16,
-  GROUP_STAGE;
+  winner,
+  finalist,
+  semi,
+  round8,
+  round16,
+  group_stage;
 
   String get displayName {
     switch (this) {
-      case PalmaresPosition.WINNER:
+      case PalmaresPosition.winner:
         return '1st';
-      case PalmaresPosition.FINALIST:
+      case PalmaresPosition.finalist:
         return '2nd';
-      case PalmaresPosition.SEMI:
+      case PalmaresPosition.semi:
         return 'Semi';
-      case PalmaresPosition.ROUND8:
+      case PalmaresPosition.round8:
         return 'Round of 8';
-      case PalmaresPosition.ROUND16:
+      case PalmaresPosition.round16:
         return 'Round of 16';
-      case PalmaresPosition.GROUP_STAGE:
+      case PalmaresPosition.group_stage:
         return 'Group Stage';
     }
   }
@@ -26,7 +26,7 @@ enum PalmaresPosition {
   static PalmaresPosition fromString(String value) {
     return PalmaresPosition.values.firstWhere(
       (e) => e.name == value,
-      orElse: () => PalmaresPosition.GROUP_STAGE,
+      orElse: () => PalmaresPosition.group_stage,
     );
   }
 }

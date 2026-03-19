@@ -1,26 +1,26 @@
 class FriendInvite{
-  final int inviterId;
-  final int invitedId;
+  final int inviterAccountId;
+  final int invitedAccountId;
   bool redeemed;
 
   FriendInvite({
-    required this.invitedId,
-    required this.inviterId,
+    required this.invitedAccountId,
+    required this.inviterAccountId,
     this.redeemed = false,
   });
 
   factory FriendInvite.fromJson(Map<String, dynamic> json) {
     return FriendInvite(
-      invitedId: json['invitedId'],
-      inviterId: json['inviterId'],
+      invitedAccountId: json['invitedAccountId'],
+      inviterAccountId: json['inviterAccountId'],
       redeemed: json['redeemed'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'invitedId': invitedId,
-      'inviterId': inviterId,
+      'invitedAccountId': invitedAccountId,
+      'inviterAccountId': inviterAccountId,
       'redeemed': redeemed,
     };
   }

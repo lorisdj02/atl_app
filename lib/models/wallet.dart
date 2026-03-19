@@ -1,6 +1,6 @@
 class Wallet {
   final int id;
-  final int userId;
+  final int accountId;
   double personalBalance;
   double prizeBalance;
   double inviteBalance;
@@ -9,7 +9,7 @@ class Wallet {
 
   Wallet({
     required this.id,
-    required this.userId,
+    required this.accountId,
     this.personalBalance = 0,
     this.prizeBalance = 0,
     this.inviteBalance = 0,
@@ -19,7 +19,7 @@ class Wallet {
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
       id: json['id'],
-      userId: json['userId'],
+      accountId: json['accountId'],
       personalBalance: json['personalBalance'] ?? 0,
       prizeBalance: json['prizeBalance'] ?? 0,
       inviteBalance: json['inviteBalance'] ?? 0,
@@ -33,7 +33,7 @@ class Wallet {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userId': userId,
+      'accountId': accountId,
       'personalBalance': personalBalance,
       'prizeBalance': prizeBalance,
       'lastWithdraw': lastWithdraw?.toIso8601String(),

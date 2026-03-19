@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
+import '../models/account.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_write.dart';
 import 'registration/registration_screen_step1.dart';
@@ -17,7 +17,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   int _currentStep = 1;
-  UserRole? _selectedRole;
+  AccountRole? _selectedRole;
   bool _isRegistering = false;
 
   // Step 2 data
@@ -85,7 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
     setState(() => _isRegistering = true);
     try {
-      final success = await DBWrite.registerUser(
+      final success = await DBWrite.registerAccount(
         email: _emailController.text.trim(),
         username: _usernameController.text.trim(),
         password: _passwordController.text.trim(),

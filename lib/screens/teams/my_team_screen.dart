@@ -3,7 +3,7 @@ import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/player.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../player/player_requests_screen.dart';
 import '../player/pay_participation_screen.dart';
@@ -309,7 +309,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
                   );
                 }
               } else if (mounted) {
-                UserProvider userProvider = Provider.of<UserProvider>(
+                AccountProvider userProvider = Provider.of<AccountProvider>(
                   context,
                   listen: false,
                 );
@@ -318,7 +318,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (context) =>
-                          HomeRouter.getHomeScreen(userProvider.activeUser!),
+                          HomeRouter.getHomeScreen(userProvider.activeAccount!),
                     ),
                     (route) => false,
                   );

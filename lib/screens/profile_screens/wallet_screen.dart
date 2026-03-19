@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../models/wallet.dart';
@@ -28,8 +28,8 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _loadWallet() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
     if (user != null) {
       final data = await DBRead.getWalletScreen(user.id);
       if (mounted) {
@@ -158,7 +158,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<AccountProvider>(context);
     final l10n = AppLocalizations.of(context);
     final isPlayer = userProvider.isPlayer;
     final isReferee = userProvider.isReferee;

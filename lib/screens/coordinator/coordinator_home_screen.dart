@@ -7,7 +7,7 @@ import '../../models/sport_category.dart';
 import '../../models/tournament.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/loading_atl.dart';
@@ -91,7 +91,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final coordinatorId = userProvider.activeRoleId;
 
       if (coordinatorId == null || _currentSport != SportCategory.football) {
@@ -272,7 +272,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<UserProvider>(context, listen: false).activeUser!.id,
+        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount!.id,
       ),
     );
   }

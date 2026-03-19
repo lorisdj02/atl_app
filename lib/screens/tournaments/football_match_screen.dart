@@ -17,7 +17,7 @@ import '../../widgets/match_info_card.dart';
 import '../../widgets/football_motm_selector_dialog.dart';
 import '../../widgets/schedule_match_dialog.dart';
 import '../../widgets/referee_match_dialog.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
@@ -124,10 +124,10 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   Map<String, double> _payPerRole = {};
 
   bool get _isNotScheduled =>
-      _match != null && _match!.status == MatchStatus.notScheduled;
+      _match != null && _match!.status == FootballMatchStatus.notScheduled;
 
   bool get _isScheduled =>
-      _match != null && _match!.status == MatchStatus.scheduled;
+      _match != null && _match!.status == FootballMatchStatus.scheduled;
 
   // TODO: DEBUG - Rimuovere questa logica in produzione!
   // In produzione, deve essere: return difference.inMinutes < 60;
@@ -146,17 +146,17 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   bool get _isInProgress =>
       _match != null &&
-      (_match!.status == MatchStatus.started ||
-          _match!.status == MatchStatus.startHalf);
+      (_match!.status == FootballMatchStatus.started ||
+          _match!.status == FootballMatchStatus.startHalf);
 
   bool get _isHalftime =>
-      _match != null && _match!.status == MatchStatus.halftime;
+      _match != null && _match!.status == FootballMatchStatus.halftime;
 
   bool get _isFinished =>
-      _match != null && _match!.status == MatchStatus.finished;
+      _match != null && _match!.status == FootballMatchStatus.finished;
 
   bool get _isPenaltyShootOut =>
-      _match != null && _match!.status == MatchStatus.penaltyShootOut;
+      _match != null && _match!.status == FootballMatchStatus.penaltyShootOut;
 
   bool get _needsMotm => _isFinished && _match?.motmPlayerId == null;
 
@@ -171,7 +171,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     try {
       // Carica la partita dal database
-      UserProvider userProvider = Provider.of<UserProvider>(
+      AccountProvider userProvider = Provider.of<AccountProvider>(
         context,
         listen: false,
       );
@@ -279,7 +279,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (selectedRole == null || !mounted) return;
 
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final refereeId = userProvider.activeRoleId;
 
     if (refereeId == null) {
@@ -337,7 +337,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (_match == null) return;
 
-    final wasScheduled = _match?.status == MatchStatus.scheduled;
+    final wasScheduled = _match?.status == FootballMatchStatus.scheduled;
 
     final DateTime? scheduledStart = await showDialog<DateTime>(
       context: context,
@@ -503,13 +503,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       }
     } else if (_isInProgress) {
       // Go to Halftime solo se il match è in stato 'started' (primo tempo)
-      if (_match?.status == MatchStatus.started) {
+      if (_match?.status == FootballMatchStatus.started) {
         actions.add(_menuHalftime);
       }
       actions.add(_menuAddPlayerEvent);
 
       // Se siamo nel secondo tempo (startHalf), controlla se il match può finire
-      if (_match?.status == MatchStatus.startHalf) {
+      if (_match?.status == FootballMatchStatus.startHalf) {
         if (_canMatchFinish) {
           actions.add(_menuFinishMatch);
         } else {
@@ -699,7 +699,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<void> _handleDeleteEvent(FootballMatchEvent event) async {
     // Check if user is the coordinator of this tournament
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final isCoordinator = userProvider.isCoordinator;
 
     if (!isCoordinator || _coordinatorId != userProvider.activeRoleId) {
@@ -789,7 +789,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
+    final userProvider = Provider.of<AccountProvider>(context);
     final isCoordinator = userProvider.isCoordinator;
     final isReferee = userProvider.isReferee;
 

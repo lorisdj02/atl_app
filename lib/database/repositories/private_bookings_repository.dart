@@ -41,7 +41,7 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
           .where(
             (booking) =>
                 booking.playerId == playerId &&
-                booking.status != BookingStatus.refound &&
+                booking.status != BookingStatus.refund &&
                 booking.status != BookingStatus.finished,
           )
           .toList();
@@ -141,7 +141,7 @@ class PrivateBookingsRepository extends BaseRepository<PrivateBooking> {
       if (index == -1) {
         return false; // Prenotazione non trovata
       }
-      _mockData[index].status = BookingStatus.refound;
+      _mockData[index].status = BookingStatus.refund;
       return true;
     } else {
       throw UnimplementedError();

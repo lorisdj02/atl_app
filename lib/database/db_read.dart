@@ -27,7 +27,7 @@ import 'package:atl_app/models/team_request.dart';
 import 'package:atl_app/models/football_team_stats.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:atl_app/models/tournament_participation.dart';
-import 'package:atl_app/models/user.dart';
+import 'package:atl_app/models/account.dart';
 import 'package:atl_app/models/wallet.dart';
 import 'package:flutter/material.dart';
 import 'db_controller.dart';
@@ -93,14 +93,14 @@ class DBRead {
 
   static Future<Map<String, dynamic>> getMyGrowthScreen(int userId) async {
     if (AppConfig.isDebug) {
-      final User? user = await DB.Users.getByUserId(userId);
+      final Account? user = await DB.Accounts.getByAccountId(userId);
       if (user == null) {
         throw Exception("User not found");
       }
 
       switch (user.role) {
-        case UserRole.coordinator:
-          final Coordinator? coordinator = await DB.Coordinators.getByUserId(
+        case AccountRole.coordinator:
+          final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
             userId,
           );
           if (coordinator == null) {
@@ -114,10 +114,10 @@ class DBRead {
             ApiJsonKeys.growthSteps: growthSteps,
             ApiJsonKeys.level: level,
           };
-        case UserRole.referee:
-          final Referee? referee = await DB.Referees.getByUserId(userId);
+        case AccountRole.referee:
+          final Referee? referee = await DB.Referees.getByAccountId(userId);
           if (referee == null) {
-            throw Exception("Referee not found for user");
+            throw Exception("Referee not found for Account");
           }
           final int level = referee.level;
           final List<GrowthStep> growthSteps =
@@ -180,7 +180,7 @@ class DBRead {
     String password,
   ) async {
     if (AppConfig.isDebug) {
-      final User? user = await DB.Users.getByEmailOrUsername(
+      final Account? user = await DB.Accounts.getByEmailOrUsername(
         usernameOrEmail,
         password,
       );
@@ -188,11 +188,11 @@ class DBRead {
         return {ApiJsonKeys.user: null};
       }
 
-      final UserRole userRole = user.role;
+      final AccountRole userRole = user.role;
 
       switch (userRole) {
-        case UserRole.player:
-          final int playerId = await DB.Players.getPlayerIdByUserId(user.id);
+        case AccountRole.player:
+          final int playerId = await DB.Players.getPlayerIdByAccountId(user.id);
           if (playerId < 1) {
             throw Exception("Player not found for user");
           }
@@ -208,22 +208,22 @@ class DBRead {
             ApiJsonKeys.roleId: playerId,
             ApiJsonKeys.team: playsAt != null ? playsAt.teamId : null,
           };
-        case UserRole.coordinator:
+        case AccountRole.coordinator:
           final int coordinatorId =
-              await DB.Coordinators.getCoordinatorIdByUserId(user.id);
+              await DB.Coordinators.getCoordinatorIdByAccountId(user.id);
           if (coordinatorId < 1) {
             throw Exception("Coordinator not found for user");
           }
           return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: coordinatorId};
-        case UserRole.referee:
-          final int refereeId = await DB.Referees.getRefereeIdByUserId(user.id);
+        case AccountRole.referee:
+          final int refereeId = await DB.Referees.getRefereeIdByAccountId(user.id);
           if (refereeId < 1) {
             throw Exception("Referee not found for user");
           }
           return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: refereeId};
-        case UserRole.organization:
+        case AccountRole.organization:
           final int organizationId =
-              await DB.Organizations.getOrganizationIdByUserId(user.id);
+              await DB.Organizations.getOrganizationIdByAccountId(user.id);
           if (organizationId < 1) {
             throw Exception("Organization not found for user");
           }
@@ -366,20 +366,20 @@ class DBRead {
 
   static Future<Map<String, dynamic>> getUserLevel(int userId) async {
     if (AppConfig.isDebug) {
-      final User? user = await DB.Users.getByUserId(userId);
+      final Account? user = await DB.Accounts.getByAccountId(userId);
       if (user == null) {
-        throw Exception("User not found");
+        throw Exception("Account not found");
       }
-      if (user.role == UserRole.coordinator) {
-        final Coordinator? coordinator = await DB.Coordinators.getByUserId(
+      if (user.role == AccountRole.coordinator) {
+        final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
           userId,
         );
         if (coordinator == null) {
           throw Exception("Coordinator not found for user");
         }
         return {ApiJsonKeys.level: coordinator.level};
-      } else if (user.role == UserRole.referee) {
-        final Referee? referee = await DB.Referees.getByUserId(userId);
+      } else if (user.role == AccountRole.referee) {
+        final Referee? referee = await DB.Referees.getByAccountId(userId);
         if (referee == null) {
           throw Exception("Referee not found for user");
         }
@@ -438,7 +438,7 @@ class DBRead {
           lobbyBookingId,
         );
         if (lobbyBooking != null &&
-            lobbyBooking.status != BookingStatus.refound &&
+            lobbyBooking.status != BookingStatus.refund &&
             lobbyBooking.status != BookingStatus.finished) {
           lobbyBookings.add(lobbyBooking);
           final lobbyData = await getLobbyInfo(lobbyBookingId, playerId);
@@ -1169,13 +1169,13 @@ class DBRead {
       List<Tournament> participatingTournaments = [];
       List<Tournament> favoriteTournaments = [];
 
-      final User? user = await DB.Users.getByUserId(userId);
+      final Account? user = await DB.Accounts.getByAccountId(userId);
       if (user == null) {
-        throw Exception("User not found");
+        throw Exception("Account not found");
       }
 
       if (user.isPlayer) {
-        final int playerId = await DB.Players.getPlayerIdByUserId(userId);
+        final int playerId = await DB.Players.getPlayerIdByAccountId(userId);
         final PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
           playerId,
           currentSport,
@@ -1191,7 +1191,7 @@ class DBRead {
         }
       } else if (user.isCoordinator) {
         final int coordinatorId =
-            await DB.Coordinators.getCoordinatorIdByUserId(userId);
+            await DB.Coordinators.getCoordinatorIdByAccountId(userId);
         participatingTournaments =
             await DB.Tournaments.getActiveOwnedByCoordinatorId(
               coordinatorId,
@@ -1330,9 +1330,9 @@ class DBRead {
       Team? userTeam;
       TournamentParticipation? teamParticipation;
       if (userId != null) {
-        final User? user = await DB.Users.getByUserId(userId);
+        final Account? user = await DB.Accounts.getByAccountId(userId);
         if (user != null && user.isPlayer) {
-          final int playerId = await DB.Players.getPlayerIdByUserId(userId);
+          final int playerId = await DB.Players.getPlayerIdByAccountId(userId);
           currentPlayer = await DB.Players.getByPlayerId(playerId);
           PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
             playerId,
@@ -1498,7 +1498,6 @@ class DBRead {
           continue; // Skip players with no stats
         }
         playerStatsCache[stats.playerId] = FootballTeamStats(
-          id: Random().nextInt(1000000),
           playerId: stats.playerId,
           teamId: stats.teamId,
           motm: stats.motm,
@@ -1805,8 +1804,8 @@ class DBRead {
 
   static Future<Map<String, dynamic>> getWalletScreen(int userId) async {
     if (AppConfig.isDebug) {
-      final Wallet? wallet = await DB.Wallets.getByUserId(userId);
-      //TODO: List<WalletTransaction> transactions = await DB.WalletTransactions.getByUserId(userId);
+      final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
+      //TODO: List<WalletTransaction> transactions = await DB.WalletTransactions.getByAccountId(userId);
       return {
         ApiJsonKeys.wallet: wallet,
         //ApiJsonKeys.walletTransactions: transactions,
@@ -1819,7 +1818,7 @@ class DBRead {
   /// Loads wallet data required by CheckoutScreen at startup.
   static Future<Map<String, dynamic>> getCheckoutData(int userId) async {
     if (AppConfig.isDebug) {
-      final Wallet? wallet = await DB.Wallets.getByUserId(userId);
+      final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
       return {ApiJsonKeys.wallet: wallet};
     } else {
       throw UnimplementedError();
@@ -1829,7 +1828,7 @@ class DBRead {
   static Future<Map<String, dynamic>> hasNotification(int userId) async {
     if (AppConfig.isDebug) {
       final List<Review> reviews =
-          await DB.Reviews.getPendingReviewsForReviewerUserId(userId);
+          await DB.Reviews.getPendingReviewsForReviewerAccountId(userId);
       return {ApiJsonKeys.hasUnreadNotifications: reviews.isNotEmpty};
     } else {
       throw UnimplementedError();
@@ -2050,7 +2049,7 @@ class DBRead {
         awayTeam = await DB.Teams.getById(match.awayTeamId!);
       }
 
-      if (isFinal && match.status == MatchStatus.finished) {
+      if (isFinal && match.status == FootballMatchStatus.finished) {
         winnerId = await DB.FootballMatches.getMatchWinner(matchId);
         if (winnerId == -1) winnerId = null;
       }
@@ -2289,7 +2288,7 @@ class DBRead {
 
       final List<PrivateBooking> privateBookings =
           (await DB.PrivateBookings.getByPlayerId(playerId))
-              .where((booking) => booking.status != BookingStatus.refound)
+              .where((booking) => booking.status != BookingStatus.refund)
               .toList();
 
       final List<LobbyBookingParticipation> lobbyParticipations =
@@ -2330,9 +2329,9 @@ class DBRead {
       final List<Review> reviews =
           await DB.Reviews.getPendingReviewsForReviewerId(userId);
           */
-      final List<Review> reviews = await DB.Reviews.getByReviewerUserId(userId);
+      final List<Review> reviews = await DB.Reviews.getByReviewerAccountId(userId);
       print("Found ${reviews.length} reviews for user $userId");
-      Map<int, User> userPerReview = {};
+      Map<int, Account> userPerReview = {};
       Map<int, String> matchTeamsStringPerReview = {};
 
       for (var review in reviews) {
@@ -2341,11 +2340,11 @@ class DBRead {
             if (review.matchId == null) {
               throw Exception("Match ID is null for review ${review.id}");
             }
-            final Referee? referee = await DB.Referees.getByUserId(
-              review.revieweeUserId,
+            final Referee? referee = await DB.Referees.getByAccountId(
+              review.reviewedAccountId,
             );
             if (referee != null) {
-              final User? user = await DB.Users.getByUserId(referee.id);
+              final Account? user = await DB.Accounts.getByAccountId(referee.id);
               if (user != null) {
                 userPerReview[review.id] = user;
               }
@@ -2355,11 +2354,11 @@ class DBRead {
             break;
           case ReviewType.refereeToCoordinator ||
               ReviewType.playerToCoordinator:
-            final Coordinator? coordinator = await DB.Coordinators.getByUserId(
-              review.revieweeUserId,
+            final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
+              review.reviewedAccountId,
             );
             if (coordinator != null) {
-              final User? user = await DB.Users.getByUserId(coordinator.id);
+              final Account? user = await DB.Accounts.getByAccountId(coordinator.id);
               if (user != null) {
                 userPerReview[review.id] = user;
               }
@@ -2397,20 +2396,20 @@ class DBRead {
 
   static Future<Map<String, dynamic>> getInviteFriendsScreen(int userId) async {
     if (AppConfig.isDebug) {
-      final Wallet? wallet = await DB.Wallets.getByUserId(userId);
+      final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
       if (wallet == null) {
         throw Exception("Wallet not found");
       }
       final double inviteBalance = wallet.inviteBalance;
 
-      final User? user = await DB.Users.getByUserId(userId);
+      final Account? user = await DB.Accounts.getByAccountId(userId);
       if (user == null) {
-        throw Exception("User not found");
+        throw Exception("Account not found");
       }
 
       final int numRedeemed =
-          await DB.FriendInvites.countRedeemedInvitesByUserId(userId);
-      final int numInvites = await DB.FriendInvites.countInvitesByUserId(
+          await DB.FriendInvites.countRedeemedInvitesByAccountId(userId);
+      final int numInvites = await DB.FriendInvites.countInvitesByAccountId(
         userId,
       );
 
@@ -2441,7 +2440,7 @@ class DBRead {
         throw Exception("Checkout session is not pending");
       }
 
-      final Wallet? wallet = await DB.Wallets.getByUserId(session.userId);
+      final Wallet? wallet = await DB.Wallets.getByAccountId(session.userId);
       final Map<String, dynamic> payload = jsonDecode(session.payload);
 
       String? tournamentName;

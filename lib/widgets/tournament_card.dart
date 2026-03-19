@@ -5,7 +5,7 @@ import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 import '../database/db_write.dart';
 import '../l10n/app_localizations.dart';
 
@@ -140,10 +140,10 @@ class _TournamentCardStatus extends State<TournamentCard> {
                           return;
                         }
 
-                        int userId = Provider.of<UserProvider>(
+                        int userId = Provider.of<AccountProvider>(
                           context,
                           listen: false,
-                        ).activeUser!.id;
+                        ).activeAccount!.id;
                         Future.microtask(() async {
                           await DBWrite.toggleTournamentFavoriteStatus(
                             widget.tournament.id,

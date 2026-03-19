@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../models/city.dart';
 import '../../models/sport_category.dart';
 import '../../models/player.dart';
@@ -40,7 +40,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   @override
   void initState() {
     super.initState();
-    final user = Provider.of<UserProvider>(context, listen: false).activeUser;
+    final user = Provider.of<AccountProvider>(context, listen: false).activeAccount;
 
     _usernameController = TextEditingController(text: user?.username ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
@@ -57,7 +57,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   }
 
   Future<void> _loadCities() async {
-    final user = Provider.of<UserProvider>(context, listen: false).activeUser;
+    final user = Provider.of<AccountProvider>(context, listen: false).activeAccount;
     try {
       final data = await DBRead.getCities();
       if (mounted) {
@@ -96,8 +96,8 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.activeUser;
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = userProvider.activeAccount;
     if (user == null) return;
 
     // Validate password fields if changing password
@@ -152,8 +152,8 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Update user info through repository
-      final data = await DBWrite.updateUserInfo(
+      // Update account info through repository
+      final data = await DBWrite.updateAccountInfo(
         id: user.id,
         username: _usernameController.text != user.username
             ? _usernameController.text
@@ -182,8 +182,8 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         throw Exception('Failed to retrieve updated user');
       }
 
-      // Update UserProvider
-      await userProvider.updateUser(updatedUser);
+      // Update AccountProvider
+      await userProvider.updateAccount(updatedUser);
 
       if (mounted) {
         final l10n = AppLocalizations.of(context);
@@ -220,7 +220,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UserProvider>(context).activeUser;
+    final user = Provider.of<AccountProvider>(context).activeAccount;
     final isPlayer = user is Player;
     final l10n = AppLocalizations.of(context);
 

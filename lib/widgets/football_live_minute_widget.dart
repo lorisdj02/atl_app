@@ -64,7 +64,7 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
     int remainingSeconds = 0;
 
     switch (widget.match.status) {
-      case MatchStatus.started:
+      case FootballMatchStatus.started:
         // Primo tempo
         if (widget.match.startMatch != null) {
           final diff = now.difference(widget.match.startMatch!);
@@ -78,7 +78,7 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
         }
         break;
 
-      case MatchStatus.halftime:
+      case FootballMatchStatus.halftime:
         // Riposo - countdown da minutesPerPause a 0 con secondi
         if (widget.match.halfTime != null) {
           final diff = now.difference(widget.match.halfTime!);
@@ -99,7 +99,7 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
         }
         break;
 
-      case MatchStatus.startHalf:
+      case FootballMatchStatus.startHalf:
         // Secondo tempo
         if (widget.match.startHalf != null) {
           final diff = now.difference(widget.match.startHalf!);
@@ -115,7 +115,7 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
         }
         break;
 
-      case MatchStatus.finished:
+      case FootballMatchStatus.finished:
         // Partita finita - mostra 90'
         minute = widget.minutesPerRound * 2;
         break;
@@ -138,27 +138,27 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
 
   Color _getContainerColor() {
     // In corso con minuti aggiuntivi -> rosso
-    if ((widget.match.status == MatchStatus.started ||
-            widget.match.status == MatchStatus.startHalf) &&
+    if ((widget.match.status == FootballMatchStatus.started ||
+            widget.match.status == FootballMatchStatus.startHalf) &&
         _additionalMinutes > 0) {
       return Colors.red.shade700;
     }
 
     // Halftime a 0:00 -> rosso
-    if (widget.match.status == MatchStatus.halftime &&
+    if (widget.match.status == FootballMatchStatus.halftime &&
         _currentMinute == 0 &&
         _remainingSeconds == 0) {
       return Colors.red.shade700;
     }
 
     // In corso senza minuti aggiuntivi -> colore primario dello sport
-    if (widget.match.status == MatchStatus.started ||
-        widget.match.status == MatchStatus.startHalf) {
+    if (widget.match.status == FootballMatchStatus.started ||
+        widget.match.status == FootballMatchStatus.startHalf) {
       return ATLColors.getPrimaryColor(widget.sportCategory);
     }
 
     // Halftime countdown attivo -> arancione
-    if (widget.match.status == MatchStatus.halftime) {
+    if (widget.match.status == FootballMatchStatus.halftime) {
       return Colors.orange.shade700;
     }
 
@@ -170,7 +170,7 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
   Widget build(BuildContext context) {
     String displayText;
 
-    if (widget.match.status == MatchStatus.halftime) {
+    if (widget.match.status == FootballMatchStatus.halftime) {
       // Durante halftime mostra mm:ss
       String seconds = _remainingSeconds.toString().padLeft(2, '0');
       displayText = "$_currentMinute:$seconds";

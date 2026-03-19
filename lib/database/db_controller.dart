@@ -42,7 +42,7 @@ import 'repositories/field_categories_repository.dart';
 // TODO: Aggiungi altri repository quando necessario
 
 /// Singleton per gestire l'accesso al database
-/// Uso: DB.Users.getUser(id) oppure DB.Tournaments.getTournaments()
+/// Uso: DB.Accounts.getAccount(id) oppure DB.Tournaments.getTournaments()
 class DB {
   // Singleton instance
   static final DB _instance = DB._internal();
@@ -54,7 +54,7 @@ class DB {
   }
 
   // Repository instances
-  static late final UserRepository Users;
+  static late final AccountRepository Accounts;
   static late final TournamentRepository Tournaments;
   static late final PlayerRepository Players;
   static late final CoordinatorRepository Coordinators;
@@ -95,7 +95,7 @@ class DB {
   // TODO: Aggiungi altri repository
 
   void _initializeRepositories() {
-    Users = UserRepository();
+    Accounts = AccountRepository();
     Tournaments = TournamentRepository();
     Players = PlayerRepository();
     Coordinators = CoordinatorRepository();

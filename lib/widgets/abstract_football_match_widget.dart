@@ -32,7 +32,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
 
   // Check if MOTM is missing
   bool get needsMotm =>
-      match.status == MatchStatus.finished && match.motmPlayerId == null;
+      match.status == FootballMatchStatus.finished && match.motmPlayerId == null;
 
   // Metodi astratti da implementare nelle classi figlie
   double get statusIconSize;
@@ -48,7 +48,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   Widget _buildStatusHeader(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     switch (match.status) {
-      case MatchStatus.scheduled:
+      case FootballMatchStatus.scheduled:
         if (match.matchDate != null) {
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -93,7 +93,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             color: ATLColors.darkBlue,
           ),
         );
-      case MatchStatus.started:
+      case FootballMatchStatus.started:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -120,7 +120,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case MatchStatus.halftime:
+      case FootballMatchStatus.halftime:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -147,7 +147,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case MatchStatus.startHalf:
+      case FootballMatchStatus.startHalf:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -174,7 +174,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case MatchStatus.penaltyShootOut:
+      case FootballMatchStatus.penaltyShootOut:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -201,7 +201,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case MatchStatus.finished:
+      case FootballMatchStatus.finished:
         return Text(
           l10n.matchStatusFullTime,
           style: TextStyle(
@@ -210,7 +210,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             color: ATLColors.subtext,
           ),
         );
-      case MatchStatus.notScheduled:
+      case FootballMatchStatus.notScheduled:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -237,8 +237,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case MatchStatus.homeRetired:
-      case MatchStatus.awayRetired:
+      case FootballMatchStatus.homeRetired:
+      case FootballMatchStatus.awayRetired:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -265,7 +265,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case MatchStatus.canceled:
+      case FootballMatchStatus.canceled:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -332,11 +332,11 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   }
 
   Widget buildScore() {
-    if (match.status == MatchStatus.finished ||
-        match.status == MatchStatus.started ||
-        match.status == MatchStatus.halftime ||
-        match.status == MatchStatus.startHalf ||
-        match.status == MatchStatus.penaltyShootOut) {
+    if (match.status == FootballMatchStatus.finished ||
+        match.status == FootballMatchStatus.started ||
+        match.status == FootballMatchStatus.halftime ||
+        match.status == FootballMatchStatus.startHalf ||
+        match.status == FootballMatchStatus.penaltyShootOut) {
       return Padding(
         padding: scoreHorizontalPadding,
         child: Column(
@@ -371,7 +371,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
                 ),
               ],
             ),
-            if (match.status == MatchStatus.penaltyShootOut &&
+            if (match.status == FootballMatchStatus.penaltyShootOut &&
                 (match.penaltyScoreHome != null ||
                     match.penaltyScoreAway != null))
               Padding(
@@ -385,10 +385,10 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
                   ),
                 ),
               ),
-            if (match.status == MatchStatus.started ||
-                match.status == MatchStatus.halftime ||
-                match.status == MatchStatus.startHalf ||
-                match.status == MatchStatus.penaltyShootOut)
+            if (match.status == FootballMatchStatus.started ||
+                match.status == FootballMatchStatus.halftime ||
+                match.status == FootballMatchStatus.startHalf ||
+                match.status == FootballMatchStatus.penaltyShootOut)
               FootballLiveMinuteWidget(
                 minutesPerPause: minutesPerPause,
                 minutesPerRound: minutesPerRound,

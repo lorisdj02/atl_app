@@ -15,8 +15,8 @@ class Review {
   final ReviewType reviewType;
   String? comment;
   double? rating; // da 1 a 5
-  final int reviewerUserId; // id dell'utente
-  final int revieweeUserId; // id dell'utente recensito
+  final int reviewerAccountId; // id dell'utente
+  final int reviewedAccountId; // id dell'utente recensito
   final DateTime createdAt;
   DateTime? committedAt; // data di commit della recensione, se è stata committata
   double weight; // peso della recensione, da 0 a 1
@@ -30,10 +30,10 @@ class Review {
     required this.reviewType,
     this.comment,
     this.rating,
-    required this.reviewerUserId,
+    required this.reviewerAccountId,
     required this.createdAt,
     this.committedAt, // default a now
-    required this.revieweeUserId,
+    required this.reviewedAccountId,
     this.weight = 0.5, // default a 0.5
     this.status = ReviewStatus.waiting, // default a waiting
     this.sportCategory = SportCategory.football, // default a generic
@@ -46,8 +46,8 @@ class Review {
       reviewType: ReviewType.values[json['reviewType']],
       comment: json['comment'],
       rating: json['rating'],
-      reviewerUserId: json['reviewerUserId'],
-      revieweeUserId: json['revieweeUserId'],
+      reviewerAccountId: json['reviewerAccountId'],
+      reviewedAccountId: json['reviewedAccountId'],
       matchId: json['matchId'], // può essere null
       createdAt: DateTime.parse(json['createdAt']),
       weight: json['weight'] ?? 0.5,
@@ -62,8 +62,8 @@ class Review {
       'reviewType': reviewType.index,
       'comment': comment,
       'rating': rating,
-      'reviewerUserId': reviewerUserId,
-      'revieweeUserId': revieweeUserId,
+      'reviewerAccountId': reviewerAccountId,
+      'reviewedAccountId': reviewedAccountId,
       'createdAt': createdAt.toIso8601String(),
       'weight': weight,
       'status': status.index,

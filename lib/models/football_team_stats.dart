@@ -1,6 +1,5 @@
 /// Modello per le statistiche dei giocatori nei team
 class FootballTeamStats {
-  final int id;
   final int playerId;
   final int teamId;
   int motm;
@@ -9,7 +8,6 @@ class FootballTeamStats {
   int yellowCards;
 
   FootballTeamStats({
-    required this.id,
     required this.playerId,
     required this.teamId,
     this.motm = 0,
@@ -20,7 +18,6 @@ class FootballTeamStats {
 
   factory FootballTeamStats.fromJson(Map<String, dynamic> json) {
     return FootballTeamStats(
-      id: json['id'] as int,
       playerId: json['playerId'] as int,
       teamId: json['teamId'] as int,
       motm: json['motm'] as int,
@@ -32,7 +29,6 @@ class FootballTeamStats {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'playerId': playerId,
       'teamId': teamId,
       'motm': motm,
@@ -44,7 +40,6 @@ class FootballTeamStats {
 
   FootballTeamStats copyWith({int? playerId, int? teamId, int? motm, int? goals, int? redCards, int? yellowCards  }) {
     return FootballTeamStats(
-      id: id,
       playerId: playerId ?? this.playerId,
       teamId: teamId ?? this.teamId,
       motm: motm ?? this.motm,
@@ -56,6 +51,6 @@ class FootballTeamStats {
 
   @override
   String toString() {
-    return 'FootballTeamStats(id: $id, playerId: $playerId, teamId: $teamId, motm: $motm, goals: $goals, redCards: $redCards, yellowCards: $yellowCards)';
+    return 'FootballTeamStats(playerId: $playerId, teamId: $teamId, motm: $motm, goals: $goals, redCards: $redCards, yellowCards: $yellowCards)';
   }
 }

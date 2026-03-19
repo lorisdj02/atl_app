@@ -1,7 +1,7 @@
-import 'user.dart';
+import 'account.dart';
 
 /// Modello Coordinator dal database
-class Coordinator extends User {
+class Coordinator extends Account {
   final int coordinatorId;
   final int level;
 
@@ -24,7 +24,7 @@ class Coordinator extends User {
     super.startVip,
     super.endVip,
     super.vipType = VipType.none,
-  }) : super(role: UserRole.coordinator);
+  }) : super(role: AccountRole.coordinator);
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
     return Coordinator(

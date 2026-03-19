@@ -58,7 +58,7 @@ class _MatchBracketState extends State<MatchBracket> {
       final Team? awayTeam = data[ApiJsonKeys.awayTeam] as Team?;
       int? winnerId = data[ApiJsonKeys.winnerId] as int?;
 
-      if (!(widget.isFinal && match.status == MatchStatus.finished)) {
+      if (!(widget.isFinal && match.status == FootballMatchStatus.finished)) {
         // Per le altre fasi controlla chi è passato al turno successivo
         if (widget.nextRoundHomeTeamId != null &&
             match.homeTeamId == widget.nextRoundHomeTeamId) {
@@ -94,7 +94,7 @@ class _MatchBracketState extends State<MatchBracket> {
   Color? _getBorderColor(int? teamId) {
     if (teamId == null || _winnerId == null) return null;
 
-    if (widget.isFinal && _match?.status == MatchStatus.finished) {
+    if (widget.isFinal && _match?.status == FootballMatchStatus.finished) {
       // Finale: oro per il vincitore, argento per il secondo
       if (teamId == _winnerId) {
         return const Color(0xFFFFD700); // Oro

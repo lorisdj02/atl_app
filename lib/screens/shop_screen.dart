@@ -2,7 +2,7 @@ import 'package:atl_app/widgets/organization_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/referee_bottom_bar.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
@@ -16,7 +16,7 @@ class ShopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
+    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -129,7 +129,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
-              userId: userProvider.activeUser?.id,
+              userId: userProvider.activeAccount?.id,
             )
           : userProvider.isReferee
           ? RefereeBottomBar(
@@ -144,7 +144,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
-              userId: userProvider.activeUser?.id,
+              userId: userProvider.activeAccount?.id,
             )
           : userProvider.isOrganization
           ? OrganizationBottomBar(
@@ -159,7 +159,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
-              userId: userProvider.activeUser?.id,
+              userId: userProvider.activeAccount?.id,
             )
           : null,
     );

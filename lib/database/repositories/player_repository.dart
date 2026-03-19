@@ -1,5 +1,5 @@
 import 'package:atl_app/config/app_config.dart';
-import '../../models/user.dart';
+import '../../models/account.dart';
 import '../../models/player.dart';
 import 'base_repository.dart';
 import '../db_controller.dart';
@@ -174,7 +174,7 @@ class PlayerRepository extends BaseRepository<Player> {
       );
       if (index == -1) return false;
 
-      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].status = AccountStatus.deleted;
       _mockData[index].username = 'deleted_user_${_mockData[index].id}';
       _mockData[index].email = 'deleted_user_${_mockData[index].id}';
       _mockData[index].phone = '';
@@ -182,13 +182,12 @@ class PlayerRepository extends BaseRepository<Player> {
       _mockData[index].surname = '';
 
       return true;
-      return true;
     } else {
       throw UnimplementedError();
     }
   }
 
-  Future<int> getPlayerIdByUserId(int userId) async {
+  Future<int> getPlayerIdByAccountId(int userId) async {
     if (AppConfig.isDebug) {
       try {
         final player = _mockData.firstWhere((player) => player.id == userId);
@@ -201,7 +200,7 @@ class PlayerRepository extends BaseRepository<Player> {
     }
   }
 
-  Future<bool> updateUserInfo({
+  Future<bool> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -239,7 +238,7 @@ class PlayerRepository extends BaseRepository<Player> {
     }
   }
 
-  Future<Player?> getByUserId(int id) async {
+  Future<Player?> getByAccountId(int id) async {
     if (AppConfig.isDebug) {
       try {
         return mockData.firstWhere((player) => player.id == id);

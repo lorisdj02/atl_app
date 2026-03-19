@@ -1,5 +1,5 @@
 import '../../models/coordinator.dart';
-import '../../models/user.dart';
+import '../../models/account.dart';
 import 'base_repository.dart';
 import '../../config/app_config.dart';
 
@@ -77,7 +77,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
     }
   }
 
-  Future<int> getCoordinatorIdByUserId(int userId) async {
+  Future<int> getCoordinatorIdByAccountId(int userId) async {
     if (AppConfig.isDebug) {
       try {
         final coordinator = mockData.firstWhere(
@@ -136,7 +136,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
       );
       if (index == -1) return false;
 
-      _mockData[index].status = UserStatus.deleted;
+      _mockData[index].status = AccountStatus.deleted;
       _mockData[index].username = 'deleted_user_${_mockData[index].id}';
       _mockData[index].email = 'deleted_user_${_mockData[index].id}';
       _mockData[index].phone = '';
@@ -149,7 +149,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
     }
   }
 
-  Future<bool> updateUserInfo({
+  Future<bool> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -187,7 +187,7 @@ class CoordinatorRepository extends BaseRepository<Coordinator> {
     }
   }
 
-  Future<Coordinator?> getByUserId(int id) async {
+  Future<Coordinator?> getByAccountId(int id) async {
     if (AppConfig.isDebug) {
       final int index = _mockData.indexWhere((coordinator) => coordinator.id == id);
       if (index == -1) return null;

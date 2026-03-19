@@ -75,7 +75,7 @@ class CallUpsRepository extends BaseRepository<Callup> {
             callup.playerId == playerId && callup.tournamentId == tournamentId,
       );
       if (index == -1) return false;
-      _mockData[index].toRedeem = _mockData[index].toRedeem != null ? 0 : null;
+      _mockData[index].prizeToRedeem = _mockData[index].prizeToRedeem != null ? 0 : null;
       return true;
     } else {
       throw UnimplementedError();

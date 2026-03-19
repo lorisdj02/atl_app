@@ -28,7 +28,7 @@ class PalmaresWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isWinner = palmares.position == PalmaresPosition.WINNER;
+    final isWinner = palmares.position == PalmaresPosition.winner;
     final bgColor = isWinner
         ? ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
         : Colors.white;
@@ -137,7 +137,7 @@ class PalmaresWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  palmares.position == PalmaresPosition.WINNER
+                  palmares.position == PalmaresPosition.winner
                       ? Icons.emoji_events
                       : Icons.military_tech,
                   color: Colors.white,

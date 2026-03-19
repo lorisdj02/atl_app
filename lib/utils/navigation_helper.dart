@@ -8,7 +8,7 @@ import '../screens/guest/guest_profile_screen.dart';
 import '../screens/guest/guest_home_screen.dart';
 import 'home_router.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 import '../screens/referee/available_matches_screen.dart';
 import '../screens/referee/past_assigned_matches_screen.dart';
 
@@ -25,7 +25,7 @@ class NavigationHelper {
       return;
     }
 
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
@@ -61,7 +61,7 @@ class NavigationHelper {
         if (userProvider.isGuest) {
           targetScreen = GuestHomeScreen();
         } else {
-          targetScreen = HomeRouter.getHomeScreen(userProvider.activeUser!);
+          targetScreen = HomeRouter.getHomeScreen(userProvider.activeAccount!);
         }
 
         // Rimuovi tutte le schermate e vai alla home

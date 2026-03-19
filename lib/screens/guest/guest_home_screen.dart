@@ -7,7 +7,7 @@ import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
 import '../guest/guest_profile_screen.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import 'package:provider/provider.dart';
 
 class GuestHomeScreen extends StatefulWidget {
@@ -18,7 +18,7 @@ class GuestHomeScreen extends StatefulWidget {
 }
 
 class _GuestHomeScreenState extends State<GuestHomeScreen> {
-  late final UserProvider userProvider = Provider.of<UserProvider>(
+  late final AccountProvider userProvider = Provider.of<AccountProvider>(
     context,
     listen: false,
   );

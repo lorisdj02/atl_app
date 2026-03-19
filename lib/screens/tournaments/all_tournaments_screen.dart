@@ -4,7 +4,7 @@ import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
+import '../../providers/account_provider.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../widgets/tournament_card.dart';
 import '../../widgets/loading_atl.dart';
@@ -75,7 +75,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
   @override
   void initState() {
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
@@ -103,7 +103,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   }
 
   Future<void> _loadTournaments() async {
-    UserProvider userProvider = Provider.of<UserProvider>(
+    AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
@@ -113,7 +113,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
     try {
       final data = await DBRead.getAllTournamentsScreen(
-        !userProvider.isGuest ? userProvider.activeUser?.id : null,
+        !userProvider.isGuest ? userProvider.activeAccount?.id : null,
         userProvider.currentTeamId,
         widget.currentSport,
       );
@@ -152,7 +152,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
   void _showFilterDialog() {
     // Inizializza filtri temporanei con valori correnti
-    final UserProvider userProvider = Provider.of<UserProvider>(
+    final AccountProvider userProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
@@ -368,7 +368,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
                 try {
                   final results = await DBRead.applyTournamentFilters(
-                    userProvider.activeUser?.id,
+                    userProvider.activeAccount?.id,
                     userProvider.currentTeamId,
                     cityId: _selectedCity,
                     numTeams: _selectedNumTeams,
@@ -408,7 +408,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   @override
   Widget build(BuildContext context) {
     Timer? _debounce;
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
+    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -863,9 +863,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                   ),
           ),
           // Floating Action Button "New" - SOLO per coordinatori in My Tournaments
-          if (!Provider.of<UserProvider>(context).isGuest &&
-              Provider.of<UserProvider>(context).activeUser != null &&
-              Provider.of<UserProvider>(context).isCoordinator &&
+          if (!Provider.of<AccountProvider>(context).isGuest &&
+              Provider.of<AccountProvider>(context).activeAccount != null &&
+              Provider.of<AccountProvider>(context).isCoordinator &&
               _showMyTournaments)
             Positioned(
               right: 16,
@@ -899,7 +899,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
         },
         currentSport: widget.currentSport,
         isHome: false,
-        userId: userProvider.activeUser?.id,
+        userId: userProvider.activeAccount?.id,
       ),
     );}
 

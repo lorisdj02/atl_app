@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import '../providers/account_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../widgets/profile_menu_item.dart';
 import '../widgets/atl_button.dart';
@@ -44,9 +44,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadLevel() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProvider = Provider.of<AccountProvider>(context, listen: false);
     if (userProvider.isCoordinator || userProvider.isReferee) {
-      final data = await DBRead.getUserLevel(userProvider.activeUser!.id);
+      final data = await DBRead.getUserLevel(userProvider.activeAccount!.id);
       if (mounted) {
         setState(() {
           _level = data[ApiJsonKeys.level];
@@ -56,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleLogOut(BuildContext context) async {
-    await Provider.of<UserProvider>(context, listen: false).logout();
+    await Provider.of<AccountProvider>(context, listen: false).logout();
 
     // Naviga direttamente alla LoginScreen senza animazioni
     // e rimuove tutte le route precedenti dallo stack
@@ -73,8 +73,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final UserProvider userProvider = Provider.of<UserProvider>(context);
-    final user = userProvider.activeUser;
+    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
+    final user = userProvider.activeAccount;
     final l10n = AppLocalizations.of(context);
 
     // Add null check

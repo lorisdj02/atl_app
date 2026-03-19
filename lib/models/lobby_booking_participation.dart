@@ -4,8 +4,8 @@ class LobbyBookingParticipation {
   final int lobbyBookingId;
   final int playersPaid;
   final DateTime joinedAt;
-  final double price;
-  bool isRefound;
+  final double cost;
+  bool isRefund;
 
   LobbyBookingParticipation({
     required this.id,
@@ -13,8 +13,8 @@ class LobbyBookingParticipation {
     required this.lobbyBookingId,
     required this.joinedAt,
     this.playersPaid = 1,
-    required this.price,
-    this.isRefound = false,
+    required this.cost,
+    this.isRefund = false,
   });
 
   factory LobbyBookingParticipation.fromJson(Map<String, dynamic> json) {
@@ -24,8 +24,8 @@ class LobbyBookingParticipation {
       lobbyBookingId: json['lobbyBookingId'],
       joinedAt: DateTime.parse(json['joinedAt']),
       playersPaid: json['playersPaid'] ?? 1,
-      price: json['price']?.toDouble() ?? 0.0,
-      isRefound: json['isRefound'] ?? false,
+      cost: json['cost']?.toDouble() ?? 0.0,
+      isRefund: json['isRefund'] ?? false,
     );
   }
 
@@ -35,8 +35,8 @@ class LobbyBookingParticipation {
       'lobbyBookingId': lobbyBookingId,
       'joinedAt': joinedAt.toIso8601String(),
       'playersPaid': playersPaid,
-      'price': price,
-      'isRefound': isRefound,
+      'cost': cost,
+      'isRefund': isRefund,
     };
   }
 }
