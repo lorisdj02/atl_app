@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/checkout_response.dart';
 import 'package:flutter/material.dart';
 import '../../models/checkout_session.dart';
 import '../../models/sport_category.dart';
@@ -64,19 +65,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _loadData() async {
     try {
-      final data = await DBRead.getCheckoutScreen(widget.sessionId);
+      final CheckoutResponse data = await DBRead.getCheckoutScreen(widget.sessionId);
       setState(() {
-        _session = data[ApiJsonKeys.checkoutSession] as CheckoutSession;
-        _wallet = data[ApiJsonKeys.wallet] as Wallet?;
-        _tournamentName = data[ApiJsonKeys.tournamentName] as String?;
-        _fieldName = data[ApiJsonKeys.fieldName] as String?;
-        _fieldAddress = data[ApiJsonKeys.fieldAddress] as String?;
-        _cityName = data[ApiJsonKeys.cityName] as String?;
-        _bookingUsername = data[ApiJsonKeys.bookingUsername] as String?;
-        _startTime = data[ApiJsonKeys.startTime] as DateTime?;
-        _endTime = data[ApiJsonKeys.endTime] as DateTime?;
-        _maxPlayers = data[ApiJsonKeys.maxPlayers] as int?;
-        _playersToPay = data[ApiJsonKeys.playersToPay] as int?;
+        _session = data.checkoutSession;
+        _wallet = data.wallet;
+        _tournamentName = data.tournamentName;
+        _fieldName = data.fieldName;
+        _fieldAddress = data.fieldAddress;
+        _cityName = data.cityName;
+        _bookingUsername = data.bookingUsername;
+        _startTime = data.startTime;
+        _endTime = data.endTime;
+        _maxPlayers = data.maxPlayers;
+        _playersToPay = data.playersToPay;
         _isLoading = false;
       });
     } catch (e) {

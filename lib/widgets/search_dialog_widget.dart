@@ -6,7 +6,8 @@ import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
 
-typedef SearchResultCallback = void Function(Team? team, Tournament? tournament);
+typedef SearchResultCallback =
+    void Function(Team? team, Tournament? tournament);
 
 class SearchDialogWidget extends StatefulWidget {
   final int? teamId;
@@ -22,7 +23,10 @@ class SearchDialogWidget extends StatefulWidget {
     required this.isTeam,
     required this.isTournament,
     this.onFound,
-  }) : assert(isTeam != isTournament, 'Must specify either team or tournament search');
+  }) : assert(
+         isTeam != isTournament,
+         'Must specify either team or tournament search',
+       );
 
   @override
   State<SearchDialogWidget> createState() => _SearchDialogWidgetState();
@@ -79,34 +83,35 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
       _foundTeam = null;
       _foundTournament = null;
     });
-
+    Team? foundTeam;
+    Tournament? foundTournament;
     try {
       if (widget.isTeam) {
-        final data = await DBRead.searchTeamOrTournament(id, isTeam: true, isTournament: false);
-        _foundTeam = data[ApiJsonKeys.team] as Team?;
-        if (_foundTeam == null) {
-          _errorMessage = l10n.teamNotFoundError;
-        } else {
-          widget.onFound?.call(_foundTeam, null);
-          //Navigator.of(context).pop();
-          return;
-        }
+        foundTeam = await DBRead.searchTeamOrTournament(
+          id,
+          isTeam: true,
+          isTournament: false,
+        );
+
+        widget.onFound?.call(_foundTeam, null);
+        //Navigator.of(context).pop();
+        return;
       } else if (widget.isTournament) {
-        final data = await DBRead.searchTeamOrTournament(id, isTeam: false, isTournament: true);
-        _foundTournament = data[ApiJsonKeys.tournament] as Tournament?;
-        if (_foundTournament == null) {
-          _errorMessage = l10n.tournamentNotFoundError;
-        } else {
-          widget.onFound?.call(null, _foundTournament);
-          //Navigator.of(context).pop();
-          return;
-        }
+        foundTournament = await DBRead.searchTeamOrTournament(
+          id,
+          isTeam: false,
+          isTournament: true,
+        );
+        widget.onFound?.call(null, _foundTournament);
+        //Navigator.of(context).pop();
       }
     } catch (e) {
       _errorMessage = l10n.errorSearching(e.toString());
     } finally {
       setState(() {
         _isLoading = false;
+        _foundTeam = widget.isTeam ? foundTeam : null;
+        _foundTournament = widget.isTournament ? foundTournament : null;
       });
     }
   }
@@ -116,7 +121,9 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
       backgroundColor: ATLColors.background,
-      title: Text(widget.isTeam? l10n.searchByTeamId : l10n.searchByTournamentId),
+      title: Text(
+        widget.isTeam ? l10n.searchByTeamId : l10n.searchByTournamentId,
+      ),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -125,7 +132,9 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
               controller: _idController,
               decoration: InputDecoration(
                 labelText: l10n.idLabel,
-                hintText: widget.isTeam? l10n.enterTeamIdHint : l10n.enterTournamentIdHint,
+                hintText: widget.isTeam
+                    ? l10n.enterTeamIdHint
+                    : l10n.enterTournamentIdHint,
                 border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
@@ -134,10 +143,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
             if (_isLoading)
               const CircularProgressIndicator()
             else if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
           ],
         ),
       ),
@@ -146,10 +152,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancelButton),
         ),
-        ElevatedButton(
-          onPressed: _search,
-          child: Text(l10n.searchButton),
-        ),
+        ElevatedButton(onPressed: _search, child: Text(l10n.searchButton)),
       ],
     );
   }

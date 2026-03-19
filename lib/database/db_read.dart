@@ -1,28 +1,38 @@
 import 'dart:math';
 import 'dart:convert';
+import 'package:atl_app/database/repositories/reviews_response.dart';
 import 'package:atl_app/database/responses/abstract_team_response.dart';
 import 'package:atl_app/database/responses/all_tournaments_response.dart';
 import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
 import 'package:atl_app/database/responses/available_matches_response.dart';
 import 'package:atl_app/database/responses/callups_response.dart';
+import 'package:atl_app/database/responses/checkout_response.dart';
 import 'package:atl_app/database/responses/coordinator_home_response.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
+import 'package:atl_app/database/responses/football_match_bracket_response.dart';
 import 'package:atl_app/database/responses/football_match_events_response.dart';
 import 'package:atl_app/database/responses/football_match_response.dart';
 import 'package:atl_app/database/responses/football_tournament_response.dart';
+import 'package:atl_app/database/responses/invite_friends_response.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
 import 'package:atl_app/database/responses/login_response.dart';
 import 'package:atl_app/database/responses/my_growth_response.dart';
 import 'package:atl_app/database/responses/organization_home_response.dart';
 import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
 import 'package:atl_app/database/responses/pay_participation_response.dart';
+import 'package:atl_app/database/responses/personal_player_stats_response.dart';
 import 'package:atl_app/database/responses/player_home_response.dart';
 import 'package:atl_app/database/responses/player_requests_response.dart';
 import 'package:atl_app/database/responses/players_in_team_response.dart';
 import 'package:atl_app/database/responses/referee_home_response.dart';
+import 'package:atl_app/database/responses/referee_licenses_response.dart';
+import 'package:atl_app/database/responses/road_to_victory_response.dart';
+import 'package:atl_app/database/responses/schedule_match_response.dart';
+import 'package:atl_app/database/responses/team_detail_response.dart';
 import 'package:atl_app/database/responses/teams_response.dart';
 import 'package:atl_app/database/responses/tournament_details_response.dart';
 import 'package:atl_app/database/responses/tournament_parameters_response.dart';
+import 'package:atl_app/database/responses/tournament_summary_response.dart';
 import 'package:atl_app/database/responses/wallet_response.dart';
 import 'package:atl_app/models/booking.dart';
 import 'package:atl_app/models/callup.dart';
@@ -1670,9 +1680,9 @@ class DBRead {
       final city = await DB.Cities.getById(field.cityId);
       final String cityName = city != null ? city.name : 'Unknown';
 
-      final eventData = await getMatchEvents(matchId);
-      final List<FootballMatchEvent> events = eventData[ApiJsonKeys.events];
-      final bool canMatchFinish = eventData[ApiJsonKeys.canMatchFinish];
+      final FootballMatchEventsResponse eventData = await getFootballMatchEvents(matchId);
+      final List<FootballMatchEvent> events = eventData.events;
+      final bool canMatchFinish = eventData.canMatchFinish;
 
       final bool refereeCheck = availableRoles
           .isEmpty; // Se non ci sono ruoli disponibili, significa che tutti i ruoli richiesti sono stati assegnati, quindi il check è passato
@@ -1814,7 +1824,6 @@ class DBRead {
         }
       }
 
-
       return PayParticipationResponse(
         tournamentsCache: tournamentCache,
         tournamentParticipations: participations,
@@ -1825,7 +1834,9 @@ class DBRead {
     }
   }
 
-  static Future<PlayerRequestsResponse> getTeamRequestsScreen(int teamId) async {
+  static Future<PlayerRequestsResponse> getTeamRequestsScreen(
+    int teamId,
+  ) async {
     if (AppConfig.isDebug) {
       final Team? team = await DB.Teams.getById(teamId);
       if (team == null) {
@@ -1840,7 +1851,7 @@ class DBRead {
         if (!playersCache.containsKey(request.playerId)) {
           final player = await DB.Players.getByPlayerId(request.playerId);
           if (player != null) {
-          playersCache[request.playerId] = player;
+            playersCache[request.playerId] = player;
           }
         }
       }
@@ -1860,11 +1871,9 @@ class DBRead {
       if (wallet == null) {
         throw Exception("Wallet not found");
       }
-//ApiJsonKeys.walletTransactions: transactions,
+      //ApiJsonKeys.walletTransactions: transactions,
       //TODO: List<WalletTransaction> transactions = await DB.WalletTransactions.getByAccountId(userId);
-      return WalletResponse(
-        wallet: wallet,
-      );
+      return WalletResponse(wallet: wallet);
     } else {
       throw UnimplementedError();
     }
@@ -1962,9 +1971,8 @@ class DBRead {
     }
   }
 
-  static Future<PastAssignedMatchesResponse> getPastRefereeAssignedMatchesScreen(
-    int refereeId,
-  ) async {
+  static Future<PastAssignedMatchesResponse>
+  getPastRefereeAssignedMatchesScreen(int refereeId) async {
     if (AppConfig.isDebug) {
       List<RefereeAssignment> assignments =
           await DB.RefereeAssignments.getByRefereeId(refereeId);
@@ -2018,9 +2026,7 @@ class DBRead {
     }
   }
 
-  // Ricomincia da qui. Sono stanco adesso
-
-  static Future<Map<String, dynamic>> getTeamDetailScreen(
+  static Future<TeamDetailResponse> getTeamDetailScreen(
     int playerId,
     int teamId,
   ) async {
@@ -2048,29 +2054,36 @@ class DBRead {
         );
       }
 
-      final abstactData = await getAbstractTeamScreen(teamId);
+      final AbstractTeamResponse abstractData = await getAbstractTeamScreen(
+        teamId,
+      );
 
-      return {
-        ApiJsonKeys.isPlayerInTeam: existingRequest != null ? false : true,
-        ApiJsonKeys.existingRequest: existingRequest,
-        ApiJsonKeys.team: abstactData[ApiJsonKeys.team],
-        ApiJsonKeys.players: abstactData[ApiJsonKeys.players],
-        ApiJsonKeys.palmares: abstactData[ApiJsonKeys.palmares],
-        ApiJsonKeys.tournaments: abstactData[ApiJsonKeys.tournaments],
-        ApiJsonKeys.coordinatorCache: abstactData[ApiJsonKeys.coordinatorCache],
-        ApiJsonKeys.fieldsCache: abstactData[ApiJsonKeys.fieldsCache],
-        ApiJsonKeys.footballPlayerStatsCache:
-            abstactData[ApiJsonKeys.footballPlayerStatsCache],
-        ApiJsonKeys.cityNamePerField: abstactData[ApiJsonKeys.cityNamePerField],
-        ApiJsonKeys.historicalPlayers:
-            abstactData[ApiJsonKeys.historicalPlayers] ?? [],
-      };
+      return TeamDetailResponse(
+        isPlayerInTeam: playsAt != null,
+        existingRequest: existingRequest,
+        team: team,
+        players: abstractData.players,
+        palmares: abstractData.palmares,
+        tournaments: abstractData.tournaments,
+        coordinatorsCache: abstractData.coordinatorsCache,
+        fieldsCache: abstractData.fieldsCache,
+        footballPlayerStatsCache: abstractData.footballPlayerStatsCache,
+        cityNamePerField: abstractData.cityNamePerField,
+        historicalPlayers: abstractData.historicalPlayers,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getMatchBracket(
+  // super inefficiente. Cerca di mandare tutti i dati a road_to_victory widget.
+  // pensa a:
+  // Map<int, int[2]> per mappare matchId -> [homeTeamId, awayTeamId]
+  // Map<int, Team> per mappare teamId -> Team (così da non dover fare tante query per i team)
+  // Map<int, int[2]> per mappare matchId -> [homeTeamGoals, awayTeamGoals]
+  // Map<int?[2], int?> per mappare [matchId andata, eventuale matchId ritorno] -> partita successiva (così da capire quale partita è la successiva in base a quale partita è stata giocata)
+  // Map<int, FootballMatch> per mappare matchId -> FootballMatch (così da avere tutti i dati della partita)
+  static Future<FootballMatchBracketResponse> getFootballMatchBracket(
     int matchId,
     SportCategory sportCategory, {
     required bool isFinal,
@@ -2101,41 +2114,20 @@ class DBRead {
         winnerId = await DB.FootballMatches.getMatchWinner(matchId);
         if (winnerId == -1) winnerId = null;
       }
-      return {
-        ApiJsonKeys.match: match,
-        ApiJsonKeys.homeTeam: homeTeam,
-        ApiJsonKeys.awayTeam: awayTeam,
-        ApiJsonKeys.winnerId: winnerId,
-      };
-    } else {
-      throw UnimplementedError();
-    }
-  }
 
-  static Future<Map<String, dynamic>> getPlayerRequests(int teamId) async {
-    if (AppConfig.isDebug) {
-      List<TeamRequest> teamRequests = await DB.TeamRequests.getByTeamId(
-        teamId,
+      return FootballMatchBracketResponse(
+        match: match,
+        homeTeam: homeTeam,
+        awayTeam: awayTeam,
+        winnerId: winnerId,
       );
-      Map<int, Player?> playersCache = {};
-
-      for (var request in teamRequests) {
-        if (!playersCache.containsKey(request.playerId)) {
-          final player = await DB.Players.getByPlayerId(request.playerId);
-          playersCache[request.playerId] = player;
-        }
-      }
-
-      return {
-        ApiJsonKeys.teamRequests: teamRequests,
-        ApiJsonKeys.playersCache: playersCache,
-      };
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getMatchesInTournament(
+  // uniscilo con il precedente e manda tutto a road_to_victory widget. In questo modo hai tutti i dati necessari per costruire l'albero del torneo in un'unica chiamata, evitando di dover fare tante chiamate per ogni partita per ottenere i dati dei team, dei risultati, ecc.
+  static Future<RoadToVictoryResponse> getRoadToVictoryWidget(
     int tournamentId,
     SportCategory sportCategory,
   ) async {
@@ -2154,13 +2146,13 @@ class DBRead {
       final List<FootballMatch> matches =
           await DB.FootballMatches.getMatchesByTournament(tournamentId);
 
-      return {ApiJsonKeys.tournament: tournament, ApiJsonKeys.matches: matches};
+      return RoadToVictoryResponse(tournament: tournament, matches: matches);
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getScheduleData(int tournamentId) async {
+  static Future<ScheduleMatchResponse> getScheduleData(int tournamentId) async {
     if (AppConfig.isDebug) {
       final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
       if (tournament == null) {
@@ -2178,17 +2170,17 @@ class DBRead {
         tournament.fieldId,
       );
 
-      return {
-        ApiJsonKeys.minutesPerRound: minutesPerRound,
-        ApiJsonKeys.minutesPerPause: minutesPerPause,
-        ApiJsonKeys.bookings: existingBookings,
-      };
+      return ScheduleMatchResponse(
+        minutesPerRound: minutesPerRound,
+        minutesPerPause: minutesPerPause,
+        bookings: existingBookings,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> searchTeamOrTournament(
+  static Future<T> searchTeamOrTournament<T>(
     int id, {
     required bool isTeam,
     required bool isTournament,
@@ -2205,13 +2197,13 @@ class DBRead {
         if (team == null) {
           throw Exception("Team not found");
         }
-        return {ApiJsonKeys.team: team};
+        return team as T;
       } else if (isTournament) {
         final Tournament? tournament = await DB.Tournaments.getById(id);
         if (tournament == null) {
           throw Exception("Tournament not found");
         }
-        return {ApiJsonKeys.tournament: tournament};
+        return tournament as T;
       } else {
         throw Exception("Invalid search parameters");
       }
@@ -2220,18 +2212,16 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> getSportsByCategory(
-    SportCategory category,
-  ) async {
+  static Future<List<Sport>> getSportsByCategory(SportCategory category) async {
     if (AppConfig.isDebug) {
       final List<Sport> sports = await DB.Sports.getByCategory(category);
-      return {ApiJsonKeys.sports: sports};
+      return sports;
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getTournamentSummary(
+  static Future<TournamentSummaryResponse> getTournamentSummary(
     int tournamentId,
   ) async {
     if (AppConfig.isDebug) {
@@ -2260,34 +2250,32 @@ class DBRead {
 
       final String cityName = city.name;
 
-      return {
-        ApiJsonKeys.tournament: tournament,
-        ApiJsonKeys.sport: sport,
-        ApiJsonKeys.field: field,
-        ApiJsonKeys.cityName: cityName,
-      };
+      return TournamentSummaryResponse(
+        tournament: tournament,
+        sport: sport,
+        field: field,
+        cityName: cityName,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getRefereeLicensesScreen(
+  static Future<RefereeLicensesResponse> getRefereeLicensesScreen(
     int refereeId,
   ) async {
     if (AppConfig.isDebug) {
       final List<RefereeLicense> licenses =
           await DB.RefereeLicenses.getByRefereeId(refereeId);
       final List<Sport> sports = await DB.Sports.getAll();
-      return {
-        ApiJsonKeys.refereeLicenses: licenses,
-        ApiJsonKeys.sports: sports,
-      };
+      return RefereeLicensesResponse(refereeLicenses: licenses, sports: sports);
     } else {
       return throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getPersonalPlayerStats(
+  // nel frontend non stampi lobby e booking, attento eh
+  static Future<PersonalPlayerStatsResponse> getPersonalPlayerStats(
     int playerId,
   ) async {
     if (AppConfig.isDebug) {
@@ -2296,15 +2284,14 @@ class DBRead {
         throw Exception("Player not found");
       }
 
-      Map<SportCategory, dynamic> statsPerCategory = {};
       Map<SportCategory, int> numTournamentPerCategory = {};
 
       if (player.isVip == false) {
         throw Exception("Stats are only available for VIP players");
       }
 
-      statsPerCategory[SportCategory.football] =
-          await DB.FootballTeamStats.getByPlayerId(playerId);
+      FootballTeamStats footballStats =
+          await DB.FootballTeamStats.getAggregatedStatsByPlayer(playerId);
 
       // Count number of tournaments played in per category
       Map<SportCategory, List<Sport>> sportPerCategory = {};
@@ -2360,18 +2347,19 @@ class DBRead {
             .where((booking) => booking.sportCategory == category)
             .length;
       }
-      return {
-        ApiJsonKeys.statsPerCategory: statsPerCategory,
-        ApiJsonKeys.numTournamentPerCategory: numTournamentPerCategory,
-        ApiJsonKeys.numPrivateBookingPerCategory: numPrivateBookingPerCategory,
-        ApiJsonKeys.numLobbyJoinedPerCategory: numLobbyJoinedPerCategory,
-      };
+
+      return PersonalPlayerStatsResponse(
+        footballStats: footballStats,
+        numTournamentPerCategory: numTournamentPerCategory,
+        numPrivateBookingPerCategory: numPrivateBookingPerCategory,
+        numLobbyJoinedPerCategory: numLobbyJoinedPerCategory,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getReviewsScreen(int userId) async {
+  static Future<ReviewsResponse> getReviewsScreen(int userId) async {
     if (AppConfig.isDebug) {
       /*
       final List<Review> reviews =
@@ -2380,7 +2368,6 @@ class DBRead {
       final List<Review> reviews = await DB.Reviews.getByReviewerAccountId(
         userId,
       );
-      print("Found ${reviews.length} reviews for user $userId");
       Map<int, Account> userPerReview = {};
       Map<int, String> matchTeamsStringPerReview = {};
 
@@ -2437,17 +2424,19 @@ class DBRead {
           }
         }
       }
-      return {
-        ApiJsonKeys.reviews: reviews,
-        ApiJsonKeys.userPerReview: userPerReview,
-        ApiJsonKeys.matchTeamsStringPerReview: matchTeamsStringPerReview,
-      };
+      return ReviewsResponse(
+        reviews: reviews,
+        accountPerReview: userPerReview,
+        matchTeamsStringPerReview: matchTeamsStringPerReview,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getInviteFriendsScreen(int userId) async {
+  static Future<InviteFriendsResponse> getInviteFriendsScreen(
+    int userId,
+  ) async {
     if (AppConfig.isDebug) {
       final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
       if (wallet == null) {
@@ -2466,19 +2455,18 @@ class DBRead {
         userId,
       );
 
-      return {
-        ApiJsonKeys.inviteBalance: inviteBalance,
-        ApiJsonKeys.referralCode:
-            user.username, // Assuming username is used as referral code
-        ApiJsonKeys.numRedeemed: numRedeemed,
-        ApiJsonKeys.numInvites: numInvites,
-      };
+      return InviteFriendsResponse(
+        inviteBalance: inviteBalance,
+        referralCode: user.username,
+        numRedeemed: numRedeemed,
+        numInvites: numInvites,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getCheckoutScreen(int sessionId) async {
+  static Future<CheckoutResponse> getCheckoutScreen(int sessionId) async {
     if (AppConfig.isDebug) {
       final CheckoutSession? session = await DB.CheckoutSessions.getById(
         sessionId,
@@ -2494,6 +2482,9 @@ class DBRead {
       }
 
       final Wallet? wallet = await DB.Wallets.getByAccountId(session.userId);
+      if (wallet == null) {
+        throw Exception("Wallet not found for user");
+      }
       final Map<String, dynamic> payload = jsonDecode(session.payload);
 
       String? tournamentName;
@@ -2608,19 +2599,20 @@ class DBRead {
           break;
       }
 
-      return {
-        ApiJsonKeys.checkoutSession: session,
-        ApiJsonKeys.wallet: wallet,
-        ApiJsonKeys.tournamentName: tournamentName,
-        ApiJsonKeys.bookingUsername: bookingUsername,
-        ApiJsonKeys.cityName: cityName,
-        ApiJsonKeys.fieldName: fieldName,
-        ApiJsonKeys.fieldAddress: fieldAddress,
-        ApiJsonKeys.startTime: startTime,
-        ApiJsonKeys.endTime: endTime,
-        ApiJsonKeys.maxPlayers: maxPlayers,
-        ApiJsonKeys.playersToPay: playersToPay,
-      };
+      return CheckoutResponse(
+        checkoutSession: session,
+        wallet: wallet,
+        tournamentName: tournamentName,
+        bookingUsername: bookingUsername,
+        cityName: cityName,
+        fieldName: fieldName,
+        fieldAddress: fieldAddress,
+        startTime: startTime,
+        endTime: endTime,
+        maxPlayers: maxPlayers,
+        playersToPay: playersToPay,
+      );
+
     } else {
       throw UnimplementedError();
     }

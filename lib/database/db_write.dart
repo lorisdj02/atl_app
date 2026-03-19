@@ -22,7 +22,7 @@ import 'dart:math';
 import 'dart:convert';
 
 class DBWrite {
-  static Future<Map<String, dynamic>> updateAccountInfo({
+  static Future<Account?> updateAccountInfo({
     required int id,
     String? username,
     String? phone,
@@ -45,14 +45,14 @@ class DBWrite {
       );
 
       if (!success) {
-        return {ApiJsonKeys.updatedUser: null};
+        return null;
       }
 
       final Account? updatedAccount = await DB.Accounts.getByAccountId(id);
       if (updatedAccount == null) {
-        return {ApiJsonKeys.updatedUser: null};
+        return null;
       }
-      return {ApiJsonKeys.updatedUser: updatedAccount};
+      return updatedAccount;
     } else {
       throw UnimplementedError();
     }

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/football_match_bracket_response.dart';
 import 'package:flutter/material.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
@@ -5,16 +6,17 @@ import '../models/team.dart';
 import '../utils/atl_colors.dart';
 import '../config/api_json_keys.dart';
 import '../database/db_read.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Widget per visualizzare un match all'interno del tabellone Road to Victory
-class MatchBracket extends StatefulWidget {
+class FootballMatchBracket extends StatefulWidget {
   final int matchId;
   final SportCategory sportCategory;
   final int? nextRoundHomeTeamId;
   final int? nextRoundAwayTeamId;
   final bool isFinal;
 
-  const MatchBracket({
+  const FootballMatchBracket({
     super.key,
     required this.matchId,
     required this.sportCategory,
@@ -24,10 +26,10 @@ class MatchBracket extends StatefulWidget {
   });
 
   @override
-  State<MatchBracket> createState() => _MatchBracketState();
+  State<FootballMatchBracket> createState() => _FootballMatchBracketState();
 }
 
-class _MatchBracketState extends State<MatchBracket> {
+class _FootballMatchBracketState extends State<FootballMatchBracket> {
   FootballMatch? _match;
   Team? _homeTeam;
   Team? _awayTeam;
@@ -42,21 +44,18 @@ class _MatchBracketState extends State<MatchBracket> {
 
   Future<void> _loadMatchData() async {
     try {
-      final data = await DBRead.getMatchBracket(
-        widget.matchId,
-        widget.sportCategory,
-        isFinal: widget.isFinal,
-      );
+      final FootballMatchBracketResponse data =
+          await DBRead.getFootballMatchBracket(
+            widget.matchId,
+            widget.sportCategory,
+            isFinal: widget.isFinal,
+          );
 
-      final match = data[ApiJsonKeys.match] as FootballMatch?;
-      if (match == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
+      final match = data.match;
 
-      final Team? homeTeam = data[ApiJsonKeys.homeTeam] as Team?;
-      final Team? awayTeam = data[ApiJsonKeys.awayTeam] as Team?;
-      int? winnerId = data[ApiJsonKeys.winnerId] as int?;
+      final Team? homeTeam = data.homeTeam;
+      final Team? awayTeam = data.awayTeam;
+      int? winnerId = data.winnerId;
 
       if (!(widget.isFinal && match.status == FootballMatchStatus.finished)) {
         // Per le altre fasi controlla chi è passato al turno successivo
@@ -86,6 +85,14 @@ class _MatchBracketState extends State<MatchBracket> {
       }
     } catch (e) {
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).errorLoadingDataGeneric(e.toString()),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
         setState(() => _isLoading = false);
       }
     }

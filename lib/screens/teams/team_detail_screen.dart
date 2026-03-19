@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/team_detail_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -41,21 +42,21 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
 
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
-        final data = await DBRead.getTeamDetailScreen(playerId!, widget.teamId);
+        final TeamDetailResponse data = await DBRead.getTeamDetailScreen(playerId!, widget.teamId);
         if (mounted) {
           setState(() {
-            team = data[ApiJsonKeys.team];
-            players = data[ApiJsonKeys.players];
-            palmares = data[ApiJsonKeys.palmares];
-            tournaments = data[ApiJsonKeys.tournaments];
-            coordinatorCache = data[ApiJsonKeys.coordinatorCache] ?? {};
-            fieldCache = data[ApiJsonKeys.fieldCache] ?? {};
-            playerStatsCache = data[ApiJsonKeys.playerStatsCache] ?? {};
-            cityNamePerField = data[ApiJsonKeys.cityNamePerField] ?? {};
-            historicalPlayers = data[ApiJsonKeys.historicalPlayers] ?? [];
+            team = data.team;
+            players = data.players;
+            palmares = data.palmares;
+            tournaments = data.tournaments;
+            coordinatorsCache = data.coordinatorsCache;
+            fieldsCache = data.fieldsCache;
+            playerStatsCache = data.footballPlayerStatsCache;
+            cityNamePerField = data.cityNamePerField;
+            historicalPlayers = data.historicalPlayers;
             playersLoaded = true;
-            _existingRequest = data[ApiJsonKeys.existingRequest];
-            _isPlayerInTeam = data[ApiJsonKeys.isPlayerInTeam];
+            _existingRequest = data.existingRequest;
+            _isPlayerInTeam = data.isPlayerInTeam;
             _requestLoaded = true;
           });
         }

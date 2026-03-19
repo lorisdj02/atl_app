@@ -279,4 +279,10 @@ class ApiJsonKeys {
 
   // AvailableMatchesScreen
   static const String footballMatches = 'footballMatches'; // List<FootballMatch>
+
+  // MatchBracket -> inneficiente
+  static const String footballMatch = 'footballMatch'; // FootballMatch
+
+  // StatsScreen
+  static const String footballStats = 'footballStats'; // List<FootballTeamStats>
 }

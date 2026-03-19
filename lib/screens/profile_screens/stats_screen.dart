@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/personal_player_stats_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -24,9 +25,11 @@ class _StatsScreenState extends State<StatsScreen> {
   bool _isLoading = false;
   SportCategory _selectedCategory = SportCategory.football;
 
-  Map<SportCategory, dynamic> _statsPerCategory = {};
+  FootballTeamStats? _footballTeamStats;
   Map<SportCategory, int> _numTournamentPerCategory = {};
-
+  Map<SportCategory, int> _numPrivateBookingPerCategory = {};
+  Map<SportCategory, int> _numLobbyJoinedPerCategory = {};
+  
   // Hardcoded available categories (only football for now)
   static const List<SportCategory> _availableCategories = [
     SportCategory.football,
@@ -42,14 +45,20 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   Future<void> _loadStats(AccountProvider userProvider) async {
-    final player = userProvider.activeAccount as Player;
+    if (userProvider.activeRoleId == null || !userProvider.isPlayer) return;
     setState(() => _isLoading = true);
     try {
-      final data = await DBRead.getPersonalPlayerStats(player.playerId);
+      final PersonalPlayerStatsResponse data = await DBRead.getPersonalPlayerStats(
+        userProvider.activeRoleId!,
+      );
+
+      // Estraggo le stats per categoria
       if (mounted) {
         setState(() {
-          _statsPerCategory = data[ApiJsonKeys.statsPerCategory];
-          _numTournamentPerCategory = data[ApiJsonKeys.numTournamentPerCategory];
+          _footballTeamStats = data.footballStats;
+          _numTournamentPerCategory = data.numTournamentPerCategory;
+          _numPrivateBookingPerCategory = data.numPrivateBookingPerCategory;
+          _numLobbyJoinedPerCategory = data.numLobbyJoinedPerCategory;
           _isLoading = false;
         });
       }
@@ -144,7 +153,10 @@ class _StatsScreenState extends State<StatsScreen> {
                 child: DropdownButton<SportCategory>(
                   value: _selectedCategory,
                   isExpanded: true,
-                  icon: const Icon(Icons.arrow_drop_down, color: ATLColors.darkBlue),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: ATLColors.darkBlue,
+                  ),
                   items: _availableCategories.map((cat) {
                     return DropdownMenuItem(
                       value: cat,
@@ -155,7 +167,8 @@ class _StatsScreenState extends State<StatsScreen> {
                     );
                   }).toList(),
                   onChanged: (value) {
-                    if (value != null) setState(() => _selectedCategory = value);
+                    if (value != null)
+                      setState(() => _selectedCategory = value);
                   },
                 ),
               ),
@@ -220,28 +233,31 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildCategoryContent() {
     final numTournaments = _numTournamentPerCategory[_selectedCategory] ?? 0;
-    final rawStats = _statsPerCategory[_selectedCategory];
 
     switch (_selectedCategory) {
       case SportCategory.football:
-        return _buildFootballStats(numTournaments, rawStats as List<FootballTeamStats>?);
+        return _buildFootballStats(
+          numTournaments,
+          _footballTeamStats != null ? _footballTeamStats : null,
+        );
     }
   }
 
-  Widget _buildFootballStats(int numTournaments, List<FootballTeamStats>? statsList) {
+  Widget _buildFootballStats(
+    int numTournaments,
+    FootballTeamStats? footballStats,
+  ) {
     final l10n = AppLocalizations.of(context);
     int totalGoals = 0;
     int totalMotm = 0;
     int totalYellow = 0;
     int totalRed = 0;
 
-    if (statsList != null) {
-      for (final s in statsList) {
-        totalGoals += s.goals;
-        totalMotm += s.motm;
-        totalYellow += s.yellowCards;
-        totalRed += s.redCards;
-      }
+    if (footballStats != null) {
+      totalGoals = footballStats.goals;
+      totalMotm = footballStats.motm;
+      totalYellow = footballStats.yellowCards;
+      totalRed = footballStats.redCards;
     }
 
     return SingleChildScrollView(
@@ -274,7 +290,10 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                     Text(
                       l10n.tournamentsPlayed,
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),

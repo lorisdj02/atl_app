@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/invite_friends_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -38,14 +39,13 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       return;
     }
     try {
-      final data = await DBRead.getInviteFriendsScreen(user.id);
+      final InviteFriendsResponse data = await DBRead.getInviteFriendsScreen(user.id);
       if (mounted) {
         setState(() {
-          _referralCode = data[ApiJsonKeys.referralCode] as String?;
-          _inviteBalance =
-              (data[ApiJsonKeys.inviteBalance] as num).toDouble();
-          _numInvites = (data[ApiJsonKeys.numInvites] as num).toInt();
-          _numRedeemed = (data[ApiJsonKeys.numRedeemed] as num).toInt();
+          _referralCode = data.referralCode;
+          _inviteBalance = data.inviteBalance;
+          _numInvites = data.numInvites;
+          _numRedeemed = data.numRedeemed;
           _isLoading = false;
         });
       }

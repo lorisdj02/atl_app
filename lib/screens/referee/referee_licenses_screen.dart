@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/referee_licenses_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -42,18 +43,23 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
       assert(userProvider.isReferee, 'Only referees can access this screen');
       final refereeId = userProvider.activeRoleId!;
 
-      final data = await DBRead.getRefereeLicensesScreen(refereeId);
+      final RefereeLicensesResponse data =
+          await DBRead.getRefereeLicensesScreen(refereeId);
 
       if (mounted) {
         setState(() {
-          _licenses = data[ApiJsonKeys.refereeLicenses] as List<RefereeLicense>;
-          _sports = data[ApiJsonKeys.sports] as List<Sport>;
+          _licenses = data.refereeLicenses;
+          _sports = data.sports;
           _isLoading = false;
         });
       }
     } catch (e) {
-      debugPrint('Error loading referee licenses: $e');
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorText(e.toString())),
+          ),
+        );
         setState(() => _isLoading = false);
       }
     }
@@ -130,7 +136,10 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
     try {
       final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final refereeId = userProvider.activeRoleId!;
-      final success = await DBWrite.deleteRefereeLicense(refereeId, license.sportId);
+      final success = await DBWrite.deleteRefereeLicense(
+        refereeId,
+        license.sportId,
+      );
       if (mounted) {
         if (success) {
           await _loadData();
@@ -138,16 +147,16 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
             SnackBar(content: Text(l10n.licenseDeletedSuccessfully)),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.failedToDeleteLicense)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.failedToDeleteLicense)));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorText(e.toString()))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorText(e.toString()))));
       }
     }
   }
@@ -159,13 +168,14 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
 
     // Sports the referee does NOT yet have a license for
     final existingSportIds = _licenses.map((l) => l.sportId).toSet();
-    final availableSports =
-        _sports.where((s) => !existingSportIds.contains(s.id)).toList();
+    final availableSports = _sports
+        .where((s) => !existingSportIds.contains(s.id))
+        .toList();
 
     if (availableSports.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.alreadyHasLicenseAllSports)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.alreadyHasLicenseAllSports)));
       return;
     }
 
@@ -262,7 +272,9 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
           color: isSelected ? color : ATLColors.subtext,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
-        side: BorderSide(color: isSelected ? color : ATLColors.subtext.withOpacity(0.3)),
+        side: BorderSide(
+          color: isSelected ? color : ATLColors.subtext.withOpacity(0.3),
+        ),
         onSelected: (_) => setState(() => _selectedCategory = category),
       ),
     );

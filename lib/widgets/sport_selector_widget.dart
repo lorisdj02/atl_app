@@ -40,9 +40,9 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
   Future<void> _loadSports() async {
     final l10n = AppLocalizations.of(context);
     try {
-      final data = await DBRead.getSportsByCategory(widget.sportCategory);
+      final List<Sport> data = await DBRead.getSportsByCategory(widget.sportCategory);
       setState(() {
-        _availableSports = data[ApiJsonKeys.sports] ?? [];
+        _availableSports = data;
         _isLoading = false;
       });
     } catch (e) {

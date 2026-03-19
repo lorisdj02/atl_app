@@ -1,3 +1,4 @@
+import 'package:atl_app/models/account.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -169,7 +170,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
 
     try {
       // Update account info through repository
-      final data = await DBWrite.updateAccountInfo(
+      final Account? data = await DBWrite.updateAccountInfo(
         id: user.id,
         username: _usernameController.text != user.username
             ? _usernameController.text
@@ -188,15 +189,12 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
             : null,
       );
 
-      if (!data.containsKey(ApiJsonKeys.updatedUser)) {
+      if (data == null) {
         throw Exception('Failed to update user info');
       }
 
       // Retrieve updated user from repository
-      final updatedUser = data[ApiJsonKeys.updatedUser];
-      if (updatedUser == null) {
-        throw Exception('Failed to retrieve updated user');
-      }
+      final updatedUser = data;
 
       // Update AccountProvider
       await userProvider.updateAccount(updatedUser);

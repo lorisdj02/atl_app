@@ -41,7 +41,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   List<Player>? historicalPlayers;
 
   // Cache per palmares
-  Map<int, Coordinator?> coordinatorCache = {};
+  Map<int, Coordinator?> coordinatorsCache = {};
   Map<int, Field?> fieldsCache = {};
 
   // Cache per stats
@@ -83,7 +83,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
         players = data.players;
         palmares = data.palmares;
         tournaments = data.tournaments;
-        coordinatorCache = data.coordinatorCache ?? {};
+        coordinatorsCache = data.coordinatorsCache ?? {};
         fieldsCache = data.fieldsCache ?? {};
         playerStatsCache = data.footballPlayerStatsCache ?? {};
         cityNamePerField = data.cityNamePerField ?? {};
@@ -100,7 +100,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   }
 
   void clearCache() {
-    coordinatorCache.clear();
+    coordinatorsCache.clear();
     fieldsCache.clear();
     playerStatsCache.clear();
   }
@@ -362,7 +362,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                 palmares: palmaresItem,
                 tournament: tournament,
                 sportCategory: widget.currentSport,
-                coordinator: coordinatorCache[tournament.coordinatorId],
+                coordinator: coordinatorsCache[tournament.coordinatorId],
                 field: fieldsCache[tournament.fieldId],
                 cityName: cityNamePerField[tournament.fieldId],
               );

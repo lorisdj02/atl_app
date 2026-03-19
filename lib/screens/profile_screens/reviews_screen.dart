@@ -1,3 +1,4 @@
+import 'package:atl_app/database/repositories/reviews_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -48,14 +49,12 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       return;
     }
     try {
-      final data = await DBRead.getReviewsScreen(user.id);
+      final ReviewsResponse data = await DBRead.getReviewsScreen(user.id);
       if (mounted) {
         setState(() {
-          _reviews = data[ApiJsonKeys.reviews] as List<Review>;
-          _userPerReview =
-              Map<int, Account>.from(data[ApiJsonKeys.userPerReview]);
-          _matchTeamsStringPerReview = Map<int, String>.from(
-              data[ApiJsonKeys.matchTeamsStringPerReview]);
+          _reviews = data.reviews;
+          _userPerReview = data.accountPerReview;
+          _matchTeamsStringPerReview = data.matchTeamsStringPerReview;
           _isLoading = false;
         });
       }

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/schedule_match_response.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/sport_category.dart';
@@ -46,29 +47,32 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final data = await DBRead.getScheduleData(widget.tournamentId);
+      final ScheduleMatchResponse data = await DBRead.getScheduleData(
+        widget.tournamentId,
+      );
 
       int minutesPerRound = 0;
       int minutesPerPause = 0;
       int totalBookingDuration = 0;
-      if (data.isNotEmpty) {
-        minutesPerRound = data[ApiJsonKeys.minutesPerRound] as int;
-        minutesPerPause = data[ApiJsonKeys.minutesPerPause] as int;
-        // minutesPerRound*2 + minutesPerPause + 30 (15 before + 15 after)
-        totalBookingDuration = (minutesPerRound * 2) + minutesPerPause + 30;
-        setState(() {
-          _minutesPerRound = minutesPerRound;
-          _minutesPerPause = minutesPerPause;
-          _totalBookingDuration = totalBookingDuration;
-          _existingBookings = data[ApiJsonKeys.bookings] as List<Booking>;
-          _isLoading = false;
-        });
-      } else {
-        throw Exception(l10n.failedToLoadTimeData);
-      }
+      minutesPerRound = data.minutesPerRound;
+      minutesPerPause = data.minutesPerPause;
+      // minutesPerRound*2 + minutesPerPause + 30 (15 before + 15 after)
+      totalBookingDuration = (minutesPerRound * 2) + minutesPerPause + 30;
+      setState(() {
+        _minutesPerRound = minutesPerRound;
+        _minutesPerPause = minutesPerPause;
+        _totalBookingDuration = totalBookingDuration;
+        _existingBookings = data.bookings;
+        _isLoading = false;
+      });
     } catch (e) {
-      setState(() => _isLoading = false);
-      return;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorLoadingData(e.toString()))),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
     }
   }
 
@@ -136,7 +140,9 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
         _isLoading = false;
       });
     } catch (e) {
-      print(l10n.failedToLoadTimeData);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.errorLoadingData(e.toString()))),
+      );
       setState(() {
         _availableSlots = [];
         _isLoading = false;
@@ -151,7 +157,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   }
 
   String _getBookingInfo() {
-      final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context);
     if (_selectedDate == null || _selectedTime == null) return '';
 
     final kickoffTime = DateTime(

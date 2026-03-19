@@ -1,10 +1,11 @@
+import 'package:atl_app/database/responses/road_to_victory_response.dart';
 import 'package:flutter/material.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
 import '../widgets/loading_atl.dart';
-import 'match_bracket.dart';
+import 'football_match_bracket.dart';
 import '../database/db_read.dart';
 import '../config/api_json_keys.dart';
 import '../l10n/app_localizations.dart';
@@ -38,19 +39,15 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
   Future<void> _loadData() async {
     try {
 
-      final data = await DBRead.getMatchesInTournament(widget.tournamentId, widget.sportCategory);
+      final RoadToVictoryResponse data = await DBRead.getRoadToVictoryWidget(widget.tournamentId, widget.sportCategory);
 
-      final tournament = data[ApiJsonKeys.tournament] as Tournament?;
-      if (tournament == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
+      final tournament = data.tournament;
 
       Map<String, List<FootballMatch>> matchesByGroup = {};
 
       final qualified = tournament.qualified;
       final phases = _getPhasesForQualified(qualified);
-      final List<FootballMatch> matches = data[ApiJsonKeys.matches] as List<FootballMatch>;
+      final List<FootballMatch> matches = data.matches;
       // Carica tutti i match per ogni fase
       for (final phase in phases) {
         matchesByGroup[phase] = matches.where((m) => m.groupName == phase).toList();
@@ -346,7 +343,7 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
-        MatchBracket(
+        FootballMatchBracket(
           matchId: match.id,
           sportCategory: widget.sportCategory,
           nextRoundHomeTeamId: nextRoundHomeTeamId,

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/tournament_summary_response.dart';
 import 'package:flutter/material.dart';
 import '../models/tournament.dart';
 import '../models/sport.dart';
@@ -98,12 +99,12 @@ class TournamentSummary extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _fetchData(BuildContext context) async {
-    final data = await DBRead.getTournamentSummary(tournament.id);
+    final TournamentSummaryResponse data = await DBRead.getTournamentSummary(tournament.id);
 
 
-    final sportData = sport ?? data[ApiJsonKeys.sport] as Sport?;
-    final fieldData = field ?? data[ApiJsonKeys.field] as Field?;
-    final cityNameData = cityName ?? data[ApiJsonKeys.cityName] as String? ?? 'N/A';
+    final sportData = sport ?? data.sport;
+    final fieldData = field ?? data.field;
+    final cityNameData = cityName ?? data.cityName;
 
     final feeData = fee ?? tournament.fee;
     final prize1Data = prize1Value ?? tournament.prize1;
