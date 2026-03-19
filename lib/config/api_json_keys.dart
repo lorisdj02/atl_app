@@ -14,15 +14,15 @@ class ApiJsonKeys {
   static const String minutesPausePerTournament =
       'minutesPausePerTournament'; // Map<int, int>
   // PlayerHomeScreen, CoordinatorHomeScreen
-  static const String matchesPerTournament =
-      'matchesPerTournament'; // Map<int, List<FootballMatch>>
+  static const String footballMatchesPerTournament =
+      'footballMatchesPerTournament'; // Map<int, List<FootballMatch>>
   // PlayerHomeScreen,
-  static const String standingsPerTournament =
-      'standingsPerTournament'; // Map<int, List<FootballStanding>>
+  static const String footballStandingsPerTournament =
+      'footballStandingsPerTournament'; // Map<int, List<FootballStanding>>
   // PlayerHomeScreen, CoordinatorHomeScreen, RefereeHomeScreen, OrganizationHomeScreen, TeamScreen
   static const String teamsCache = 'teamsCache'; // Map<int, Team>
   // PlayerHomeScreen,
-  static const String userTeam = 'userTeam'; // Team?
+  static const String accountTeam = 'accountTeam'; // Team?
   // PlayerHomeScreen,
   static const String maxPlayersPerLobby =
       'maxPlayersPerLobby'; // Map<int, int>
@@ -39,8 +39,8 @@ class ApiJsonKeys {
   // RefereeHomeScreen
   static const String assignments = 'assignments'; // List<RefereeAssignment>
   // RefereeHomeScreen
-  static const String assignedMatches =
-      'assignedMatches'; // List<FootballMatch>
+  static const String assignedFootballMatches =
+      'assignedFootballMatches'; // List<FootballMatch>
 
   // OrganizationHomeScreen
   static const String generalBookings = 'generalBookings'; // List<Booking>
@@ -50,8 +50,8 @@ class ApiJsonKeys {
   static const String detailedBookings =
       'detailedBookings'; // Map<int, dynamic>
   // OrganizationHomeScreen
-  static const String matchPerBooking =
-      'matchPerBooking'; // Map<int, FootballMatch>
+  static const String footballMatchPerBooking =
+      'footballMatchPerBooking'; // Map<int, FootballMatch>
   // OrganizationHomeScreen, PlayerHomeScreen
   static const String usernamePerBooking =
       'usernamePerBooking'; // Map<int, String>
@@ -71,18 +71,21 @@ class ApiJsonKeys {
   // AbstractTeamScreen, AllTournamentsScreen
   static const String tournaments = 'tournaments'; // List<Tournament>
   // AbstractTeamScreen
-  static const String coordinatorCache =
-      'coordinatorCache'; // Map<int, Coordinator>
+  static const String coordinatorsCache =
+      'coordinatorsCache'; // Map<int, Coordinator>
   // AbstractTeamScreen
-  static const String fieldCache = 'fieldCache'; // Map<int, Field>
+  static const String fieldsCache = 'fieldsCache'; // Map<int, Field>
   // AbstractTeamScreen, FootballTournamentScreen
-  static const String playerStatsCache =
-      'playerStatsCache'; // Map<int, TeamStats>
+  static const String footballPlayerStatsCache =
+      'footballPlayerStatsCache'; // Map<int, FootballTeamStats>
   // AbstractTeamScreen
   static const String historicalPlayers = 'historicalPlayers'; // List<Player>
 
   // JoinLobbyScreen, AllTournamentsScreen, CreateTournamentScreen
   static const String cities = 'cities'; // List<City>
+
+  // JoinLobbyScreen
+  static const String lobbies = 'lobbies'; // List<LobbyBooking>
 
   // AllTournamentsScreen
   static const String myTournaments = 'myTournaments'; // List<Tournament>
@@ -157,16 +160,16 @@ class ApiJsonKeys {
   static const String payPerRole = 'payPerRole'; // Map<String, double>
 
   // PayParticipationScreen
-  static const String tournamentCache = 'tournamentCache'; // Map<int, Tournament>
+  static const String tournamentsCache = 'tournamentsCache'; // Map<int, Tournament>
   // PayParticipationScreen
   static const String tournamentParticipations = 'tournamentParticipations'; // List<TournamentParticipation>
   // PayParticipationScreen
   static const String isCalledUpPerTournament = 'isCalledUpPerTournament'; // Map<int, bool>
 
   // LoginScreen
-  static const String user = 'user'; // User?
+  static const String account = 'account'; // Account?
   // LoginScreen
-  static const String roleId = 'roleId'; // int
+  static const String roleId = 'roleId'; // int?
 
   // ProfileScreen
   static const String level = 'level'; // String
@@ -188,7 +191,7 @@ class ApiJsonKeys {
   static const String playersCache = 'playersCache'; // Map<int, Player?>
 
   // EditInfosScreen
-  static const String updatedUser = 'updatedUser'; // User?
+  static const String updatedAccount = 'updatedAccount'; // Account?
 
   // WalletScreen
   static const String wallet = 'wallet'; // Wallet
@@ -227,7 +230,7 @@ class ApiJsonKeys {
   // ReviewsScreen
   static const String reviews = 'reviews'; // List<Review>
   // ReviewsScreen
-  static const String userPerReview = 'userPerReview'; // Map<int, User>
+  static const String accountPerReview = 'accountPerReview'; // Map<int, Account>
   // ReviewsScreen
   static const String matchTeamsStringPerReview = 'matchTeamsStringPerReview'; // Map<int, String>
 
@@ -270,4 +273,10 @@ class ApiJsonKeys {
   static const String minRefereePayPerCategoryPerLevel = 'minRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
   // Growth Screen
   static const String maxRefereePayPerCategoryPerLevel = 'maxRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
+
+  // Login Screen
+  static const String teamId = 'teamId'; // int?
+
+  // AvailableMatchesScreen
+  static const String footballMatches = 'footballMatches'; // List<FootballMatch>
 }

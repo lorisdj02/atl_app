@@ -7,4 +7,15 @@ Sports:
 SportCategory sempre maiuscolo:
     FOOTBALL
 
+OF -> QF -> SF -> FI
+Ottavi di Finale -> Quarti di Finale -> SemiFinale -> Finale
 
+OF1 + OF2 = QF1
+OF3 + OF4 = QF2
+OF5 + OF6 = QF3
+OF7 + OF8 = QF4
+
+QF1 + QF2 = SF1
+QF3 + QF4 = SF2
+
+SF1 + SF2 = FI

@@ -53,7 +53,7 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
       final List<FootballMatch> matches = data[ApiJsonKeys.matches] as List<FootballMatch>;
       // Carica tutti i match per ogni fase
       for (final phase in phases) {
-        matchesByGroup[phase] = matches.where((m) => m.group == phase).toList();
+        matchesByGroup[phase] = matches.where((m) => m.groupName == phase).toList();
       }
 
       if (mounted) {

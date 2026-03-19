@@ -1,5 +1,7 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/all_tournaments_response.dart';
+import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +19,7 @@ import '../../utils/atl_colors.dart';
 import '../../utils/navigation_helper.dart';
 import '../../l10n/app_localizations.dart';
 import 'dart:async';
-import 'tournament_detail_screen.dart';
+import 'tournament_details_screen.dart';
 import 'football_tournament_screen.dart';
 import '../../widgets/search_dialog_widget.dart';
 
@@ -34,8 +36,8 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
     with SingleTickerProviderStateMixin {
   List<Tournament> _tournaments = [];
   List<Tournament> _myTournaments = [];
-  Map<int, Coordinator> _coordinatorCache = {};
-  Map<int, Field> _fieldCache = {};
+  Map<int, Coordinator> _coordinatorsCache = {};
+  Map<int, Field> _fieldsCache = {};
   Map<int, String> _cityNamePerField = {};
 
   bool _isLoading = true;
@@ -112,23 +114,23 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
     });
 
     try {
-      final data = await DBRead.getAllTournamentsScreen(
+      final AllTournamentsResponse data = await DBRead.getAllTournamentsScreen(
         !userProvider.isGuest ? userProvider.activeAccount?.id : null,
         userProvider.currentTeamId,
         widget.currentSport,
       );
 
       setState(() {
-        _tournaments = data[ApiJsonKeys.tournaments];
-        _coordinatorCache = data[ApiJsonKeys.coordinatorCache];
-        _fieldCache = data[ApiJsonKeys.fieldCache];
-        _myTournaments = data[ApiJsonKeys.myTournaments];
-        _availableCities = data[ApiJsonKeys.cities];
-        _cityNamePerField = data[ApiJsonKeys.cityNamePerField];
-        prizeMin = data[ApiJsonKeys.prizeMin];
-        prizeMax = data[ApiJsonKeys.prizeMax];
-        feeMin = data[ApiJsonKeys.feeMin];
-        feeMax = data[ApiJsonKeys.feeMax];
+        _tournaments = data.tournaments;
+        _coordinatorsCache = data.coordinatorsCache;
+        _fieldsCache = data.fieldsCache;
+        _myTournaments = data.myTournaments;
+        _availableCities = data.cities;
+        _cityNamePerField = data.cityNamePerField;
+        prizeMin = data.prizeMin;
+        prizeMax = data.prizeMax;
+        feeMin = data.feeMin;
+        feeMax = data.feeMax;
 
         // Ensure current ranges are within the newly loaded min/max
         _prizeRange = RangeValues(prizeMin, prizeMax);
@@ -367,7 +369,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                 });
 
                 try {
-                  final results = await DBRead.applyTournamentFilters(
+                  final ApplyTournamentFiltersResponse results = await DBRead.applyTournamentFilters(
                     userProvider.activeAccount?.id,
                     userProvider.currentTeamId,
                     cityId: _selectedCity,
@@ -379,7 +381,10 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                   );
 
                   setState(() {
-                    _tournaments = results[ApiJsonKeys.tournaments];
+                    _tournaments = results.tournaments;
+                    _coordinatorsCache = results.coordinatorsCache;
+                    _fieldsCache = results.fieldsCache;
+                    _cityNamePerField = results.cityNamePerField;
                     _isLoading = false;
                   });
                 } catch (e) {
@@ -579,7 +584,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            TournamentDetailScreen(
+                                            TournamentDetailsScreen(
                                               tournament: tournament,
                                               currentSport: widget.currentSport,
                                             ),
@@ -809,9 +814,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                         key: ValueKey(tournament.id),
                         tournament: tournament,
                         currentSport: widget.currentSport,
-                        field: _fieldCache[tournament.fieldId]!,
+                        field: _fieldsCache[tournament.fieldId]!,
                         coordinator:
-                            _coordinatorCache[tournament.coordinatorId]!,
+                            _coordinatorsCache[tournament.coordinatorId]!,
                         cityName:
                             _cityNamePerField[tournament.fieldId] ??
                             AppLocalizations.of(context)
@@ -831,7 +836,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                           if (tournament.status == TournamentStatus.created) {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (context) => TournamentDetailScreen(
+                                builder: (context) => TournamentDetailsScreen(
                                   tournament: tournament,
                                   currentSport: widget.currentSport,
                                 ),

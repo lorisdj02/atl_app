@@ -1,5 +1,29 @@
 import 'dart:math';
 import 'dart:convert';
+import 'package:atl_app/database/responses/abstract_team_response.dart';
+import 'package:atl_app/database/responses/all_tournaments_response.dart';
+import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
+import 'package:atl_app/database/responses/available_matches_response.dart';
+import 'package:atl_app/database/responses/callups_response.dart';
+import 'package:atl_app/database/responses/coordinator_home_response.dart';
+import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
+import 'package:atl_app/database/responses/football_match_events_response.dart';
+import 'package:atl_app/database/responses/football_match_response.dart';
+import 'package:atl_app/database/responses/football_tournament_response.dart';
+import 'package:atl_app/database/responses/join_lobby_response.dart';
+import 'package:atl_app/database/responses/login_response.dart';
+import 'package:atl_app/database/responses/my_growth_response.dart';
+import 'package:atl_app/database/responses/organization_home_response.dart';
+import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
+import 'package:atl_app/database/responses/pay_participation_response.dart';
+import 'package:atl_app/database/responses/player_home_response.dart';
+import 'package:atl_app/database/responses/player_requests_response.dart';
+import 'package:atl_app/database/responses/players_in_team_response.dart';
+import 'package:atl_app/database/responses/referee_home_response.dart';
+import 'package:atl_app/database/responses/teams_response.dart';
+import 'package:atl_app/database/responses/tournament_details_response.dart';
+import 'package:atl_app/database/responses/tournament_parameters_response.dart';
+import 'package:atl_app/database/responses/wallet_response.dart';
 import 'package:atl_app/models/booking.dart';
 import 'package:atl_app/models/callup.dart';
 import 'package:atl_app/models/city.dart';
@@ -36,6 +60,7 @@ import '../../models/sport_category.dart';
 import '../../models/plays_at.dart';
 import '../../models/checkout_session.dart';
 import '../config/api_json_keys.dart';
+import 'responses/book_field_response.dart';
 
 class DBRead {
   static Future<bool> checkTeamNameInCategory(
@@ -49,7 +74,7 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> getBookFieldScreen() async {
+  static Future<BookFieldResponse> getBookFieldScreen() async {
     if (AppConfig.isDebug) {
       Map<int, TimeOfDay> minOpeningTimePerCity = {};
       Map<int, TimeOfDay> maxClosingTimePerCity = {};
@@ -81,17 +106,17 @@ class DBRead {
           }
         }
       }
-      return {
-        ApiJsonKeys.cities: cities,
-        ApiJsonKeys.minOpeningTimePerCity: minOpeningTimePerCity,
-        ApiJsonKeys.maxClosingTimePerCity: maxClosingTimePerCity,
-      };
+      return BookFieldResponse(
+        cities: cities,
+        minOpeningTimePerCity: minOpeningTimePerCity,
+        maxClosingTimePerCity: maxClosingTimePerCity,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getMyGrowthScreen(int userId) async {
+  static Future<MyGrowthResponse> getMyGrowthScreen(int userId) async {
     if (AppConfig.isDebug) {
       final Account? user = await DB.Accounts.getByAccountId(userId);
       if (user == null) {
@@ -110,10 +135,12 @@ class DBRead {
           final int level = coordinator.level;
           final List<GrowthStep> growthSteps = await DB
               .GrowthSteps.getGrowthStepByType(GrowthStepType.coordinator);
-          return {
-            ApiJsonKeys.growthSteps: growthSteps,
-            ApiJsonKeys.level: level,
-          };
+          return MyGrowthResponse(
+            growthSteps: growthSteps,
+            level: level,
+            minRefereePayPerCategoryPerLevel: {},
+            maxRefereePayPerCategoryPerLevel: {},
+          );
         case AccountRole.referee:
           final Referee? referee = await DB.Referees.getByAccountId(userId);
           if (referee == null) {
@@ -158,16 +185,19 @@ class DBRead {
             }
           }
 
-          return {
-            ApiJsonKeys.growthSteps: growthSteps,
-            ApiJsonKeys.level: level,
-            ApiJsonKeys.minRefereePayPerCategoryPerLevel:
-                minRefereePayPerCategoryPerLevel,
-            ApiJsonKeys.maxRefereePayPerCategoryPerLevel:
-                maxRefereePayPerCategoryPerLevel,
-          };
+          return MyGrowthResponse(
+            growthSteps: growthSteps,
+            level: level,
+            minRefereePayPerCategoryPerLevel: minRefereePayPerCategoryPerLevel,
+            maxRefereePayPerCategoryPerLevel: maxRefereePayPerCategoryPerLevel,
+          );
         default:
-          return {};
+          return MyGrowthResponse(
+            growthSteps: [],
+            level: 0,
+            minRefereePayPerCategoryPerLevel: {},
+            maxRefereePayPerCategoryPerLevel: {},
+          );
       }
     } else {
       throw UnimplementedError();
@@ -175,7 +205,7 @@ class DBRead {
   }
 
   // la password è in chiaro, ma tanto è un mock, quindi non importa
-  static Future<Map<String, dynamic>> handleLogin(
+  static Future<LoginResponse> handleLogin(
     String usernameOrEmail,
     String password,
   ) async {
@@ -185,7 +215,7 @@ class DBRead {
         password,
       );
       if (user == null) {
-        return {ApiJsonKeys.user: null};
+        return LoginResponse(account: null, roleId: null, teamId: null);
       }
 
       final AccountRole userRole = user.role;
@@ -203,31 +233,41 @@ class DBRead {
           );
           Team? userTeam;
 
-          return {
-            ApiJsonKeys.user: user,
-            ApiJsonKeys.roleId: playerId,
-            ApiJsonKeys.team: playsAt != null ? playsAt.teamId : null,
-          };
+          return LoginResponse(
+            account: user,
+            roleId: playerId,
+            teamId: playsAt != null ? playsAt.teamId : null,
+          );
         case AccountRole.coordinator:
           final int coordinatorId =
               await DB.Coordinators.getCoordinatorIdByAccountId(user.id);
           if (coordinatorId < 1) {
             throw Exception("Coordinator not found for user");
           }
-          return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: coordinatorId};
+          return LoginResponse(
+            account: user,
+            roleId: coordinatorId,
+            teamId: null,
+          );
         case AccountRole.referee:
-          final int refereeId = await DB.Referees.getRefereeIdByAccountId(user.id);
+          final int refereeId = await DB.Referees.getRefereeIdByAccountId(
+            user.id,
+          );
           if (refereeId < 1) {
             throw Exception("Referee not found for user");
           }
-          return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: refereeId};
+          return LoginResponse(account: user, roleId: refereeId, teamId: null);
         case AccountRole.organization:
           final int organizationId =
               await DB.Organizations.getOrganizationIdByAccountId(user.id);
           if (organizationId < 1) {
             throw Exception("Organization not found for user");
           }
-          return {ApiJsonKeys.user: user, ApiJsonKeys.roleId: organizationId};
+          return LoginResponse(
+            account: user,
+            roleId: organizationId,
+            teamId: null,
+          );
         default:
           throw Exception("Unknown user role");
       }
@@ -236,16 +276,16 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> getCities() async {
+  static Future<List<City>> getCities() async {
     if (AppConfig.isDebug) {
       List<City> cities = await DB.Cities.getAll();
-      return {ApiJsonKeys.cities: cities};
+      return cities;
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>>
+  static Future<FieldsAndMaxPlayersPerFieldResponse>
   getFieldsByPlayersAndCityAndSportCategory({
     required int maxPlayers,
     required int cityId,
@@ -273,16 +313,16 @@ class DBRead {
           maxPlayerPerField[field.id] = 0; // Default se non trovato
         }
       }
-      return {
-        ApiJsonKeys.fields: fields,
-        ApiJsonKeys.maxPlayersPerField: maxPlayerPerField,
-      };
+      return FieldsAndMaxPlayersPerFieldResponse(
+        fields: fields,
+        maxPlayersPerField: maxPlayerPerField,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> calculateTournamentParameters(
+  static Future<TournamentParametersResponse> calculateTournamentParameters(
     Tournament fictitiousTournament,
     bool prize1,
     bool prize2,
@@ -303,18 +343,19 @@ class DBRead {
           ? await DB.Tournaments.calculatePrize2(fictitiousTournament)
           : null;
 
-      return {
-        ApiJsonKeys.fee: fee,
-        ApiJsonKeys.coordinatorPay: coordinatorPay,
-        ApiJsonKeys.prize1: prize1Value,
-        ApiJsonKeys.prize2: prize2Value,
-      };
+      return TournamentParametersResponse(
+        fee: fee,
+        coordinatorPay: coordinatorPay,
+        prize1: prize1Value,
+        prize2: prize2Value,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getFreeFieldsByPlayerAndCityAndDate({
+  static Future<FieldsAndMaxPlayersPerFieldResponse>
+  getFreeFieldsByPlayerAndCityAndDate({
     required int maxPlayers,
     required int cityId,
     required DateTime startDateTime,
@@ -355,16 +396,16 @@ class DBRead {
           maxPlayerPerField[field.id] = 0; // Default se non trovato
         }
       }
-      return {
-        ApiJsonKeys.fields: fields,
-        ApiJsonKeys.maxPlayersPerField: maxPlayerPerField,
-      };
+      return FieldsAndMaxPlayersPerFieldResponse(
+        fields: fields,
+        maxPlayersPerField: maxPlayerPerField,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getUserLevel(int userId) async {
+  static Future<int?> getUserLevel(int userId) async {
     if (AppConfig.isDebug) {
       final Account? user = await DB.Accounts.getByAccountId(userId);
       if (user == null) {
@@ -377,22 +418,22 @@ class DBRead {
         if (coordinator == null) {
           throw Exception("Coordinator not found for user");
         }
-        return {ApiJsonKeys.level: coordinator.level};
+        return coordinator.level;
       } else if (user.role == AccountRole.referee) {
         final Referee? referee = await DB.Referees.getByAccountId(userId);
         if (referee == null) {
           throw Exception("Referee not found for user");
         }
-        return {ApiJsonKeys.level: referee.level};
+        return referee.level;
       } else {
-        return {};
+        return null;
       }
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getPlayerHomeScreen({
+  static Future<PlayerHomeResponse> getPlayerHomeScreen({
     required int playerId,
     required SportCategory currentSport,
   }) async {
@@ -404,7 +445,7 @@ class DBRead {
       Map<int, int> minutesPausePerTournament = {};
       Map<int, List<FootballMatch>> matchesPerTournament = {};
       Map<int, List<FootballStanding>> standingsPerTournament = {};
-      Map<int, Field> fieldCache = {};
+      Map<int, Field> fieldsCache = {};
       Map<int, String> completeAddressPerField = {};
 
       Map<int, String> usernamePerBooking = {};
@@ -472,8 +513,8 @@ class DBRead {
         if (field == null) {
           throw Exception("Field not found for booking.");
         }
-        if (!fieldCache.containsKey(field.id)) {
-          fieldCache[field.id] = field;
+        if (!fieldsCache.containsKey(field.id)) {
+          fieldsCache[field.id] = field;
         }
         if (!completeAddressPerField.containsKey(field.id)) {
           final city = await DB.Cities.getById(field.cityId);
@@ -541,28 +582,28 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.bookings: bookings,
-        ApiJsonKeys.activeTournaments: activeTournaments,
-        ApiJsonKeys.minutesRoundPerTournament: minutesRoundPerTournament,
-        ApiJsonKeys.minutesPausePerTournament: minutesPausePerTournament,
-        ApiJsonKeys.matchesPerTournament: matchesPerTournament,
-        ApiJsonKeys.standingsPerTournament: standingsPerTournament,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.userTeam: userTeam,
-        ApiJsonKeys.usernamePerBooking: usernamePerBooking,
-        ApiJsonKeys.fieldCache: fieldCache,
-        ApiJsonKeys.maxPlayersPerLobby: maxPlayersPerLobby,
-        ApiJsonKeys.currentPlayersPerLobby: currentPlayersPerLobby,
-        ApiJsonKeys.completeAddressPerField: completeAddressPerField,
-        ApiJsonKeys.playersPaidPerBooking: playersPaidPerBooking,
-      };
+      return PlayerHomeResponse(
+        bookings: bookings,
+        activeTournaments: activeTournaments,
+        minutesRoundPerTournament: minutesRoundPerTournament,
+        minutesPausePerTournament: minutesPausePerTournament,
+        footballMatchesPerTournament: matchesPerTournament,
+        footballStandingsPerTournament: standingsPerTournament,
+        teamsCache: teamsCache,
+        accountTeam: userTeam,
+        usernamePerBooking: usernamePerBooking,
+        fieldsCache: fieldsCache,
+        maxPlayersPerLobby: maxPlayersPerLobby,
+        currentPlayersPerLobby: currentPlayersPerLobby,
+        completeAddressPerField: completeAddressPerField,
+        playersPaidPerBooking: playersPaidPerBooking,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getCoordinatorHomeScreen({
+  static Future<CoordinatorHomeResponse> getCoordinatorHomeScreen({
     required int coordinatorId,
     required SportCategory currentSport,
   }) async {
@@ -622,19 +663,19 @@ class DBRead {
             await DB.Tournaments.getMinutesPerPauseById(tournament.id);
       }
 
-      return {
-        ApiJsonKeys.activeTournaments: activeTournaments,
-        ApiJsonKeys.matchesPerTournament: matchesByTournament,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.minutesRoundPerTournament: minutesRoundPerTournament,
-        ApiJsonKeys.minutesPausePerTournament: minutesPausePerTournament,
-      };
+      return CoordinatorHomeResponse(
+        activeTournaments: activeTournaments,
+        footballMatchesPerTournament: matchesByTournament,
+        teamsCache: teamsCache,
+        minutesRoundPerTournament: minutesRoundPerTournament,
+        minutesPausePerTournament: minutesPausePerTournament,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getRefereeHomeScreen({
+  static Future<RefereeHomeResponse> getRefereeHomeScreen({
     required int refereeId,
     required SportCategory currentSport,
   }) async {
@@ -680,19 +721,19 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.assignments: assignments,
-        ApiJsonKeys.assignedMatches: assignedMatches,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.minutesRoundPerTournament: minutesRoundPerTournament,
-        ApiJsonKeys.minutesPausePerTournament: minutesPausePerTournament,
-      };
+      return RefereeHomeResponse(
+        assignments: assignments,
+        assignedFootballMatches: assignedMatches,
+        teamsCache: teamsCache,
+        minutesRoundPerTournament: minutesRoundPerTournament,
+        minutesPausePerTournament: minutesPausePerTournament,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getOrganizationHomeScreen({
+  static Future<OrganizationHomeResponse> getOrganizationHomeScreen({
     required int organizationId,
     required SportCategory currentSport,
   }) async {
@@ -791,21 +832,21 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.fields: fields,
-        ApiJsonKeys.generalBookings: generalBookings,
-        ApiJsonKeys.cityNamePerField: cityNamePerField,
-        ApiJsonKeys.detailedBookings: detailedBookings,
-        ApiJsonKeys.matchPerBooking: matchPerBooking,
-        ApiJsonKeys.teamsCache: teamCache,
-        ApiJsonKeys.usernamePerBooking: usernamePerBooking,
-      };
+      return OrganizationHomeResponse(
+        fields: fields,
+        generalBookings: generalBookings,
+        cityNamePerField: cityNamePerField,
+        detailedBookings: detailedBookings,
+        footballMatchPerBooking: matchPerBooking,
+        teamsCache: teamCache,
+        usernamePerBooking: usernamePerBooking,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getTeamsScreen(
+  static Future<TeamsResponse> getTeamsScreen(
     SportCategory currentSport,
   ) async {
     if (AppConfig.isDebug) {
@@ -822,16 +863,16 @@ class DBRead {
           captainNamePerTeam[team.id] = captain.username;
         }
       }
-      return {
-        ApiJsonKeys.teamsCache: teamCache,
-        ApiJsonKeys.captainNamePerTeam: captainNamePerTeam,
-      };
+      return TeamsResponse(
+        teamsCache: teamCache,
+        captainNamePerTeam: captainNamePerTeam,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getAbstractTeamScreen(int teamId) async {
+  static Future<AbstractTeamResponse> getAbstractTeamScreen(int teamId) async {
     if (AppConfig.isDebug) {
       final Team? team = await DB.Teams.getById(teamId);
       if (team == null) {
@@ -841,7 +882,7 @@ class DBRead {
       List<Palmares> palmares = [];
       List<Tournament> tournaments = [];
       Map<int, Coordinator> coordinatorCache = {};
-      Map<int, Field> fieldCache = {};
+      Map<int, Field> fieldsCache = {};
       Map<int, FootballTeamStats> playerStatsCache = {};
       Map<int, String> cityNamePerField = {};
 
@@ -861,12 +902,12 @@ class DBRead {
                 coordinatorCache[tournament.coordinatorId] = coordinator;
               }
             }
-            if (!fieldCache.containsKey(tournament.fieldId)) {
+            if (!fieldsCache.containsKey(tournament.fieldId)) {
               final field = await DB.Fields.getById(tournament.fieldId);
               if (field == null) {
                 throw Exception("Field not found for tournament");
               }
-              fieldCache[tournament.fieldId] = field;
+              fieldsCache[tournament.fieldId] = field;
               final city = await DB.Cities.getById(field.cityId);
               if (city != null) {
                 cityNamePerField[field.id] = city.name;
@@ -876,7 +917,7 @@ class DBRead {
         }
       }
 
-      final playerData = await getPlayersInTeam(team.id);
+      final PlayersInTeamResponse playerData = await getPlayersInTeam(team.id);
 
       List<FootballTeamStats> playerStats =
           await DB.FootballTeamStats.getByTeamId(team.id);
@@ -892,24 +933,23 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.team: team,
-        ApiJsonKeys.players: playerData[ApiJsonKeys.players],
-        ApiJsonKeys.palmares: palmares,
-        ApiJsonKeys.tournaments: tournaments,
-        ApiJsonKeys.coordinatorCache: coordinatorCache,
-        ApiJsonKeys.fieldCache: fieldCache,
-        ApiJsonKeys.playerStatsCache: playerStatsCache,
-        ApiJsonKeys.cityNamePerField: cityNamePerField,
-        ApiJsonKeys.historicalPlayers:
-            playerData[ApiJsonKeys.historicalPlayers] ?? [],
-      };
+      return AbstractTeamResponse(
+        team: team,
+        players: playerData.players,
+        palmares: palmares,
+        tournaments: tournaments,
+        coordinatorsCache: coordinatorCache,
+        fieldsCache: fieldsCache,
+        footballPlayerStatsCache: playerStatsCache,
+        cityNamePerField: cityNamePerField,
+        historicalPlayers: playerData.historicalPlayers,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getPlayersInTeam(int teamId) async {
+  static Future<PlayersInTeamResponse> getPlayersInTeam(int teamId) async {
     if (AppConfig.isDebug) {
       final Team? team = await DB.Teams.getById(teamId);
       if (team == null) {
@@ -940,15 +980,16 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.players: players,
-        ApiJsonKeys.historicalPlayers: historicalPlayers,
-      };
+      return PlayersInTeamResponse(
+        players: players,
+        historicalPlayers: historicalPlayers,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
+  // Non presente un uso negli screen. Non uso un response perchè non ci sarà nel frontend.
   static Future<Map<String, dynamic>> getLobbyInfo(
     int lobbyBookingId,
     int playerId,
@@ -1016,7 +1057,7 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> getJoinLobbyScreen(
+  static Future<JoinLobbyResponse> getJoinLobbyScreen(
     int playerId,
     int? totalPlayers,
     int? selectedCity,
@@ -1028,7 +1069,7 @@ class DBRead {
       Map<int, int> maxPlayersPerLobby = {};
       Map<int, int> currentPlayersPerLobby = {};
       Map<int, int> playersPaidPerBooking = {};
-      Map<int, Field> fieldCache = {};
+      Map<int, Field> fieldsCache = {};
       Map<int, String> completeAddressPerField = {};
       List<City> availableCities = await DB.Cities.getAll();
 
@@ -1049,27 +1090,27 @@ class DBRead {
             data[ApiJsonKeys.currentPlayersPerLobby];
         playersPaidPerBooking[lobby.id] =
             data[ApiJsonKeys.playersPaidPerBooking];
-        fieldCache[lobby.fieldId] = data[ApiJsonKeys.fields] as Field;
+        fieldsCache[lobby.fieldId] = data[ApiJsonKeys.fields] as Field;
         completeAddressPerField[lobby.fieldId] =
             data[ApiJsonKeys.completeAddressPerField] as String;
       }
 
-      return {
-        ApiJsonKeys.usernamePerBooking: usernamePerBooking,
-        ApiJsonKeys.bookings: lobbies,
-        ApiJsonKeys.maxPlayersPerLobby: maxPlayersPerLobby,
-        ApiJsonKeys.currentPlayersPerLobby: currentPlayersPerLobby,
-        ApiJsonKeys.playersPaidPerBooking: playersPaidPerBooking,
-        ApiJsonKeys.fieldCache: fieldCache,
-        ApiJsonKeys.completeAddressPerField: completeAddressPerField,
-        ApiJsonKeys.cities: availableCities,
-      };
+      return JoinLobbyResponse(
+        usernamePerBooking: usernamePerBooking,
+        maxPlayersPerLobby: maxPlayersPerLobby,
+        currentPlayersPerLobby: currentPlayersPerLobby,
+        playersPaidPerBooking: playersPaidPerBooking,
+        fieldsCache: fieldsCache,
+        completeAddressPerField: completeAddressPerField,
+        cities: availableCities,
+        lobbies: lobbies,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getAllTournamentsScreen(
+  static Future<AllTournamentsResponse> getAllTournamentsScreen(
     int? userId,
     int? teamId,
     SportCategory currentSport,
@@ -1079,7 +1120,7 @@ class DBRead {
         sportCategory: currentSport,
       );
       Map<int, Coordinator> coordinatorCache = {};
-      Map<int, Field> fieldCache = {};
+      Map<int, Field> fieldsCache = {};
       Map<int, String> cityNamePerField = {};
       List<Tournament> myTournaments = [];
       double prizeMin = 0;
@@ -1113,12 +1154,12 @@ class DBRead {
             coordinatorCache[tournament.coordinatorId] = coordinator;
           }
         }
-        if (!fieldCache.containsKey(tournament.fieldId)) {
+        if (!fieldsCache.containsKey(tournament.fieldId)) {
           final Field? field = await DB.Fields.getById(tournament.fieldId);
           if (field == null) {
             throw Exception("Field not found for tournament");
           }
-          fieldCache[tournament.fieldId] = field;
+          fieldsCache[tournament.fieldId] = field;
           if (!cityNamePerField.containsKey(field.cityId)) {
             final city = await DB.Cities.getById(field.cityId);
             if (city != null) {
@@ -1143,23 +1184,27 @@ class DBRead {
         feeMin = 0;
         feeMax = 0;
       }
-      return {
-        ApiJsonKeys.tournaments: tournaments,
-        ApiJsonKeys.myTournaments: myTournaments,
-        ApiJsonKeys.coordinatorCache: coordinatorCache,
-        ApiJsonKeys.fieldCache: fieldCache,
-        ApiJsonKeys.cities: await DB.Cities.getAll(),
-        ApiJsonKeys.cityNamePerField: cityNamePerField,
-        ApiJsonKeys.prizeMin: prizeMin,
-        ApiJsonKeys.prizeMax: prizeMax,
-        ApiJsonKeys.feeMin: feeMin,
-        ApiJsonKeys.feeMax: feeMax,
-      };
+
+      final cities = await DB.Cities.getAll();
+
+      return AllTournamentsResponse(
+        tournaments: tournaments,
+        myTournaments: myTournaments,
+        coordinatorsCache: coordinatorCache,
+        fieldsCache: fieldsCache,
+        cityNamePerField: cityNamePerField,
+        cities: cities,
+        prizeMin: prizeMin,
+        prizeMax: prizeMax,
+        feeMin: feeMin,
+        feeMax: feeMax,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
+  // Non presente un uso negli screen. Non uso un response perchè non ci sarà nel frontend.
   static Future<Map<String, dynamic>> getMyTournaments(
     int userId,
     int? teamId,
@@ -1220,7 +1265,7 @@ class DBRead {
     }
   }
 
-  static Future<Map<String, dynamic>> applyTournamentFilters(
+  static Future<ApplyTournamentFiltersResponse> applyTournamentFilters(
     int? userId,
     int? teamId, {
     int? cityId,
@@ -1232,7 +1277,7 @@ class DBRead {
   }) async {
     if (AppConfig.isDebug) {
       Map<int, String> cityNamePerField = {};
-      Map<int, Field> fieldCache = {};
+      Map<int, Field> fieldsCache = {};
       Map<int, Coordinator> coordinatorCache = {};
 
       List<Tournament> filteredTournaments =
@@ -1256,12 +1301,12 @@ class DBRead {
             coordinatorCache[tournament.coordinatorId] = coordinator;
           }
         }
-        if (!fieldCache.containsKey(tournament.fieldId)) {
+        if (!fieldsCache.containsKey(tournament.fieldId)) {
           final Field? field = await DB.Fields.getById(tournament.fieldId);
           if (field == null) {
             throw Exception("Field not found for tournament");
           }
-          fieldCache[tournament.fieldId] = field;
+          fieldsCache[tournament.fieldId] = field;
           if (!cityNamePerField.containsKey(field.cityId)) {
             final city = await DB.Cities.getById(field.cityId);
             if (city != null) {
@@ -1271,18 +1316,18 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.tournaments: filteredTournaments,
-        ApiJsonKeys.cityNamePerField: cityNamePerField,
-        ApiJsonKeys.fieldCache: fieldCache,
-        ApiJsonKeys.coordinatorCache: coordinatorCache,
-      };
+      return ApplyTournamentFiltersResponse(
+        tournaments: filteredTournaments,
+        cityNamePerField: cityNamePerField,
+        fieldsCache: fieldsCache,
+        coordinatorsCache: coordinatorCache,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getTournamentDetailScreen(
+  static Future<TournamentDetailsResponse> getTournamentDetailScreen(
     int tournamentId,
     SportCategory sportCategory,
     int? userId,
@@ -1351,21 +1396,22 @@ class DBRead {
               );
         }
       }
-      return {
-        ApiJsonKeys.field: field,
-        ApiJsonKeys.cityName: cityName,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.currentPlayer: currentPlayer,
-        ApiJsonKeys.userTeam: userTeam,
-        ApiJsonKeys.teamParticipation: teamParticipation,
-        ApiJsonKeys.coordinator: coordinator,
-      };
+
+      return TournamentDetailsResponse(
+        coordinator: coordinator,
+        field: field,
+        cityName: cityName,
+        teamsCache: teamsCache,
+        currentPlayer: currentPlayer,
+        accountTeam: userTeam,
+        teamParticipation: teamParticipation,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getViewCallupsScreen(
+  static Future<List<Player>> getViewCallupsScreen(
     int tournamentId,
     int teamId,
   ) async {
@@ -1383,13 +1429,13 @@ class DBRead {
         }
       }
 
-      return {ApiJsonKeys.players: players};
+      return players;
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getCallupsScreen(
+  static Future<CallupsResponse> getCallupsScreen(
     int tournamentId,
     int teamId,
   ) async {
@@ -1400,7 +1446,7 @@ class DBRead {
       }
 
       final playersData = await getPlayersInTeam(teamId);
-      final List<Player> teamPlayers = playersData[ApiJsonKeys.players];
+      final List<Player> teamPlayers = playersData.players;
 
       final Sport? sport = await DB.Sports.getById(tournament.sportId);
       if (sport == null) {
@@ -1412,6 +1458,10 @@ class DBRead {
             tournamentId,
             teamId,
           );
+
+      if (teamParticipation == null) {
+        throw Exception("Team is not participating in the tournament");
+      }
 
       final List<Callup> callups = await DB.CallUps.getByTournamentAndTeam(
         tournamentId,
@@ -1432,19 +1482,18 @@ class DBRead {
           .map((c) => c.playerId)
           .toList();
 
-      return {
-        ApiJsonKeys.players: teamPlayers,
-        ApiJsonKeys.sport: sport,
-        ApiJsonKeys.teamParticipation: teamParticipation,
-        ApiJsonKeys.calledUpPlayerIds: calledUpPlayerIds,
-        ApiJsonKeys.tournament: tournament,
-      };
+      return CallupsResponse(
+        players: teamPlayers,
+        sport: sport,
+        calledUpPlayerIds: calledUpPlayerIds,
+        tournament: tournament,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getFootballTournamentScreen(
+  static Future<FootballTournamentResponse> getFootballTournamentScreen(
     int tournamentId,
   ) async {
     if (AppConfig.isDebug) {
@@ -1505,21 +1554,21 @@ class DBRead {
         );
       }
 
-      return {
-        ApiJsonKeys.matches: matches,
-        ApiJsonKeys.standings: standings,
-        ApiJsonKeys.players: players,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.playerStatsCache: playerStatsCache,
-        ApiJsonKeys.minutesPerRound: minutesPerRound,
-        ApiJsonKeys.minutesPerPause: minutesPerPause,
-      };
+      return FootballTournamentResponse(
+        matches: matches,
+        standings: standings,
+        players: players,
+        teamsCache: teamsCache,
+        footballPlayerStatsCache: playerStatsCache,
+        minutesPerRound: minutesPerRound,
+        minutesPerPause: minutesPerPause,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getFootballMatchScreen(
+  static Future<FootballMatchResponse> getFootballMatchScreen(
     int matchId, {
     int? refereeId,
   }) async {
@@ -1651,31 +1700,32 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.match: match,
-        ApiJsonKeys.homeTeam: homeTeam,
-        ApiJsonKeys.awayTeam: awayTeam,
-        ApiJsonKeys.events: events,
-        ApiJsonKeys.minutesPerRound: minutesPerRound,
-        ApiJsonKeys.minutesPerPause: minutesPerPause,
-        ApiJsonKeys.availableRefereeRoles: availableRoles,
-        ApiJsonKeys.playersPerTeam: playersPerTeam,
-        ApiJsonKeys.assignmentPerRefereeNameSurname:
-            assignmentPerRefereeNameSurname,
-        ApiJsonKeys.field: field,
-        ApiJsonKeys.cityName: cityName,
-        ApiJsonKeys.coordinatorId: tournament.coordinatorId,
-        ApiJsonKeys.refereeCheck: refereeCheck,
-        ApiJsonKeys.canMatchFinish: canMatchFinish,
-        ApiJsonKeys.hasRefereeLicense: hasRefereeLicense,
-        ApiJsonKeys.payPerRole: payPerRole,
-      };
+      return FootballMatchResponse(
+        match: match,
+        homeTeam: homeTeam,
+        awayTeam: awayTeam,
+        events: events,
+        minutesPerRound: minutesPerRound,
+        minutesPerPause: minutesPerPause,
+        availableRefereeRoles: availableRoles,
+        playersPerTeam: playersPerTeam,
+        assignmentPerRefereeNameSurname: assignmentPerRefereeNameSurname,
+        field: field,
+        cityName: cityName,
+        coordinatorId: tournament.coordinatorId,
+        refereeCheck: refereeCheck,
+        canMatchFinish: canMatchFinish,
+        hasRefereeLicense: hasRefereeLicense,
+        payPerRole: payPerRole,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getMatchEvents(int matchId) async {
+  static Future<FootballMatchEventsResponse> getFootballMatchEvents(
+    int matchId,
+  ) async {
     if (AppConfig.isDebug) {
       try {
         final FootballMatch? match = await DB.FootballMatches.getById(matchId);
@@ -1701,36 +1751,35 @@ class DBRead {
           final bool canMatchFinish = await DB.FootballMatches.canMatchFinish(
             matchId,
           );
-          return {
-            ApiJsonKeys.events: events,
-            ApiJsonKeys.canMatchFinish: canMatchFinish,
-          };
+
+          return FootballMatchEventsResponse(
+            events: events,
+            canMatchFinish: canMatchFinish,
+          );
         } else {
           throw Exception("Sport is not football");
         }
       } catch (e) {
-        return {ApiJsonKeys.events: [], ApiJsonKeys.canMatchFinish: false};
+        return FootballMatchEventsResponse(events: [], canMatchFinish: false);
       }
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getTeamParticipations(int teamId) async {
+  static Future<List<TournamentParticipation>> getTeamParticipations(
+    int teamId,
+  ) async {
     if (AppConfig.isDebug) {
       List<TournamentParticipation> participations =
           await DB.TournamentParticipations.getByTeamId(teamId);
-      return {
-        ApiJsonKeys.tournamentParticipations: participations
-            .where((p) => p.toPay != null && p.toPay! > 0)
-            .toList(),
-      };
+      return participations.where((p) => p.toPay > 0).toList();
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getPayParticipationScreen(
+  static Future<PayParticipationResponse> getPayParticipationScreen(
     int playerId,
     SportCategory sportCategory,
   ) async {
@@ -1765,17 +1814,18 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.tournamentCache: tournamentCache,
-        ApiJsonKeys.tournamentParticipations: participations,
-        ApiJsonKeys.isCalledUpPerTournament: isCalledUpPerTournament,
-      };
+
+      return PayParticipationResponse(
+        tournamentsCache: tournamentCache,
+        tournamentParticipations: participations,
+        isCalledUpPerTournament: isCalledUpPerTournament,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getTeamRequestsScreen(int teamId) async {
+  static Future<PlayerRequestsResponse> getTeamRequestsScreen(int teamId) async {
     if (AppConfig.isDebug) {
       final Team? team = await DB.Teams.getById(teamId);
       if (team == null) {
@@ -1784,58 +1834,53 @@ class DBRead {
       List<TeamRequest> teamRequests = await DB.TeamRequests.getByTeamId(
         teamId,
       );
-      Map<int, Player?> playersCache = {};
+      Map<int, Player> playersCache = {};
 
       for (var request in teamRequests) {
         if (!playersCache.containsKey(request.playerId)) {
           final player = await DB.Players.getByPlayerId(request.playerId);
+          if (player != null) {
           playersCache[request.playerId] = player;
+          }
         }
       }
 
-      return {
-        ApiJsonKeys.teamRequests: teamRequests,
-        ApiJsonKeys.playersCache: playersCache,
-      };
+      return PlayerRequestsResponse(
+        teamRequests: teamRequests,
+        playersCache: playersCache,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getWalletScreen(int userId) async {
+  static Future<WalletResponse> getWalletScreen(int userId) async {
     if (AppConfig.isDebug) {
       final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
+      if (wallet == null) {
+        throw Exception("Wallet not found");
+      }
+//ApiJsonKeys.walletTransactions: transactions,
       //TODO: List<WalletTransaction> transactions = await DB.WalletTransactions.getByAccountId(userId);
-      return {
-        ApiJsonKeys.wallet: wallet,
-        //ApiJsonKeys.walletTransactions: transactions,
-      };
+      return WalletResponse(
+        wallet: wallet,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  /// Loads wallet data required by CheckoutScreen at startup.
-  static Future<Map<String, dynamic>> getCheckoutData(int userId) async {
-    if (AppConfig.isDebug) {
-      final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
-      return {ApiJsonKeys.wallet: wallet};
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<Map<String, dynamic>> hasNotification(int userId) async {
+  static Future<bool> hasNotification(int userId) async {
     if (AppConfig.isDebug) {
       final List<Review> reviews =
           await DB.Reviews.getPendingReviewsForReviewerAccountId(userId);
-      return {ApiJsonKeys.hasUnreadNotifications: reviews.isNotEmpty};
+      return reviews.isNotEmpty;
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getAvailableMatchesScreen(
+  static Future<AvailableMatchesResponse> getAvailableMatchesScreen(
     SportCategory sportCategory,
     int refereeId, {
     required int cityId,
@@ -1904,20 +1949,20 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.matches: availableMatches,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.minutesRoundPerTournament: minutesRoundPerTournament,
-        ApiJsonKeys.minutesPausePerTournament: minutesPausePerTournament,
-        ApiJsonKeys.matchesPerSport: matchesPerSport,
-        ApiJsonKeys.sportNames: sportNames,
-      };
+      return AvailableMatchesResponse(
+        footballMatches: availableMatches,
+        teamsCache: teamsCache,
+        minutesRoundPerTournament: minutesRoundPerTournament,
+        minutesPausePerTournament: minutesPausePerTournament,
+        matchesPerSport: matchesPerSport,
+        sportNames: sportNames,
+      );
     } else {
       throw UnimplementedError();
     }
   }
 
-  static Future<Map<String, dynamic>> getPastRefereeAssignedMatchesScreen(
+  static Future<PastAssignedMatchesResponse> getPastRefereeAssignedMatchesScreen(
     int refereeId,
   ) async {
     if (AppConfig.isDebug) {
@@ -1962,16 +2007,18 @@ class DBRead {
         }
       }
 
-      return {
-        ApiJsonKeys.matches: matches,
-        ApiJsonKeys.teamsCache: teamsCache,
-        ApiJsonKeys.minutesRoundPerTournament: minutesRoundPerTournament,
-        ApiJsonKeys.minutesPausePerTournament: minutesPausePerTournament,
-      };
+      return PastAssignedMatchesResponse(
+        footballMatches: matches,
+        teamsCache: teamsCache,
+        minutesRoundPerTournament: minutesRoundPerTournament,
+        minutesPausePerTournament: minutesPausePerTournament,
+      );
     } else {
       throw UnimplementedError();
     }
   }
+
+  // Ricomincia da qui. Sono stanco adesso
 
   static Future<Map<String, dynamic>> getTeamDetailScreen(
     int playerId,
@@ -2011,8 +2058,9 @@ class DBRead {
         ApiJsonKeys.palmares: abstactData[ApiJsonKeys.palmares],
         ApiJsonKeys.tournaments: abstactData[ApiJsonKeys.tournaments],
         ApiJsonKeys.coordinatorCache: abstactData[ApiJsonKeys.coordinatorCache],
-        ApiJsonKeys.fieldCache: abstactData[ApiJsonKeys.fieldCache],
-        ApiJsonKeys.playerStatsCache: abstactData[ApiJsonKeys.playerStatsCache],
+        ApiJsonKeys.fieldsCache: abstactData[ApiJsonKeys.fieldsCache],
+        ApiJsonKeys.footballPlayerStatsCache:
+            abstactData[ApiJsonKeys.footballPlayerStatsCache],
         ApiJsonKeys.cityNamePerField: abstactData[ApiJsonKeys.cityNamePerField],
         ApiJsonKeys.historicalPlayers:
             abstactData[ApiJsonKeys.historicalPlayers] ?? [],
@@ -2329,7 +2377,9 @@ class DBRead {
       final List<Review> reviews =
           await DB.Reviews.getPendingReviewsForReviewerId(userId);
           */
-      final List<Review> reviews = await DB.Reviews.getByReviewerAccountId(userId);
+      final List<Review> reviews = await DB.Reviews.getByReviewerAccountId(
+        userId,
+      );
       print("Found ${reviews.length} reviews for user $userId");
       Map<int, Account> userPerReview = {};
       Map<int, String> matchTeamsStringPerReview = {};
@@ -2344,7 +2394,9 @@ class DBRead {
               review.reviewedAccountId,
             );
             if (referee != null) {
-              final Account? user = await DB.Accounts.getByAccountId(referee.id);
+              final Account? user = await DB.Accounts.getByAccountId(
+                referee.id,
+              );
               if (user != null) {
                 userPerReview[review.id] = user;
               }
@@ -2354,11 +2406,12 @@ class DBRead {
             break;
           case ReviewType.refereeToCoordinator ||
               ReviewType.playerToCoordinator:
-            final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
-              review.reviewedAccountId,
-            );
+            final Coordinator? coordinator =
+                await DB.Coordinators.getByAccountId(review.reviewedAccountId);
             if (coordinator != null) {
-              final Account? user = await DB.Accounts.getByAccountId(coordinator.id);
+              final Account? user = await DB.Accounts.getByAccountId(
+                coordinator.id,
+              );
               if (user != null) {
                 userPerReview[review.id] = user;
               }

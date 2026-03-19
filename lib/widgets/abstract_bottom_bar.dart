@@ -62,11 +62,10 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
   Future<void> _checkNotifications() async {
     if (widget.userId == null) return;
     try {
-      final result = await DBRead.hasNotification(widget.userId!);
+      final bool result = await DBRead.hasNotification(widget.userId!);
       if (mounted) {
         setState(() {
-          _hasUnreadNotifications =
-              result[ApiJsonKeys.hasUnreadNotifications] ?? false;
+          _hasUnreadNotifications = result;
         });
       }
     } catch (_) {}

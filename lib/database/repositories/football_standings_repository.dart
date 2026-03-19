@@ -24,7 +24,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 1,
       drawn: 0,
       lost: 0,
-      group: 'A',
+      groupName: 'A',
       rank: 1,
       qualified: true,
       goalsScored: 1,
@@ -36,7 +36,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 0,
       lost: 1,
-      group: 'A',
+      groupName: 'A',
       goalsConceded: 1,
       rank: 4,
       qualified: false,
@@ -48,7 +48,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 1,
       lost: 0,
-      group: 'A',
+      groupName: 'A',
       rank: 2,
       qualified: true,
     ),
@@ -59,7 +59,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 1,
       lost: 0,
-      group: 'A',
+      groupName: 'A',
       rank: 3,
       qualified: false,
     ),
@@ -70,7 +70,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 0,
       lost: 0,
-      group: 'B',
+      groupName: 'B',
       rank: 1,
       qualified: true,
     ),
@@ -81,7 +81,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 0,
       lost: 0,
-      group: 'B',
+      groupName: 'B',
       rank: 2,
       qualified: true,
     ),
@@ -92,7 +92,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 0,
       lost: 0,
-      group: 'B',
+      groupName: 'B',
       rank: 3,
       qualified: false,
     ),
@@ -103,7 +103,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       won: 0,
       drawn: 0,
       lost: 0,
-      group: 'B',
+      groupName: 'B',
       rank: 4,
       qualified: false,
     ),
@@ -114,12 +114,12 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
 
   Future<bool> orderRanksInTournamentByGroup(
     int tournamentId,
-    String group,
+    String groupName,
   ) async {
     if (AppConfig.isDebug) {
       try {
         List<FootballStanding> standingsInGroup = mockData
-            .where((s) => s.tournamentId == tournamentId && s.group == group)
+            .where((s) => s.tournamentId == tournamentId && s.groupName == groupName)
             .toList();
         standingsInGroup.sort(_standingSort);
 
@@ -168,7 +168,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
           ); // 'A' = 65 in ASCII
           List<FootballStanding> standingsInGroup = mockData
               .where(
-                (s) => s.tournamentId == tournamentId && s.group == groupLetter,
+                (s) => s.tournamentId == tournamentId && s.groupName == groupLetter,
               )
               .toList();
 
@@ -274,7 +274,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
           (s) => s.tournamentId == tournamentId && s.teamId == teamBId,
         );
 
-        return standingA.group == standingB.group;
+        return standingA.groupName == standingB.groupName;
       } catch (e) {
         return false;
       }
@@ -286,14 +286,14 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
   Future<bool> insertStandings(
     int tournamentId,
     int teamId,
-    String group,
+    String groupName,
     int rank,
   ) async {
     if (AppConfig.isDebug) {
       FootballStanding newStanding = FootballStanding(
         tournamentId: tournamentId,
         teamId: teamId,
-        group: group,
+        groupName: groupName,
         rank: rank,
       );
       _mockData.add(newStanding);
@@ -363,7 +363,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
         standing.drawn += drawn;
         standing.lost += lost;
         _mockData[index] = standing;
-        await orderRanksInTournamentByGroup(tournamentId, standing.group);
+        await orderRanksInTournamentByGroup(tournamentId, standing.groupName);
         return result;
       } catch (e) {
         return {};
@@ -391,14 +391,14 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
 
   Future<List<FootballStanding>> getStandingsByGroup(
     int tournamentId,
-    String group,
+    String groupName,
   ) async {
     if (AppConfig.isDebug) {
       return mockData
           .where(
             (standing) =>
                 standing.tournamentId == tournamentId &&
-                standing.group == group,
+                standing.groupName == groupName,
           )
           .toList();
     } else {

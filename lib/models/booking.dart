@@ -64,7 +64,7 @@ class Booking {
        finishTime = finishTime.toUtc(),
        createdAt = DateTime.now().toUtc();
 
-  fromJson(Map<String, dynamic> json) {
+  factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
       id: json['id'],
       fieldId: json['fieldId'],

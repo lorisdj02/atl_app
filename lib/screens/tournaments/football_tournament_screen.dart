@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/football_tournament_response.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/sport_category.dart';
@@ -100,20 +101,20 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     });
 
     try{
-    Map<String, dynamic> data = await DBRead.getFootballTournamentScreen(
+    final FootballTournamentResponse data = await DBRead.getFootballTournamentScreen(
       widget.tournament.id,
     );
 
     setState(() {
-      _matches = data[ApiJsonKeys.matches] as List<FootballMatch>;
-      _standings = data[ApiJsonKeys.standings] as List<FootballStanding>;
-      _players = data[ApiJsonKeys.players] as List<Player>;
-      _teamsCache = Map<int, Team>.from(data[ApiJsonKeys.teamsCache]);
+      _matches = data.matches;
+      _standings = data.standings;
+      _players = data.players;
+      _teamsCache = data.teamsCache;
       _playerStatsCache = Map<int, FootballTeamStats>.from(
-        data[ApiJsonKeys.playerStatsCache],
+        data.footballPlayerStatsCache,
       );
-      _minutesPerRound = data[ApiJsonKeys.minutesPerRound] as int?;
-      _minutesPerPause = data[ApiJsonKeys.minutesPerPause] as int?;
+      _minutesPerRound = data.minutesPerRound;
+      _minutesPerPause = data.minutesPerPause;
       _fixturesLoaded = true;
       _tablesLoaded = true;
       _statsLoaded = true;
@@ -474,7 +475,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       itemBuilder: (context, index) {
         final group = groups[index];
         final groupMatches = _matches
-            .where((m) => m.group == group && m.day == day)
+            .where((m) => m.groupName == group && m.day == day)
             .toList();
 
         if (groupMatches.isEmpty) return const SizedBox.shrink();
@@ -514,7 +515,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   Widget _buildPlayoffMatches(String groupPrefix, String phaseLabel) {
     // Find all matches with groups starting with the prefix
     final playoffMatches = _matches
-        .where((m) => m.group.startsWith(groupPrefix))
+        .where((m) => m.groupName.startsWith(groupPrefix))
         .toList();
 
     if (playoffMatches.isEmpty) {
@@ -532,7 +533,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     // Group matches by their group identifier (e.g., SF1, SF2, QF1, etc.)
     final matchesByGroup = <String, List<FootballMatch>>{};
     for (var match in playoffMatches) {
-      final group = match.group;
+      final group = match.groupName;
       matchesByGroup.putIfAbsent(group, () => []).add(match);
     }
 
@@ -694,7 +695,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
             itemBuilder: (context, index) {
               final group = groups[index];
               final groupStandings =
-                  _standings.where((s) => s.group == group).toList()
+                  _standings.where((s) => s.groupName == group).toList()
                     // Ordina per rank (gestito dal DB)
                     ..sort((a, b) => a.rank.compareTo(b.rank));
 

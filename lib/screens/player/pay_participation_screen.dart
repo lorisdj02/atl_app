@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/pay_participation_response.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/tournament_participation.dart';
@@ -27,7 +28,7 @@ class PayParticipationScreen extends StatefulWidget {
 
 class _PayParticipationScreenState extends State<PayParticipationScreen> {
   List<TournamentParticipation> _tournamentParticipations = [];
-  Map<int, Tournament?> _tournamentCache = {};
+  Map<int, Tournament?> _tournamentsCache = {};
   Map<int, bool> _isCalledUpPerTournament = {};
   bool _isLoading = true;
 
@@ -39,17 +40,22 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
 
   Future<void> _loadData() async{
       try{
-      final data = await DBRead.getPayParticipationScreen(widget.playerId, widget.sportCategory);
+      final PayParticipationResponse data = await DBRead.getPayParticipationScreen(widget.playerId, widget.sportCategory);
 
       setState(() {
-        _tournamentParticipations = data[ApiJsonKeys.tournamentParticipations];
-        _tournamentCache = data[ApiJsonKeys.tournamentCache];
-        _isCalledUpPerTournament = data[ApiJsonKeys.isCalledUpPerTournament];
+        _tournamentParticipations = data.tournamentParticipations;
+        _tournamentsCache = data.tournamentsCache;
+        _isCalledUpPerTournament = data.isCalledUpPerTournament;
         _isLoading = false;
       });
     
     } catch (e) {
-      print("Error loading participations: $e");
+      
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).errorLoadingData(e.toString()))),
+        );
+      }
       setState(() {
         _isLoading = false;
         _tournamentParticipations = [];
@@ -102,7 +108,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
               itemCount: _tournamentParticipations.length,
               itemBuilder: (context, index) {
                 final participation = _tournamentParticipations[index];
-                final tournament = _tournamentCache[participation.tournamentId];
+                final tournament = _tournamentsCache[participation.tournamentId];
                 return ParticipationCard(
                   participation: participation,
                   tournament: tournament,

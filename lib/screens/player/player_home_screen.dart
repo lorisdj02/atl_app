@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/player_home_response.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/private_booking.dart';
@@ -23,7 +24,6 @@ import '../../widgets/booking_widget.dart';
 import '../../models/lobby_booking.dart';
 import 'join_lobby_screen.dart';
 import '../../widgets/tournament_card_home.dart';
-import '../../config/api_json_keys.dart';
 
 class PlayerHomeScreen extends StatefulWidget {
   const PlayerHomeScreen({super.key});
@@ -77,13 +77,13 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
     });
 
     try {
-      final Map<String, dynamic> playerHomeData =
+      final PlayerHomeResponse playerHomeData =
           await DBRead.getPlayerHomeScreen(
             playerId: playerId,
             currentSport: _currentSport,
           );
 
-      List<dynamic> bookings = playerHomeData[ApiJsonKeys.bookings];
+      List<dynamic> bookings = playerHomeData.bookings;
 
       bookings.sort((a, b) {
         DateTime aStart;
@@ -105,26 +105,26 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
       if (mounted) {
         setState(() {
           _bookings = bookings;
-          _activeTournaments = playerHomeData[ApiJsonKeys.activeTournaments];
+          _activeTournaments = playerHomeData.activeTournaments;
           _minutesRoundPerTournament =
-              playerHomeData[ApiJsonKeys.minutesRoundPerTournament];
+              playerHomeData.minutesRoundPerTournament;
           _minutesPausePerTournament =
-              playerHomeData[ApiJsonKeys.minutesPausePerTournament];
+              playerHomeData.minutesPausePerTournament;
           _matchesPerTournament =
-              playerHomeData[ApiJsonKeys.matchesPerTournament];
+              playerHomeData.footballMatchesPerTournament;
           _standingsPerTournament =
-              playerHomeData[ApiJsonKeys.standingsPerTournament];
-          _teamsCache = playerHomeData[ApiJsonKeys.teamsCache];
-          _userTeam = playerHomeData[ApiJsonKeys.userTeam];
-          _usernamePerBooking = playerHomeData[ApiJsonKeys.usernamePerBooking];
-          _fieldCache = playerHomeData[ApiJsonKeys.fieldCache];
-          _maxPlayersPerLobby = playerHomeData[ApiJsonKeys.maxPlayersPerLobby];
+              playerHomeData.footballStandingsPerTournament;
+          _teamsCache = playerHomeData.teamsCache;
+          _userTeam = playerHomeData.accountTeam;
+          _usernamePerBooking = playerHomeData.usernamePerBooking;
+          _fieldCache = playerHomeData.fieldsCache;
+          _maxPlayersPerLobby = playerHomeData.maxPlayersPerLobby;
           _currentPlayersPerLobby =
-              playerHomeData[ApiJsonKeys.currentPlayersPerLobby];
+              playerHomeData.currentPlayersPerLobby;
           _completeAddressPerField =
-              playerHomeData[ApiJsonKeys.completeAddressPerField];
+              playerHomeData.completeAddressPerField;
           _playersPaidPerBooking =
-              playerHomeData[ApiJsonKeys.playersPaidPerBooking];
+              playerHomeData.playersPaidPerBooking;
           _isLoading = false;
         });
       }

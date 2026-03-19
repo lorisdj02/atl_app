@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/responses/tournament_details_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -21,21 +22,21 @@ import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
-class TournamentDetailScreen extends StatefulWidget {
+class TournamentDetailsScreen extends StatefulWidget {
   final Tournament tournament;
   final SportCategory currentSport;
 
-  const TournamentDetailScreen({
+  const TournamentDetailsScreen({
     super.key,
     required this.tournament,
     required this.currentSport,
   });
 
   @override
-  State<TournamentDetailScreen> createState() => _TournamentDetailScreenState();
+  State<TournamentDetailsScreen> createState() => _TournamentDetailScreenState();
 }
 
-class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
+class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
   Map<int, Team> _teamCache = {};
   bool _isLoading = true;
   bool _isLoadingTeams = false;
@@ -63,7 +64,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     );
 
     try {
-      final Map<String, dynamic> data;
+      final TournamentDetailsResponse data;
       if (userProvider.isPlayer && userProvider.activeAccount != null) {
         data = await DBRead.getTournamentDetailScreen(
           widget.tournament.id,
@@ -79,13 +80,13 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
       }
 
       setState(() {
-        _teamCache = data[ApiJsonKeys.teamsCache] ?? {};
-        _tournamentField = data[ApiJsonKeys.field];
-        _cityName = data[ApiJsonKeys.cityName];
-        _currentPlayer = data[ApiJsonKeys.currentPlayer];
-        _playerTeam = data[ApiJsonKeys.userTeam];
-        _tournamentCoordinator = data[ApiJsonKeys.coordinator];
-        _teamParticipation = data[ApiJsonKeys.teamParticipation];
+        _teamCache = data.teamsCache;
+        _tournamentField = data.field;
+        _cityName = data.cityName;
+        _currentPlayer = data.currentPlayer;
+        _playerTeam = data.accountTeam;
+        _tournamentCoordinator = data.coordinator;
+        _teamParticipation = data.teamParticipation;
         _isTeamParticipating = _teamParticipation != null;
         _isLoading = false;
         _isLoadingTeams = false;

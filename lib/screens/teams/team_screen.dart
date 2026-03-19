@@ -1,5 +1,6 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/teams_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/team.dart';
@@ -154,10 +155,10 @@ class _TeamScreenState extends State<TeamScreen>
       );
       final isPlayer = userProvider.activeAccount?.role == AccountRole.player;
 
-      final data = await DBRead.getTeamsScreen(widget.currentSport);
-      final Map<int, Team> teamsCache = data[ApiJsonKeys.teamsCache];
+      final TeamsResponse data = await DBRead.getTeamsScreen(widget.currentSport);
+      final Map<int, Team> teamsCache = data.teamsCache;
       final Map<int, String> captainNamePerTeam =
-          data[ApiJsonKeys.captainNamePerTeam];
+          data.captainNamePerTeam;
 
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;

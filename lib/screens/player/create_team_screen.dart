@@ -45,10 +45,10 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final data = await DBRead.getCities();
+      final List<City> cities = await DBRead.getCities();
       if (mounted) {
         setState(() {
-          _availableCities = data[ApiJsonKeys.cities] as List<City>;
+          _availableCities = cities;
         });
       }
     } catch (e) {
@@ -115,7 +115,13 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         throw Exception(l10n.userNotFound);
       }
 
-      if ((await DBRead.checkTeamNameInCategory(_nameController.text, widget.currentSport)) == false) {
+      try{
+        final success = await DBRead.checkTeamNameInCategory(_nameController.text, widget.currentSport);
+        if(success == false){
+          throw Exception(l10n.teamNameAlreadyInUse);
+        }
+      }
+      catch (_){
         throw Exception(l10n.teamNameAlreadyInUse);
       }
 

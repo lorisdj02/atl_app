@@ -1,5 +1,6 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/callups_response.dart';
 import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
@@ -36,16 +37,16 @@ class _CallupsScreenState extends State<CallupsScreen> {
 
   Future<void> _loadData() async {
     try {
-      final data = await DBRead.getCallupsScreen(
+      final CallupsResponse data = await DBRead.getCallupsScreen(
         widget.tournament.id,
         widget.team.id,
       );
 
       setState(() {
-        _teamPlayers = data[ApiJsonKeys.players];
-        _selectedPlayerIds = data[ApiJsonKeys.calledUpPlayerIds].toSet();
-        _tournamentSport = data[ApiJsonKeys.sport];
-        _tournament = data[ApiJsonKeys.tournament];
+        _teamPlayers = data.players;
+        _selectedPlayerIds = data.calledUpPlayerIds.toSet();
+        _tournamentSport = data.sport;
+        _tournament = data.tournament;
         _isLoading = false;
       });
     } catch (e) {

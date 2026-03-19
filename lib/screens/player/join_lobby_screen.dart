@@ -1,6 +1,7 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/responses/join_lobby_response.dart';
 import 'package:flutter/material.dart';
 import '../shop/checkout_screen.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   List<LobbyBooking> _availableLobbies = [];
   bool _isLoading = false;
 
-  Map<int, Field> _fieldCache = {};
+  Map<int, Field> _fieldsCache = {};
   Map<int, String> _completeAddressPerField = {};
   Map<int, String> _usernamePerBooking = {};
   Map<int, int> _playersPaidPerBooking = {};
@@ -95,7 +96,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         }
       }
 
-      final data = await DBRead.getJoinLobbyScreen(
+      final JoinLobbyResponse data = await DBRead.getJoinLobbyScreen(
         playerId,
         _selectedTotalPlayers,
         _selectedCity,
@@ -104,7 +105,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       );
 
 
-      List<LobbyBooking> lobbies = data[ApiJsonKeys.bookings] as List<LobbyBooking>;
+      List<LobbyBooking> lobbies = data.lobbies;
 
       // Filter out lobbies where current user is the owner
       lobbies = lobbies.where((lobby) => lobby.ownerPlayerId != playerId).toList();
@@ -118,11 +119,11 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
       setState(() {
         _availableLobbies = lobbies;
-        _fieldCache = data[ApiJsonKeys.fieldCache];
-        _completeAddressPerField = data[ApiJsonKeys.completeAddressPerField];
-        _usernamePerBooking = data[ApiJsonKeys.usernamePerBooking];
-        _playersPaidPerBooking = data[ApiJsonKeys.playersPaidPerBooking];
-        _availableCities = data[ApiJsonKeys.cities];
+        _fieldsCache = data.fieldsCache;
+        _completeAddressPerField = data.completeAddressPerField;
+        _usernamePerBooking = data.usernamePerBooking;
+        _playersPaidPerBooking = data.playersPaidPerBooking;
+        _availableCities = data.cities;
         _isLoading = false;
       });
     } catch (e) {
@@ -720,7 +721,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                         children: [
                           BookingWidget(
                             playersPaid: _playersPaidPerBooking[lobby.id] ?? 0,
-                            field: _fieldCache[lobby.fieldId]!,
+                            field: _fieldsCache[lobby.fieldId]!,
                             startTime: lobby.startTime,
                             finishTime: lobby.finishTime,
                             ownerUsername: _usernamePerBooking[lobby.id],

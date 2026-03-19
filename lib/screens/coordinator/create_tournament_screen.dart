@@ -1,3 +1,5 @@
+import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
+import 'package:atl_app/database/responses/tournament_parameters_response.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -19,12 +21,7 @@ import '../../database/db_read.dart';
 import '../../database/db_write.dart';
 import '../../config/api_json_keys.dart';
 
-enum Round2Option {
-  none,
-  groupStageOnly,
-  finalStageOnly,
-  both,
-}
+enum Round2Option { none, groupStageOnly, finalStageOnly, both }
 
 class CreateTournamentScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -153,14 +150,15 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final data = await DBRead.getCities();
-      final List<City> cities = data[ApiJsonKeys.cities] ?? [];
+      final cities = await DBRead.getCities();
       setState(() {
         _cities = cities;
       });
     } catch (e) {
       if (mounted) {
-        _showError(AppLocalizations.of(context).errorLoadingCities(e.toString()));
+        _showError(
+          AppLocalizations.of(context).errorLoadingCities(e.toString()),
+        );
       }
     }
   }
@@ -173,22 +171,25 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = await DBRead.getFieldsByPlayersAndCityAndSportCategory(
-        maxPlayers: _selectedSport!.maxPlayersPerTeam,
-        cityId: _selectedCity!,
-        sportCategory: _selectedSport!.category,
-      );
+      final FieldsAndMaxPlayersPerFieldResponse data =
+          await DBRead.getFieldsByPlayersAndCityAndSportCategory(
+            maxPlayers: _selectedSport!.maxPlayersPerTeam,
+            cityId: _selectedCity!,
+            sportCategory: _selectedSport!.category,
+          );
 
       setState(() {
-        _fields = data[ApiJsonKeys.fields];
-        _maxPlayerPerField = data[ApiJsonKeys.maxPlayersPerField];
+        _fields = data.fields;
+        _maxPlayerPerField = data.maxPlayersPerField;
       });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).errorLoadingFieldsShort(e.toString()),
+              AppLocalizations.of(
+                context,
+              ).errorLoadingFieldsShort(e.toString()),
             ),
             backgroundColor: Colors.red,
           ),
@@ -346,7 +347,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).errorCreatingTournament(e.toString()),
+              AppLocalizations.of(
+                context,
+              ).errorCreatingTournament(e.toString()),
             ),
             backgroundColor: Colors.red,
           ),
@@ -372,7 +375,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   bool _isFieldOversized(Field field) {
-    if (_selectedSport == null || _maxPlayerPerField[field.id] == null) return false;
+    if (_selectedSport == null || _maxPlayerPerField[field.id] == null)
+      return false;
     final minPlayers = _selectedSport!.minPlayersPerTeam * 2;
     return minPlayers < _maxPlayerPerField[field.id]!;
   }
@@ -405,9 +409,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       context: context,
       builder: (context) => FieldSizeAlertDialog(
         field: field,
-        customMessage: AppLocalizations.of(context).oversizedFieldDialogMessage(
-          _maxPlayerPerField[field.id]!,
-        ),
+        customMessage: AppLocalizations.of(
+          context,
+        ).oversizedFieldDialogMessage(_maxPlayerPerField[field.id]!),
         maxPlayers: _maxPlayerPerField[field.id]!,
         onConfirm: () {
           setState(() {
@@ -575,7 +579,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             children: [
               Text(
                 l10n.firstPlacePrize,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Switch(
                 value: _prize1,
@@ -610,7 +617,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             children: [
               Text(
                 l10n.secondPlacePrize,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Switch(
                 value: _prize2,
@@ -670,12 +680,21 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             children: [
               Text(
                 l10n.visibilityLabel,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               SegmentedButton<bool>(
                 segments: [
-                  ButtonSegment(value: true, label: Text(l10n.publicTournament)),
-                  ButtonSegment(value: false, label: Text(l10n.privateTournament)),
+                  ButtonSegment(
+                    value: true,
+                    label: Text(l10n.publicTournament),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text(l10n.privateTournament),
+                  ),
                 ],
                 selected: {_isPublic},
                 onSelectionChanged: (Set<bool> newSelection) {
@@ -703,7 +722,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             children: [
               Text(
                 l10n.forProfitTournament,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Switch(
                 value: _hasProfit,
@@ -1159,7 +1181,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         const SizedBox(height: 32),
 
         // Tournament name
-        ATLTextField(controller: _nameController, hintText: l10n.tournamentNameHint),
+        ATLTextField(
+          controller: _nameController,
+          hintText: l10n.tournamentNameHint,
+        ),
 
         const SizedBox(height: 16),
 
@@ -1174,7 +1199,10 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             maxLines: 6,
             decoration: InputDecoration(
               hintText: l10n.tournamentDescHint,
-              hintStyle: const TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
+              hintStyle: const TextStyle(
+                color: Color(0xFFB0B0B0),
+                fontSize: 16,
+              ),
               border: OutlineInputBorder(borderSide: BorderSide.none),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 20,
@@ -1201,96 +1229,100 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   Future<Widget> _buildStep5() async {
     final l10n = AppLocalizations.of(context);
     final fictitiousTournament = _createFictitiousTournament();
+    try {
+      final TournamentParametersResponse data =
+          await DBRead.calculateTournamentParameters(
+            fictitiousTournament,
+            _prize1,
+            _prize2,
+          );
 
-    final Map<String, dynamic> data = await DBRead.calculateTournamentParameters(
-      fictitiousTournament,
-      _prize1,
-      _prize2,
-    );
+      // Calculate all values from backend
+      final fee = data.fee;
+      final coordinatorPay = data.coordinatorPay;
+      final prize1Value = data.prize1;
+      final prize2Value = data.prize2;
 
-    // Calculate all values from backend
-    final fee = data[ApiJsonKeys.fee] as double;
-    final coordinatorPay = data[ApiJsonKeys.coordinatorPay] as double;
-    final prize1Value = data[ApiJsonKeys.prize1] as double;
-    final prize2Value = data[ApiJsonKeys.prize2] as double;
+      // Get city name
+      final City city = _cities.firstWhere((c) => c.id == _selectedCity);
+      final cityName = city.name;
 
-    // Get city name
-    final City city = _cities.firstWhere((c) => c.id == _selectedCity);
-    final cityName = city.name;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          l10n.tournamentSummaryTitle,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: ATLColors.darkBlue,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l10n.tournamentSummaryTitle,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: ATLColors.darkBlue,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 32),
+          const SizedBox(height: 32),
 
-        TournamentSummary(
-          tournament: fictitiousTournament,
-          sport: _selectedSport!,
-          field: _selectedField!,
-          cityName: cityName,
-          fee: fee,
-          prize1Value: prize1Value,
-          prize2Value: prize2Value,
-          totalMatches: _calculateTotalMatches(),
-          round2Display: _round2OptionLabel(l10n, _round2Option),
-          primaryColor: ATLColors.getPrimaryColor(widget.currentSport),
-        ),
+          TournamentSummary(
+            tournament: fictitiousTournament,
+            sport: _selectedSport!,
+            field: _selectedField!,
+            cityName: cityName,
+            fee: fee,
+            prize1Value: prize1Value,
+            prize2Value: prize2Value,
+            totalMatches: _calculateTotalMatches(),
+            round2Display: _round2OptionLabel(l10n, _round2Option),
+            primaryColor: ATLColors.getPrimaryColor(widget.currentSport),
+          ),
 
-        const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-        // Coordinator pay
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: ATLColors.getPrimaryColor(
-              widget.currentSport,
-            ).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: ATLColors.getPrimaryColor(widget.currentSport),
-              width: 2,
+          // Coordinator pay
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: ATLColors.getPrimaryColor(
+                widget.currentSport,
+              ).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: ATLColors.getPrimaryColor(widget.currentSport),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  l10n.totalRevenueLabel,
+                  style: TextStyle(fontSize: 16, color: ATLColors.subtext),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '€${coordinatorPay.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: ATLColors.getPrimaryColor(widget.currentSport),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Column(
-            children: [
-              Text(
-                l10n.totalRevenueLabel,
-                style: TextStyle(fontSize: 16, color: ATLColors.subtext),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '€${coordinatorPay.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: ATLColors.getPrimaryColor(widget.currentSport),
-                ),
-              ),
-            ],
+
+          const SizedBox(height: 32),
+
+          ATLButton(
+            text: l10n.createTournamentButton,
+            size: ATLButtonSize.large,
+            isFilled: true,
+            color: ATLColors.getPrimaryColor(widget.currentSport),
+            onPressed: _createTournament,
+            fullWidth: true,
           ),
-        ),
-
-        const SizedBox(height: 32),
-
-        ATLButton(
-          text: l10n.createTournamentButton,
-          size: ATLButtonSize.large,
-          isFilled: true,
-          color: ATLColors.getPrimaryColor(widget.currentSport),
-          onPressed: _createTournament,
-          fullWidth: true,
-        ),
-      ],
-    );
+        ],
+      );
+    } catch (e) {
+      throw Exception(l10n.errorGeneric(e.toString()));
+    }
   }
 
   int _calculateTotalMatches() {

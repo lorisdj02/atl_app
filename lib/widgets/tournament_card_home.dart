@@ -70,7 +70,7 @@ class TournamentCardHome extends StatelessWidget {
     );
 
     final groupStandings =
-        standings.where((s) => s.group == userStanding.group).toList()
+        standings.where((s) => s.groupName == userStanding.groupName).toList()
           ..sort((a, b) => b.points.compareTo(a.points));
 
     // Find next match
@@ -97,7 +97,7 @@ class TournamentCardHome extends StatelessWidget {
           // Next match card
           if (nextMatch != null) ...[
             Text(
-              l10n.groupLabel(userStanding.group),
+              l10n.groupLabel(userStanding.groupName),
               style: TextStyle(
                 color: ATLColors.subtext,
                 fontSize: 12,

@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/referee_home_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -25,7 +26,8 @@ class RefereeHomeScreen extends StatefulWidget {
 }
 
 class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
-  late final SportCategory _currentSport = SportCategory.football;
+  late final userProvider = Provider.of<AccountProvider>(context, listen: false);
+  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
 
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
@@ -96,14 +98,14 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         setState(() => _isLoading = false);
         return;
       }
-
-      final data = await DBRead.getRefereeHomeScreen(
+      final RefereeHomeResponse data = await DBRead.getRefereeHomeScreen(
         refereeId: refereeId,
         currentSport: _currentSport,
       );
 
       // Sort matches by scheduled start time
-      final assignedMatches = data[ApiJsonKeys.assignedMatches] as List<FootballMatch>;
+      
+      final assignedMatches = data.assignedFootballMatches;
       assignedMatches.sort((a, b) {
         if (a.scheduledStart == null && b.scheduledStart == null) return 0;
         if (a.scheduledStart == null) return 1;
@@ -127,15 +129,20 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
       if (mounted) {
         setState(() {
           _assignedMatches = assignedMatches;
-          _teamsCache = data[ApiJsonKeys.teamsCache] as Map<int, Team>;
-          _minutesRoundPerTournament = data[ApiJsonKeys.minutesRoundPerTournament] as Map<int, int?>;
-          _minutesPausePerTournament = data[ApiJsonKeys.minutesPausePerTournament] as Map<int, int?>;
+          _teamsCache = data.teamsCache;
+          _minutesRoundPerTournament = data.minutesRoundPerTournament;
+          _minutesPausePerTournament = data.minutesPausePerTournament;
           _matchesPerDate = matchesPerDate;
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error loading referee data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
       if (mounted) {
         setState(() => _isLoading = false);
       }

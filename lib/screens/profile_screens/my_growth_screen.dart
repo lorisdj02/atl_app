@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/my_growth_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -39,30 +40,37 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
   Future<void> _loadData() async {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final user = userProvider.activeAccount;
+    final l10n = AppLocalizations.of(context);
     if (user == null) {
       setState(() => _isLoading = false);
       return;
     }
     try {
-      final data = await DBRead.getMyGrowthScreen(user.id);
+      final MyGrowthResponse data = await DBRead.getMyGrowthScreen(user.id);
       if (mounted) {
         setState(() {
-          _currentLevel = (data[ApiJsonKeys.level] as num).toInt();
-          final steps = data[ApiJsonKeys.growthSteps] as List<GrowthStep>;
+          _currentLevel = data.level;
+          final steps = data.growthSteps;
           steps.sort((a, b) => a.level.compareTo(b.level));
           _growthSteps = steps;
           _isReferee = userProvider.isReferee;
           _isCoordinator = userProvider.isCoordinator;
           if (_isReferee) {
-            _minPay = data[ApiJsonKeys.minRefereePayPerCategoryPerLevel]
-                as Map<int, Map<SportCategory, double>>;
-            _maxPay = data[ApiJsonKeys.maxRefereePayPerCategoryPerLevel]
-                as Map<int, Map<SportCategory, double>>;
+            _minPay = data.minRefereePayPerCategoryPerLevel;
+            _maxPay = data.maxRefereePayPerCategoryPerLevel;
           }
           _isLoading = false;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.errorLoadingData(e.toString()),
+            style: const TextStyle(color: Colors.white),
+          ),          backgroundColor: Colors.red,
+        ),
+      );
       if (mounted) setState(() => _isLoading = false);
     }
   }

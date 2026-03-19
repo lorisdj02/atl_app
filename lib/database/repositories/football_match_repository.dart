@@ -24,7 +24,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 5,
       status: FootballMatchStatus.startHalf,
       tournamentId: 8,
-      group: 'A',
+      groupName: 'A',
       day: 1,
       scoreHome: 1,
       scoreAway: 0,
@@ -39,7 +39,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 7,
       status: FootballMatchStatus.finished,
       tournamentId: 8,
-      group: 'A',
+      groupName: 'A',
       day: 1,
       startMatch: DateTime.now().subtract(const Duration(hours: 2)),
       halfTime: DateTime.now().subtract(const Duration(hours: 1, minutes: 40)),
@@ -52,7 +52,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 9,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'B',
+      groupName: 'B',
       day: 1,
     ),
     FootballMatch(
@@ -61,7 +61,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 11,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'B',
+      groupName: 'B',
       day: 1,
     ),
     FootballMatch(
@@ -70,7 +70,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 6,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'A',
+      groupName: 'A',
       day: 2,
     ),
     FootballMatch(
@@ -79,7 +79,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 7,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'A',
+      groupName: 'A',
       day: 2,
     ),
     FootballMatch(
@@ -88,7 +88,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 10,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'B',
+      groupName: 'B',
       day: 2,
     ),
     FootballMatch(
@@ -97,7 +97,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 11,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'B',
+      groupName: 'B',
       day: 2,
     ),
     FootballMatch(
@@ -106,7 +106,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 7,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'A',
+      groupName: 'A',
       day: 3,
     ),
     FootballMatch(
@@ -115,7 +115,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 6,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'A',
+      groupName: 'A',
       day: 3,
     ),
     FootballMatch(
@@ -124,7 +124,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 11,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'B',
+      groupName: 'B',
       day: 3,
     ),
     FootballMatch(
@@ -133,38 +133,38 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       awayTeamId: 10,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'B',
+      groupName: 'B',
       day: 3,
     ),
     FootballMatch(
       id: 14,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'SF1',
+      groupName: 'SF1',
     ),
     FootballMatch(
       id: 15,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'SF1',
+      groupName: 'SF1',
     ),
     FootballMatch(
       id: 16,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'SF2',
+      groupName: 'SF2',
     ),
     FootballMatch(
       id: 17,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'SF2',
+      groupName: 'SF2',
     ),
     FootballMatch(
       id: 18,
       status: FootballMatchStatus.notScheduled,
       tournamentId: 8,
-      group: 'FI',
+      groupName: 'FI',
     ),
   ];
 
@@ -185,7 +185,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         homeTeamId: homeTeamId,
         awayTeamId: awayTeamId,
         tournamentId: tournamentId,
-        group: group,
+        groupName: group,
         day: day,
         status: FootballMatchStatus.notScheduled,
       );
@@ -349,7 +349,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
   Future<Map<String, dynamic>> updateKnockOutMatch(
     int tournamentId,
-    String group,
+    String groupName,
     bool round2FinalStage, {
     int? homeTeamId,
     int? awayTeamId,
@@ -360,7 +360,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         final List<int> ids = [];
 
         for (final match in mockData) {
-          if (match.tournamentId == tournamentId && match.group == group) {
+          if (match.tournamentId == tournamentId && match.groupName == groupName) {
             ids.add(match.id);
           }
         }
@@ -408,7 +408,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
                 .where(
                   (m) =>
                       m.tournamentId == match.tournamentId &&
-                      m.group == match.group,
+                      m.groupName == match.groupName,
                 )
                 .length ==
             2;
@@ -439,7 +439,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
             .where(
               (m) =>
                   m.tournamentId == match.tournamentId &&
-                  m.group == match.group,
+                  m.groupName == match.groupName,
             )
             .toList();
 
@@ -471,7 +471,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
             .where(
               (m) =>
                   m.tournamentId == match.tournamentId &&
-                  m.group == match.group,
+                  m.groupName == match.groupName,
             )
             .toList();
 
@@ -592,7 +592,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
           return false;
         }
 
-        if (match.group.length <= 2 && match.status == FootballMatchStatus.startHalf) {
+        if (match.groupName.length <= 2 && match.status == FootballMatchStatus.startHalf) {
           // Fase a gironi
           return true;
         }
@@ -722,7 +722,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         );
 
         // Siamo in finale, non c'è partita successiva da aggiornare
-        if (match.group == 'FI') {
+        if (match.groupName == 'FI') {
           return [];
         }
 
@@ -730,13 +730,13 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
 
         // Trova la partita successiva
         String nextGroup;
-        if (match.group.startsWith('OF')) {
+        if (match.groupName.startsWith('OF')) {
           nextGroup =
-              'QF${((int.parse(match.group.substring(2)) + 1) / 2).ceil()}';
-        } else if (match.group.startsWith('QF')) {
+              'QF${((int.parse(match.groupName.substring(2)) + 1) / 2).ceil()}';
+        } else if (match.groupName.startsWith('QF')) {
           nextGroup =
-              'SF${((int.parse(match.group.substring(2)) + 1) / 2).ceil()}';
-        } else if (match.group.startsWith('SF')) {
+              'SF${((int.parse(match.groupName.substring(2)) + 1) / 2).ceil()}';
+        } else if (match.groupName.startsWith('SF')) {
           nextGroup = 'FI';
         } else {
           return [];
@@ -745,7 +745,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
         int aggregateScoreHome = match.scoreHome ?? 0;
         int aggregateScoreAway = match.scoreAway ?? 0;
 
-        final bool willBeHome = (int.parse(match.group.substring(2))) % 2 == 1;
+        final bool willBeHome = (int.parse(match.groupName.substring(2))) % 2 == 1;
         List<FootballMatch> nextMatches = await getMatchesByGroup(
           match.tournamentId,
           nextGroup,
@@ -860,7 +860,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
   Future<bool> areAllMatchesFinished(int tournamentId, String prefix) async {
     final matches = await getMatchesByTournament(tournamentId);
     final phaseMatches = matches
-        .where((m) => m.group.startsWith(prefix))
+        .where((m) => m.groupName.startsWith(prefix))
         .toList();
 
     if (phaseMatches.isEmpty) {
@@ -1137,7 +1137,7 @@ class FootballMatchRepository extends BaseRepository<FootballMatch> {
       return mockData
           .where(
             (match) =>
-                match.tournamentId == tournamentId && match.group == group,
+                match.tournamentId == tournamentId && match.groupName == group,
           )
           .toList();
     } else {

@@ -40,7 +40,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   @override
   void initState() {
     super.initState();
-    final user = Provider.of<AccountProvider>(context, listen: false).activeAccount;
+    final user = Provider.of<AccountProvider>(
+      context,
+      listen: false,
+    ).activeAccount;
 
     _usernameController = TextEditingController(text: user?.username ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
@@ -57,15 +60,19 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   }
 
   Future<void> _loadCities() async {
-    final user = Provider.of<AccountProvider>(context, listen: false).activeAccount;
+    final user = Provider.of<AccountProvider>(
+      context,
+      listen: false,
+    ).activeAccount;
     try {
-      final data = await DBRead.getCities();
+      final List<City> cities = await DBRead.getCities();
       if (mounted) {
-        final cities = data[ApiJsonKeys.cities] as List<City>;
         City? currentCity;
         if (user?.preferredCityId != null) {
           try {
-            currentCity = cities.firstWhere((c) => c.id == user!.preferredCityId);
+            currentCity = cities.firstWhere(
+              (c) => c.id == user!.preferredCityId,
+            );
           } catch (_) {}
         }
         setState(() {
@@ -74,7 +81,16 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         });
       }
     } catch (e) {
-      print('Error loading cities: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorLoadingCities(e.toString()),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -171,7 +187,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
             ? _selectedCity?.id
             : null,
       );
-  
+
       if (!data.containsKey(ApiJsonKeys.updatedUser)) {
         throw Exception('Failed to update user info');
       }
@@ -343,7 +359,10 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                       style: const TextStyle(color: ATLColors.subtext),
                     ),
                     isExpanded: true,
-                    icon: const Icon(Icons.arrow_drop_down, color: ATLColors.darkBlue),
+                    icon: const Icon(
+                      Icons.arrow_drop_down,
+                      color: ATLColors.darkBlue,
+                    ),
                     items: _cities.map((city) {
                       return DropdownMenuItem<City>(
                         value: city,

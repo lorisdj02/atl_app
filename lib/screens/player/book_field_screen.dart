@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -14,6 +15,8 @@ import '../../database/db_read.dart';
 import '../../config/api_json_keys.dart';
 import '../shop/checkout_screen.dart';
 import '../../models/checkout_session.dart';
+
+import '../../database/responses/book_field_response.dart';
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
 enum BookingType { none, private, lobby }
@@ -96,18 +99,16 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final data = await DBRead.getBookFieldScreen();
+      final BookFieldResponse data = await DBRead.getBookFieldScreen();
 
       final preferredCityId = Provider.of<AccountProvider>(
         context,
         listen: false,
       ).cityId;
       setState(() {
-        _cities = data[ApiJsonKeys.cities] as List<City>;
-        _minOpeningTimePerCity =
-            data[ApiJsonKeys.minOpeningTimePerCity] as Map<int, TimeOfDay>;
-        _maxClosingTimePerCity =
-            data[ApiJsonKeys.maxClosingTimePerCity] as Map<int, TimeOfDay>;
+        _cities = data.cities;
+        _minOpeningTimePerCity = data.minOpeningTimePerCity;
+        _maxClosingTimePerCity = data.maxClosingTimePerCity;
         if (preferredCityId != null &&
             _cities.any((c) => c.id == preferredCityId)) {
           _selectedCity = preferredCityId;
@@ -227,7 +228,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _endTime!.minute,
       );
 
-      final data = await DBRead.getFreeFieldsByPlayerAndCityAndDate(
+      final FieldsAndMaxPlayersPerFieldResponse data = await DBRead.getFreeFieldsByPlayerAndCityAndDate(
         maxPlayers: _maxPlayers,
         cityId: _selectedCity!,
         startDateTime: startDateTime,
@@ -237,8 +238,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
       // Filter available fields
       setState(() {
-        _fields = data[ApiJsonKeys.fields];
-        _maxPlayerPerField = data[ApiJsonKeys.maxPlayersPerField] as Map<int, int>;
+        _fields = data.fields;
+        _maxPlayerPerField = data.maxPlayersPerField;
       });
     } catch (e) {
       if (mounted) {

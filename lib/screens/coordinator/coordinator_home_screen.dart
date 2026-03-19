@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/coordinator_home_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -26,7 +27,6 @@ class CoordinatorHomeScreen extends StatefulWidget {
 }
 
 class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
-  late final SportCategory _currentSport = SportCategory.football;
 
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
@@ -36,7 +36,15 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   Map<int, int?> _minutesRoundPerTournament = {};
   Map<int, int?> _minutesPausePerTournament = {};
   final ScrollController _dayScrollController = ScrollController();
-  Map<DateTime , List<FootballMatch>> _matchesPerDate = {};
+  Map<DateTime, List<FootballMatch>> _matchesPerDate = {};
+
+   late final AccountProvider userProvider = Provider.of<AccountProvider>(
+    context,
+    listen: false,
+  );
+
+    late final SportCategory _sportCategory =
+      userProvider.selectedSportCategory ?? SportCategory.football;
 
   @override
   void initState() {
@@ -94,47 +102,59 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       final userProvider = Provider.of<AccountProvider>(context, listen: false);
       final coordinatorId = userProvider.activeRoleId;
 
-      if (coordinatorId == null || _currentSport != SportCategory.football) {
+      if (coordinatorId == null || _sportCategory != SportCategory.football) {
         setState(() => _isLoading = false);
         return;
       }
 
-      final coordinatorData = await DBRead.getCoordinatorHomeScreen(
-        coordinatorId: coordinatorId,
-        currentSport: _currentSport,
-      );
+      final CoordinatorHomeResponse coordinatorData =
+          await DBRead.getCoordinatorHomeScreen(
+            coordinatorId: coordinatorId,
+            currentSport: _sportCategory,
+          );
 
       Map<DateTime, List<FootballMatch>> matchesPerDate = {};
-      for (var matches in coordinatorData['matchesPerTournament'].values) {
-        for (var match in matches) {
-          if (match.scheduledStart != null) {
-            final matchDate = DateTime(
-              match.scheduledStart!.year,
-              match.scheduledStart!.month,
-              match.scheduledStart!.day,
-            );
-            if (!matchesPerDate.containsKey(matchDate)) {
-              matchesPerDate[matchDate] = [];
+      if (_sportCategory == SportCategory.football) {
+        for (var matches
+            in coordinatorData.footballMatchesPerTournament.values) {
+          for (var match in matches) {
+            if (match.scheduledStart != null) {
+              final matchDate = DateTime(
+                match.scheduledStart!.year,
+                match.scheduledStart!.month,
+                match.scheduledStart!.day,
+              );
+              if (!matchesPerDate.containsKey(matchDate)) {
+                matchesPerDate[matchDate] = [];
+              }
+              matchesPerDate[matchDate]!.add(match);
             }
-            matchesPerDate[matchDate]!.add(match);
           }
         }
-      }
 
-      if (mounted) {
-        setState(() {
-          _activeTournaments = coordinatorData[ApiJsonKeys.activeTournaments];
-          _matchesPerTournament = coordinatorData[ApiJsonKeys.matchesPerTournament];
-          _teamsCache = coordinatorData[ApiJsonKeys.teamsCache];
-          _minutesRoundPerTournament = coordinatorData[ApiJsonKeys.minutesRoundPerTournament];
-          _minutesPausePerTournament = coordinatorData[ApiJsonKeys.minutesPausePerTournament];
-          _matchesPerDate = matchesPerDate;
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _activeTournaments = coordinatorData.activeTournaments;
+            _matchesPerTournament =
+                coordinatorData.footballMatchesPerTournament;
+            _teamsCache = coordinatorData.teamsCache;
+            _minutesRoundPerTournament =
+                coordinatorData.minutesRoundPerTournament;
+            _minutesPausePerTournament =
+                coordinatorData.minutesPausePerTournament;
+            _matchesPerDate = matchesPerDate;
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
-      print('Error loading coordinator data: $e');
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
         setState(() => _isLoading = false);
       }
     }
@@ -163,16 +183,16 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       Widget screen;
       switch (index) {
         case 0:
-          screen = ShopScreen(currentSport: _currentSport);
+          screen = ShopScreen(currentSport: _sportCategory);
           break;
         case 1:
-          screen = AllTournamentsScreen(currentSport: _currentSport);
+          screen = AllTournamentsScreen(currentSport: _sportCategory);
           break;
         case 2:
-          screen = TeamScreen(currentSport: _currentSport);
+          screen = TeamScreen(currentSport: _sportCategory);
           break;
         case 3:
-          screen = ProfileScreen(currentSport: _currentSport);
+          screen = ProfileScreen(currentSport: _sportCategory);
           break;
         default:
           return;
@@ -251,7 +271,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(AppLocalizations.of(context).darkModeComingSoonSnack),
+                  content: Text(
+                    AppLocalizations.of(context).darkModeComingSoonSnack,
+                  ),
                 ),
               );
             },
@@ -270,9 +292,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       bottomNavigationBar: PlayerCoordinatorBottomBar(
         currentIndex: 4,
         onTap: _onNavTap,
-        currentSport: _currentSport,
+        currentSport: _sportCategory,
         isHome: true,
-        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount!.id,
+        userId: Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        ).activeAccount!.id,
       ),
     );
   }
@@ -367,12 +392,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? ATLColors.getPrimaryColor(_currentSport)
+                    ? ATLColors.getPrimaryColor(_sportCategory)
                     : Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected
-                      ? ATLColors.getPrimaryColor(_currentSport)
+                      ? ATLColors.getPrimaryColor(_sportCategory)
                       : ATLColors.subtext.withOpacity(0.3),
                   width: 2,
                 ),
@@ -427,7 +452,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: ATLColors.getPrimaryColor(_currentSport),
+              primary: ATLColors.getPrimaryColor(_sportCategory),
               onPrimary: Colors.white,
               onSurface: ATLColors.darkBlue,
             ),
@@ -477,11 +502,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
     // Check if there are any matches for the selected date
     final hasMatches = _matchesPerDate.containsKey(
-      DateTime(
-        _selectedDate.year,
-        _selectedDate.month,
-        _selectedDate.day,
-      ),
+      DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day),
     );
 
     if (!hasMatches) {
@@ -504,8 +525,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               const SizedBox(height: 8),
               Text(
                 AppLocalizations.of(context).noMatchesOn(
-                  DateFormat.yMMMd(Localizations.localeOf(context).toString())
-                      .format(_selectedDate),
+                  DateFormat.yMMMd(
+                    Localizations.localeOf(context).toString(),
+                  ).format(_selectedDate),
                 ),
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
               ),
@@ -547,8 +569,8 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
               child: Row(
                 children: [
                   Icon(
-                    _currentSport.icon,
-                    color: ATLColors.getPrimaryColor(_currentSport),
+                    _sportCategory.icon,
+                    color: ATLColors.getPrimaryColor(_sportCategory),
                     size: 24,
                   ),
                   const SizedBox(width: 8),
@@ -573,9 +595,11 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
                   match: match,
                   homeTeam: _teamsCache[match.homeTeamId],
                   awayTeam: _teamsCache[match.awayTeamId],
-                  currentSport: _currentSport,
-                  minutesPerRound: _minutesRoundPerTournament[tournament.id] ?? 0,
-                  minutesPerPause: _minutesPausePerTournament[tournament.id] ?? 0,
+                  currentSport: _sportCategory,
+                  minutesPerRound:
+                      _minutesRoundPerTournament[tournament.id] ?? 0,
+                  minutesPerPause:
+                      _minutesPausePerTournament[tournament.id] ?? 0,
                   onMatchUpdated: _loadData,
                 ),
               ),

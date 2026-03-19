@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/models/tournament_participation.dart';
 import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -40,12 +41,12 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (teamId == null) return;
 
-      final data = await DBRead.getTeamParticipations(teamId);
+      final List<TournamentParticipation> participations = await DBRead.getTeamParticipations(teamId);
 
       if (mounted) {
         setState(() {
           _pendingPaymentsCount =
-              data[ApiJsonKeys.tournamentParticipations]?.length ?? 0;
+              participations.length;
         });
       }
     } catch (e) {

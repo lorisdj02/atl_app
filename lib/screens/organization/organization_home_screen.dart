@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/organization_home_response.dart';
 import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/widgets/organization_booking_widget.dart';
@@ -103,14 +104,14 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         return;
       }
 
-      final organizationData = await DBRead.getOrganizationHomeScreen(
+      final OrganizationHomeResponse organizationData = await DBRead.getOrganizationHomeScreen(
         organizationId: organizationId,
         currentSport: _currentSport,
       );
 
       Map<int, List<Booking>> bookingsByField = {};
 
-      for (var booking in organizationData[ApiJsonKeys.generalBookings] as List<Booking>) {
+      for (var booking in organizationData.generalBookings) {
         bookingsByField.putIfAbsent(booking.fieldId, () => []).add(booking);
       }
 
@@ -135,18 +136,24 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
 
       if (mounted) {
         setState(() {
-          _fields = organizationData[ApiJsonKeys.fields];
-          _cityNamePerField = organizationData[ApiJsonKeys.cityNamePerField];
+          _fields = organizationData.fields;
+          _cityNamePerField = organizationData.cityNamePerField;
           _bookingsByFieldByDate = bookingsByFieldByDate;
-          _detailedBookings = organizationData[ApiJsonKeys.detailedBookings];
-          _matchPerBooking = organizationData[ApiJsonKeys.matchPerBooking];
-          _usernamePerBooking = organizationData[ApiJsonKeys.usernamePerBooking];
-          _teamsCache = organizationData[ApiJsonKeys.teamsCache];
+          _detailedBookings = organizationData.detailedBookings;
+          _matchPerBooking = organizationData.footballMatchPerBooking;
+          _usernamePerBooking = organizationData.usernamePerBooking;
+          _teamsCache = organizationData.teamsCache;
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error loading organization data: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+        print('Error loading organization data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }

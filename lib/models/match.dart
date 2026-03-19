@@ -14,7 +14,7 @@ class Match {
   DateTime? endMatch;
   DateTime? scheduledStart;
   final int? day;
-  final String group;
+  final String groupName;
   int? motmPlayerId;
 
   PresenceStatus coordinatorStatus;
@@ -27,7 +27,7 @@ class Match {
     this.scoreAway,
     required this.tournamentId,
     this.day,
-    required this.group,
+    required this.groupName,
     this.startMatch,
     this.endMatch,
     this.scheduledStart,
@@ -44,7 +44,9 @@ class Match {
       'scoreAway': scoreAway,
       'tournamentId': tournamentId,
       'day': day,
-      'group': group,
+      'groupName': groupName,
+      'startMatch': startMatch?.toIso8601String(),
+      'endMatch': endMatch?.toIso8601String(),
       'scheduledStart': scheduledStart?.toIso8601String(),
       'presenceStatus': coordinatorStatus.toShortString(),
       'motmPlayerId': motmPlayerId,
@@ -60,7 +62,7 @@ class Match {
       scoreHome: json['scoreHome'],
       scoreAway: json['scoreAway'],
       tournamentId: json['tournamentId'],
-      group: json['group'],
+      groupName: json['groupName'],
       day: json['day'],
       scheduledStart: json['scheduledStart'] != null
           ? DateTime.parse(json['scheduledStart'])

@@ -1,5 +1,6 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/login_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/atl_button.dart';
@@ -60,10 +61,11 @@ class _LoginScreenState extends State<LoginScreen> {
       listen: false,
     );
     // Replace mock user creation with DB call
-    final loginData = await DBRead.handleLogin(usernameOrEmail, password);
-    final Account? user = loginData[ApiJsonKeys.user];
+    try{
+    final LoginResponse loginData = await DBRead.handleLogin(usernameOrEmail, password);
+    final Account? account = loginData.account;
 
-    if (user == null || user.passwordMD5 != password) {
+    if (account == null || account.passwordMD5 != password) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).invalidCredentials),
@@ -73,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final int? roleId = loginData[ApiJsonKeys.roleId];
+    final int? roleId = loginData.roleId;
     if (roleId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -84,10 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    userProvider.setActiveAccount(user, roleId: roleId);
+    userProvider.setActiveAccount(loginData.account!, roleId: roleId);
 
-    if (user.role == AccountRole.player) {
-      final int? teamId = loginData[ApiJsonKeys.team];
+    if (loginData.account!.role == AccountRole.player) {
+      final int? teamId = loginData.teamId;
       if (teamId != null) {
         userProvider.setCurrentTeamId(teamId);
       } else {
@@ -96,8 +98,16 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => HomeRouter.getHomeScreen(user)),
+      MaterialPageRoute(builder: (context) => HomeRouter.getHomeScreen(loginData.account!)),
     );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handleGuestUser() {

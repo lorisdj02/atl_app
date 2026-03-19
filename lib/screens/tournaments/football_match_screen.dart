@@ -1,4 +1,6 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/responses/football_match_events_response.dart';
+import 'package:atl_app/database/responses/football_match_response.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -121,6 +123,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         return Icons.circle;
     }
   }
+
   Map<String, double> _payPerRole = {};
 
   bool get _isNotScheduled =>
@@ -176,59 +179,68 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         listen: false,
       );
 
-      final data = await DBRead.getFootballMatchScreen(
+      final FootballMatchResponse data = await DBRead.getFootballMatchScreen(
         widget.matchId,
         refereeId: userProvider.isReferee ? userProvider.activeRoleId : null,
       );
-      List<FootballMatchEvent> events = data[ApiJsonKeys.events] ?? [];
+      List<FootballMatchEvent> events = data.events;
 
       events.sort(
         (a, b) => b.eventTime.compareTo(a.eventTime),
       ); // Ordina per data decrescente
 
       setState(() {
-        _match = data[ApiJsonKeys.match];
-        _homeTeam = data[ApiJsonKeys.homeTeam];
-        _awayTeam = data[ApiJsonKeys.awayTeam];
+        _match = data.match;
+        _homeTeam = data.homeTeam;
+        _awayTeam = data.awayTeam;
         _events = events;
-        _minutesPerRound = data[ApiJsonKeys.minutesPerRound];
-        _minutesPerPause = data[ApiJsonKeys.minutesPerPause];
-        _availableRefereeRoles = data[ApiJsonKeys.availableRefereeRoles];
-        _playersPerTeam = data[ApiJsonKeys.playersPerTeam];
-        _cityName = data[ApiJsonKeys.cityName];
-        _assignmentPerRefereeNameSurname =
-            data[ApiJsonKeys.assignmentPerRefereeNameSurname];
-        _field = data[ApiJsonKeys.field];
-        _coordinatorId = data[ApiJsonKeys.coordinatorId];
-        _refereeCheck = data[ApiJsonKeys.refereeCheck];
-        _canMatchFinish = data[ApiJsonKeys.canMatchFinish];
-        _hasRefereeLicense = data[ApiJsonKeys.hasRefereeLicense];
-        _payPerRole = data[ApiJsonKeys.payPerRole] ?? {};
+        _minutesPerRound = data.minutesPerRound;
+        _minutesPerPause = data.minutesPerPause;
+        _availableRefereeRoles = data.availableRefereeRoles;
+        _playersPerTeam = data.playersPerTeam;
+        _cityName = data.cityName;
+        _assignmentPerRefereeNameSurname = data.assignmentPerRefereeNameSurname;
+        _field = data.field;
+        _coordinatorId = data.coordinatorId;
+        _refereeCheck = data.refereeCheck;
+        _canMatchFinish = data.canMatchFinish;
+        _hasRefereeLicense = data.hasRefereeLicense;
+        _payPerRole = data.payPerRole;
         _isLoadingRefereeRoles = false;
         _isLoading = false;
       });
       _reloadAvailablePlayersPerTeam();
     } catch (e) {
-      print('Error loading match data: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_l10n.errorGeneric(e.toString()))),
+        );
+      }
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _refreshEvents() async {
     try {
-      final Map<String, dynamic> events = await DBRead.getMatchEvents(
+      final FootballMatchEventsResponse events = await DBRead.getFootballMatchEvents(
         widget.matchId,
       );
-      List<FootballMatchEvent> matchEvents = events[ApiJsonKeys.events] ?? [];
+      List<FootballMatchEvent> matchEvents = events.events;
       matchEvents.sort(
         (a, b) => b.eventTime.compareTo(a.eventTime),
       ); // Ordina per data decrescente
       setState(() {
         _events = matchEvents;
+        _canMatchFinish = events.canMatchFinish;
+        _isLoading = false;
       });
       _reloadAvailablePlayersPerTeam();
     } catch (e) {
-      print('Error refreshing events: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_l10n.errorGeneric(e.toString()))),
+        );
+      }
     }
   }
 
@@ -252,18 +264,18 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   Future<void> _showRefereeMatchDialog() async {
     if (_availableRefereeRoles.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.allRefereeRolesAssigned)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.allRefereeRolesAssigned)));
       }
       return;
     }
 
     if (!_hasRefereeLicense) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.noValidRefereeLicense)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.noValidRefereeLicense)));
       }
       return;
     }
@@ -284,9 +296,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (refereeId == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.errorRefereeNotFound)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.errorRefereeNotFound)));
       }
       return;
     }
@@ -304,9 +316,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         });
         _loadMatchData();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_l10n.assignmentCreated)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(_l10n.assignmentCreated)));
         }
       } else {
         if (mounted) {
@@ -318,9 +330,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     } catch (e) {
       print('Error creating assignment: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.errorCreatingAssignment)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.errorCreatingAssignment)));
       }
     }
   }
@@ -328,9 +340,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   Future<void> _showScheduleDialog() async {
     if (_field == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.errorFieldNotAvailable)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.errorFieldNotAvailable)));
       }
       return;
     }
@@ -472,17 +484,13 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       });
       _loadMatchData();
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_l10n.matchActionSuccess(actionLabel))),
         );
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_l10n.failedToMatchAction(actionLabel))),
         );
       }
@@ -632,15 +640,15 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       });
       _loadMatchData();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.penaltyShootoutStarted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.penaltyShootoutStarted)));
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.failedToStartPenalty)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.failedToStartPenalty)));
       }
     }
   }
@@ -684,9 +692,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       });
       _loadMatchData();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.motmAdded)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.motmAdded)));
       }
     } else {
       if (mounted) {
@@ -704,9 +712,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (!isCoordinator || _coordinatorId != userProvider.activeRoleId) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.onlyCoordinatorCanDelete)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.onlyCoordinatorCanDelete)));
       }
       return;
     }
@@ -714,9 +722,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     // Check if it's the most recent event
     if (_events.isEmpty || _events.first.id != event.id) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.cannotDeleteNotLast)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.cannotDeleteNotLast)));
       }
       return;
     }
@@ -774,9 +782,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       });
       _refreshEvents();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_l10n.eventDeleted)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.eventDeleted)));
       }
     } else {
       if (mounted) {

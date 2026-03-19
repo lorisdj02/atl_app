@@ -36,7 +36,7 @@ class FootballMatch extends Match {
     super.scoreAway,
     required super.tournamentId,
     super.day,
-    required super.group,
+    required super.groupName,
     super.startMatch,
     this.halfTime,
     this.startHalf,
@@ -59,7 +59,7 @@ class FootballMatch extends Match {
       scoreHome: json['scoreHome'],
       scoreAway: json['scoreAway'],
       tournamentId: json['tournamentId'],
-      group: json['group'],
+      groupName: json['groupName'],
       day: json['day'],
       scheduledStart: json['scheduledStart'] != null
           ? DateTime.parse(json['scheduledStart'])

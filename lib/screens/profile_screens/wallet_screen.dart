@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/wallet_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -31,10 +32,10 @@ class _WalletScreenState extends State<WalletScreen> {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final user = userProvider.activeAccount;
     if (user != null) {
-      final data = await DBRead.getWalletScreen(user.id);
+      final WalletResponse data = await DBRead.getWalletScreen(user.id);
       if (mounted) {
         setState(() {
-          _wallet = data[ApiJsonKeys.wallet];
+          _wallet = data.wallet;
           _isLoading = false;
         });
       }

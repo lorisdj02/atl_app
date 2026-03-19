@@ -1,5 +1,7 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/responses/abstract_team_response.dart';
+import 'package:atl_app/database/responses/players_in_team_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/sport_category.dart';
@@ -40,7 +42,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
 
   // Cache per palmares
   Map<int, Coordinator?> coordinatorCache = {};
-  Map<int, Field?> fieldCache = {};
+  Map<int, Field?> fieldsCache = {};
 
   // Cache per stats
   Map<int, FootballTeamStats?> playerStatsCache = {};
@@ -75,17 +77,17 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
 
   Future<void> loadData() async {
     try {
-      final data = await DBRead.getAbstractTeamScreen(getTeamId());
+      final AbstractTeamResponse data = await DBRead.getAbstractTeamScreen(getTeamId());
       setState(() {
-        team = data[ApiJsonKeys.team];
-        players = data[ApiJsonKeys.players];
-        palmares = data[ApiJsonKeys.palmares];
-        tournaments = data[ApiJsonKeys.tournaments];
-        coordinatorCache = data[ApiJsonKeys.coordinatorCache] ?? {};
-        fieldCache = data[ApiJsonKeys.fieldCache] ?? {};
-        playerStatsCache = data[ApiJsonKeys.playerStatsCache] ?? {};
-        cityNamePerField = data[ApiJsonKeys.cityNamePerField] ?? {};
-        historicalPlayers = data[ApiJsonKeys.historicalPlayers] ?? [];
+        team = data.team;
+        players = data.players;
+        palmares = data.palmares;
+        tournaments = data.tournaments;
+        coordinatorCache = data.coordinatorCache ?? {};
+        fieldsCache = data.fieldsCache ?? {};
+        playerStatsCache = data.footballPlayerStatsCache ?? {};
+        cityNamePerField = data.cityNamePerField ?? {};
+        historicalPlayers = data.historicalPlayers ?? [];
         playersLoaded = true;
       });
     } catch (e) {
@@ -99,7 +101,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
 
   void clearCache() {
     coordinatorCache.clear();
-    fieldCache.clear();
+    fieldsCache.clear();
     playerStatsCache.clear();
   }
 
@@ -118,9 +120,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   int getTeamId();
 
   Future<void> loadPlayersData(int teamId) async {
-    final data = await DBRead.getPlayersInTeam(teamId);
+    final PlayersInTeamResponse data = await DBRead.getPlayersInTeam(teamId);
 
-    List<Player> loadedPlayers = data[ApiJsonKeys.players] ?? [];
+    List<Player> loadedPlayers = data.players;
     if (loadedPlayers.isNotEmpty) {
       // Sort players: Captain, Vice1, Vice2, then others
       loadedPlayers.sort((a, b) {
@@ -361,7 +363,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                 tournament: tournament,
                 sportCategory: widget.currentSport,
                 coordinator: coordinatorCache[tournament.coordinatorId],
-                field: fieldCache[tournament.fieldId],
+                field: fieldsCache[tournament.fieldId],
                 cityName: cityNamePerField[tournament.fieldId],
               );
             },

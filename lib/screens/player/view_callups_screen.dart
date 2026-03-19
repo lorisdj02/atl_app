@@ -1,10 +1,10 @@
+
 import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
 import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class ViewCallupsScreen extends StatefulWidget {
@@ -38,14 +38,14 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = await DBRead.getViewCallupsScreen(
+      final List<Player> players = await DBRead.getViewCallupsScreen(
         widget.tournament.id,
         widget.teamId,
       );
       
       if (mounted) {
         setState(() {
-          _calledUpPlayers = data[ApiJsonKeys.players];
+          _calledUpPlayers = players;
           _isLoading = false;
         });
       }

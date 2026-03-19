@@ -1,3 +1,4 @@
+import 'package:atl_app/models/sport_category.dart';
 import 'package:atl_app/screens/guest/guest_home_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/account.dart';
@@ -20,8 +21,6 @@ class HomeRouter {
         return RefereeHomeScreen();
       case AccountRole.organization:
         return OrganizationHomeScreen();
-      default:
-        return GuestHomeScreen();
     }
   }
 }

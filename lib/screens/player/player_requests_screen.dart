@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/responses/player_requests_response.dart';
 import 'package:flutter/material.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
@@ -26,7 +27,7 @@ class PlayerRequestsScreen extends StatefulWidget {
 
 class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   List<TeamRequest> _requests = [];
-  Map<int, Player?> _playersCache = {};
+  Map<int, Player> _playersCache = {};
   bool _isLoading = true;
 
   @override
@@ -38,12 +39,12 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   Future<void> _loadRequests() async {
     final l10n = AppLocalizations.of(context);
     try {
-      final data = await DBRead.getTeamRequestsScreen(widget.teamId);
+      final PlayerRequestsResponse data = await DBRead.getTeamRequestsScreen(widget.teamId);
 
       if (mounted) {
         setState(() {
-          _requests = data[ApiJsonKeys.teamRequests] ?? [];
-          _playersCache = data[ApiJsonKeys.playersCache] ?? {};
+          _requests = data.teamRequests;
+          _playersCache = data.playersCache;
           _isLoading = false;
         });
       }

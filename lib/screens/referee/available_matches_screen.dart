@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/available_matches_response.dart';
 import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -48,11 +49,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = await DBRead.getCities();
+      final cities = await DBRead.getCities();
       if (mounted) {
         final preferredCityId =
             Provider.of<AccountProvider>(context, listen: false).cityId;
-        final cities = data[ApiJsonKeys.cities] as List<City>;
         City? defaultCity;
         if (preferredCityId != null) {
           try {
@@ -67,8 +67,14 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
         if (_selectedCity != null) await _loadMatches();
       }
     } catch (e) {
-      print('Error loading cities: $e');
+      
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
         setState(() => _isLoading = false);
       }
     }
@@ -80,14 +86,14 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final data = await DBRead.getAvailableMatchesScreen(
+      final AvailableMatchesResponse data = await DBRead.getAvailableMatchesScreen(
         widget.currentSport,
         Provider.of<AccountProvider>(context, listen: false).activeRoleId!,
         cityId: _selectedCity!.id,
         sportId: _selectedSportId,
       );
 
-      List<FootballMatch> availableMatches = data[ApiJsonKeys.matches];
+      List<FootballMatch> availableMatches = data.footballMatches;
       
 
       // Sort matches by scheduled start time
@@ -101,17 +107,23 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
       if (mounted) {
         setState(() {
           _availableMatches = availableMatches;
-          _teamsCache = data[ApiJsonKeys.teamsCache];
-          _minutesRoundPerTournament = data[ApiJsonKeys.minutesRoundPerTournament];
-          _minutesPausePerTournament = data[ApiJsonKeys.minutesPausePerTournament];
-          _matchesPerSport = data[ApiJsonKeys.matchesPerSport];
-          _sportNames = data[ApiJsonKeys.sportNames];
+          _teamsCache = data.teamsCache;
+          _minutesRoundPerTournament = data.minutesRoundPerTournament;
+          _minutesPausePerTournament = data.minutesPausePerTournament;
+          _matchesPerSport = data.matchesPerSport;
+          _sportNames = data.sportNames;
           _isLoading = false;
         });
       }
     } catch (e) {
       print('Error loading matches: $e');
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
         setState(() => _isLoading = false);
       }
     }

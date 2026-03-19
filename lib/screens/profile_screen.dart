@@ -46,11 +46,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadLevel() async {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     if (userProvider.isCoordinator || userProvider.isReferee) {
-      final data = await DBRead.getUserLevel(userProvider.activeAccount!.id);
+      try{
+      final int? level = await DBRead.getUserLevel(userProvider.activeAccount!.id);
       if (mounted) {
         setState(() {
-          _level = data[ApiJsonKeys.level];
+          _level = level;
         });
+      }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }

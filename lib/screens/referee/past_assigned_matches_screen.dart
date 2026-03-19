@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/referee_bottom_bar.dart';
@@ -51,9 +52,13 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         return;
       }
 
-      final data = await DBRead.getPastRefereeAssignedMatchesScreen(refereeId);
+      final PastAssignedMatchesResponse data = await DBRead.getPastRefereeAssignedMatchesScreen(refereeId);
 
-      final assignedMatches = data[ApiJsonKeys.matches] as List<FootballMatch>;
+      if(widget.currentSport != SportCategory.football) {
+        setState(() => _isLoading = false);
+        return;
+      }
+      final assignedMatches = data.footballMatches;
       // Sort matches by scheduled start time (most recent first)
       assignedMatches.sort((a, b) {
         if (a.scheduledStart == null && b.scheduledStart == null) return 0;
@@ -67,11 +72,11 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
       if (mounted) {
         setState(() {
           _assignedMatches = assignedMatches;
-          _teamsCache = data[ApiJsonKeys.teamsCache];
+          _teamsCache = data.teamsCache;
           _minutesRoundPerTournament =
-              data[ApiJsonKeys.minutesRoundPerTournament];
+              data.minutesRoundPerTournament;
           _minutesPausePerTournament =
-              data[ApiJsonKeys.minutesPausePerTournament];
+              data.minutesPausePerTournament;
           _isLoading = false;
         });
       }

@@ -66,10 +66,10 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
 
   Future<void> _loadCities() async {
     try {
-      final data = await DBRead.getCities();
+      final cities = await DBRead.getCities();
       if (mounted) {
         setState(() {
-          _cities = (data[ApiJsonKeys.cities] as List).cast<City>();
+          _cities = cities;
           _loadingCities = false;
         });
       }
@@ -125,8 +125,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
           onTap: _selectBirthday,
           child: AbsorbPointer(
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
@@ -134,15 +133,18 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today,
-                      color: ATLColors.darkBlue, size: 18),
+                  const Icon(
+                    Icons.calendar_today,
+                    color: ATLColors.darkBlue,
+                    size: 18,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     widget.birthday == null
                         ? l10n.birthdayRequired
                         : '${widget.birthday!.day.toString().padLeft(2, '0')}/'
-                            '${widget.birthday!.month.toString().padLeft(2, '0')}/'
-                            '${widget.birthday!.year}',
+                              '${widget.birthday!.month.toString().padLeft(2, '0')}/'
+                              '${widget.birthday!.year}',
                     style: TextStyle(
                       fontSize: 16,
                       color: widget.birthday == null
@@ -188,22 +190,25 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
           Container(
             padding: const EdgeInsets.only(left: 8),
             decoration: BoxDecoration(
-              border: Border(
-                right: BorderSide(color: Colors.grey.shade300),
-              ),
+              border: Border(right: BorderSide(color: Colors.grey.shade300)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: widget.phonePrefix,
                 items: _phonePrefixes
-                    .map((p) => DropdownMenuItem(
-                          value: p,
-                          child: Text(p,
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  color: ATLColors.darkBlue,
-                                  fontWeight: FontWeight.w600)),
-                        ))
+                    .map(
+                      (p) => DropdownMenuItem(
+                        value: p,
+                        child: Text(
+                          p,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: ATLColors.darkBlue,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) {
                   if (v != null) widget.onPhonePrefixChanged(v);
@@ -236,10 +241,12 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
     final l10n = AppLocalizations.of(context);
     if (_loadingCities) {
       return const Center(
-          child: SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(strokeWidth: 2)));
+        child: SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
