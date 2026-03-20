@@ -14,7 +14,6 @@ import '../../widgets/football_standings_team_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../widgets/road_to_victory_widget.dart';
 import '../../widgets/tournament_info_dialog.dart';
-import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -697,7 +696,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
               final groupStandings =
                   _standings.where((s) => s.groupName == group).toList()
                     // Ordina per rank (gestito dal DB)
-                    ..sort((a, b) => a.rank.compareTo(b.rank));
+                    ..sort((a, b) => a.rankPos.compareTo(b.rankPos));
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,7 +764,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                     return FootballStandingsTeamWidget(
                       team: team,
                       color: bgColor,
-                      rank: standing.rank,
+                      rank: standing.rankPos,
                       sportCategory: widget.sportCategory,
                       standingRecord:
                           '${standing.points} - ${standing.won} - ${standing.drawn} - ${standing.lost}',

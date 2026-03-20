@@ -13,7 +13,6 @@ import 'package:atl_app/models/team_request.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:atl_app/models/tournament_participation.dart';
 import 'package:atl_app/models/account.dart';
-import '../../config/api_json_keys.dart';
 import 'db_controller.dart';
 import '../config/app_config.dart';
 import '../../models/sport_category.dart';

@@ -8,7 +8,7 @@ class FootballStanding {
   int goalsScored;
   int goalsConceded;
   final String groupName;
-  int rank;
+  int rankPos;
   bool qualified;
 
   FootballStanding({
@@ -21,7 +21,7 @@ class FootballStanding {
     required this.groupName,
     this.goalsScored = 0,
     this.goalsConceded = 0,
-    required this.rank,
+    required this.rankPos,
     this.qualified = false,
   });
 
@@ -34,7 +34,7 @@ class FootballStanding {
       lost: json['lost'],
       tournamentId: json['tournamentId'],
       groupName: json['groupName'],
-      rank: json['rank'],
+      rankPos: json['rankPos'],
       qualified: json['qualified'],
       goalsScored: json['goalsScored'] ?? 0,
       goalsConceded: json['goalsConceded'] ?? 0,
@@ -50,7 +50,7 @@ class FootballStanding {
       'lost': lost,
       'tournamentId': tournamentId,
       'groupName': groupName,
-      'rank': rank,
+      'rankPos': rankPos,
       'qualified': qualified,
       'goalsScored': goalsScored,
       'goalsConceded': goalsConceded,

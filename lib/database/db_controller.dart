@@ -3,7 +3,7 @@
 import 'package:atl_app/database/repositories/friend_invites_repository.dart';
 
 import '../config/app_config.dart';
-import 'repositories/user_repository.dart';
+import 'repositories/account_repository.dart';
 import 'repositories/tournament_repository.dart';
 import 'repositories/player_repository.dart';
 import 'repositories/coordinator_repository.dart';

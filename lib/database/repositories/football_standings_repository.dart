@@ -25,7 +25,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 0,
       lost: 0,
       groupName: 'A',
-      rank: 1,
+      rankPos: 1,
       qualified: true,
       goalsScored: 1,
     ),
@@ -38,7 +38,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       lost: 1,
       groupName: 'A',
       goalsConceded: 1,
-      rank: 4,
+      rankPos: 4,
       qualified: false,
     ),
     FootballStanding(
@@ -49,7 +49,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 1,
       lost: 0,
       groupName: 'A',
-      rank: 2,
+      rankPos: 2,
       qualified: true,
     ),
     FootballStanding(
@@ -60,7 +60,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 1,
       lost: 0,
       groupName: 'A',
-      rank: 3,
+      rankPos: 3,
       qualified: false,
     ),
     FootballStanding(
@@ -71,7 +71,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 0,
       lost: 0,
       groupName: 'B',
-      rank: 1,
+      rankPos: 1,
       qualified: true,
     ),
     FootballStanding(
@@ -82,7 +82,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 0,
       lost: 0,
       groupName: 'B',
-      rank: 2,
+      rankPos: 2,
       qualified: true,
     ),
     FootballStanding(
@@ -93,7 +93,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 0,
       lost: 0,
       groupName: 'B',
-      rank: 3,
+      rankPos: 3,
       qualified: false,
     ),
     FootballStanding(
@@ -104,7 +104,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
       drawn: 0,
       lost: 0,
       groupName: 'B',
-      rank: 4,
+      rankPos: 4,
       qualified: false,
     ),
   ];
@@ -125,7 +125,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
 
         // Aggiorna i rank nella lista ordinata
         for (int i = 0; i < standingsInGroup.length; i++) {
-          standingsInGroup[i].rank = i + 1;
+          standingsInGroup[i].rankPos = i + 1;
         }
 
         return true;
@@ -173,7 +173,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
               .toList();
 
           standingsInGroup.sort((a, b) {
-            return a.rank.compareTo(b.rank);
+            return a.rankPos.compareTo(b.rankPos);
           });
 
           for (int i = 0; i < qualifiedPerGroup; i++) {
@@ -195,10 +195,10 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
           // Raggruppa per rank (seconde, terze, quarte, ecc.)
           Map<int, List<FootballStanding>> standingsByRank = {};
           for (var standing in nonQualifiedStandings) {
-            if (!standingsByRank.containsKey(standing.rank)) {
-              standingsByRank[standing.rank] = [];
+            if (!standingsByRank.containsKey(standing.rankPos)) {
+              standingsByRank[standing.rankPos] = [];
             }
-            standingsByRank[standing.rank]!.add(standing);
+            standingsByRank[standing.rankPos]!.add(standing);
           }
 
           // Ordina ogni gruppo di rank
@@ -248,7 +248,7 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
               (s) =>
                   s.tournamentId == tournamentId &&
                   s.qualified == true &&
-                  s.rank == rank,
+                  s.rankPos == rank,
             )
             .map((s) => s.teamId)
             .toList();
@@ -287,14 +287,14 @@ class FootballStandingsRepository extends BaseRepository<FootballStanding> {
     int tournamentId,
     int teamId,
     String groupName,
-    int rank,
+    int rankPos,
   ) async {
     if (AppConfig.isDebug) {
       FootballStanding newStanding = FootballStanding(
         tournamentId: tournamentId,
         teamId: teamId,
         groupName: groupName,
-        rank: rank,
+        rankPos: rankPos,
       );
       _mockData.add(newStanding);
       return true;
