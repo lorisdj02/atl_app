@@ -487,7 +487,7 @@ class DBRead {
       for (var lobbyBookingId in lobbyBookingsIds) {
         final LobbyBooking? lobbyBooking = await DB.LobbyBookings.getById(
           lobbyBookingId,
-        );
+        ); //
         if (lobbyBooking != null &&
             lobbyBooking.status != BookingStatus.refund &&
             lobbyBooking.status != BookingStatus.finished) {
