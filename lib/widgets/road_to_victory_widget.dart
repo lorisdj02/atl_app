@@ -7,7 +7,6 @@ import '../utils/atl_colors.dart';
 import '../widgets/loading_atl.dart';
 import 'football_match_bracket.dart';
 import '../database/db_read.dart';
-import '../config/api_json_keys.dart';
 import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare il tabellone Road to Victory di un torneo

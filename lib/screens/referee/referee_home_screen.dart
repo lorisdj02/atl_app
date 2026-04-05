@@ -15,7 +15,6 @@ import '../shop_screen.dart';
 import '../profile_screen.dart';
 import 'available_matches_screen.dart';
 import 'past_assigned_matches_screen.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class RefereeHomeScreen extends StatefulWidget {

@@ -17,7 +17,6 @@ import '../shop_screen.dart';
 import '../tournaments/all_tournaments_screen.dart';
 import '../teams/team_screen.dart';
 import '../profile_screen.dart';
-import '../../config/api_json_keys.dart';
 
 class CoordinatorHomeScreen extends StatefulWidget {
   const CoordinatorHomeScreen({super.key});

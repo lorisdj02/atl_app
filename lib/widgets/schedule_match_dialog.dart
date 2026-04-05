@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../database/db_read.dart';
-import '../config/api_json_keys.dart';
 import '../models/booking.dart';
 import '../l10n/app_localizations.dart';
 

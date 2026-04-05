@@ -7,11 +7,11 @@ import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/team_request.dart';
 import 'package:atl_app/models/tournament.dart';
 
-class TeamDetailResponse extends AbstractTeamResponse {
+class TeamDetailsResponse extends AbstractTeamResponse {
   final bool isPlayerInTeam;
   final TeamRequest? existingRequest;
   
-  TeamDetailResponse({
+  TeamDetailsResponse({
     required super.team,
     required super.players,
     required super.palmares,
@@ -25,8 +25,8 @@ class TeamDetailResponse extends AbstractTeamResponse {
     required this.isPlayerInTeam,
   });
 
-  factory TeamDetailResponse.fromJson(Map<String, dynamic> json) {
-    return TeamDetailResponse(
+  factory TeamDetailsResponse.fromJson(Map<String, dynamic> json) {
+    return TeamDetailsResponse(
       team: Team.fromJson(json[ApiJsonKeys.team]),
       players: List<Player>.from(
         (json[ApiJsonKeys.players] as List).map((e) => Player.fromJson(e)),

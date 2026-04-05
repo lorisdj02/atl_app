@@ -141,7 +141,7 @@ class DBWrite {
     String alias,
     String? description,
     int captainId,
-    String catId,
+    SportCategory sportCategory,
     String? imageUrl,
     bool vip,
     bool visibility,
@@ -153,7 +153,7 @@ class DBWrite {
         alias,
         description,
         captainId,
-        catId,
+        sportCategory,
         imageUrl,
         vip,
         visibility,
@@ -282,8 +282,8 @@ class DBWrite {
           return false;
         }
 
-        if ((await DB.Teams.getById(teamId))!.players + requests.length >
-            Team.maxPlayers) {
+        final Team? team = await DB.Teams.getById(teamId);
+        if (team == null) {
           return false;
         }
 
@@ -308,7 +308,12 @@ class DBWrite {
         }
         return true;
       } else if (playerId != null) {
-        if ((await DB.Teams.getById(teamId))?.players == Team.maxPlayers) {
+        final Team? team = await DB.Teams.getById(teamId);
+        if (team == null) {
+          return false;
+        }
+
+        if (team.players == team.maxPlayers) {
           return false;
         }
 
@@ -585,6 +590,7 @@ class DBWrite {
     }
   }
 
+  // MAYBE DONE
   static Future<bool> leaveTeam(
     int teamId,
     int playerId, {
@@ -1597,6 +1603,7 @@ class DBWrite {
     }
   }
 
+  // MAYBE DONE
   static Future<bool> startTournament(int tournamentId) async {
     if (AppConfig.isDebug) {
       final Tournament? tournament = await DB.Tournaments.getById(tournamentId);

@@ -20,7 +20,6 @@ import '../../widgets/football_motm_selector_dialog.dart';
 import '../../widgets/schedule_match_dialog.dart';
 import '../../widgets/referee_match_dialog.dart';
 import '../../providers/account_provider.dart';
-import '../../config/api_json_keys.dart';
 import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 

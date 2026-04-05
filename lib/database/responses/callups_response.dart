@@ -1,7 +1,6 @@
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/tournament.dart';
-import 'package:atl_app/models/tournament_participation.dart';
 
 import '../../config/api_json_keys.dart';
 

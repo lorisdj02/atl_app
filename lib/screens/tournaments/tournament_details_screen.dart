@@ -19,7 +19,6 @@ import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
 import './football_tournament_screen.dart';
 import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class TournamentDetailsScreen extends StatefulWidget {
@@ -66,13 +65,13 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
     try {
       final TournamentDetailsResponse data;
       if (userProvider.isPlayer && userProvider.activeAccount != null) {
-        data = await DBRead.getTournamentDetailScreen(
+        data = await DBRead.getTournamentDetailsScreen(
           widget.tournament.id,
           widget.currentSport,
           userProvider.activeAccount!.id,
         );
       } else {
-        data = await DBRead.getTournamentDetailScreen(
+        data = await DBRead.getTournamentDetailsScreen(
           widget.tournament.id,
           widget.currentSport,
           null, // Pass null for userId if not a player

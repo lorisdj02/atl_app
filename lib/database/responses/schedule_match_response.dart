@@ -17,7 +17,7 @@ class ScheduleMatchResponse {
       minutesPerRound: json[ApiJsonKeys.minutesPerRound] as int,
       minutesPerPause: json[ApiJsonKeys.minutesPerPause] as int,
       bookings: List<Booking>.from(
-        (json[ApiJsonKeys.bookings] as List<dynamic>).map(
+        (json[ApiJsonKeys.generalBookings] as List<dynamic>).map(
           (bookingJson) =>
               Booking.fromJson(bookingJson as Map<String, dynamic>),
         ),

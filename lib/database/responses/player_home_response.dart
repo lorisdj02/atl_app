@@ -4,11 +4,14 @@ import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/football_standing.dart';
+import 'package:atl_app/models/lobby_booking.dart';
+import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/tournament.dart';
 
 class PlayerHomeResponse {
-  final List<dynamic> bookings;
+  final List<LobbyBooking> lobbies;
+  final List<PrivateBooking> privateBookings;
   final List<Tournament> activeTournaments;
   final Map<int, int> minutesRoundPerTournament;
   final Map<int, int> minutesPausePerTournament;
@@ -24,7 +27,8 @@ class PlayerHomeResponse {
   final Map<int, int> playersPaidPerBooking;
 
   PlayerHomeResponse({
-    required this.bookings,
+    required this.privateBookings,
+    required this.lobbies,
     required this.activeTournaments,
     required this.minutesRoundPerTournament,
     required this.minutesPausePerTournament,
@@ -43,7 +47,12 @@ class PlayerHomeResponse {
 
   factory PlayerHomeResponse.fromJson(Map<String, dynamic> json) {
     return PlayerHomeResponse(
-      bookings: List<dynamic>.from(json[ApiJsonKeys.bookings]),
+      privateBookings: (json[ApiJsonKeys.privateBookings] as List)
+          .map((b) => PrivateBooking.fromJson(b))
+          .toList(),
+      lobbies: (json[ApiJsonKeys.lobbies] as List)
+          .map((l) => LobbyBooking.fromJson(l))
+          .toList(),
       activeTournaments: (json[ApiJsonKeys.activeTournaments] as List)
           .map((t) => Tournament.fromJson(t))
           .toList(),

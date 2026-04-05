@@ -11,7 +11,7 @@ class CheckoutResponse {
   final String? fieldName;
   final String? fieldAddress;
   final DateTime? startTime;
-  final DateTime? endTime;
+  final DateTime? finishTime;
   final int? maxPlayers;
   final int? playersToPay;
 
@@ -24,7 +24,7 @@ class CheckoutResponse {
     required this.fieldName,
     required this.fieldAddress,
     required this.startTime,
-    required this.endTime,
+    required this.finishTime,
     required this.maxPlayers,
     required this.playersToPay,
   });
@@ -51,8 +51,8 @@ class CheckoutResponse {
       startTime: json[ApiJsonKeys.startTime] != null
           ? DateTime.parse(json[ApiJsonKeys.startTime] as String)
           : null,
-      endTime: json[ApiJsonKeys.endTime] != null
-          ? DateTime.parse(json[ApiJsonKeys.endTime] as String)
+      finishTime: json[ApiJsonKeys.finishTime] != null
+          ? DateTime.parse(json[ApiJsonKeys.finishTime] as String)
           : null,
       maxPlayers: json[ApiJsonKeys.maxPlayers] != null
           ? json[ApiJsonKeys.maxPlayers] as int

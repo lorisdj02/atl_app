@@ -1,5 +1,3 @@
-import 'package:atl_app/models/coordinator.dart';
-import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import 'package:atl_app/l10n/app_localizations.dart';
 

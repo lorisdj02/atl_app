@@ -1,4 +1,4 @@
-import 'package:atl_app/database/responses/team_detail_response.dart';
+import 'package:atl_app/database/responses/team_details_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -8,8 +8,6 @@ import '../../widgets/atl_floating_button.dart';
 import 'abstract_team_screen.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
-import '../../config/api_json_keys.dart';
-import '../../l10n/app_localizations.dart';
 
 class TeamDetailScreen extends AbstractTeamScreen {
   final int teamId;
@@ -42,7 +40,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
 
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
-        final TeamDetailResponse data = await DBRead.getTeamDetailScreen(playerId!, widget.teamId);
+        final TeamDetailsResponse data = await DBRead.getTeamDetailsScreen(playerId!, widget.teamId);
         if (mounted) {
           setState(() {
             team = data.team;

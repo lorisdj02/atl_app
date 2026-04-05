@@ -11,7 +11,6 @@ import '../../widgets/atl_button.dart';
 import '../../widgets/info_row_widget.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class EditInfosScreen extends StatefulWidget {

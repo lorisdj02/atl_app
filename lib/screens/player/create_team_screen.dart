@@ -4,8 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
-import '../../models/team.dart';
 import '../../models/sport_category.dart';
 import '../../models/city.dart';
 import '../../providers/account_provider.dart';
@@ -135,33 +133,20 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
       int captainId = userProvider.activeRoleId!;
 
-      // Crea il team
-      final newTeam = Team(
-        id: 0, // ID sarà assegnato dal DB
-        cityId: _selectedCity,
-        name: _nameController.text.trim(),
-        alias: _aliasController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty
-            ? null
-            : _descriptionController.text.trim(),
-        captainId: captainId, // Usa playerId dell'utente corrente
-        catId: widget.currentSport.id,
-        imageUrl: imageUrl,
-        vip: _isVip,
-        players: 1, // Solo il capitano inizialmente
-        visibility: _visibility,
-      );
+      // Crea il team nel database
 
       final int newTeamId = await DBWrite.createTeam(
-        newTeam.cityId!,
-        newTeam.name,
-        newTeam.alias,
-        newTeam.description,
-        newTeam.captainId,
-        newTeam.catId,
-        newTeam.imageUrl,
-        newTeam.vip,
-        newTeam.visibility,
+        _selectedCity,
+        _nameController.text.trim(),
+        _aliasController.text.trim(),
+        _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        captainId,
+        widget.currentSport,
+        imageUrl,
+        _isVip,
+        _visibility,
       );
 
       if (newTeamId == -1) {
@@ -173,7 +158,6 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       await userProvider.updateAccount(updatedAccount);
       userProvider.setCurrentTeamId(newTeamId);
       if (mounted) {
-        print('🔧 [DEBUG] Team created successfully: ${newTeam.name}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context).teamCreatedSuccessfully),

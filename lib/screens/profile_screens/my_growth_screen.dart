@@ -10,7 +10,6 @@ import '../../widgets/growth_hero_card.dart';
 import '../../widgets/growth_timeline_item.dart';
 import '../../widgets/growth_pay_note.dart';
 import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class MyGrowthScreen extends StatefulWidget {

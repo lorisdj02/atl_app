@@ -83,7 +83,9 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             currentSport: _currentSport,
           );
 
-      List<dynamic> bookings = playerHomeData.bookings;
+      List<dynamic> bookings = [];
+      bookings.addAll(playerHomeData.privateBookings);
+      bookings.addAll(playerHomeData.lobbies);
 
       bookings.sort((a, b) {
         DateTime aStart;

@@ -16,7 +16,6 @@ import '../shop_screen.dart';
 import '../../models/field.dart';
 import '../profile_screen.dart';
 import '../../models/booking.dart';
-import '../../config/api_json_keys.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
   const OrganizationHomeScreen({super.key});
@@ -139,7 +138,11 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
           _fields = organizationData.fields;
           _cityNamePerField = organizationData.cityNamePerField;
           _bookingsByFieldByDate = bookingsByFieldByDate;
-          _detailedBookings = organizationData.detailedBookings;
+          _detailedBookings = {
+            ...organizationData.lobbyBookingsCache,
+            ...organizationData.privateBookingsCache,
+            ...organizationData.matchBookingsCache,
+          };
           _matchPerBooking = organizationData.footballMatchPerBooking;
           _usernamePerBooking = organizationData.usernamePerBooking;
           _teamsCache = organizationData.teamsCache;

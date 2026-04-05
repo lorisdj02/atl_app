@@ -4,7 +4,6 @@ import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';
-import '../config/api_json_keys.dart';
 import '../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 

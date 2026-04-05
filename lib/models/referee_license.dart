@@ -1,7 +1,7 @@
 enum LicenseStatus{
   notVerified,
   active,
-  revoked,
+  expired,
   suspended
 }
 
@@ -13,7 +13,7 @@ class RefereeLicense {
   final DateTime createdAt;
   final DateTime issuedAt;
   DateTime? verifiedAt;
-  DateTime? revokedAt;
+  DateTime? expiresAt;
   final String photoUrl;
 
   RefereeLicense({
@@ -24,7 +24,7 @@ class RefereeLicense {
     required this.createdAt,
     required this.issuedAt,
     this.verifiedAt,
-    this.revokedAt,
+    this.expiresAt,
     this.photoUrl = '',
   });
 
@@ -36,7 +36,7 @@ class RefereeLicense {
       'createdAt': createdAt.toIso8601String(),
       'issuedAt': issuedAt.toIso8601String(),
       'verifiedAt': verifiedAt?.toIso8601String(),
-      'revokedAt': revokedAt?.toIso8601String(),
+      'expiresAt': expiresAt?.toIso8601String(),
     };
   }
 
@@ -52,7 +52,7 @@ class RefereeLicense {
       createdAt: DateTime.parse(json['createdAt']),
       issuedAt: DateTime.parse(json['issuedAt']),
       verifiedAt: json['verifiedAt'] != null ? DateTime.parse(json['verifiedAt']) : null,
-      revokedAt: json['revokedAt'] != null ? DateTime.parse(json['revokedAt']) : null,
+      expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
     );
   }
 }

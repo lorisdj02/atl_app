@@ -28,7 +28,7 @@ import 'package:atl_app/database/responses/referee_home_response.dart';
 import 'package:atl_app/database/responses/referee_licenses_response.dart';
 import 'package:atl_app/database/responses/road_to_victory_response.dart';
 import 'package:atl_app/database/responses/schedule_match_response.dart';
-import 'package:atl_app/database/responses/team_detail_response.dart';
+import 'package:atl_app/database/responses/team_details_response.dart';
 import 'package:atl_app/database/responses/teams_response.dart';
 import 'package:atl_app/database/responses/tournament_details_response.dart';
 import 'package:atl_app/database/responses/tournament_parameters_response.dart';
@@ -47,6 +47,7 @@ import 'package:atl_app/models/football_tournament_stats.dart';
 import 'package:atl_app/models/growth_step.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:atl_app/models/lobby_booking_participation.dart';
+import 'package:atl_app/models/match_booking.dart';
 import 'package:atl_app/models/palmares.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/private_booking.dart';
@@ -73,382 +74,12 @@ import '../config/api_json_keys.dart';
 import 'responses/book_field_response.dart';
 
 class DBRead {
-  static Future<bool> checkTeamNameInCategory(
-    String teamName,
-    SportCategory category,
-  ) async {
-    if (AppConfig.isDebug) {
-      return await DB.Teams.isNameUniqueInCategory(teamName, category);
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<BookFieldResponse> getBookFieldScreen() async {
-    if (AppConfig.isDebug) {
-      Map<int, TimeOfDay> minOpeningTimePerCity = {};
-      Map<int, TimeOfDay> maxClosingTimePerCity = {};
-      List<City> cities = await DB.Cities.getAll();
-
-      for (var city in cities) {
-        minOpeningTimePerCity[city.id] = TimeOfDay(hour: 23, minute: 59);
-        maxClosingTimePerCity[city.id] = TimeOfDay(hour: 0, minute: 0);
-      }
-
-      for (var city in cities) {
-        final cityFields = await DB.Fields.getByCity(city.id);
-        for (var field in cityFields) {
-          final openingMins =
-              field.openingTime.hour * 60 + field.openingTime.minute;
-          final minMins =
-              minOpeningTimePerCity[field.cityId]!.hour * 60 +
-              minOpeningTimePerCity[field.cityId]!.minute;
-          if (openingMins < minMins) {
-            minOpeningTimePerCity[city.id] = field.openingTime;
-          }
-          final closingMins =
-              field.closingTime.hour * 60 + field.closingTime.minute;
-          final maxMins =
-              maxClosingTimePerCity[field.cityId]!.hour * 60 +
-              maxClosingTimePerCity[field.cityId]!.minute;
-          if (closingMins > maxMins) {
-            maxClosingTimePerCity[city.id] = field.closingTime;
-          }
-        }
-      }
-      return BookFieldResponse(
-        cities: cities,
-        minOpeningTimePerCity: minOpeningTimePerCity,
-        maxClosingTimePerCity: maxClosingTimePerCity,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<MyGrowthResponse> getMyGrowthScreen(int userId) async {
-    if (AppConfig.isDebug) {
-      final Account? user = await DB.Accounts.getByAccountId(userId);
-      if (user == null) {
-        throw Exception("User not found");
-      }
-
-      switch (user.role) {
-        case AccountRole.coordinator:
-          final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
-            userId,
-          );
-          if (coordinator == null) {
-            throw Exception("Coordinator not found for user");
-          }
-
-          final int level = coordinator.level;
-          final List<GrowthStep> growthSteps = await DB
-              .GrowthSteps.getGrowthStepByType(GrowthStepType.coordinator);
-          return MyGrowthResponse(
-            growthSteps: growthSteps,
-            level: level,
-            minRefereePayPerCategoryPerLevel: {},
-            maxRefereePayPerCategoryPerLevel: {},
-          );
-        case AccountRole.referee:
-          final Referee? referee = await DB.Referees.getByAccountId(userId);
-          if (referee == null) {
-            throw Exception("Referee not found for Account");
-          }
-          final int level = referee.level;
-          final List<GrowthStep> growthSteps =
-              await DB.GrowthSteps.getGrowthStepByType(GrowthStepType.referee);
-
-          Map<int, Map<SportCategory, double>>
-          minRefereePayPerCategoryPerLevel = {};
-          Map<int, Map<SportCategory, double>>
-          maxRefereePayPerCategoryPerLevel = {};
-
-          for (int x = 1; x <= growthSteps.length; x++) {
-            minRefereePayPerCategoryPerLevel[x] = {};
-            maxRefereePayPerCategoryPerLevel[x] = {};
-          }
-
-          for (var category in SportCategory.values) {
-            final List<Sport> sportsInCategory = await DB.Sports.getByCategory(
-              category,
-            );
-
-            for (var sport in sportsInCategory) {
-              final List<RefereeRoles> roles =
-                  await DB.RefereeRoles.getBySportId(sport.id);
-
-              for (var role in roles) {
-                minRefereePayPerCategoryPerLevel[role.level]!.update(
-                  category,
-                  (existing) => min(existing, role.payPerMatch),
-                  ifAbsent: () => role.payPerMatch,
-                );
-
-                maxRefereePayPerCategoryPerLevel[role.level]!.update(
-                  category,
-                  (existing) => max(existing, role.payPerMatch),
-                  ifAbsent: () => role.payPerMatch,
-                );
-              }
-            }
-          }
-
-          return MyGrowthResponse(
-            growthSteps: growthSteps,
-            level: level,
-            minRefereePayPerCategoryPerLevel: minRefereePayPerCategoryPerLevel,
-            maxRefereePayPerCategoryPerLevel: maxRefereePayPerCategoryPerLevel,
-          );
-        default:
-          return MyGrowthResponse(
-            growthSteps: [],
-            level: 0,
-            minRefereePayPerCategoryPerLevel: {},
-            maxRefereePayPerCategoryPerLevel: {},
-          );
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  // la password è in chiaro, ma tanto è un mock, quindi non importa
-  static Future<LoginResponse> handleLogin(
-    String usernameOrEmail,
-    String password,
-  ) async {
-    if (AppConfig.isDebug) {
-      final Account? user = await DB.Accounts.getByEmailOrUsername(
-        usernameOrEmail,
-        password,
-      );
-      if (user == null) {
-        return LoginResponse(account: null, roleId: null, teamId: null);
-      }
-
-      final AccountRole userRole = user.role;
-
-      switch (userRole) {
-        case AccountRole.player:
-          final int playerId = await DB.Players.getPlayerIdByAccountId(user.id);
-          if (playerId < 1) {
-            throw Exception("Player not found for user");
-          }
-
-          final PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
-            playerId,
-            SportCategory.football,
-          );
-          Team? userTeam;
-
-          return LoginResponse(
-            account: user,
-            roleId: playerId,
-            teamId: playsAt != null ? playsAt.teamId : null,
-          );
-        case AccountRole.coordinator:
-          final int coordinatorId =
-              await DB.Coordinators.getCoordinatorIdByAccountId(user.id);
-          if (coordinatorId < 1) {
-            throw Exception("Coordinator not found for user");
-          }
-          return LoginResponse(
-            account: user,
-            roleId: coordinatorId,
-            teamId: null,
-          );
-        case AccountRole.referee:
-          final int refereeId = await DB.Referees.getRefereeIdByAccountId(
-            user.id,
-          );
-          if (refereeId < 1) {
-            throw Exception("Referee not found for user");
-          }
-          return LoginResponse(account: user, roleId: refereeId, teamId: null);
-        case AccountRole.organization:
-          final int organizationId =
-              await DB.Organizations.getOrganizationIdByAccountId(user.id);
-          if (organizationId < 1) {
-            throw Exception("Organization not found for user");
-          }
-          return LoginResponse(
-            account: user,
-            roleId: organizationId,
-            teamId: null,
-          );
-        default:
-          throw Exception("Unknown user role");
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<List<City>> getCities() async {
-    if (AppConfig.isDebug) {
-      List<City> cities = await DB.Cities.getAll();
-      return cities;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<FieldsAndMaxPlayersPerFieldResponse>
-  getFieldsByPlayersAndCityAndSportCategory({
-    required int maxPlayers,
-    required int cityId,
-    required SportCategory sportCategory,
-  }) async {
-    if (AppConfig.isDebug) {
-      final List<Field> fields =
-          await DB.Fields.getByMaxPlayersAndCityAndSportCategory(
-            maxPlayers,
-            cityId,
-            sportCategory,
-          );
-
-      Map<int, int> maxPlayerPerField = {};
-
-      for (var field in fields) {
-        final FieldCategory? fieldCategory =
-            await DB.FieldCategories.getByFieldIdAndSportCategory(
-              field.id,
-              sportCategory,
-            );
-        if (fieldCategory != null) {
-          maxPlayerPerField[field.id] = fieldCategory.maxPlayers;
-        } else {
-          maxPlayerPerField[field.id] = 0; // Default se non trovato
-        }
-      }
-      return FieldsAndMaxPlayersPerFieldResponse(
-        fields: fields,
-        maxPlayersPerField: maxPlayerPerField,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<TournamentParametersResponse> calculateTournamentParameters(
-    Tournament fictitiousTournament,
-    bool prize1,
-    bool prize2,
-  ) async {
-    if (AppConfig.isDebug) {
-      final fee = await DB.Tournaments.calculateTournamentFee(
-        fictitiousTournament,
-      );
-      final coordinatorPay = await DB.Tournaments.calculatePayCoordinator(
-        fictitiousTournament,
-      );
-
-      // Calculate prizes only if requested
-      final prize1Value = prize1
-          ? await DB.Tournaments.calculatePrize1(fictitiousTournament)
-          : null;
-      final prize2Value = prize2
-          ? await DB.Tournaments.calculatePrize2(fictitiousTournament)
-          : null;
-
-      return TournamentParametersResponse(
-        fee: fee,
-        coordinatorPay: coordinatorPay,
-        prize1: prize1Value,
-        prize2: prize2Value,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<FieldsAndMaxPlayersPerFieldResponse>
-  getFreeFieldsByPlayerAndCityAndDate({
-    required int maxPlayers,
-    required int cityId,
-    required DateTime startDateTime,
-    required DateTime endDateTime,
-    required SportCategory sportCategory,
-  }) async {
-    if (AppConfig.isDebug) {
-      final allFields = await DB.Fields.getByMaxPlayersAndCityAndSportCategory(
-        maxPlayers,
-        cityId,
-        sportCategory,
-      );
-
-      // Get free field IDs
-      final allFieldIds = allFields.map((f) => f.id).toList();
-
-      final freeFieldIds = await DB.LobbyBookings.getFreeFieldIds(
-        startDateTime,
-        endDateTime,
-        allFieldIds,
-      );
-
-      // Filter fields to keep only free ones
-      final fields = allFields
-          .where((field) => freeFieldIds.contains(field.id))
-          .toList();
-
-      Map<int, int> maxPlayerPerField = {};
-      for (var field in fields) {
-        final FieldCategory? fieldCategory =
-            await DB.FieldCategories.getByFieldIdAndSportCategory(
-              field.id,
-              sportCategory,
-            );
-        if (fieldCategory != null) {
-          maxPlayerPerField[field.id] = fieldCategory.maxPlayers;
-        } else {
-          maxPlayerPerField[field.id] = 0; // Default se non trovato
-        }
-      }
-      return FieldsAndMaxPlayersPerFieldResponse(
-        fields: fields,
-        maxPlayersPerField: maxPlayerPerField,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<int?> getUserLevel(int userId) async {
-    if (AppConfig.isDebug) {
-      final Account? user = await DB.Accounts.getByAccountId(userId);
-      if (user == null) {
-        throw Exception("Account not found");
-      }
-      if (user.role == AccountRole.coordinator) {
-        final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
-          userId,
-        );
-        if (coordinator == null) {
-          throw Exception("Coordinator not found for user");
-        }
-        return coordinator.level;
-      } else if (user.role == AccountRole.referee) {
-        final Referee? referee = await DB.Referees.getByAccountId(userId);
-        if (referee == null) {
-          throw Exception("Referee not found for user");
-        }
-        return referee.level;
-      } else {
-        return null;
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
+  // DONE
   static Future<PlayerHomeResponse> getPlayerHomeScreen({
     required int playerId,
     required SportCategory currentSport,
   }) async {
     if (AppConfig.isDebug) {
-      List<dynamic> bookings = [];
       Map<int, Team> teamsCache = {};
       List<Tournament> activeTournaments = [];
       Map<int, int> minutesRoundPerTournament = {};
@@ -457,7 +88,6 @@ class DBRead {
       Map<int, List<FootballStanding>> standingsPerTournament = {};
       Map<int, Field> fieldsCache = {};
       Map<int, String> completeAddressPerField = {};
-
       Map<int, String> usernamePerBooking = {};
       Map<int, int> maxPlayersPerLobby = {};
       Map<int, int> currentPlayersPerLobby = {};
@@ -491,7 +121,6 @@ class DBRead {
         if (lobbyBooking != null &&
             lobbyBooking.status != BookingStatus.refund &&
             lobbyBooking.status != BookingStatus.finished) {
-          lobbyBookings.add(lobbyBooking);
           final lobbyData = await getLobbyInfo(lobbyBookingId, playerId);
           usernamePerBooking[lobbyBooking.id] =
               lobbyData[ApiJsonKeys.usernamePerBooking];
@@ -504,21 +133,22 @@ class DBRead {
         }
       }
 
-      // Combina e ordina per startTime
-      final List<dynamic> allBookings = [...privateBookings, ...lobbyBookings];
-      allBookings.sort((a, b) {
-        final aTime = a is PrivateBooking
-            ? a.startTime
-            : (a as LobbyBooking).startTime;
-        final bTime = b is PrivateBooking
-            ? b.startTime
-            : (b as LobbyBooking).startTime;
-        return aTime.compareTo(bTime);
-      });
+      for (var booking in privateBookings) {
+        final Field? field = await DB.Fields.getById(booking.fieldId);
+        if (field == null) {
+          throw Exception("Field not found for booking.");
+        }
+        if (!fieldsCache.containsKey(field.id)) {
+          fieldsCache[field.id] = field;
+        }
+        if (!completeAddressPerField.containsKey(field.id)) {
+          final city = await DB.Cities.getById(field.cityId);
+          String cityName = city != null ? city.name : 'Unknown';
+          completeAddressPerField[field.id] = "${field.address}, $cityName";
+        }
+      }
 
-      bookings = allBookings;
-
-      for (var booking in bookings) {
+      for (var booking in lobbyBookings) {
         final Field? field = await DB.Fields.getById(booking.fieldId);
         if (field == null) {
           throw Exception("Field not found for booking.");
@@ -593,7 +223,8 @@ class DBRead {
       }
 
       return PlayerHomeResponse(
-        bookings: bookings,
+        privateBookings: privateBookings,
+        lobbies: lobbyBookings,
         activeTournaments: activeTournaments,
         minutesRoundPerTournament: minutesRoundPerTournament,
         minutesPausePerTournament: minutesPausePerTournament,
@@ -613,6 +244,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<CoordinatorHomeResponse> getCoordinatorHomeScreen({
     required int coordinatorId,
     required SportCategory currentSport,
@@ -685,6 +317,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<RefereeHomeResponse> getRefereeHomeScreen({
     required int refereeId,
     required SportCategory currentSport,
@@ -732,7 +365,6 @@ class DBRead {
       }
 
       return RefereeHomeResponse(
-        assignments: assignments,
         assignedFootballMatches: assignedMatches,
         teamsCache: teamsCache,
         minutesRoundPerTournament: minutesRoundPerTournament,
@@ -743,6 +375,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<OrganizationHomeResponse> getOrganizationHomeScreen({
     required int organizationId,
     required SportCategory currentSport,
@@ -846,7 +479,21 @@ class DBRead {
         fields: fields,
         generalBookings: generalBookings,
         cityNamePerField: cityNamePerField,
-        detailedBookings: detailedBookings,
+        lobbyBookingsCache: Map<int, LobbyBooking>.fromEntries(
+          detailedBookings.entries
+              .where((e) => e.value is LobbyBooking)
+              .map((e) => MapEntry(e.key, e.value as LobbyBooking)),
+        ),
+        privateBookingsCache: Map<int, PrivateBooking>.fromEntries(
+          detailedBookings.entries
+              .where((e) => e.value is PrivateBooking)
+              .map((e) => MapEntry(e.key, e.value as PrivateBooking)),
+        ),
+        matchBookingsCache: Map<int, MatchBooking>.fromEntries(
+          detailedBookings.entries
+              .where((e) => e.value is MatchBooking)
+              .map((e) => MapEntry(e.key, e.value as MatchBooking)),
+        ),
         footballMatchPerBooking: matchPerBooking,
         teamsCache: teamCache,
         usernamePerBooking: usernamePerBooking,
@@ -856,6 +503,168 @@ class DBRead {
     }
   }
 
+  // DONE
+  static Future<BookFieldResponse> getBookFieldScreen() async {
+    if (AppConfig.isDebug) {
+      Map<int, TimeOfDay> minOpeningTimePerCity = {};
+      Map<int, TimeOfDay> maxClosingTimePerCity = {};
+      List<City> cities = await DB.Cities.getAll();
+
+      for (var city in cities) {
+        minOpeningTimePerCity[city.id] = TimeOfDay(hour: 23, minute: 59);
+        maxClosingTimePerCity[city.id] = TimeOfDay(hour: 0, minute: 0);
+      }
+
+      for (var city in cities) {
+        final cityFields = await DB.Fields.getByCity(city.id);
+        for (var field in cityFields) {
+          final openingMins =
+              field.openingTime.hour * 60 + field.openingTime.minute;
+          final minMins =
+              minOpeningTimePerCity[field.cityId]!.hour * 60 +
+              minOpeningTimePerCity[field.cityId]!.minute;
+          if (openingMins < minMins) {
+            minOpeningTimePerCity[city.id] = field.openingTime;
+          }
+          final closingMins =
+              field.closingTime.hour * 60 + field.closingTime.minute;
+          final maxMins =
+              maxClosingTimePerCity[field.cityId]!.hour * 60 +
+              maxClosingTimePerCity[field.cityId]!.minute;
+          if (closingMins > maxMins) {
+            maxClosingTimePerCity[city.id] = field.closingTime;
+          }
+        }
+      }
+      return BookFieldResponse(
+        cities: cities,
+        minOpeningTimePerCity: minOpeningTimePerCity,
+        maxClosingTimePerCity: maxClosingTimePerCity,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<MyGrowthResponse> getMyGrowthScreen(int userId) async {
+    if (AppConfig.isDebug) {
+      final Account? user = await DB.Accounts.getByAccountId(userId);
+      if (user == null) {
+        throw Exception("User not found");
+      }
+
+      switch (user.role) {
+        case AccountRole.coordinator:
+          final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
+            userId,
+          );
+          if (coordinator == null) {
+            throw Exception("Coordinator not found for user");
+          }
+
+          final int level = coordinator.level;
+          final List<GrowthStep> growthSteps = await DB
+              .GrowthSteps.getGrowthStepByType(GrowthStepType.coordinator);
+          return MyGrowthResponse(
+            growthSteps: growthSteps,
+            level: level,
+            minRefereePayPerCategoryPerLevel: {},
+            maxRefereePayPerCategoryPerLevel: {},
+          );
+        case AccountRole.referee:
+          final Referee? referee = await DB.Referees.getByAccountId(userId);
+          if (referee == null) {
+            throw Exception("Referee not found for Account");
+          }
+          final int level = referee.level;
+          final List<GrowthStep> growthSteps =
+              await DB.GrowthSteps.getGrowthStepByType(GrowthStepType.referee);
+
+          Map<int, Map<SportCategory, double>>
+          minRefereePayPerCategoryPerLevel = {};
+          Map<int, Map<SportCategory, double>>
+          maxRefereePayPerCategoryPerLevel = {};
+
+          for (int x = 1; x <= growthSteps.length; x++) {
+            minRefereePayPerCategoryPerLevel[x] = {};
+            maxRefereePayPerCategoryPerLevel[x] = {};
+          }
+
+          for (var category in SportCategory.values) {
+            final List<Sport> sportsInCategory = await DB.Sports.getByCategory(
+              category,
+            );
+
+            for (var sport in sportsInCategory) {
+              final List<RefereeRoles> roles =
+                  await DB.RefereeRoles.getBySportId(sport.id);
+
+              for (var role in roles) {
+                minRefereePayPerCategoryPerLevel[role.level]!.update(
+                  category,
+                  (existing) => min(existing, role.payPerMatch),
+                  ifAbsent: () => role.payPerMatch,
+                );
+
+                maxRefereePayPerCategoryPerLevel[role.level]!.update(
+                  category,
+                  (existing) => max(existing, role.payPerMatch),
+                  ifAbsent: () => role.payPerMatch,
+                );
+              }
+            }
+          }
+
+          return MyGrowthResponse(
+            growthSteps: growthSteps,
+            level: level,
+            minRefereePayPerCategoryPerLevel: minRefereePayPerCategoryPerLevel,
+            maxRefereePayPerCategoryPerLevel: maxRefereePayPerCategoryPerLevel,
+          );
+        default:
+          return MyGrowthResponse(
+            growthSteps: [],
+            level: 0,
+            minRefereePayPerCategoryPerLevel: {},
+            maxRefereePayPerCategoryPerLevel: {},
+          );
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<int?> getUserLevel(int userId) async {
+    if (AppConfig.isDebug) {
+      final Account? user = await DB.Accounts.getByAccountId(userId);
+      if (user == null) {
+        throw Exception("Account not found");
+      }
+      if (user.role == AccountRole.coordinator) {
+        final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
+          userId,
+        );
+        if (coordinator == null) {
+          throw Exception("Coordinator not found for user");
+        }
+        return coordinator.level;
+      } else if (user.role == AccountRole.referee) {
+        final Referee? referee = await DB.Referees.getByAccountId(userId);
+        if (referee == null) {
+          throw Exception("Referee not found for user");
+        }
+        return referee.level;
+      } else {
+        return null;
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
   static Future<TeamsResponse> getTeamsScreen(
     SportCategory currentSport,
   ) async {
@@ -882,6 +691,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<AbstractTeamResponse> getAbstractTeamScreen(int teamId) async {
     if (AppConfig.isDebug) {
       final Team? team = await DB.Teams.getById(teamId);
@@ -959,47 +769,7 @@ class DBRead {
     }
   }
 
-  static Future<PlayersInTeamResponse> getPlayersInTeam(int teamId) async {
-    if (AppConfig.isDebug) {
-      final Team? team = await DB.Teams.getById(teamId);
-      if (team == null) {
-        throw Exception("Team not found");
-      }
-
-      List<PlaysAt> playsAtEntries = await DB.PlaysAt.getByTeamId(team.id);
-      List<Player> players = [];
-
-      for (var entry in playsAtEntries) {
-        final player = await DB.Players.getByPlayerId(entry.playerId);
-        if (player != null) {
-          players.add(player);
-        }
-      }
-
-      List<Player> historicalPlayers = [...players];
-      List<FootballTeamStats> allStats = await DB.FootballTeamStats.getByTeamId(
-        team.id,
-      );
-      for (var stats in allStats) {
-        if ((team.vip || team.players == 0) &&
-            !historicalPlayers.any((p) => p.id == stats.playerId)) {
-          final player = await DB.Players.getByPlayerId(stats.playerId);
-          if (player != null) {
-            historicalPlayers.add(player);
-          }
-        }
-      }
-
-      return PlayersInTeamResponse(
-        players: players,
-        historicalPlayers: historicalPlayers,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  // Non presente un uso negli screen. Non uso un response perchè non ci sarà nel frontend.
+  // Non presente un uso negli screen. Non uso un response perchè non ci sarà nel frontend. DONE
   static Future<Map<String, dynamic>> getLobbyInfo(
     int lobbyBookingId,
     int playerId,
@@ -1054,7 +824,7 @@ class DBRead {
       }
 
       return {
-        ApiJsonKeys.bookings: lobbyBooking,
+        ApiJsonKeys.lobbyBooking: lobbyBooking,
         ApiJsonKeys.usernamePerBooking: username,
         ApiJsonKeys.maxPlayersPerLobby: maxPlayers,
         ApiJsonKeys.currentPlayersPerLobby: currentPlayers,
@@ -1067,6 +837,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<JoinLobbyResponse> getJoinLobbyScreen(
     int playerId,
     int? totalPlayers,
@@ -1120,6 +891,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<AllTournamentsResponse> getAllTournamentsScreen(
     int? userId,
     int? teamId,
@@ -1214,7 +986,7 @@ class DBRead {
     }
   }
 
-  // Non presente un uso negli screen. Non uso un response perchè non ci sarà nel frontend.
+  // Non presente un uso negli screen. Non uso un response perchè non ci sarà nel frontend. DONE
   static Future<Map<String, dynamic>> getMyTournaments(
     int userId,
     int? teamId,
@@ -1275,69 +1047,8 @@ class DBRead {
     }
   }
 
-  static Future<ApplyTournamentFiltersResponse> applyTournamentFilters(
-    int? userId,
-    int? teamId, {
-    int? cityId,
-    int? numTeams,
-    RangeValues? prizeRange,
-    RangeValues? feeRange,
-    String? nameOrCode,
-    required SportCategory sportCategory,
-  }) async {
-    if (AppConfig.isDebug) {
-      Map<int, String> cityNamePerField = {};
-      Map<int, Field> fieldsCache = {};
-      Map<int, Coordinator> coordinatorCache = {};
-
-      List<Tournament> filteredTournaments =
-          await DB.Tournaments.getFilteredTournaments(
-            cityId: cityId,
-            numTeams: numTeams,
-            prizeRange: prizeRange,
-            feeRange: feeRange,
-            nameOrCode: nameOrCode,
-            sportCategory: sportCategory,
-          );
-
-      filteredTournaments.sort((a, b) => a.name.compareTo(b.name));
-
-      for (var tournament in filteredTournaments) {
-        if (!coordinatorCache.containsKey(tournament.coordinatorId)) {
-          final coordinator = await DB.Coordinators.getByCoordinatorId(
-            tournament.coordinatorId,
-          );
-          if (coordinator != null) {
-            coordinatorCache[tournament.coordinatorId] = coordinator;
-          }
-        }
-        if (!fieldsCache.containsKey(tournament.fieldId)) {
-          final Field? field = await DB.Fields.getById(tournament.fieldId);
-          if (field == null) {
-            throw Exception("Field not found for tournament");
-          }
-          fieldsCache[tournament.fieldId] = field;
-          if (!cityNamePerField.containsKey(field.cityId)) {
-            final city = await DB.Cities.getById(field.cityId);
-            if (city != null) {
-              cityNamePerField[field.cityId] = city.name;
-            }
-          }
-        }
-      }
-
-      return ApplyTournamentFiltersResponse(
-        tournaments: filteredTournaments,
-        cityNamePerField: cityNamePerField,
-        fieldsCache: fieldsCache,
-        coordinatorsCache: coordinatorCache,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<TournamentDetailsResponse> getTournamentDetailScreen(
+  // DONE
+  static Future<TournamentDetailsResponse> getTournamentDetailsScreen(
     int tournamentId,
     SportCategory sportCategory,
     int? userId,
@@ -1421,6 +1132,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<List<Player>> getViewCallupsScreen(
     int tournamentId,
     int teamId,
@@ -1445,6 +1157,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<CallupsResponse> getCallupsScreen(
     int tournamentId,
     int teamId,
@@ -1503,6 +1216,8 @@ class DBRead {
     }
   }
 
+  //DONE, adesso si chiama getTournamentScreen. Generico per ogni sport, poi si specializza nei singoli sport se serve. Per ora solo football, ma dovrebbe bastare per tutti gli sport di squadra.
+  // TODO: Ho inserito finalStageBracket!
   static Future<FootballTournamentResponse> getFootballTournamentScreen(
     int tournamentId,
   ) async {
@@ -1578,217 +1293,7 @@ class DBRead {
     }
   }
 
-  static Future<FootballMatchResponse> getFootballMatchScreen(
-    int matchId, {
-    int? refereeId,
-  }) async {
-    if (AppConfig.isDebug) {
-      final FootballMatch? match = await DB.FootballMatches.getById(matchId);
-      if (match == null) {
-        throw Exception("Match not found");
-      }
-
-      final Tournament? tournament = await DB.Tournaments.getById(
-        match.tournamentId,
-      );
-      if (tournament == null) {
-        throw Exception("Tournament not found");
-      }
-
-      final Team? homeTeam = match.homeTeamId != null
-          ? await DB.Teams.getById(match.homeTeamId!)
-          : null;
-      final Team? awayTeam = match.awayTeamId != null
-          ? await DB.Teams.getById(match.awayTeamId!)
-          : null;
-
-      final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
-        match.tournamentId,
-      );
-
-      final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
-        match.tournamentId,
-      );
-
-      final int? sportId = (await DB.Tournaments.getById(
-        match.tournamentId,
-      ))?.sportId;
-
-      if (sportId == null) {
-        throw Exception("Sport not found for tournament");
-      }
-
-      List<String> requiredRoles = [];
-      if (sportId == 1 || sportId == 2 || sportId == 3) {
-        requiredRoles = ['MAIN'];
-      } else if (sportId == 4) {
-        requiredRoles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
-      }
-
-      // Get existing assignments for this match
-      final assignments = await DB.RefereeAssignments.getByMatchId(matchId);
-      final assignedRoles = assignments.map((a) => a.role).toSet();
-
-      // Find available roles (required roles that are not yet assigned)
-      final availableRoles = requiredRoles
-          .where((role) => !assignedRoles.contains(role))
-          .toList();
-
-      Map<int, List<Player>> playersPerTeam = {};
-      if (homeTeam != null) {
-        final List<Callup> homeCallup = await DB.CallUps.getByTournamentAndTeam(
-          match.tournamentId,
-          homeTeam.id,
-        );
-        for (Callup callup in homeCallup) {
-          final player = await DB.Players.getByPlayerId(callup.playerId);
-          if (player != null) {
-            playersPerTeam.putIfAbsent(homeTeam.id, () => []).add(player);
-          }
-        }
-      }
-      if (awayTeam != null) {
-        final List<Callup> awayCallup = await DB.CallUps.getByTournamentAndTeam(
-          match.tournamentId,
-          awayTeam.id,
-        );
-        for (Callup callup in awayCallup) {
-          final player = await DB.Players.getByPlayerId(callup.playerId);
-          if (player != null) {
-            playersPerTeam.putIfAbsent(awayTeam.id, () => []).add(player);
-          }
-        }
-      }
-
-      final List<RefereeAssignment> refereeAssignments =
-          await DB.RefereeAssignments.getByMatchId(matchId);
-      Map<String, String> assignmentPerRefereeNameSurname = {};
-
-      for (var assignment in refereeAssignments) {
-        final referee = await DB.Referees.getByRefereeId(assignment.refereeId);
-        if (referee != null) {
-          assignmentPerRefereeNameSurname["${referee.name} ${referee.surname}"] =
-              assignment.role;
-        }
-      }
-
-      final Field? field = await DB.Fields.getById(tournament.fieldId);
-      if (field == null) {
-        throw Exception("Field not found for tournament");
-      }
-
-      final city = await DB.Cities.getById(field.cityId);
-      final String cityName = city != null ? city.name : 'Unknown';
-
-      final FootballMatchEventsResponse eventData = await getFootballMatchEvents(matchId);
-      final List<FootballMatchEvent> events = eventData.events;
-      final bool canMatchFinish = eventData.canMatchFinish;
-
-      final bool refereeCheck = availableRoles
-          .isEmpty; // Se non ci sono ruoli disponibili, significa che tutti i ruoli richiesti sono stati assegnati, quindi il check è passato
-
-      bool hasRefereeLicense = false;
-      if (availableRoles.isNotEmpty && refereeId != null) {
-        if (await DB.RefereeLicenses.isRefereeLicensed(refereeId, sportId)) {
-          hasRefereeLicense = true;
-        }
-      }
-      Map<String, double> payPerRole = {};
-      if (refereeId != null) {
-        final Referee? referee = await DB.Referees.getByRefereeId(refereeId);
-        if (referee == null) {
-          throw Exception("Referee not found");
-        }
-
-        for (String role in requiredRoles) {
-          final double pay = await DB.RefereeRoles.getPayPerMatch(
-            sportId,
-            role,
-            referee.level,
-          );
-          payPerRole[role] = pay;
-        }
-      }
-
-      return FootballMatchResponse(
-        match: match,
-        homeTeam: homeTeam,
-        awayTeam: awayTeam,
-        events: events,
-        minutesPerRound: minutesPerRound,
-        minutesPerPause: minutesPerPause,
-        availableRefereeRoles: availableRoles,
-        playersPerTeam: playersPerTeam,
-        assignmentPerRefereeNameSurname: assignmentPerRefereeNameSurname,
-        field: field,
-        cityName: cityName,
-        coordinatorId: tournament.coordinatorId,
-        refereeCheck: refereeCheck,
-        canMatchFinish: canMatchFinish,
-        hasRefereeLicense: hasRefereeLicense,
-        payPerRole: payPerRole,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<FootballMatchEventsResponse> getFootballMatchEvents(
-    int matchId,
-  ) async {
-    if (AppConfig.isDebug) {
-      try {
-        final FootballMatch? match = await DB.FootballMatches.getById(matchId);
-        if (match == null) {
-          throw Exception("Match not found");
-        }
-
-        final Tournament? tournament = await DB.Tournaments.getById(
-          match.tournamentId,
-        );
-        if (tournament == null) {
-          throw Exception("Tournament not found");
-        }
-
-        final Sport? sport = await DB.Sports.getById(tournament.sportId);
-        if (sport == null) {
-          throw Exception("Sport not found for tournament");
-        }
-
-        if (sport.category == SportCategory.football) {
-          final List<FootballMatchEvent> events =
-              await DB.FootballMatchEvents.getByMatchId(matchId);
-          final bool canMatchFinish = await DB.FootballMatches.canMatchFinish(
-            matchId,
-          );
-
-          return FootballMatchEventsResponse(
-            events: events,
-            canMatchFinish: canMatchFinish,
-          );
-        } else {
-          throw Exception("Sport is not football");
-        }
-      } catch (e) {
-        return FootballMatchEventsResponse(events: [], canMatchFinish: false);
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<List<TournamentParticipation>> getTeamParticipations(
-    int teamId,
-  ) async {
-    if (AppConfig.isDebug) {
-      List<TournamentParticipation> participations =
-          await DB.TournamentParticipations.getByTeamId(teamId);
-      return participations.where((p) => p.toPay > 0).toList();
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
+  // DONE
   static Future<PayParticipationResponse> getPayParticipationScreen(
     int playerId,
     SportCategory sportCategory,
@@ -1834,6 +1339,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<PlayerRequestsResponse> getTeamRequestsScreen(
     int teamId,
   ) async {
@@ -1865,6 +1371,7 @@ class DBRead {
     }
   }
 
+  // DONE, ADESSO ARRIVANO ANCHE LE TRANSAZIONI. MODIFICA IL RESPONSE
   static Future<WalletResponse> getWalletScreen(int userId) async {
     if (AppConfig.isDebug) {
       final Wallet? wallet = await DB.Wallets.getByAccountId(userId);
@@ -1879,16 +1386,7 @@ class DBRead {
     }
   }
 
-  static Future<bool> hasNotification(int userId) async {
-    if (AppConfig.isDebug) {
-      final List<Review> reviews =
-          await DB.Reviews.getPendingReviewsForReviewerAccountId(userId);
-      return reviews.isNotEmpty;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
+  // DONE
   static Future<AvailableMatchesResponse> getAvailableMatchesScreen(
     SportCategory sportCategory,
     int refereeId, {
@@ -1963,7 +1461,7 @@ class DBRead {
         teamsCache: teamsCache,
         minutesRoundPerTournament: minutesRoundPerTournament,
         minutesPausePerTournament: minutesPausePerTournament,
-        matchesPerSport: matchesPerSport,
+        footballMatchesPerSport: matchesPerSport,
         sportNames: sportNames,
       );
     } else {
@@ -1971,8 +1469,10 @@ class DBRead {
     }
   }
 
-  static Future<PastAssignedMatchesResponse>
-  getPastRefereeAssignedMatchesScreen(int refereeId) async {
+  // DONE
+  static Future<PastAssignedMatchesResponse> getPastAssignedMatchesScreen(
+    int refereeId,
+  ) async {
     if (AppConfig.isDebug) {
       List<RefereeAssignment> assignments =
           await DB.RefereeAssignments.getByRefereeId(refereeId);
@@ -2026,7 +1526,8 @@ class DBRead {
     }
   }
 
-  static Future<TeamDetailResponse> getTeamDetailScreen(
+  // DONE
+  static Future<TeamDetailsResponse> getTeamDetailsScreen(
     int playerId,
     int teamId,
   ) async {
@@ -2058,7 +1559,7 @@ class DBRead {
         teamId,
       );
 
-      return TeamDetailResponse(
+      return TeamDetailsResponse(
         isPlayerInTeam: playsAt != null,
         existingRequest: existingRequest,
         team: team,
@@ -2076,191 +1577,7 @@ class DBRead {
     }
   }
 
-  // super inefficiente. Cerca di mandare tutti i dati a road_to_victory widget.
-  // pensa a:
-  // Map<int, int[2]> per mappare matchId -> [homeTeamId, awayTeamId]
-  // Map<int, Team> per mappare teamId -> Team (così da non dover fare tante query per i team)
-  // Map<int, int[2]> per mappare matchId -> [homeTeamGoals, awayTeamGoals]
-  // Map<int?[2], int?> per mappare [matchId andata, eventuale matchId ritorno] -> partita successiva (così da capire quale partita è la successiva in base a quale partita è stata giocata)
-  // Map<int, FootballMatch> per mappare matchId -> FootballMatch (così da avere tutti i dati della partita)
-  static Future<FootballMatchBracketResponse> getFootballMatchBracket(
-    int matchId,
-    SportCategory sportCategory, {
-    required bool isFinal,
-  }) async {
-    if (AppConfig.isDebug) {
-      if (sportCategory != SportCategory.football) {
-        throw Exception("MatchBracket is only implemented for football");
-      }
-
-      final FootballMatch? match = await DB.FootballMatches.getById(matchId);
-      if (match == null) {
-        throw Exception("Match not found");
-      }
-
-      Team? homeTeam;
-      Team? awayTeam;
-      int? winnerId;
-
-      if (match.homeTeamId != null) {
-        homeTeam = await DB.Teams.getById(match.homeTeamId!);
-      }
-
-      if (match.awayTeamId != null) {
-        awayTeam = await DB.Teams.getById(match.awayTeamId!);
-      }
-
-      if (isFinal && match.status == FootballMatchStatus.finished) {
-        winnerId = await DB.FootballMatches.getMatchWinner(matchId);
-        if (winnerId == -1) winnerId = null;
-      }
-
-      return FootballMatchBracketResponse(
-        match: match,
-        homeTeam: homeTeam,
-        awayTeam: awayTeam,
-        winnerId: winnerId,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  // uniscilo con il precedente e manda tutto a road_to_victory widget. In questo modo hai tutti i dati necessari per costruire l'albero del torneo in un'unica chiamata, evitando di dover fare tante chiamate per ogni partita per ottenere i dati dei team, dei risultati, ecc.
-  static Future<RoadToVictoryResponse> getRoadToVictoryWidget(
-    int tournamentId,
-    SportCategory sportCategory,
-  ) async {
-    if (AppConfig.isDebug) {
-      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
-      if (tournament == null) {
-        throw Exception("Tournament not found");
-      }
-
-      if (sportCategory != SportCategory.football) {
-        throw Exception(
-          "Matches in tournament is only implemented for football",
-        );
-      }
-
-      final List<FootballMatch> matches =
-          await DB.FootballMatches.getMatchesByTournament(tournamentId);
-
-      return RoadToVictoryResponse(tournament: tournament, matches: matches);
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<ScheduleMatchResponse> getScheduleData(int tournamentId) async {
-    if (AppConfig.isDebug) {
-      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
-      if (tournament == null) {
-        throw Exception("Tournament not found");
-      }
-
-      final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
-        tournamentId,
-      );
-      final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
-        tournamentId,
-      );
-
-      final existingBookings = await DB.Bookings.getByFieldId(
-        tournament.fieldId,
-      );
-
-      return ScheduleMatchResponse(
-        minutesPerRound: minutesPerRound,
-        minutesPerPause: minutesPerPause,
-        bookings: existingBookings,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<T> searchTeamOrTournament<T>(
-    int id, {
-    required bool isTeam,
-    required bool isTournament,
-  }) async {
-    if (AppConfig.isDebug) {
-      if (isTeam && isTournament) {
-        throw Exception(
-          "Cannot search for both team and tournament at the same time",
-        );
-      }
-
-      if (isTeam) {
-        final Team? team = await DB.Teams.getById(id);
-        if (team == null) {
-          throw Exception("Team not found");
-        }
-        return team as T;
-      } else if (isTournament) {
-        final Tournament? tournament = await DB.Tournaments.getById(id);
-        if (tournament == null) {
-          throw Exception("Tournament not found");
-        }
-        return tournament as T;
-      } else {
-        throw Exception("Invalid search parameters");
-      }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<List<Sport>> getSportsByCategory(SportCategory category) async {
-    if (AppConfig.isDebug) {
-      final List<Sport> sports = await DB.Sports.getByCategory(category);
-      return sports;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<TournamentSummaryResponse> getTournamentSummary(
-    int tournamentId,
-  ) async {
-    if (AppConfig.isDebug) {
-      final Tournament? tournament =
-          DB.Tournaments.getById(tournamentId) as Tournament?;
-      if (tournament == null) {
-        throw Exception("Tournament not found");
-      }
-
-      final Sport? sport = await DB.Sports.getById(tournament.sportId);
-      if (sport == null) {
-        throw Exception("Sport not found");
-      }
-
-      final Field? field = await DB.Fields.getById(tournament.fieldId);
-
-      if (field == null) {
-        throw Exception("Field not found");
-      }
-
-      final City? city = await DB.Cities.getById(field.cityId);
-
-      if (city == null) {
-        throw Exception("City not found");
-      }
-
-      final String cityName = city.name;
-
-      return TournamentSummaryResponse(
-        tournament: tournament,
-        sport: sport,
-        field: field,
-        cityName: cityName,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
+  // DONE
   static Future<RefereeLicensesResponse> getRefereeLicensesScreen(
     int refereeId,
   ) async {
@@ -2274,8 +1591,8 @@ class DBRead {
     }
   }
 
-  // nel frontend non stampi lobby e booking, attento eh
-  static Future<PersonalPlayerStatsResponse> getPersonalPlayerStats(
+  // DONE, nel frontend non stampi lobby e booking, attento eh
+  static Future<PersonalPlayerStatsResponse> getPersonalPlayerStatsScreen(
     int playerId,
   ) async {
     if (AppConfig.isDebug) {
@@ -2359,6 +1676,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<ReviewsResponse> getReviewsScreen(int userId) async {
     if (AppConfig.isDebug) {
       /*
@@ -2434,6 +1752,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<InviteFriendsResponse> getInviteFriendsScreen(
     int userId,
   ) async {
@@ -2466,6 +1785,7 @@ class DBRead {
     }
   }
 
+  // DONE, VERIFICA CheckountPayload
   static Future<CheckoutResponse> getCheckoutScreen(int sessionId) async {
     if (AppConfig.isDebug) {
       final CheckoutSession? session = await DB.CheckoutSessions.getById(
@@ -2608,11 +1928,746 @@ class DBRead {
         fieldName: fieldName,
         fieldAddress: fieldAddress,
         startTime: startTime,
-        endTime: endTime,
+        finishTime: endTime,
         maxPlayers: maxPlayers,
         playersToPay: playersToPay,
       );
+    } else {
+      throw UnimplementedError();
+    }
+  }
 
+  // DONE, ho aggiunto anche il BRACKET per la fase finale (risultato aggregato)
+  static Future<FootballMatchResponse> getFootballMatchScreen(
+    int matchId, {
+    int? refereeId,
+  }) async {
+    if (AppConfig.isDebug) {
+      final FootballMatch? match = await DB.FootballMatches.getById(matchId);
+      if (match == null) {
+        throw Exception("Match not found");
+      }
+
+      final Tournament? tournament = await DB.Tournaments.getById(
+        match.tournamentId,
+      );
+      if (tournament == null) {
+        throw Exception("Tournament not found");
+      }
+
+      final Team? homeTeam = match.homeTeamId != null
+          ? await DB.Teams.getById(match.homeTeamId!)
+          : null;
+      final Team? awayTeam = match.awayTeamId != null
+          ? await DB.Teams.getById(match.awayTeamId!)
+          : null;
+
+      final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
+        match.tournamentId,
+      );
+
+      final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
+        match.tournamentId,
+      );
+
+      final int? sportId = (await DB.Tournaments.getById(
+        match.tournamentId,
+      ))?.sportId;
+
+      if (sportId == null) {
+        throw Exception("Sport not found for tournament");
+      }
+
+      List<String> requiredRoles = [];
+      if (sportId == 1 || sportId == 2 || sportId == 3) {
+        requiredRoles = ['MAIN'];
+      } else if (sportId == 4) {
+        requiredRoles = ['MAIN', 'ASSISTANT1', 'ASSISTANT2'];
+      }
+
+      // Get existing assignments for this match
+      final assignments = await DB.RefereeAssignments.getByMatchId(matchId);
+      final assignedRoles = assignments.map((a) => a.role).toSet();
+
+      // Find available roles (required roles that are not yet assigned)
+      final availableRoles = requiredRoles
+          .where((role) => !assignedRoles.contains(role))
+          .toList();
+
+      Map<int, List<Player>> playersPerTeam = {};
+      if (homeTeam != null) {
+        final List<Callup> homeCallup = await DB.CallUps.getByTournamentAndTeam(
+          match.tournamentId,
+          homeTeam.id,
+        );
+        for (Callup callup in homeCallup) {
+          final player = await DB.Players.getByPlayerId(callup.playerId);
+          if (player != null) {
+            playersPerTeam.putIfAbsent(homeTeam.id, () => []).add(player);
+          }
+        }
+      }
+      if (awayTeam != null) {
+        final List<Callup> awayCallup = await DB.CallUps.getByTournamentAndTeam(
+          match.tournamentId,
+          awayTeam.id,
+        );
+        for (Callup callup in awayCallup) {
+          final player = await DB.Players.getByPlayerId(callup.playerId);
+          if (player != null) {
+            playersPerTeam.putIfAbsent(awayTeam.id, () => []).add(player);
+          }
+        }
+      }
+
+      final List<RefereeAssignment> refereeAssignments =
+          await DB.RefereeAssignments.getByMatchId(matchId);
+      Map<String, String> assignmentPerRefereeNameSurname = {};
+
+      for (var assignment in refereeAssignments) {
+        final referee = await DB.Referees.getByRefereeId(assignment.refereeId);
+        if (referee != null) {
+          assignmentPerRefereeNameSurname["${referee.name} ${referee.surname}"] =
+              assignment.role;
+        }
+      }
+
+      final Field? field = await DB.Fields.getById(tournament.fieldId);
+      if (field == null) {
+        throw Exception("Field not found for tournament");
+      }
+
+      final city = await DB.Cities.getById(field.cityId);
+      final String cityName = city != null ? city.name : 'Unknown';
+
+      final FootballMatchEventsResponse eventData =
+          await getFootballMatchEvents(matchId);
+      final List<FootballMatchEvent> events = eventData.events;
+      final bool canMatchFinish = eventData.canMatchFinish;
+
+      final bool refereeCheck = availableRoles
+          .isEmpty; // Se non ci sono ruoli disponibili, significa che tutti i ruoli richiesti sono stati assegnati, quindi il check è passato
+
+      bool hasRefereeLicense = false;
+      if (availableRoles.isNotEmpty && refereeId != null) {
+        if (await DB.RefereeLicenses.isRefereeLicensed(refereeId, sportId)) {
+          hasRefereeLicense = true;
+        }
+      }
+      Map<String, double> payPerRole = {};
+      if (refereeId != null) {
+        final Referee? referee = await DB.Referees.getByRefereeId(refereeId);
+        if (referee == null) {
+          throw Exception("Referee not found");
+        }
+
+        for (String role in requiredRoles) {
+          final double pay = await DB.RefereeRoles.getPayPerMatch(
+            sportId,
+            role,
+            referee.level,
+          );
+          payPerRole[role] = pay;
+        }
+      }
+
+      return FootballMatchResponse(
+        match: match,
+        homeTeam: homeTeam,
+        awayTeam: awayTeam,
+        events: events,
+        minutesPerRound: minutesPerRound,
+        minutesPerPause: minutesPerPause,
+        availableRefereeRoles: availableRoles,
+        playersPerTeam: playersPerTeam,
+        assignmentPerRefereeNameSurname: assignmentPerRefereeNameSurname,
+        field: field,
+        cityName: cityName,
+        coordinatorId: tournament.coordinatorId,
+        refereeCheck: refereeCheck,
+        canMatchFinish: canMatchFinish,
+        hasRefereeLicense: hasRefereeLicense,
+        payPerRole: payPerRole,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // NOT SCREENS
+
+  // DONE
+  static Future<bool> checkTeamNameInCategory(
+    String teamName,
+    SportCategory category,
+  ) async {
+    if (AppConfig.isDebug) {
+      return await DB.Teams.isNameUniqueInCategory(teamName, category);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<LoginResponse> handleLogin(
+    String usernameOrEmail,
+    String password,
+  ) async {
+    if (AppConfig.isDebug) {
+      final Account? user = await DB.Accounts.getByEmailOrUsername(
+        usernameOrEmail,
+        password,
+      );
+      if (user == null) {
+        return LoginResponse(account: null, roleId: null, teamId: null);
+      }
+
+      final AccountRole userRole = user.role;
+
+      switch (userRole) {
+        case AccountRole.player:
+          final int playerId = await DB.Players.getPlayerIdByAccountId(user.id);
+          if (playerId < 1) {
+            throw Exception("Player not found for user");
+          }
+
+          final PlaysAt? playsAt = await DB.PlaysAt.getByPlayerIdAndCategory(
+            playerId,
+            SportCategory.football,
+          );
+          Team? userTeam;
+
+          return LoginResponse(
+            account: user,
+            roleId: playerId,
+            teamId: playsAt != null ? playsAt.teamId : null,
+          );
+        case AccountRole.coordinator:
+          final int coordinatorId =
+              await DB.Coordinators.getCoordinatorIdByAccountId(user.id);
+          if (coordinatorId < 1) {
+            throw Exception("Coordinator not found for user");
+          }
+          return LoginResponse(
+            account: user,
+            roleId: coordinatorId,
+            teamId: null,
+          );
+        case AccountRole.referee:
+          final int refereeId = await DB.Referees.getRefereeIdByAccountId(
+            user.id,
+          );
+          if (refereeId < 1) {
+            throw Exception("Referee not found for user");
+          }
+          return LoginResponse(
+            account: user,
+            roleId: refereeId,
+            teamId: null,
+          );
+        case AccountRole.organization:
+          final int organizationId =
+              await DB.Organizations.getOrganizationIdByAccountId(user.id);
+          if (organizationId < 1) {
+            throw Exception("Organization not found for user");
+          }
+          return LoginResponse(
+            account: user,
+            roleId: organizationId,
+            teamId: null,
+          );
+        default:
+          throw Exception("Unknown user role");
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<List<City>> getCities() async {
+    if (AppConfig.isDebug) {
+      List<City> cities = await DB.Cities.getAll();
+      return cities;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<PlayersInTeamResponse> getPlayersInTeam(int teamId) async {
+    if (AppConfig.isDebug) {
+      final Team? team = await DB.Teams.getById(teamId);
+      if (team == null) {
+        throw Exception("Team not found");
+      }
+
+      List<PlaysAt> playsAtEntries = await DB.PlaysAt.getByTeamId(team.id);
+      List<Player> players = [];
+
+      for (var entry in playsAtEntries) {
+        final player = await DB.Players.getByPlayerId(entry.playerId);
+        if (player != null) {
+          players.add(player);
+        }
+      }
+
+      List<Player> historicalPlayers = [...players];
+      List<FootballTeamStats> allStats = await DB.FootballTeamStats.getByTeamId(
+        team.id,
+      );
+      for (var stats in allStats) {
+        if ((team.vip || team.players == 0) &&
+            !historicalPlayers.any((p) => p.id == stats.playerId)) {
+          final player = await DB.Players.getByPlayerId(stats.playerId);
+          if (player != null) {
+            historicalPlayers.add(player);
+          }
+        }
+      }
+
+      return PlayersInTeamResponse(
+        players: players,
+        historicalPlayers: historicalPlayers,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<FieldsAndMaxPlayersPerFieldResponse>
+  getFieldsByPlayersAndCityAndSportCategory({
+    required int maxPlayers,
+    required int cityId,
+    required SportCategory sportCategory,
+  }) async {
+    if (AppConfig.isDebug) {
+      final List<Field> fields =
+          await DB.Fields.getByMaxPlayersAndCityAndSportCategory(
+            maxPlayers,
+            cityId,
+            sportCategory,
+          );
+
+      Map<int, int> maxPlayerPerField = {};
+
+      for (var field in fields) {
+        final FieldCategory? fieldCategory =
+            await DB.FieldCategories.getByFieldIdAndSportCategory(
+              field.id,
+              sportCategory,
+            );
+        if (fieldCategory != null) {
+          maxPlayerPerField[field.id] = fieldCategory.maxPlayers;
+        } else {
+          maxPlayerPerField[field.id] = 0; // Default se non trovato
+        }
+      }
+      return FieldsAndMaxPlayersPerFieldResponse(
+        fields: fields,
+        maxPlayersPerField: maxPlayerPerField,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, è inutile mettere i BOOL, basta leggere il tournament mettendo inizializzati prize1 e prize2 != 0 se vuoi usarli
+  // Ritorna anche numMatches giusto per
+  static Future<TournamentParametersResponse> calculateTournamentParameters(
+    Tournament fictitiousTournament,
+    bool prize1,
+    bool prize2,
+  ) async {
+    if (AppConfig.isDebug) {
+      final fee = await DB.Tournaments.calculateTournamentFee(
+        fictitiousTournament,
+      );
+      final coordinatorPay = await DB.Tournaments.calculatePayCoordinator(
+        fictitiousTournament,
+      );
+
+      // Calculate prizes only if requested
+      final prize1Value = prize1
+          ? await DB.Tournaments.calculatePrize1(fictitiousTournament)
+          : null;
+      final prize2Value = prize2
+          ? await DB.Tournaments.calculatePrize2(fictitiousTournament)
+          : null;
+
+      return TournamentParametersResponse(
+        fee: fee,
+        coordinatorPay: coordinatorPay,
+        prize1: prize1Value,
+        prize2: prize2Value,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, Ho separato numTeams in numTeamsMin e Max. Ora si può cercare solo per Name non per Code
+  static Future<ApplyTournamentFiltersResponse> applyTournamentFilters(
+    int? userId,
+    int? teamId, {
+    int? cityId,
+    int? numTeams,
+    RangeValues? prizeRange,
+    RangeValues? feeRange,
+    String? nameOrCode,
+    required SportCategory sportCategory,
+  }) async {
+    if (AppConfig.isDebug) {
+      Map<int, String> cityNamePerField = {};
+      Map<int, Field> fieldsCache = {};
+      Map<int, Coordinator> coordinatorCache = {};
+
+      List<Tournament> filteredTournaments =
+          await DB.Tournaments.getFilteredTournaments(
+            cityId: cityId,
+            numTeams: numTeams,
+            prizeRange: prizeRange,
+            feeRange: feeRange,
+            nameOrCode: nameOrCode,
+            sportCategory: sportCategory,
+          );
+
+      filteredTournaments.sort((a, b) => a.name.compareTo(b.name));
+
+      for (var tournament in filteredTournaments) {
+        if (!coordinatorCache.containsKey(tournament.coordinatorId)) {
+          final coordinator = await DB.Coordinators.getByCoordinatorId(
+            tournament.coordinatorId,
+          );
+          if (coordinator != null) {
+            coordinatorCache[tournament.coordinatorId] = coordinator;
+          }
+        }
+        if (!fieldsCache.containsKey(tournament.fieldId)) {
+          final Field? field = await DB.Fields.getById(tournament.fieldId);
+          if (field == null) {
+            throw Exception("Field not found for tournament");
+          }
+          fieldsCache[tournament.fieldId] = field;
+          if (!cityNamePerField.containsKey(field.cityId)) {
+            final city = await DB.Cities.getById(field.cityId);
+            if (city != null) {
+              cityNamePerField[field.cityId] = city.name;
+            }
+          }
+        }
+      }
+
+      return ApplyTournamentFiltersResponse(
+        tournaments: filteredTournaments,
+        cityNamePerField: cityNamePerField,
+        fieldsCache: fieldsCache,
+        coordinatorsCache: coordinatorCache,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<FootballMatchEventsResponse> getFootballMatchEvents(
+    int matchId,
+  ) async {
+    if (AppConfig.isDebug) {
+      try {
+        final FootballMatch? match = await DB.FootballMatches.getById(matchId);
+        if (match == null) {
+          throw Exception("Match not found");
+        }
+
+        final Tournament? tournament = await DB.Tournaments.getById(
+          match.tournamentId,
+        );
+        if (tournament == null) {
+          throw Exception("Tournament not found");
+        }
+
+        final Sport? sport = await DB.Sports.getById(tournament.sportId);
+        if (sport == null) {
+          throw Exception("Sport not found for tournament");
+        }
+
+        if (sport.category == SportCategory.football) {
+          final List<FootballMatchEvent> events =
+              await DB.FootballMatchEvents.getByMatchId(matchId);
+          final bool canMatchFinish = await DB.FootballMatches.canMatchFinish(
+            matchId,
+          );
+
+          return FootballMatchEventsResponse(
+            events: events,
+            canMatchFinish: canMatchFinish,
+          );
+        } else {
+          throw Exception("Sport is not football");
+        }
+      } catch (e) {
+        return FootballMatchEventsResponse(events: [], canMatchFinish: false);
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<List<TournamentParticipation>> getTeamParticipations(
+    int teamId,
+  ) async {
+    if (AppConfig.isDebug) {
+      List<TournamentParticipation> participations =
+          await DB.TournamentParticipations.getByTeamId(teamId);
+      return participations.where((p) => p.toPay > 0).toList();
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<FieldsAndMaxPlayersPerFieldResponse>
+  getFreeFieldsByPlayerAndCityAndDate({
+    required int maxPlayers,
+    required int cityId,
+    required DateTime startDateTime,
+    required DateTime endDateTime,
+    required SportCategory sportCategory,
+  }) async {
+    if (AppConfig.isDebug) {
+      final allFields = await DB.Fields.getByMaxPlayersAndCityAndSportCategory(
+        maxPlayers,
+        cityId,
+        sportCategory,
+      );
+
+      // Get free field IDs
+      final allFieldIds = allFields.map((f) => f.id).toList();
+
+      final freeFieldIds = await DB.LobbyBookings.getFreeFieldIds(
+        startDateTime,
+        endDateTime,
+        allFieldIds,
+      );
+
+      // Filter fields to keep only free ones
+      final fields = allFields
+          .where((field) => freeFieldIds.contains(field.id))
+          .toList();
+
+      Map<int, int> maxPlayerPerField = {};
+      for (var field in fields) {
+        final FieldCategory? fieldCategory =
+            await DB.FieldCategories.getByFieldIdAndSportCategory(
+              field.id,
+              sportCategory,
+            );
+        if (fieldCategory != null) {
+          maxPlayerPerField[field.id] = fieldCategory.maxPlayers;
+        } else {
+          maxPlayerPerField[field.id] = 0; // Default se non trovato
+        }
+      }
+      return FieldsAndMaxPlayersPerFieldResponse(
+        fields: fields,
+        maxPlayersPerField: maxPlayerPerField,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> hasNotification(int userId) async {
+    if (AppConfig.isDebug) {
+      final List<Review> reviews =
+          await DB.Reviews.getPendingReviewsForReviewerAccountId(userId);
+      return reviews.isNotEmpty;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<T> searchTeamOrTournament<T>(
+    int id, {
+    required bool isTeam,
+    required bool isTournament,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (isTeam && isTournament) {
+        throw Exception(
+          "Cannot search for both team and tournament at the same time",
+        );
+      }
+
+      if (isTeam) {
+        final Team? team = await DB.Teams.getById(id);
+        if (team == null) {
+          throw Exception("Team not found");
+        }
+        return team as T;
+      } else if (isTournament) {
+        final Tournament? tournament = await DB.Tournaments.getById(id);
+        if (tournament == null) {
+          throw Exception("Tournament not found");
+        }
+        return tournament as T;
+      } else {
+        throw Exception("Invalid search parameters");
+      }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<ScheduleMatchResponse> getScheduleData(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
+      if (tournament == null) {
+        throw Exception("Tournament not found");
+      }
+
+      final int minutesPerRound = await DB.Tournaments.getMinutesPerRoundById(
+        tournamentId,
+      );
+      final int minutesPerPause = await DB.Tournaments.getMinutesPerPauseById(
+        tournamentId,
+      );
+
+      final existingBookings = await DB.Bookings.getByFieldId(
+        tournament.fieldId,
+      );
+
+      return ScheduleMatchResponse(
+        minutesPerRound: minutesPerRound,
+        minutesPerPause: minutesPerPause,
+        bookings: existingBookings,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<List<Sport>> getSportsByCategory(SportCategory category) async {
+    if (AppConfig.isDebug) {
+      final List<Sport> sports = await DB.Sports.getByCategory(category);
+      return sports;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<TournamentSummaryResponse> getTournamentSummary(
+    int tournamentId,
+  ) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament =
+          DB.Tournaments.getById(tournamentId) as Tournament?;
+      if (tournament == null) {
+        throw Exception("Tournament not found");
+      }
+
+      final Sport? sport = await DB.Sports.getById(tournament.sportId);
+      if (sport == null) {
+        throw Exception("Sport not found");
+      }
+
+      final Field? field = await DB.Fields.getById(tournament.fieldId);
+
+      if (field == null) {
+        throw Exception("Field not found");
+      }
+
+      final City? city = await DB.Cities.getById(field.cityId);
+
+      if (city == null) {
+        throw Exception("City not found");
+      }
+
+      final String cityName = city.name;
+
+      return TournamentSummaryResponse(
+        tournament: tournament,
+        sport: sport,
+        field: field,
+        cityName: cityName,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // super inefficiente. Cerca di mandare tutti i dati a road_to_victory widget.
+  // pensa a:
+  // Map<int, int[2]> per mappare matchId -> [homeTeamId, awayTeamId]
+  // Map<int, Team> per mappare teamId -> Team (così da non dover fare tante query per i team)
+  // Map<int, int[2]> per mappare matchId -> [homeTeamGoals, awayTeamGoals]
+  // Map<int?[2], int?> per mappare [matchId andata, eventuale matchId ritorno] -> partita successiva (così da capire quale partita è la successiva in base a quale partita è stata giocata)
+  // Map<int, FootballMatch> per mappare matchId -> FootballMatch (così da avere tutti i dati della partita)
+  static Future<FootballMatchBracketResponse> getFootballMatchBracket(
+    int matchId,
+    SportCategory sportCategory, {
+    required bool isFinal,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (sportCategory != SportCategory.football) {
+        throw Exception("MatchBracket is only implemented for football");
+      }
+
+      final FootballMatch? match = await DB.FootballMatches.getById(matchId);
+      if (match == null) {
+        throw Exception("Match not found");
+      }
+
+      Team? homeTeam;
+      Team? awayTeam;
+      int? winnerId;
+
+      if (match.homeTeamId != null) {
+        homeTeam = await DB.Teams.getById(match.homeTeamId!);
+      }
+
+      if (match.awayTeamId != null) {
+        awayTeam = await DB.Teams.getById(match.awayTeamId!);
+      }
+
+      if (isFinal && match.status == FootballMatchStatus.finished) {
+        winnerId = await DB.FootballMatches.getMatchWinner(matchId);
+        if (winnerId == -1) winnerId = null;
+      }
+
+      return FootballMatchBracketResponse(
+        match: match,
+        homeTeam: homeTeam,
+        awayTeam: awayTeam,
+        winnerId: winnerId,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // uniscilo con il precedente e manda tutto a road_to_victory widget. In questo modo hai tutti i dati necessari per costruire l'albero del torneo in un'unica chiamata, evitando di dover fare tante chiamate per ogni partita per ottenere i dati dei team, dei risultati, ecc.
+  static Future<RoadToVictoryResponse> getRoadToVictoryWidget(
+    int tournamentId,
+    SportCategory sportCategory,
+  ) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
+      if (tournament == null) {
+        throw Exception("Tournament not found");
+      }
+
+      if (sportCategory != SportCategory.football) {
+        throw Exception(
+          "Matches in tournament is only implemented for football",
+        );
+      }
+
+      final List<FootballMatch> matches =
+          await DB.FootballMatches.getMatchesByTournament(tournamentId);
+
+      return RoadToVictoryResponse(tournament: tournament, matches: matches);
     } else {
       throw UnimplementedError();
     }

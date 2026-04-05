@@ -15,7 +15,6 @@ import '../profile_screen.dart';
 import 'referee_home_screen.dart';
 import 'past_assigned_matches_screen.dart';
 import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class AvailableMatchesScreen extends StatefulWidget {
@@ -110,7 +109,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
           _teamsCache = data.teamsCache;
           _minutesRoundPerTournament = data.minutesRoundPerTournament;
           _minutesPausePerTournament = data.minutesPausePerTournament;
-          _matchesPerSport = data.matchesPerSport;
+          _matchesPerSport = data.footballMatchesPerSport;
           _sportNames = data.sportNames;
           _isLoading = false;
         });

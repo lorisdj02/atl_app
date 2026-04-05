@@ -19,7 +19,6 @@ import '../../widgets/field_size_alert_dialog.dart';
 import '../../widgets/tournament_summary.dart';
 import '../../database/db_read.dart';
 import '../../database/db_write.dart';
-import '../../config/api_json_keys.dart';
 
 enum Round2Option { none, groupStageOnly, finalStageOnly, both }
 

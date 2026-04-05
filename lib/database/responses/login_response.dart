@@ -8,6 +8,7 @@ class LoginResponse {
   final int? roleId;
   final int? teamId;
 
+
   LoginResponse({
     required this.account,
     required this.roleId,
@@ -19,6 +20,7 @@ class LoginResponse {
       account: Account.fromJson(json[ApiJsonKeys.account]),
       roleId: json[ApiJsonKeys.roleId],
       teamId: json[ApiJsonKeys.teamId],
+
     );
   }
 

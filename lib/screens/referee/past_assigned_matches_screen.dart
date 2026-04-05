@@ -14,7 +14,6 @@ import '../profile_screen.dart';
 import 'referee_home_screen.dart';
 import 'available_matches_screen.dart';
 import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class PastAssignedMatchesScreen extends StatefulWidget {
@@ -52,7 +51,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         return;
       }
 
-      final PastAssignedMatchesResponse data = await DBRead.getPastRefereeAssignedMatchesScreen(refereeId);
+      final PastAssignedMatchesResponse data = await DBRead.getPastAssignedMatchesScreen(refereeId);
 
       if(widget.currentSport != SportCategory.football) {
         setState(() => _isLoading = false);

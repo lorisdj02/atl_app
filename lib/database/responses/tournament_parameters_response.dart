@@ -7,6 +7,7 @@ class TournamentParametersResponse {
   final double coordinatorPay;
   final double? prize1;
   final double? prize2;
+  // final int numMatches;
 
   TournamentParametersResponse({
     required this.fee,

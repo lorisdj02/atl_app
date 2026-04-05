@@ -7,7 +7,7 @@ class AvailableMatchesResponse {
   final Map<int, Team> teamsCache;
   final Map<int, int> minutesRoundPerTournament;
   final Map<int, int> minutesPausePerTournament;
-  final Map<int, List<FootballMatch>> matchesPerSport;
+  final Map<int, List<FootballMatch>> footballMatchesPerSport;
   final Map<int, String> sportNames;
 
   AvailableMatchesResponse({
@@ -15,7 +15,7 @@ class AvailableMatchesResponse {
     required this.teamsCache,
     required this.minutesRoundPerTournament,
     required this.minutesPausePerTournament,
-    required this.matchesPerSport,
+    required this.footballMatchesPerSport,
     required this.sportNames,
   });
 
@@ -41,9 +41,9 @@ class AvailableMatchesResponse {
             (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
                 .map((key, value) => MapEntry(int.parse(key), value as int)),
           ),
-      matchesPerSport:
+      footballMatchesPerSport:
           Map<int, List<FootballMatch>>.from(
-            (json[ApiJsonKeys.matchesPerSport] as Map<String, dynamic>).map(
+            (json[ApiJsonKeys.footballMatchesPerSport] as Map<String, dynamic>).map(
               (key, value) => MapEntry(
                 int.parse(key),
                 (value as List<dynamic>)

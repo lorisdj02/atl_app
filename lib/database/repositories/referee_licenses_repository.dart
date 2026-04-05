@@ -28,14 +28,14 @@ class RefereeLicensesRepository extends BaseRepository<RefereeLicense> {
     }
   }
 
-  Future<bool> revokeLicense(String licenseId) async {
+  Future<bool> expireLicense(String licenseId) async {
     if (AppConfig.isDebug) {
       try {
         final license = _mockData.firstWhere(
           (license) => license.id == licenseId,
         );
-        license.status = LicenseStatus.revoked;
-        license.revokedAt = DateTime.now();
+        license.status = LicenseStatus.expired;
+        license.expiresAt = DateTime.now();
         return true;
       } catch (e) {
         return false;

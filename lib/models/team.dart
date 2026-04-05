@@ -9,14 +9,13 @@ class Team {
   int captainId;
   int? vice1Id;
   int? vice2Id;
-  final String catId;
   String? imageUrl;
   bool vip;
   int? rankPts;
   int players;
   bool visibility;
-  SportCategory sportCategory;
-  static final int maxPlayers = 24;
+  final SportCategory sportCategory;
+  final int maxPlayers = 24;
 
   Team({
     required this.id,
@@ -27,7 +26,6 @@ class Team {
     required this.captainId,
     this.vice1Id,
     this.vice2Id,
-    required this.catId,
     this.imageUrl,
     this.vip = false,
     this.rankPts,
@@ -46,7 +44,6 @@ class Team {
       captainId: json['captainId'],
       vice1Id: json['vice1Id'],
       vice2Id: json['vice2Id'],
-      catId: json['catId'],
       imageUrl: json['imageUrl'],
       vip: json['vip'] ?? false,
       rankPts: json['rankPts'],
@@ -66,7 +63,6 @@ class Team {
       'captainId': captainId,
       'vice1Id': vice1Id,
       'vice2Id': vice2Id,
-      'catId': catId,
       'imageUrl': imageUrl,
       'vip': vip,
       'rankPts': rankPts,

@@ -25,7 +25,7 @@ class RefereeLicenseWidget extends StatelessWidget {
         return Colors.orange;
       case LicenseStatus.suspended:
         return Colors.deepOrange;
-      case LicenseStatus.revoked:
+      case LicenseStatus.expired:
         return Colors.red;
     }
   }
@@ -39,7 +39,7 @@ class RefereeLicenseWidget extends StatelessWidget {
         return l10n.licenseStatusNotVerified;
       case LicenseStatus.suspended:
         return l10n.licenseStatusSuspended;
-      case LicenseStatus.revoked:
+      case LicenseStatus.expired:
         return l10n.licenseStatusRevoked;
     }
   }
@@ -133,12 +133,12 @@ class RefereeLicenseWidget extends StatelessWidget {
                   color: ATLColors.footballGreen,
                 ),
               ],
-              if (license.revokedAt != null) ...[
+              if (license.expiresAt != null) ...[
                 const SizedBox(height: 6),
                 _infoRow(
                   Icons.cancel_outlined,
                   l10n.licenseStatusRevoked,
-                  dateFormat.format(license.revokedAt!),
+                  dateFormat.format(license.expiresAt!),
                   color: Colors.red,
                 ),
               ],

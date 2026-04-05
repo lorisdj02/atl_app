@@ -5,7 +5,6 @@ import '../models/sport.dart';
 import '../models/field.dart';
 import '../widgets/info_row_widget.dart';
 import '../database/db_read.dart';
-import '../config/api_json_keys.dart';
 import '../l10n/app_localizations.dart';
 
 /// Widget for displaying tournament summary information

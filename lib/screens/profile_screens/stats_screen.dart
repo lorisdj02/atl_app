@@ -48,7 +48,7 @@ class _StatsScreenState extends State<StatsScreen> {
     if (userProvider.activeRoleId == null || !userProvider.isPlayer) return;
     setState(() => _isLoading = true);
     try {
-      final PersonalPlayerStatsResponse data = await DBRead.getPersonalPlayerStats(
+      final PersonalPlayerStatsResponse data = await DBRead.getPersonalPlayerStatsScreen(
         userProvider.activeRoleId!,
       );
 
