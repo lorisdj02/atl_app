@@ -2415,6 +2415,7 @@ class DBRead {
     }
   }
 
+  // DONE, si chiama getNotPaidTeamParticipations
   static Future<List<TournamentParticipation>> getTeamParticipations(
     int teamId,
   ) async {
@@ -2427,12 +2428,13 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<FieldsAndMaxPlayersPerFieldResponse>
   getFreeFieldsByPlayerAndCityAndDate({
     required int maxPlayers,
     required int cityId,
-    required DateTime startDateTime,
-    required DateTime endDateTime,
+    required DateTime startTime,
+    required DateTime finishTime,
     required SportCategory sportCategory,
   }) async {
     if (AppConfig.isDebug) {
@@ -2446,8 +2448,8 @@ class DBRead {
       final allFieldIds = allFields.map((f) => f.id).toList();
 
       final freeFieldIds = await DB.LobbyBookings.getFreeFieldIds(
-        startDateTime,
-        endDateTime,
+        startTime,
+        finishTime,
         allFieldIds,
       );
 
@@ -2478,6 +2480,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<bool> hasNotification(int userId) async {
     if (AppConfig.isDebug) {
       final List<Review> reviews =
@@ -2488,6 +2491,8 @@ class DBRead {
     }
   }
 
+  // DONE, sono due API separate sul backend, ma unite qui nel frontend.
+  // getTeamById e getTournamentById
   static Future<T> searchTeamOrTournament<T>(
     int id, {
     required bool isTeam,
@@ -2520,6 +2525,7 @@ class DBRead {
     }
   }
 
+  // DONE, è inutile controllare anche il passato, basta controllare le prenotazioni future (da now in poi)
   static Future<ScheduleMatchResponse> getScheduleData(int tournamentId) async {
     if (AppConfig.isDebug) {
       final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
@@ -2548,6 +2554,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<List<Sport>> getSportsByCategory(SportCategory category) async {
     if (AppConfig.isDebug) {
       final List<Sport> sports = await DB.Sports.getByCategory(category);
@@ -2557,6 +2564,7 @@ class DBRead {
     }
   }
 
+  // DONE
   static Future<TournamentSummaryResponse> getTournamentSummary(
     int tournamentId,
   ) async {
@@ -2597,6 +2605,7 @@ class DBRead {
     }
   }
 
+  // TODO: Questi non servono più, sono implementati con final stage brackets
   // super inefficiente. Cerca di mandare tutti i dati a road_to_victory widget.
   // pensa a:
   // Map<int, int[2]> per mappare matchId -> [homeTeamId, awayTeamId]

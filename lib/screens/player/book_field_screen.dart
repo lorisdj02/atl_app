@@ -231,8 +231,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       final FieldsAndMaxPlayersPerFieldResponse data = await DBRead.getFreeFieldsByPlayerAndCityAndDate(
         maxPlayers: _maxPlayers,
         cityId: _selectedCity!,
-        startDateTime: startDateTime,
-        endDateTime: endDateTime,
+        startTime: startDateTime,
+        finishTime: endDateTime,
         sportCategory: widget.sportCategory,
       );
 
