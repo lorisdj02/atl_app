@@ -1,5 +1,8 @@
+import 'package:atl_app/database/requests/confirm_callups_request.dart';
+import 'package:atl_app/database/requests/update_account_info_request.dart';
 import 'package:atl_app/models/booking.dart';
 import 'package:atl_app/models/callup.dart';
+import 'package:atl_app/models/checkout_payload.dart';
 import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/lobby_booking.dart';
@@ -21,6 +24,7 @@ import 'dart:math';
 import 'dart:convert';
 
 class DBWrite {
+  // TODO DONE, la password viene cambiata con firebase, attenzione!
   static Future<Account?> updateAccountInfo({
     required int id,
     String? username,
@@ -31,6 +35,13 @@ class DBWrite {
     String? imgUrl,
     int? preferredCityId,
   }) async {
+    UpdateAccountInfoRequest request = UpdateAccountInfoRequest(
+      username: username,
+      phone: phone,
+      birthdate: birthdate,
+      imageUrl: imgUrl,
+      preferredCityId: preferredCityId,
+    );
     if (AppConfig.isDebug) {
       final bool success = await DB.Accounts.updateAccountInfo(
         id: id,
@@ -57,6 +68,7 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<bool> createTournament({
     required String name,
     required int coordinatorId,
@@ -75,6 +87,27 @@ class DBWrite {
     required bool prize2,
     required bool isPublic,
   }) async {
+    Tournament request = Tournament(
+      id: -1,
+      name: name,
+      coordinatorId: coordinatorId,
+      fieldId: fieldId,
+      cityId: cityId,
+      startDate: startDate,
+      sportId: sportId,
+      numTeams: numTeams,
+      numGroups: numGroups,
+      round2GroupStage: round2GroupStage,
+      round2FinalStage: round2FinalStage,
+      qualified: qualified,
+      description: description,
+      payCoordinator: payCoordinator ? 1 : 0,
+      prize1: prize1 ? 1 : 0,
+      prize2: prize2 ? 1 : 0,
+      isPublic: isPublic,
+      paidTeams: 0,
+      fee: 0,
+    );
     if (AppConfig.isDebug == true) {
       return await DB.Tournaments.insertTournament(
         name: name,
@@ -99,19 +132,29 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<bool> createPrivateBooking({
     required int playerId,
     required int fieldId,
-    required DateTime startDateTime,
-    required DateTime endDateTime,
+    required DateTime startTime,
+    required DateTime finishTime,
     required SportCategory sportCategory,
   }) async {
+    PrivateBooking request = PrivateBooking(
+      id: -1,
+      playerId: playerId,
+      fieldId: fieldId,
+      startTime: startTime,
+      finishTime: finishTime,
+      sportCategory: sportCategory,
+      cost: 0,
+    );
     if (AppConfig.isDebug == true) {
       return await DB.PrivateBookings.addPrivateBooking(
         playerId,
         fieldId,
-        startDateTime,
-        endDateTime,
+        startTime,
+        finishTime,
         sportCategory,
       );
     } else {
@@ -119,6 +162,62 @@ class DBWrite {
     }
   }
 
+  // DONE
+  // TODO: Per i booking, ricordati nei pagamenti di aggiungere la fee.
+  static Future<bool> createLobby({
+    required int fieldId,
+    required int ownerPlayerId,
+    required int maxPlayers,
+    required int playersToFind,
+    required double feePerPlayer,
+    required DateTime startTime,
+    required DateTime finishTime,
+    required SportCategory sportCategory,
+  }) async {
+    LobbyBooking request = LobbyBooking(
+      id: -1,
+      fieldId: fieldId,
+      ownerPlayerId: ownerPlayerId,
+      maxPlayers: maxPlayers,
+      playersToFind: playersToFind,
+      feePerPlayer: feePerPlayer,
+      startTime: startTime,
+      finishTime: finishTime,
+      status: BookingStatus.booked,
+      sportCategory: sportCategory,
+    );
+    if (AppConfig.isDebug == true) {
+      final id = await DB.LobbyBookings.addLobbyBooking(
+        ownerPlayerId,
+        fieldId,
+        startTime,
+        finishTime,
+        maxPlayers,
+        playersToFind,
+        feePerPlayer,
+        sportCategory,
+      );
+      if (id == -1) {
+        return false;
+      }
+
+      if ((await DB.LobbyBookingParticipations.addParticipation(
+            id,
+            ownerPlayerId,
+            maxPlayers - playersToFind,
+            feePerPlayer * (maxPlayers - playersToFind),
+          )) ==
+          false) {
+        return false;
+      }
+
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, il bool non serve più
   static Future<bool> promoteOrDemoteInTeam(
     int teamId,
     int playerId, {
@@ -135,6 +234,7 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<int> createTeam(
     int? cityId,
     String name,
@@ -147,6 +247,19 @@ class DBWrite {
     bool visibility,
   ) async {
     if (AppConfig.isDebug == true) {
+      Team request = Team(
+        id: -1,
+        cityId: cityId,
+        name: name,
+        alias: alias,
+        description: description,
+        captainId: captainId,
+        sportCategory: sportCategory,
+        imageUrl: imageUrl,
+        vip: vip,
+        visibility: visibility,
+        players: 1,
+      );
       final int id = await DB.Teams.insertTeam(
         cityId,
         name,
@@ -179,12 +292,18 @@ class DBWrite {
     }
   }
 
+  // DONE, tournamentFee è inutile
   static Future<bool> confirmCallUps(
     int tournamentId,
     int teamId,
     Set<int> selectedPlayerIds,
     double tournamentFee,
   ) async {
+    ConfirmCallupsRequest request = ConfirmCallupsRequest(
+      tournamentId: tournamentId,
+      teamId: teamId,
+      selectedPlayerIds: selectedPlayerIds.toList(),
+    );
     if (AppConfig.isDebug == true) {
       await DB.CallUps.deleteCallUps(tournamentId, teamId);
 
@@ -244,6 +363,7 @@ class DBWrite {
     }
   }
 
+  // DONE, forse ho implementato anche i pagamenti
   static Future<bool> deleteCallups(int tournamentId, int teamId) async {
     if (AppConfig.isDebug) {
       if (await DB.CallUps.deleteByTournamentAndTeam(tournamentId, teamId) ==
@@ -263,6 +383,7 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<bool> acceptTeamRequest(
     int teamId, {
     int? playerId,
@@ -349,6 +470,7 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<bool> rejectTeamRequest(
     int teamId, {
     int? playerId,
@@ -369,7 +491,8 @@ class DBWrite {
     }
   }
 
-  static Future<bool> createTeamRequest(int teamId, int playerId) async {
+  // DONE
+  static Future<bool> sendTeamRequest(int teamId, int playerId) async {
     if (AppConfig.isDebug) {
       return DB.TeamRequests.addRequest(teamId, playerId);
     } else {
@@ -377,7 +500,8 @@ class DBWrite {
     }
   }
 
-  static Future<bool> deleteTeamRequest(int teamId, int playerId) async {
+  // DONE
+  static Future<bool> cancelTeamRequest(int teamId, int playerId) async {
     if (AppConfig.isDebug) {
       return DB.TeamRequests.deleteRequest(teamId, playerId);
     } else {
@@ -385,47 +509,7 @@ class DBWrite {
     }
   }
 
-  static Future<bool> createLobby({
-    required int fieldId,
-    required int ownerPlayerId,
-    required int maxPlayers,
-    required int playersToFind,
-    required double feePerPlayer,
-    required DateTime startDateTime,
-    required DateTime endDateTime,
-    required SportCategory sportCategory,
-  }) async {
-    if (AppConfig.isDebug == true) {
-      final id = await DB.LobbyBookings.addLobbyBooking(
-        ownerPlayerId,
-        fieldId,
-        startDateTime,
-        endDateTime,
-        maxPlayers,
-        playersToFind,
-        feePerPlayer,
-        sportCategory,
-      );
-      if (id == -1) {
-        return false;
-      }
-
-      if ((await DB.LobbyBookingParticipations.addParticipation(
-            id,
-            ownerPlayerId,
-            maxPlayers - playersToFind,
-            feePerPlayer * (maxPlayers - playersToFind),
-          )) ==
-          false) {
-        return false;
-      }
-
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
+  // DONE, sempre implementato nei pagamenti
   static Future<bool> joinLobby({
     required int lobbyId,
     required int playerId,
@@ -463,6 +547,7 @@ class DBWrite {
     }
   }
 
+  // DONE, adesso si chiama refundLobby
   static Future<bool> deleteLobby(
     int lobbyBookingId,
     int playerId, {
@@ -483,23 +568,23 @@ class DBWrite {
 
       final LobbyBookingParticipation? participation =
           await DB.LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
-        playerId,
-        lobbyBookingId,
-      );
+            playerId,
+            lobbyBookingId,
+          );
       if (participation == null) {
         return false;
       }
 
-        final double priceToRefund = participation.cost;
+      final double priceToRefund = participation.cost;
       final Player? player = await DB.Players.getByPlayerId(playerId);
       if (player == null) {
         return false;
       }
 
-      if(await DB.Wallets.modifyBalance(player.id, priceToRefund) == false){
+      if (await DB.Wallets.modifyBalance(player.id, priceToRefund) == false) {
         return false;
       }
-      
+
       if ((await DB.LobbyBookingParticipations.removeLobbyParticipation(
             lobbyBookingId,
           )) ==
@@ -516,6 +601,33 @@ class DBWrite {
     }
   }
 
+  // DONE, adesso si chiama refundPrivateBooking
+  static Future<bool> deletePrivateBooking(int bookingId) async {
+    if (AppConfig.isDebug) {
+      final PrivateBooking? booking = await DB.PrivateBookings.getById(
+        bookingId,
+      );
+      if (booking == null || booking.status != BookingStatus.booked) {
+        return false;
+      }
+      final double priceToRefound = booking.cost;
+
+      final Player? player = await DB.Players.getByPlayerId(booking.playerId);
+      if (player == null) {
+        return false;
+      }
+
+      if (await DB.Wallets.modifyBalance(player.id, priceToRefound) == false) {
+        return false;
+      }
+
+      return await DB.PrivateBookings.deletePrivateBooking(bookingId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
   static Future<bool> leaveLobby(
     int lobbyBookingId,
     int playerId, {
@@ -547,13 +659,13 @@ class DBWrite {
 
       final LobbyBookingParticipation? participation =
           await DB.LobbyBookingParticipations.getByPlayerAndLobbyBookingId(
-        playerId,
-        lobbyBookingId,
-      );
+            playerId,
+            lobbyBookingId,
+          );
 
-        if (participation == null) {
-          return false;
-        }
+      if (participation == null) {
+        return false;
+      }
 
       final double priceToRefund = participation.cost;
       final Player? player = await DB.Players.getByPlayerId(playerId);
@@ -561,7 +673,7 @@ class DBWrite {
         return false;
       }
 
-      if(await DB.Wallets.modifyBalance(player.id, priceToRefund) == false){
+      if (await DB.Wallets.modifyBalance(player.id, priceToRefund) == false) {
         return false;
       }
 
@@ -574,8 +686,6 @@ class DBWrite {
           false) {
         return false;
       }
-
-      
 
       if ((await DB.LobbyBookings.increasePlayersToFind(
             lobbyBookingId,
@@ -590,7 +700,7 @@ class DBWrite {
     }
   }
 
-  // MAYBE DONE
+  // DONE
   static Future<bool> leaveTeam(
     int teamId,
     int playerId, {
@@ -643,6 +753,16 @@ class DBWrite {
     }
   }
 
+  // DONE
+  static Future<bool> expelPlayer(int teamId, int playerId) async {
+    if (AppConfig.isDebug) {
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, potrebbe non funzionare però, da testare bene, attenzione ai pagamenti
   static Future<bool> deleteAccount(int id, String passwordMD5) async {
     if (AppConfig.isDebug) {
       if ((await DB.Accounts.getByAccountId(id))?.passwordMD5 != passwordMD5) {
@@ -686,6 +806,7 @@ class DBWrite {
     }
   }
 
+  // DONE, forse non serve più perchè viene fatto nei pagamenti
   static Future<bool> updateTournamentParticipationPayment(
     int tournamentId,
     int teamId,
@@ -724,6 +845,7 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<bool> homeRetire(
     int matchId,
     int teamId,
@@ -751,6 +873,7 @@ class DBWrite {
     }
   }
 
+  // DONE, ho unito homeRetire e awayRetire in una sola funzione
   static Future<bool> awayRetire(
     int matchId,
     int teamId,
@@ -779,6 +902,7 @@ class DBWrite {
     }
   }
 
+  // DONE
   static Future<bool> scheduleMatch(
     int matchId,
     DateTime scheduledStart,
@@ -877,6 +1001,552 @@ class DBWrite {
       } catch (e) {
         return false;
       }
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, adesso serve solo matchId e playerId, molto più semplice
+  static Future<bool> addFootballMotm(
+    int matchId,
+    int playerId,
+    int teamId,
+    int tournamentId,
+    int coordinatorId,
+  ) async {
+    if (AppConfig.isDebug) {
+      if (await DB.FootballMatches.getById(matchId) == null) {
+        return false;
+      }
+
+      final int? tourCoordinatorId = (await DB.Tournaments.getById(
+        tournamentId,
+      ))?.coordinatorId;
+
+      if (tourCoordinatorId == null || tourCoordinatorId != coordinatorId) {
+        return false;
+      }
+
+      if (await DB.FootballTournamentStats.incrementStatsInTournament(
+            playerId,
+            teamId,
+            tournamentId,
+            motmIncrement: 1,
+          ) ==
+          {}) {
+        return false;
+      }
+      if (await DB.FootballTeamStats.incrementStats(
+            playerId,
+            teamId,
+            motmIncrement: 1,
+          ) ==
+          {}) {
+        return false;
+      }
+
+      if (await DB.FootballMatches.setMotmPlayer(matchId, playerId) == false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<bool> startTournament(int tournamentId) async {
+    if (AppConfig.isDebug) {
+      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
+      if (tournament == null) {
+        return false;
+      }
+
+      final int tourCoordinatorId = tournament.coordinatorId;
+
+      final Coordinator? coordinator =
+          (await DB.Coordinators.getByCoordinatorId(tourCoordinatorId));
+
+      if (coordinator == null) {
+        return false;
+      }
+
+      /*
+      Map<int, double> refundPerTeams = await DB
+          .TournamentParticipations.getRefundPerTeamsInTournament(tournamentId);
+
+      //TODO: implementare il rimborso (i pagamenti in generale)
+
+      if (await DB.TournamentParticipations.removeRefundedTeams(tournamentId) ==
+          false) {
+        return false;
+      }
+      */
+      if (await DB.Tournaments.startTournament(tournamentId) == false) {
+        return false;
+      }
+
+      final List<TournamentParticipation> participations =
+          await DB.TournamentParticipations.getByTournamentId(tournamentId);
+
+      for (final participation in participations) {
+        final Team? team = await DB.Teams.getById(participation.teamId);
+        if (team == null) {
+          return false;
+        }
+        final List<PlaysAt> playersInTeam = await DB.PlaysAt.getByTeamId(
+          team.id,
+        );
+        for (final playsAt in playersInTeam) {
+          final Player? player = await DB.Players.getByPlayerId(
+            playsAt.playerId,
+          );
+          if (player == null) {
+            //return false;
+            continue; // Se il giocatore non esiste, salta al prossimo invece di fallire l'intera operazione
+          }
+
+          if (await DB.Reviews.addReview(
+                reviewerAccountId: player.id,
+                reviewedAccountId: coordinator.id,
+                tournamentId: tournamentId,
+                reviewType: ReviewType.playerToCoordinator,
+                weight: team.captainId == player.id
+                    ? 1
+                    : team.vice1Id == player.id
+                    ? 0.75
+                    : team.vice2Id == player.id
+                    ? 0.75
+                    : 0.5,
+              ) ==
+              false) {
+            return false;
+          }
+        }
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<bool> insertAssignment(
+    int matchId,
+    int refereeId,
+    String role,
+  ) async {
+    if (AppConfig.isDebug) {
+      final Referee? referee = await DB.Referees.getByRefereeId(refereeId);
+      if (referee == null) {
+        return false;
+      }
+
+      final int sportId = (await DB.Tournaments.getById(
+        (await DB.FootballMatches.getById(matchId))!.tournamentId,
+      ))!.sportId;
+
+      final int numReferees = await DB.RefereeAssignments.countRefereesPerMatch(
+        matchId,
+      );
+
+      if (numReferees == 1 && (sportId == 1 || sportId == 2 || sportId == 3)) {
+        // 1 arbitro per football 5, 7, 8
+        return false;
+      } else if (numReferees == 3 && sportId == 4) {
+        // 3 arbitri per football 11
+        return false;
+      } else if (sportId > 4) {
+        // Aggiungi altre condizioni per altri sport se necessario
+        return false;
+      }
+
+      if (await DB.RefereeRoles.checkRoleExists(sportId, role) == false) {
+        return false;
+      }
+
+      final double pay = await DB.RefereeRoles.getPayPerMatch(
+        sportId,
+        role,
+        referee.level,
+      );
+
+      if (await DB.RefereeAssignments.insertAssignment(
+            matchId,
+            refereeId,
+            role,
+            pay,
+          ) ==
+          false) {
+        return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<bool> startFootballPenaltyShootOut(int matchId) async {
+    if (AppConfig.isDebug) {
+      return await DB.FootballMatches.startPenaltyShootOut(matchId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, EASY
+  static Future<bool> toggleTournamentFavoriteStatus(
+    int tournamentId,
+    int userId,
+  ) async {
+    if (AppConfig.isDebug) {
+      return await DB.Tournaments.toggleFavoriteStatus(tournamentId, userId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<bool> insertRefereeLicense(
+    int sportId,
+    int refereeId,
+    String id,
+    DateTime issuedAt,
+  ) async {
+    if (AppConfig.isDebug) {
+      return await DB.RefereeLicenses.addLicense(
+        sportId,
+        refereeId,
+        id,
+        issuedAt,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE
+  static Future<bool> deleteRefereeLicense(int refereeId, int sportId) async {
+    if (AppConfig.isDebug) {
+      return await DB.RefereeLicenses.removeLicense(refereeId, sportId);
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // DONE, adesso è più semplice, si passa direttamente il payload con tutte le info necessarie
+  static Future<int> createCheckoutSession({
+    required int userId,
+    required CheckoutPayload payload,
+  }) async {
+    if (AppConfig.isDebug) {
+      return await DB.CheckoutSessions.createCheckoutSession(
+        userId: userId,
+        payload: payload,
+      );
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  // MAYBE DONE
+  static Future<bool> payCheckoutSession(
+    int sessionId, {
+    bool useWallet = false,
+    required SportCategory sportCategory,
+  }) async {
+    if (AppConfig.isDebug) {
+      final CheckoutSession? session = await DB.CheckoutSessions.getById(
+        sessionId,
+      );
+      if (session == null) {
+        return false;
+      }
+
+      if (session.status != CheckoutSessionStatus.pending) {
+        return false; // La sessione deve essere in stato "pending" per essere pagata
+      }
+
+      switch (session.type) {
+        case CheckoutType.tournamentFee:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? tournamentId = payload['tournamentId'];
+          final int? teamId = payload['teamId'];
+          if (tournamentId == null || teamId == null) {
+            return false;
+          }
+
+          if (await DBWrite.updateTournamentParticipationPayment(
+                tournamentId,
+                teamId,
+                session.amount,
+              ) ==
+              false) {
+            return false;
+          }
+
+          if (await DB.CheckoutSessions.updateStatus(
+                session.id,
+                CheckoutSessionStatus.completed,
+              ) ==
+              false) {
+            return false;
+          }
+
+          break;
+        case CheckoutType.privateBooking:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? fieldId = payload['fieldId'];
+          final String? startDateTimeStr = payload['startDateTime'];
+          final String? endDateTimeStr = payload['endDateTime'];
+
+          final int? playerId = payload['playerId'];
+          if (fieldId == null ||
+              startDateTimeStr == null ||
+              endDateTimeStr == null ||
+              playerId == null) {
+            return false;
+          }
+
+          final DateTime startDateTime = DateTime.parse(startDateTimeStr);
+          final DateTime endDateTime = DateTime.parse(endDateTimeStr);
+
+          // TODO: implementa il pagamento
+
+          if (await DBWrite.createPrivateBooking(
+                playerId: playerId,
+                fieldId: fieldId,
+                startTime: startDateTime,
+                finishTime: endDateTime,
+                sportCategory: sportCategory,
+              ) ==
+              false) {
+            return false;
+          }
+          break;
+        case CheckoutType.lobbyBookingCreate:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? fieldId = payload['fieldId'];
+          final int? ownerPlayerId = payload['ownerPlayerId'];
+          final int? maxPlayers = payload['maxPlayers'];
+          final int? playersToFind = payload['playersToFind'];
+          final double? feePerPlayer = payload['feePerPlayer'];
+          final String? startDateTimeStr = payload['startDateTime'];
+          final String? endDateTimeStr = payload['endDateTime'];
+          if (fieldId == null ||
+              ownerPlayerId == null ||
+              maxPlayers == null ||
+              playersToFind == null ||
+              feePerPlayer == null ||
+              startDateTimeStr == null ||
+              endDateTimeStr == null) {
+            return false;
+          }
+          final DateTime startDateTime = DateTime.parse(startDateTimeStr);
+          final DateTime endDateTime = DateTime.parse(endDateTimeStr);
+
+          //TODO: implementa il pagamento
+
+          if (await DBWrite.createLobby(
+                fieldId: fieldId,
+                ownerPlayerId: ownerPlayerId,
+                maxPlayers: maxPlayers,
+                playersToFind: playersToFind,
+                feePerPlayer: feePerPlayer,
+                startTime: startDateTime,
+                finishTime: endDateTime,
+                sportCategory: sportCategory,
+              ) ==
+              false) {
+            return false;
+          }
+          break;
+        case CheckoutType.lobbyBookingParticipate:
+          final Map<String, dynamic> payload = jsonDecode(session.payload);
+          final int? lobbyId = payload['lobbyId'];
+          final int? playerId = payload['playerId'];
+          final int? playersPaid = payload['playersPaid'];
+          if (lobbyId == null || playerId == null || playersPaid == null) {
+            return false;
+          }
+
+          if (await DBWrite.joinLobby(
+                lobbyId: lobbyId,
+                playerId: playerId,
+                playersPaid: playersPaid,
+              ) ==
+              false) {
+            return false;
+          }
+          break;
+      }
+
+      return await DB.CheckoutSessions.updateStatus(
+            session.id,
+            CheckoutSessionStatus.completed,
+          ) ==
+          true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> commitReview(
+    int reviewId, {
+    required double rating,
+    String? comment,
+    required int tournamentId,
+    int? matchId,
+  }) async {
+    if (AppConfig.isDebug) {
+      if (rating < 0.5 || rating > 5) {
+        return false; // La valutazione deve essere compresa tra 0.5 e 5
+      }
+      final Review? review = await DB.Reviews.getById(reviewId);
+      if (review == null) {
+        return false;
+      }
+
+      final Account? user = await DB.Accounts.getByAccountId(
+        review.reviewerAccountId,
+      );
+      if (user == null) {
+        return false;
+      }
+
+      switch (user.role) {
+        case AccountRole.player:
+          final Player? player = await DB.Players.getByAccountId(
+            review.reviewerAccountId,
+          );
+          if (player == null) {
+            return false;
+          }
+
+          if (await DB.Reviews.commitReview(
+                reviewId,
+                rating: rating,
+                comment: comment,
+              ) ==
+              false) {
+            return false;
+          }
+
+          final Callup? callup = await DB.CallUps.getByPlayerAndTournament(
+            review.reviewerAccountId,
+            tournamentId,
+          );
+
+          if (callup == null) {
+            return false;
+          }
+
+          if (await DB.CallUps.redeemPrize(callup.playerId, tournamentId) ==
+              false) {
+            return false;
+          }
+
+        //TODO: implementare il premio per i giocatori
+        case AccountRole.coordinator:
+          final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
+            review.reviewerAccountId,
+          );
+          if (coordinator == null) {
+            return false;
+          }
+
+          if (await DB.Reviews.commitReview(
+                reviewId,
+                rating: rating,
+                comment: comment,
+              ) ==
+              false) {
+            return false;
+          }
+
+        //TODO: implementare il premio per i coordinatori
+        case AccountRole.referee:
+          final Referee? referee = await DB.Referees.getByAccountId(
+            review.reviewerAccountId,
+          );
+          if (referee == null) {
+            return false;
+          }
+
+          if (await DB.Reviews.commitReview(
+                reviewId,
+                rating: rating,
+                comment: comment,
+              ) ==
+              false) {
+            return false;
+          }
+
+        //TODO: implementare il premio per gli arbitri
+        default:
+          return false;
+      }
+      return true;
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
+  static Future<bool> registerAccount({
+    required String email,
+    required String username,
+    required String password,
+    required String name,
+    required String surname,
+    required AccountRole role,
+    required String phone,
+    required DateTime birthdate,
+    String? inviteCode,
+    String? profilePictureUrl,
+  }) async {
+    if (AppConfig.isDebug) {
+      final int newId = await DB.Accounts.registerAccount(
+        email: email,
+        username: username,
+        password: password,
+        name: name,
+        surname: surname,
+        role: role,
+        phone: phone,
+        birthdate: birthdate,
+        profilePictureUrl: profilePictureUrl,
+      );
+
+      bool hasBeenInvited = false;
+      // Per ora, inviteCode = Accountname
+      if (inviteCode == null) {
+        return true;
+      }
+      final Account? inviterAccount = await DB.Accounts.getByUsername(
+        inviteCode,
+      );
+      if (inviterAccount != null) {
+        if (await DB.FriendInvites.addInvite(
+              inviterAccountId: inviterAccount.id,
+              invitedAccountId: newId,
+            ) ==
+            false) {
+          return false;
+        }
+
+        hasBeenInvited = true;
+      }
+
+      if (await DB.Wallets.addWallet(
+            accountId: newId,
+            hasBeenInvited: hasBeenInvited,
+          ) ==
+          false) {
+        return false;
+      }
+
+      return true;
     } else {
       throw UnimplementedError();
     }
@@ -1556,184 +2226,6 @@ class DBWrite {
     return cumulativeResult;
   }
 
-  static Future<bool> addFootballMotm(
-    int matchId,
-    int playerId,
-    int teamId,
-    int tournamentId,
-    int coordinatorId,
-  ) async {
-    if (AppConfig.isDebug) {
-      if (await DB.FootballMatches.getById(matchId) == null) {
-        return false;
-      }
-
-      final int? tourCoordinatorId = (await DB.Tournaments.getById(
-        tournamentId,
-      ))?.coordinatorId;
-
-      if (tourCoordinatorId == null || tourCoordinatorId != coordinatorId) {
-        return false;
-      }
-
-      if (await DB.FootballTournamentStats.incrementStatsInTournament(
-            playerId,
-            teamId,
-            tournamentId,
-            motmIncrement: 1,
-          ) ==
-          {}) {
-        return false;
-      }
-      if (await DB.FootballTeamStats.incrementStats(
-            playerId,
-            teamId,
-            motmIncrement: 1,
-          ) ==
-          {}) {
-        return false;
-      }
-
-      if (await DB.FootballMatches.setMotmPlayer(matchId, playerId) == false) {
-        return false;
-      }
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  // MAYBE DONE
-  static Future<bool> startTournament(int tournamentId) async {
-    if (AppConfig.isDebug) {
-      final Tournament? tournament = await DB.Tournaments.getById(tournamentId);
-      if (tournament == null) {
-        return false;
-      }
-
-      final int tourCoordinatorId = tournament.coordinatorId;
-
-      final Coordinator? coordinator =
-          (await DB.Coordinators.getByCoordinatorId(tourCoordinatorId));
-
-      if (coordinator == null) {
-        return false;
-      }
-
-      /*
-      Map<int, double> refundPerTeams = await DB
-          .TournamentParticipations.getRefundPerTeamsInTournament(tournamentId);
-
-      //TODO: implementare il rimborso (i pagamenti in generale)
-
-      if (await DB.TournamentParticipations.removeRefundedTeams(tournamentId) ==
-          false) {
-        return false;
-      }
-      */
-      if (await DB.Tournaments.startTournament(tournamentId) == false) {
-        return false;
-      }
-
-      final List<TournamentParticipation> participations =
-          await DB.TournamentParticipations.getByTournamentId(tournamentId);
-
-      for (final participation in participations) {
-        final Team? team = await DB.Teams.getById(participation.teamId);
-        if (team == null) {
-          return false;
-        }
-        final List<PlaysAt> playersInTeam = await DB.PlaysAt.getByTeamId(
-          team.id,
-        );
-        for (final playsAt in playersInTeam) {
-          final Player? player = await DB.Players.getByPlayerId(
-            playsAt.playerId,
-          );
-          if (player == null) {
-            //return false;
-            continue; // Se il giocatore non esiste, salta al prossimo invece di fallire l'intera operazione
-          }
-
-          if (await DB.Reviews.addReview(
-                reviewerAccountId: player.id,
-                reviewedAccountId: coordinator.id,
-                tournamentId: tournamentId,
-                reviewType: ReviewType.playerToCoordinator,
-                weight: team.captainId == player.id
-                    ? 1
-                    : team.vice1Id == player.id
-                    ? 0.75
-                    : team.vice2Id == player.id
-                    ? 0.75
-                    : 0.5,
-              ) ==
-              false) {
-            return false;
-          }
-        }
-      }
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> insertAssignment(
-    int matchId,
-    int refereeId,
-    String role,
-  ) async {
-    if (AppConfig.isDebug) {
-      final Referee? referee = await DB.Referees.getByRefereeId(refereeId);
-      if (referee == null) {
-        return false;
-      }
-
-      final int sportId = (await DB.Tournaments.getById(
-        (await DB.FootballMatches.getById(matchId))!.tournamentId,
-      ))!.sportId;
-
-      final int numReferees = await DB.RefereeAssignments.countRefereesPerMatch(
-        matchId,
-      );
-
-      if (numReferees == 1 && (sportId == 1 || sportId == 2 || sportId == 3)) {
-        // 1 arbitro per football 5, 7, 8
-        return false;
-      } else if (numReferees == 3 && sportId == 4) {
-        // 3 arbitri per football 11
-        return false;
-      } else if (sportId > 4) {
-        // Aggiungi altre condizioni per altri sport se necessario
-        return false;
-      }
-
-      if (await DB.RefereeRoles.checkRoleExists(sportId, role) == false) {
-        return false;
-      }
-
-      final double pay = await DB.RefereeRoles.getPayPerMatch(
-        sportId,
-        role,
-        referee.level,
-      );
-
-      if (await DB.RefereeAssignments.insertAssignment(
-            matchId,
-            refereeId,
-            role,
-            pay,
-          ) ==
-          false) {
-        return false;
-      }
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
   static Future<bool> deleteMatchEvent(int matchId, int eventId) async {
     if (AppConfig.isDebug) {
       if (await DB.FootballMatches.getById(matchId) == null) {
@@ -1837,393 +2329,6 @@ class DBWrite {
         print('Error parsing modifiedTables JSON: $e');
         return false;
       }
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> startFootballPenaltyShootOut(int matchId) async {
-    if (AppConfig.isDebug) {
-      return await DB.FootballMatches.startPenaltyShootOut(matchId);
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> deletePrivateBooking(int bookingId) async {
-    if (AppConfig.isDebug) {
-      final PrivateBooking? booking = await DB.PrivateBookings.getById(bookingId);
-      if (booking == null || booking.status != BookingStatus.booked) {
-        return false;
-      }
-      final double priceToRefound = booking.cost;
-
-      final Player? player = await DB.Players.getByPlayerId(booking.playerId);
-      if (player == null) {
-        return false;
-      }
-
-      if (await DB.Wallets.modifyBalance(
-            player.id,
-            priceToRefound,
-          ) ==
-          false) {
-        return false;
-      }
-
-      return await DB.PrivateBookings.deletePrivateBooking(bookingId);
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> toggleTournamentFavoriteStatus(
-    int tournamentId,
-    int userId,
-  ) async {
-    if (AppConfig.isDebug) {
-      return await DB.Tournaments.toggleFavoriteStatus(tournamentId, userId);
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> insertRefereeLicense(
-    int sportId,
-    int refereeId,
-    String id,
-    DateTime issuedAt,
-  ) async {
-    if (AppConfig.isDebug) {
-      return await DB.RefereeLicenses.addLicense(
-        sportId,
-        refereeId,
-        id,
-        issuedAt,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> deleteRefereeLicense(int refereeId, int sportId) async {
-    if (AppConfig.isDebug) {
-      return await DB.RefereeLicenses.removeLicense(refereeId, sportId);
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<int> createCheckoutSession({
-    required int userId,
-    required Map<String, dynamic> payload,
-    required double amount,
-    required CheckoutType type,
-  }) async {
-    if (AppConfig.isDebug) {
-      return await DB.CheckoutSessions.createCheckoutSession(
-        userId: userId,
-        payload: jsonEncode(payload),
-        amount: amount,
-        type: type,
-      );
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> payCheckoutSession(
-    int sessionId, {
-    bool useWallet = false,
-    required SportCategory sportCategory,
-  }) async {
-    if (AppConfig.isDebug) {
-      final CheckoutSession? session = await DB.CheckoutSessions.getById(
-        sessionId,
-      );
-      if (session == null) {
-        return false;
-      }
-
-      if (session.status != CheckoutSessionStatus.pending) {
-        return false; // La sessione deve essere in stato "pending" per essere pagata
-      }
-
-      switch (session.type) {
-        case CheckoutType.tournamentFee:
-          final Map<String, dynamic> payload = jsonDecode(session.payload);
-          final int? tournamentId = payload['tournamentId'];
-          final int? teamId = payload['teamId'];
-          if (tournamentId == null || teamId == null) {
-            return false;
-          }
-
-          if (await DBWrite.updateTournamentParticipationPayment(
-                tournamentId,
-                teamId,
-                session.amount,
-              ) ==
-              false) {
-            return false;
-          }
-
-          if (await DB.CheckoutSessions.updateStatus(
-                session.id,
-                CheckoutSessionStatus.completed,
-              ) ==
-              false) {
-            return false;
-          }
-
-          break;
-        case CheckoutType.privateBooking:
-          final Map<String, dynamic> payload = jsonDecode(session.payload);
-          final int? fieldId = payload['fieldId'];
-          final String? startDateTimeStr = payload['startDateTime'];
-          final String? endDateTimeStr = payload['endDateTime'];
-
-          final int? playerId = payload['playerId'];
-          if (fieldId == null ||
-              startDateTimeStr == null ||
-              endDateTimeStr == null ||
-              playerId == null) {
-            return false;
-          }
-
-          final DateTime startDateTime = DateTime.parse(startDateTimeStr);
-          final DateTime endDateTime = DateTime.parse(endDateTimeStr);
-
-          // TODO: implementa il pagamento
-
-          if (await DBWrite.createPrivateBooking(
-                playerId: playerId,
-                fieldId: fieldId,
-                startDateTime: startDateTime,
-                endDateTime: endDateTime,
-                sportCategory: sportCategory,
-              ) ==
-              false) {
-            return false;
-          }
-          break;
-        case CheckoutType.lobbyBookingCreate:
-          final Map<String, dynamic> payload = jsonDecode(session.payload);
-          final int? fieldId = payload['fieldId'];
-          final int? ownerPlayerId = payload['ownerPlayerId'];
-          final int? maxPlayers = payload['maxPlayers'];
-          final int? playersToFind = payload['playersToFind'];
-          final double? feePerPlayer = payload['feePerPlayer'];
-          final String? startDateTimeStr = payload['startDateTime'];
-          final String? endDateTimeStr = payload['endDateTime'];
-          if (fieldId == null ||
-              ownerPlayerId == null ||
-              maxPlayers == null ||
-              playersToFind == null ||
-              feePerPlayer == null ||
-              startDateTimeStr == null ||
-              endDateTimeStr == null) {
-            return false;
-          }
-          final DateTime startDateTime = DateTime.parse(startDateTimeStr);
-          final DateTime endDateTime = DateTime.parse(endDateTimeStr);
-
-          //TODO: implementa il pagamento
-
-          if (await DBWrite.createLobby(
-                fieldId: fieldId,
-                ownerPlayerId: ownerPlayerId,
-                maxPlayers: maxPlayers,
-                playersToFind: playersToFind,
-                feePerPlayer: feePerPlayer,
-                startDateTime: startDateTime,
-                endDateTime: endDateTime,
-                sportCategory: sportCategory,
-              ) ==
-              false) {
-            return false;
-          }
-          break;
-        case CheckoutType.lobbyBookingParticipate:
-          final Map<String, dynamic> payload = jsonDecode(session.payload);
-          final int? lobbyId = payload['lobbyId'];
-          final int? playerId = payload['playerId'];
-          final int? playersPaid = payload['playersPaid'];
-          if (lobbyId == null || playerId == null || playersPaid == null) {
-            return false;
-          }
-
-          if (await DBWrite.joinLobby(
-                lobbyId: lobbyId,
-                playerId: playerId,
-                playersPaid: playersPaid,
-              ) ==
-              false) {
-            return false;
-          }
-          break;
-      }
-
-      return await DB.CheckoutSessions.updateStatus(
-            session.id,
-            CheckoutSessionStatus.completed,
-          ) ==
-          true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> commitReview(
-    int reviewId, {
-    required double rating,
-    String? comment,
-    required int tournamentId,
-    int? matchId,
-  }) async {
-    if (AppConfig.isDebug) {
-      if (rating < 0.5 || rating > 5) {
-        return false; // La valutazione deve essere compresa tra 0.5 e 5
-      }
-      final Review? review = await DB.Reviews.getById(reviewId);
-      if (review == null) {
-        return false;
-      }
-
-      final Account? user = await DB.Accounts.getByAccountId(review.reviewerAccountId);
-      if (user == null) {
-        return false;
-      }
-
-      switch (user.role) {
-        case AccountRole.player:
-          final Player? player = await DB.Players.getByAccountId(
-            review.reviewerAccountId,
-          );
-          if (player == null) {
-            return false;
-          }
-
-          if (await DB.Reviews.commitReview(
-                reviewId,
-                rating: rating,
-                comment: comment,
-              ) ==
-              false) {
-            return false;
-          }
-
-          final Callup? callup = await DB.CallUps.getByPlayerAndTournament(
-            review.reviewerAccountId,
-            tournamentId,
-          );
-
-          if (callup == null) {
-            return false;
-          }
-
-          if (await DB.CallUps.redeemPrize(callup.playerId, tournamentId) ==
-              false) {
-            return false;
-          }
-
-        //TODO: implementare il premio per i giocatori
-        case AccountRole.coordinator:
-          final Coordinator? coordinator = await DB.Coordinators.getByAccountId(
-            review.reviewerAccountId,
-          );
-          if (coordinator == null) {
-            return false;
-          }
-
-          if (await DB.Reviews.commitReview(
-                reviewId,
-                rating: rating,
-                comment: comment,
-              ) ==
-              false) {
-            return false;
-          }
-
-        //TODO: implementare il premio per i coordinatori
-        case AccountRole.referee:
-          final Referee? referee = await DB.Referees.getByAccountId(
-            review.reviewerAccountId,
-          );
-          if (referee == null) {
-            return false;
-          }
-
-          if (await DB.Reviews.commitReview(
-                reviewId,
-                rating: rating,
-                comment: comment,
-              ) ==
-              false) {
-            return false;
-          }
-
-        //TODO: implementare il premio per gli arbitri
-        default:
-          return false;
-      }
-      return true;
-    } else {
-      throw UnimplementedError();
-    }
-  }
-
-  static Future<bool> registerAccount({
-    required String email,
-    required String username,
-    required String password,
-    required String name,
-    required String surname,
-    required AccountRole role,
-    required String phone,
-    required DateTime birthdate,
-    String? inviteCode,
-    String? profilePictureUrl,
-  }) async {
-    if (AppConfig.isDebug) {
-      final int newId = await DB.Accounts.registerAccount(
-        email: email,
-        username: username,
-        password: password,
-        name: name,
-        surname: surname,
-        role: role,
-        phone: phone,
-        birthdate: birthdate,
-        profilePictureUrl: profilePictureUrl,
-      );
-
-      bool hasBeenInvited = false;
-      // Per ora, inviteCode = Accountname
-      if (inviteCode == null) {
-        return true;
-      }
-      final Account? inviterAccount = await DB.Accounts.getByUsername(inviteCode);
-      if (inviterAccount != null) {
-        if (await DB.FriendInvites.addInvite(
-              inviterAccountId: inviterAccount.id,
-              invitedAccountId: newId,
-            ) ==
-            false) {
-          return false;
-        }
-
-        hasBeenInvited = true;
-      }
-
-      if (await DB.Wallets.addWallet(
-            accountId: newId,
-            hasBeenInvited: hasBeenInvited,
-          ) ==
-          false) {
-        return false;
-      }
-
-      return true;
     } else {
       throw UnimplementedError();
     }

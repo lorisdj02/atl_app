@@ -1,4 +1,5 @@
 import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/models/checkout_payload.dart';
 import 'package:atl_app/providers/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -308,9 +309,11 @@ class _ParticipationCardState extends State<ParticipationCard> {
 
       final int sessionId = await DBWrite.createCheckoutSession(
         userId: userProvider.activeAccount!.id,
-        payload: payload,
-        amount: chosenAmount,
-        type: CheckoutType.tournamentFee,
+        payload: CheckoutPayload(
+          tournamentId: widget.participation.tournamentId,
+          amount: chosenAmount,
+          type: CheckoutType.tournamentFee,
+        ),
       );
       Navigator.of(context).push<bool>(
         MaterialPageRoute(

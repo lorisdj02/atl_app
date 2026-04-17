@@ -84,7 +84,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       return;
     }
     try {
-      if (await DBWrite.createTeamRequest(widget.teamId, playerId!) == false) {
+      if (await DBWrite.sendTeamRequest(widget.teamId, playerId!) == false) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.errorSendingRequest)),
@@ -121,7 +121,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
     if (_existingRequest == null) return;
 
     try {
-      if (await DBWrite.deleteTeamRequest(
+      if (await DBWrite.cancelTeamRequest(
             _existingRequest!.teamId,
             _existingRequest!.playerId,
           ) ==

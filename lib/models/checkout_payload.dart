@@ -1,3 +1,6 @@
+import 'package:atl_app/models/checkout_session.dart';
+import 'package:atl_app/models/sport_category.dart';
+
 class CheckoutPayload {
   final int? tournamentId;
   final int? lobbyId;
@@ -6,10 +9,15 @@ class CheckoutPayload {
   final int? ownerPlayerId;
   final DateTime? startTime;
   final DateTime? finishTime;
-  final int? maxPlayers;
+  final int? totalPlayers;
   final int? playersToFind;
 
   final int? fieldId;
+
+  final SportCategory? sportCategory;
+
+  final double amount;
+  final CheckoutType type;
 
   CheckoutPayload({
     this.tournamentId,
@@ -18,9 +26,12 @@ class CheckoutPayload {
     this.ownerPlayerId,
     this.startTime,
     this.finishTime,
-    this.maxPlayers,
+    this.totalPlayers,
     this.playersToFind,
     this.fieldId,
+    this.sportCategory,
+    required this.amount,
+    required this.type,
   });
 
   factory CheckoutPayload.fromJson(Map<String, dynamic> json) {
@@ -35,9 +46,16 @@ class CheckoutPayload {
       finishTime: json['finishTime'] != null
           ? DateTime.parse(json['finishTime'])
           : null,
-      maxPlayers: json['maxPlayers'],
+      totalPlayers: json['totalPlayers'],
       playersToFind: json['playersToFind'],
       fieldId: json['fieldId'],
+      sportCategory: json['sportCategory'] != null
+          ? SportCategory.values.byName(json['sportCategory'])
+          : null,
+      amount: json['amount']?.toDouble() ?? 0.0,
+      type: json['type'] != null
+          ? CheckoutType.values.byName(json['type'])
+          : CheckoutType.tournamentFee, // Valore di default
     );
   }
 
@@ -49,9 +67,12 @@ class CheckoutPayload {
       'ownerPlayerId': ownerPlayerId,
       'startTime': startTime?.toIso8601String(),
       'finishTime': finishTime?.toIso8601String(),
-      'maxPlayers': maxPlayers,
+      'totalPlayers': totalPlayers,
       'playersToFind': playersToFind,
       'fieldId': fieldId,
+      'sportCategory': sportCategory?.name,
+      'amount': amount,
+      'type': type.name,
     };
   }
 }

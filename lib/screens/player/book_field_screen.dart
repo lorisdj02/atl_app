@@ -1,4 +1,5 @@
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
+import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/app_localizations.dart';
@@ -504,18 +505,19 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     final totalToPay = _calculateTotalToPay();
 
     if (_selectedBookingType == BookingType.private) {
-      Map<String, dynamic> payload = {
-        'playerId': userProvider.activeRoleId!,
-        'fieldId': _selectedField!.id,
-        'startDateTime': startDateTime.toIso8601String(),
-        'endDateTime': endDateTime.toIso8601String(),
-      };
+
+      CheckoutPayload checkoutPayload = CheckoutPayload(
+        ownerPlayerId: userProvider.activeRoleId!,
+        fieldId: _selectedField!.id,
+        startTime: startDateTime,
+        finishTime: endDateTime,
+          amount: totalToPay,
+          type: CheckoutType.privateBooking,
+      );
 
       final int sessionId = await DBWrite.createCheckoutSession(
         userId: userProvider.activeAccount!.id,
-        payload: payload,
-        amount: totalToPay,
-        type: CheckoutType.privateBooking,
+        payload: checkoutPayload,
       );
 
       final result = await Navigator.of(context).push<bool>(
@@ -536,23 +538,23 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
       final playersToFind = _maxPlayers - _ownerPaysFor;
 
-      Map<String, dynamic> payload = {
-        'ownerPlayerId': userProvider.activeRoleId!,
-        'fieldId': _selectedField!.id,
-        'maxPlayers': _maxPlayers,
-        'playersToFind': playersToFind,
-        'feePerPlayer': feePerPlayer,
-        'startDateTime': startDateTime.toIso8601String(),
-        'endDateTime': endDateTime.toIso8601String(),
-      };
+      CheckoutPayload payload = CheckoutPayload(
+        ownerPlayerId: userProvider.activeRoleId!,
+        fieldId: _selectedField!.id,
+        totalPlayers: _maxPlayers,
+        playersToFind: playersToFind,
+        playersPaid: _ownerPaysFor,
+        startTime: startDateTime,
+        finishTime: endDateTime,
+        amount: totalToPay,
+        type: CheckoutType.lobbyBookingCreate,
+      );
 
       // Ricorda che playersToPay = maxPlayers - playersToFind
 
       final int sessionId = await DBWrite.createCheckoutSession(
         userId: userProvider.activeAccount!.id,
         payload: payload,
-        amount: totalToPay,
-        type: CheckoutType.lobbyBookingCreate,
       );
 
       final result = await Navigator.of(context).push<bool>(

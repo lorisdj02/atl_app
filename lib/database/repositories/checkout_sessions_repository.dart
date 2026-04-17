@@ -1,3 +1,5 @@
+import 'package:atl_app/models/checkout_payload.dart';
+
 import 'base_repository.dart';
 import '../../models/checkout_session.dart';
 import '../../config/app_config.dart';
@@ -69,19 +71,17 @@ class CheckoutSessionsRepository extends BaseRepository<CheckoutSession> {
 
   Future<int> createCheckoutSession({
     required int userId,
-    required String payload,
-    required double amount,
-    required CheckoutType type,
+    required CheckoutPayload payload,
   }) async {
     if (AppConfig.isDebug) {
       final CheckoutSession newSession = CheckoutSession(
         id: mockData.length + 1,
         userId: userId,
-        payload: payload,
-        amount: amount,
+        payload: payload.toJson().toString(), // Converti il payload in stringa JSON
+        amount: payload.amount,
         createdAt: DateTime.now(),
         status: CheckoutSessionStatus.pending,
-        type: type, // Sostituire con il tipo appropriato
+        type: payload.type, // Sostituire con il tipo appropriato
         expiresAt: DateTime.now().add(Duration(minutes: 10)), // Sostituire con la data di scadenza appropriata
       );
       _mockData.add(newSession);

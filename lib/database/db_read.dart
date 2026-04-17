@@ -1929,7 +1929,7 @@ class DBRead {
         fieldAddress: fieldAddress,
         startTime: startTime,
         finishTime: endTime,
-        maxPlayers: maxPlayers,
+        totalPlayers: maxPlayers,
         playersToPay: playersToPay,
       );
     } else {

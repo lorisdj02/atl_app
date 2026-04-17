@@ -13,6 +13,7 @@ class ApiJsonKeys {
 
   static const String numMatches = 'numMatches'; // int
 
+
   // PlayerHomeScreen, CoordinatorHomeScreen
   static const String activeTournaments =
       'activeTournaments'; // List<Tournament>
@@ -279,7 +280,7 @@ class ApiJsonKeys {
   // CheckoutScreen
   static const String finishTime = 'finishTime'; // DateTime
   // CheckoutScreen
-  static const String maxPlayers = 'maxPlayers'; // int
+  static const String totalPlayers = 'totalPlayers'; // int
 
   // BookFieldScreen
   static const String minOpeningTimePerCity = 'minOpeningTimePerCity'; // Map<int, TimeOfDay>
@@ -304,4 +305,22 @@ class ApiJsonKeys {
 
   // StatsScreen
   static const String footballStats = 'footballStats'; // List<FootballTeamStats>
+
+  // REQUESTS
+  // UpdateAccountInfoRequest
+  static const String username = 'username'; // String?
+  // UpdateAccountInfoRequest
+  static const String phone = 'phone'; // String?
+  // UpdateAccountInfoRequest
+  static const String birthdate = 'birthdate'; // String? (ISO8601)
+  // UpdateAccountInfoRequest
+  static const String imageUrl = 'imageUrl'; // String?
+  // UpdateAccountInfoRequest
+  static const String preferredCityId = 'preferredCityId'; // int?
+
+  // ConfirmCallupsRequest
+  static const String selectedPlayerIds = 'selectedPlayerIds'; // List<int>
+  // ConfirmCallupsRequest
+  static const String tournamentId = 'tournamentId'; // int
+  
 }

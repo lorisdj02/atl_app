@@ -1,6 +1,7 @@
 import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
+import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
 import '../shop/checkout_screen.dart';
 import 'package:provider/provider.dart';
@@ -434,17 +435,16 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final playerId = userProvider.activeRoleId!;
 
-    final Map<String, dynamic> payload = {
-      'playerId': playerId,
-      'lobbyId': lobby.id,
-      'playersPaid': playersPaid,
-    };
+    CheckoutPayload checkoutPayload = CheckoutPayload(
+      lobbyId: lobby.id,
+      playersPaid: playersPaid,
+      amount: lobby.feePerPlayer * playersPaid,
+      type: CheckoutType.lobbyBookingParticipate
+    );
 
     final int sessionId = await DBWrite.createCheckoutSession(
       userId: userProvider.activeAccount!.id,
-      payload: payload,
-      amount: lobby.feePerPlayer * playersPaid,
-      type: CheckoutType.lobbyBookingParticipate,
+      payload: checkoutPayload,
     );
 
     final result = await Navigator.of(context).push<bool>(

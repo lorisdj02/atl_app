@@ -76,7 +76,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _bookingUsername = data.bookingUsername;
         _startTime = data.startTime;
         _endTime = data.finishTime;
-        _maxPlayers = data.maxPlayers;
+        _maxPlayers = data.totalPlayers;
         _playersToPay = data.playersToPay;
         _isLoading = false;
       });

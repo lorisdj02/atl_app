@@ -262,7 +262,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     if (confirm != true) return;
 
     try {
-      final success = await DBWrite.leaveTeam(team!.id, player.playerId);
+      final success = await DBWrite.expelPlayer(team!.id, player.playerId);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
