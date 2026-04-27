@@ -1,4 +1,5 @@
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/controller/match_controller.dart';
+import 'package:atl_app/models/football_match_event.dart';
 import 'package:flutter/material.dart';
 import '../models/team.dart';
 import '../models/player.dart';
@@ -7,7 +8,15 @@ import 'square_team_widget.dart';
 import 'abstract_team_dialog.dart';
 import '../l10n/app_localizations.dart';
 
-enum EventType { goal, penalty, missedPenalty, ownGoal, yellowCard, redCard, redYellowCard }
+enum EventType {
+  goal,
+  penalty,
+  missedPenalty,
+  ownGoal,
+  yellowCard,
+  redCard,
+  redYellowCard,
+}
 
 class MatchEventDialog extends AbstractTeamDialog {
   final int coordinatorId;
@@ -56,22 +65,22 @@ class _MatchEventDialogState extends State<MatchEventDialog>
     }
   }
 
-  String _getEventTypeValue(EventType type) {
+  FootballMatchEventType _getFootballMatchEventTypeValue(EventType type) {
     switch (type) {
       case EventType.goal:
-        return 'goal';
+        return FootballMatchEventType.goal;
       case EventType.penalty:
-        return 'penalty';
+        return FootballMatchEventType.penalty;
       case EventType.missedPenalty:
-        return 'missedPenalty';
+        return FootballMatchEventType.missedPenalty;
       case EventType.ownGoal:
-        return 'ownGoal';
+        return FootballMatchEventType.ownGoal;
       case EventType.yellowCard:
-        return 'yellowCard';
+        return FootballMatchEventType.yellowCard;
       case EventType.redCard:
-        return 'redCard';
+        return FootballMatchEventType.redCard;
       case EventType.redYellowCard:
-        return 'redYellowCard';
+        return FootballMatchEventType.redYellowCard;
     }
   }
 
@@ -99,7 +108,10 @@ class _MatchEventDialogState extends State<MatchEventDialog>
       builder: (context) => AlertDialog(
         title: const Text('Confirm Event'),
         content: Text(
-          l10n.confirmEventMsg(_getEventTypeName(_selectedEventType!), "${_selectedPlayer!.name} ${_selectedPlayer!.surname}"),
+          l10n.confirmEventMsg(
+            _getEventTypeName(_selectedEventType!),
+            "${_selectedPlayer!.name} ${_selectedPlayer!.surname}",
+          ),
         ),
         actions: [
           TextButton(
@@ -123,28 +135,30 @@ class _MatchEventDialogState extends State<MatchEventDialog>
     setState(() => isLoading = true);
 
     try {
-      final success = await DBWrite.insertEventMatch(
-        widget.matchId,
-        _getEventTypeValue(_selectedEventType!),
-        playerId: _selectedPlayer!.playerId,
+
+      FootballMatchEvent newEvent = FootballMatchEvent(
+        id: 0, // Mocked, will be replaced by backend
+        matchId: widget.matchId,
+        type: _getFootballMatchEventTypeValue(_selectedEventType!),
         teamId: selectedTeam!.id,
+        playerId: _selectedPlayer!.playerId,
+        minute: 0, // Mocked
+        eventTime: DateTime.now(), // Mocked
+      );
+
+      await MatchController.Write.insertFootballMatchEvent(
+        widget.matchId.toDouble(),
+        newEvent,
       );
 
       if (mounted) {
-        if (success) {
-          Navigator.of(context).pop(true);
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.failedToAddEvent)));
-          setState(() => isLoading = false);
-        }
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorGeneric(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorGeneric(e.toString()))),
+        );
         setState(() => isLoading = false);
       }
     }
@@ -163,7 +177,11 @@ class _MatchEventDialogState extends State<MatchEventDialog>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            buildDialogHeader(title: widget.penaltyMode ? l10n.insertPenalty : l10n.addEventButton),
+            buildDialogHeader(
+              title: widget.penaltyMode
+                  ? l10n.insertPenalty
+                  : l10n.addEventButton,
+            ),
             const SizedBox(height: 24),
 
             // Teams
@@ -204,12 +222,13 @@ class _MatchEventDialogState extends State<MatchEventDialog>
                     .where((type) {
                       // Filtra redYellowCard sempre
                       if (type == EventType.redYellowCard) return false;
-                      
+
                       // Se siamo in penalty mode, mostra solo penalty e missedPenalty
                       if (widget.penaltyMode) {
-                        return type == EventType.penalty || type == EventType.missedPenalty;
+                        return type == EventType.penalty ||
+                            type == EventType.missedPenalty;
                       }
-                      
+
                       // Altrimenti mostra tutti gli eventi
                       return true;
                     })

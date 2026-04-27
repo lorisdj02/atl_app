@@ -147,6 +147,8 @@ class ApiJsonKeys {
   static const String minutesPerRound = 'minutesPerRound'; // int
   // FootballTournamentScreen, FootballMatchScreen
   static const String minutesPerPause = 'minutesPerPause'; // int
+  // FootballTournamentScreen
+  static const String canContinue = 'canContinue'; // bool?
 
   // FootballMatchScreen
   static const String match = 'match'; // FootballMatch
@@ -322,5 +324,21 @@ class ApiJsonKeys {
   static const String selectedPlayerIds = 'selectedPlayerIds'; // List<int>
   // ConfirmCallupsRequest
   static const String tournamentId = 'tournamentId'; // int
+
+  // RegisterAccountRequest
+  static const String email = 'email'; // String
+  // RegisterAccountRequest
+  static const String fireBaseUid = 'fireBaseUid'; // String
+  // RegisterAccountRequest
+  static const String name = 'name'; // String
+  // RegisterAccountRequest
+  static const String surname = 'surname'; // String
+  // RegisterAccountRequest
+  static const String role = 'role'; // String
+  // RegisterAccountRequest
+  static const String inviteCode = 'inviteCode'; // String?
+  // RegisterAccountRequest
+  static const String profilePictureUrl = 'profilePictureUrl'; // String?
+
   
 }

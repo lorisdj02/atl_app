@@ -13,6 +13,7 @@ class FootballTournamentResponse {
   final Map<int, FootballTeamStats> footballPlayerStatsCache;
   final int minutesPerRound;
   final int minutesPerPause;
+  final bool? canContinue;
 
   FootballTournamentResponse({
     required this.matches,
@@ -22,6 +23,7 @@ class FootballTournamentResponse {
     required this.footballPlayerStatsCache,
     required this.minutesPerRound,
     required this.minutesPerPause,
+    this.canContinue,
   });
 
   factory FootballTournamentResponse.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class FootballTournamentResponse {
       ),
       minutesPerRound: json[ApiJsonKeys.minutesPerRound] as int,
       minutesPerPause: json[ApiJsonKeys.minutesPerPause] as int,
+      canContinue: json[ApiJsonKeys.canContinue] as bool?,
     );
   }
 }

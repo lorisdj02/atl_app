@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/controller/booking_controller.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -234,7 +234,9 @@ class _BookingWidgetState extends State<BookingWidget> {
                 ],
 
                 // Pulsante chat (solo per lobby SE si partecipa)
-                if (isLobby && widget.playersPaid != null && widget.playersPaid! > 0) ...[
+                if (isLobby &&
+                    widget.playersPaid != null &&
+                    widget.playersPaid! > 0) ...[
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -319,20 +321,16 @@ class _BookingWidgetState extends State<BookingWidget> {
 
                         // Se l'utente conferma, procedi con l'eliminazione
                         if (confirm == true) {
-                          bool success = false;
-                          if (isLobby) {
-                            success = await DBWrite.leaveLobby(
-                              widget.booking.id,
-                              playerId,
-                            );
-                          } else {
-                            success =
-                                await DBWrite.deletePrivateBooking(
-                                  widget.booking.id,
-                                );
-                          }
-
-                          if (success) {
+                          try {
+                            if (isLobby) {
+                              await BookingController.Write.leaveLobbyBooking(
+                                widget.booking.id,
+                              );
+                            } else {
+                              await BookingController.Write.refundPrivateBooking(
+                                widget.booking.id,
+                              );
+                            }
                             widget.onBookingDeleted
                                 ?.call(); // ← Chiama il callback
                             if (mounted) {
@@ -348,7 +346,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                                 ),
                               );
                             }
-                          } else {
+                          } catch (e) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

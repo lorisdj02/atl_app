@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/match_controller.dart';
 import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,6 @@ import '../shop_screen.dart';
 import '../profile_screen.dart';
 import 'referee_home_screen.dart';
 import 'available_matches_screen.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class PastAssignedMatchesScreen extends StatefulWidget {
@@ -51,9 +51,10 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         return;
       }
 
-      final PastAssignedMatchesResponse data = await DBRead.getPastAssignedMatchesScreen(refereeId);
+      final PastAssignedMatchesResponse data = await MatchController
+          .Read.getPastAssignedMatchesScreen(widget.currentSport);
 
-      if(widget.currentSport != SportCategory.football) {
+      if (widget.currentSport != SportCategory.football) {
         setState(() => _isLoading = false);
         return;
       }
@@ -72,10 +73,8 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         setState(() {
           _assignedMatches = assignedMatches;
           _teamsCache = data.teamsCache;
-          _minutesRoundPerTournament =
-              data.minutesRoundPerTournament;
-          _minutesPausePerTournament =
-              data.minutesPausePerTournament;
+          _minutesRoundPerTournament = data.minutesRoundPerTournament;
+          _minutesPausePerTournament = data.minutesPausePerTournament;
           _isLoading = false;
         });
       }
@@ -162,7 +161,10 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         onTap: _onNavTap,
         currentSport: widget.currentSport,
         isHome: false,
-        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount?.id,
+        userId: Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        ).activeAccount?.id,
       ),
     );
   }
@@ -215,8 +217,10 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
             homeTeam: _teamsCache[match.homeTeamId],
             awayTeam: _teamsCache[match.awayTeamId],
             currentSport: widget.currentSport,
-            minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
-            minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
+            minutesPerRound:
+                _minutesRoundPerTournament[match.tournamentId] ?? 0,
+            minutesPerPause:
+                _minutesPausePerTournament[match.tournamentId] ?? 0,
             onMatchUpdated: () => _loadData(),
           ),
         );

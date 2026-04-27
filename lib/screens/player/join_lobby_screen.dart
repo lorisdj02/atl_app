@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/controller/booking_controller.dart';
 import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
 import 'package:atl_app/models/checkout_payload.dart';
@@ -96,12 +96,12 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         }
       }
 
-      final JoinLobbyResponse data = await DBRead.getJoinLobbyScreen(
-        playerId,
-        _selectedTotalPlayers,
-        _selectedCity,
-        startDateTime,
-        endDateTime,
+      final JoinLobbyResponse data = await BookingController.Read.getJoinLobbyScreen(
+        sportCategory: widget.sportCategory,
+        totalPlayers: _selectedTotalPlayers,
+        selectedCityId: _selectedCity?.toDouble(),
+        startTime: startDateTime,
+        finishTime: endDateTime,
       );
 
 

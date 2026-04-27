@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/controller/home_screen_controller.dart';
 import 'package:atl_app/database/responses/coordinator_home_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,7 +26,6 @@ class CoordinatorHomeScreen extends StatefulWidget {
 }
 
 class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
-
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
   List<Tournament> _activeTournaments = [];
@@ -37,12 +36,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   final ScrollController _dayScrollController = ScrollController();
   Map<DateTime, List<FootballMatch>> _matchesPerDate = {};
 
-   late final AccountProvider userProvider = Provider.of<AccountProvider>(
+  late final AccountProvider userProvider = Provider.of<AccountProvider>(
     context,
     listen: false,
   );
 
-    late final SportCategory _sportCategory =
+  late final SportCategory _sportCategory =
       userProvider.selectedSportCategory ?? SportCategory.football;
 
   @override
@@ -107,10 +106,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       }
 
       final CoordinatorHomeResponse coordinatorData =
-          await DBRead.getCoordinatorHomeScreen(
-            coordinatorId: coordinatorId,
-            currentSport: _sportCategory,
-          );
+          await HomeScreenController.getCoordinatorHomeScreen(_sportCategory);
 
       Map<DateTime, List<FootballMatch>> matchesPerDate = {};
       if (_sportCategory == SportCategory.football) {
@@ -150,7 +146,9 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            content: Text(
+              AppLocalizations.of(context).errorGeneric(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );

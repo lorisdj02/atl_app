@@ -1,3 +1,5 @@
+import 'package:atl_app/database/controller/field_controller.dart';
+import 'package:atl_app/database/controller/match_controller.dart';
 import 'package:atl_app/database/responses/available_matches_response.dart';
 import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,6 @@ import '../shop_screen.dart';
 import '../profile_screen.dart';
 import 'referee_home_screen.dart';
 import 'past_assigned_matches_screen.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class AvailableMatchesScreen extends StatefulWidget {
@@ -48,7 +49,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final cities = await DBRead.getCities();
+      final cities = await FieldController.Read.getAllCities();
       if (mounted) {
         final preferredCityId =
             Provider.of<AccountProvider>(context, listen: false).cityId;
@@ -85,11 +86,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final AvailableMatchesResponse data = await DBRead.getAvailableMatchesScreen(
+      final AvailableMatchesResponse data = await MatchController.Read.getAvailableMatchesScreen(
         widget.currentSport,
-        Provider.of<AccountProvider>(context, listen: false).activeRoleId!,
-        cityId: _selectedCity!.id,
-        sportId: _selectedSportId,
+        cityId: _selectedCity?.id.toDouble(),
+        sportId: _selectedSportId?.toDouble(),
       );
 
       List<FootballMatch> availableMatches = data.footballMatches;

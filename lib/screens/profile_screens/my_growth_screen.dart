@@ -39,7 +39,6 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
   Future<void> _loadData() async {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final user = userProvider.activeAccount;
-    final l10n = AppLocalizations.of(context);
     if (user == null) {
       setState(() => _isLoading = false);
       return;
@@ -65,7 +64,7 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            l10n.errorLoadingData(e.toString()),
+            AppLocalizations.of(context).errorLoadingData(e.toString()),
             style: const TextStyle(color: Colors.white),
           ),          backgroundColor: Colors.red,
         ),

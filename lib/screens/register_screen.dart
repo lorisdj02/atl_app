@@ -1,7 +1,8 @@
+import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/requests/register_account_request.dart';
 import 'package:flutter/material.dart';
 import '../models/account.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_write.dart';
 import 'registration/registration_screen_step1.dart';
 import 'registration/registration_screen_step2.dart';
 import 'registration/registration_screen_step3.dart';
@@ -85,13 +86,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
     setState(() => _isRegistering = true);
     try {
-      final success = await DBWrite.registerAccount(
+      RegisterAccountRequest request = RegisterAccountRequest(
         email: _emailController.text.trim(),
         username: _usernameController.text.trim(),
-        password: _passwordController.text.trim(),
         name: _nameController.text.trim(),
         surname: _surnameController.text.trim(),
-        role: _selectedRole!,
+        role: _selectedRole!.toString().split('.').last, // convert enum to string
+        fireBaseUid: "ciao", // TODO: get real Firebase UID after implementing Firebase Auth
         phone: '$_phonePrefix${_phoneController.text.trim()}',
         birthdate: _birthday!,
         inviteCode: _inviteCodeController.text.trim().isEmpty
@@ -99,10 +100,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             : _inviteCodeController.text.trim(),
         profilePictureUrl: _profileImagePath,
       );
+
+      await AccountController.Write.registerAccount(request);
+
       if (!mounted) return;
-      if (success) {
-        Navigator.of(context).pop();
-      }
+
+      Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

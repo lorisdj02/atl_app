@@ -1,6 +1,6 @@
+import 'package:atl_app/database/controller/match_controller.dart';
 import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/database/responses/football_match_events_response.dart';
-import 'package:atl_app/database/responses/football_match_response.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +20,6 @@ import '../../widgets/football_motm_selector_dialog.dart';
 import '../../widgets/schedule_match_dialog.dart';
 import '../../widgets/referee_match_dialog.dart';
 import '../../providers/account_provider.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class FootballMatchScreen extends StatefulWidget {
@@ -173,41 +172,41 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     try {
       // Carica la partita dal database
-      AccountProvider userProvider = Provider.of<AccountProvider>(
-        context,
-        listen: false,
-      );
+      switch (widget.currentSport) {
+        case SportCategory.football:
+          final data = await MatchController.Read.getMatchScreen(
+            widget.matchId.toDouble(),
+            widget.currentSport,
+          );
+          List<FootballMatchEvent> events = data.events;
 
-      final FootballMatchResponse data = await DBRead.getFootballMatchScreen(
-        widget.matchId,
-        refereeId: userProvider.isReferee ? userProvider.activeRoleId : null,
-      );
-      List<FootballMatchEvent> events = data.events;
+          events.sort(
+            (a, b) => b.eventTime.compareTo(a.eventTime),
+          ); // Ordina per data decrescente
 
-      events.sort(
-        (a, b) => b.eventTime.compareTo(a.eventTime),
-      ); // Ordina per data decrescente
-
-      setState(() {
-        _match = data.match;
-        _homeTeam = data.homeTeam;
-        _awayTeam = data.awayTeam;
-        _events = events;
-        _minutesPerRound = data.minutesPerRound;
-        _minutesPerPause = data.minutesPerPause;
-        _availableRefereeRoles = data.availableRefereeRoles;
-        _playersPerTeam = data.playersPerTeam;
-        _cityName = data.cityName;
-        _assignmentPerRefereeNameSurname = data.assignmentPerRefereeNameSurname;
-        _field = data.field;
-        _coordinatorId = data.coordinatorId;
-        _refereeCheck = data.refereeCheck;
-        _canMatchFinish = data.canMatchFinish;
-        _hasRefereeLicense = data.hasRefereeLicense;
-        _payPerRole = data.payPerRole;
-        _isLoadingRefereeRoles = false;
-        _isLoading = false;
-      });
+          setState(() {
+            _match = data.match;
+            _homeTeam = data.homeTeam;
+            _awayTeam = data.awayTeam;
+            _events = events;
+            _minutesPerRound = data.minutesPerRound;
+            _minutesPerPause = data.minutesPerPause;
+            _availableRefereeRoles = data.availableRefereeRoles;
+            _playersPerTeam = data.playersPerTeam;
+            _cityName = data.cityName;
+            _assignmentPerRefereeNameSurname =
+                data.assignmentPerRefereeNameSurname;
+            _field = data.field;
+            _coordinatorId = data.coordinatorId;
+            _refereeCheck = data.refereeCheck;
+            _canMatchFinish = data.canMatchFinish;
+            _hasRefereeLicense = data.hasRefereeLicense;
+            _payPerRole = data.payPerRole;
+            _isLoadingRefereeRoles = false;
+            _isLoading = false;
+          });
+          break;
+      }
       _reloadAvailablePlayersPerTeam();
     } catch (e) {
       if (mounted) {
@@ -221,18 +220,24 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<void> _refreshEvents() async {
     try {
-      final FootballMatchEventsResponse events = await DBRead.getFootballMatchEvents(
-        widget.matchId,
-      );
-      List<FootballMatchEvent> matchEvents = events.events;
-      matchEvents.sort(
-        (a, b) => b.eventTime.compareTo(a.eventTime),
-      ); // Ordina per data decrescente
-      setState(() {
-        _events = matchEvents;
-        _canMatchFinish = events.canMatchFinish;
-        _isLoading = false;
-      });
+      switch (widget.currentSport) {
+        case SportCategory.football:
+          final FootballMatchEventsResponse events =
+              await MatchController.Read.getMatchEvents(
+                widget.matchId.toDouble(),
+                widget.currentSport,
+              );
+          List<FootballMatchEvent> matchEvents = events.events;
+          matchEvents.sort(
+            (a, b) => b.eventTime.compareTo(a.eventTime),
+          ); // Ordina per data decrescente
+          setState(() {
+            _events = matchEvents;
+            _canMatchFinish = events.canMatchFinish;
+            _isLoading = false;
+          });
+          break;
+      }
       _reloadAvailablePlayersPerTeam();
     } catch (e) {
       if (mounted) {
@@ -303,31 +308,21 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     try {
-      final success = await DBWrite.insertAssignment(
-        widget.matchId,
-        refereeId,
+      await MatchController.Write.insertRefereeAssignment(
+        widget.matchId.toDouble(),
         selectedRole,
       );
 
-      if (success) {
-        setState(() {
-          _matchInfoKey++; // Increment to force MatchInfoCard rebuild
-        });
-        _loadMatchData();
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(_l10n.assignmentCreated)));
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_l10n.failedToCreateAssignment)),
-          );
-        }
+      setState(() {
+        _matchInfoKey++; // Increment to force MatchInfoCard rebuild
+      });
+      _loadMatchData();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_l10n.assignmentCreated)));
       }
     } catch (e) {
-      print('Error creating assignment: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -460,24 +455,33 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     final confirmed = await _showConfirmationDialog(title, message);
     if (!confirmed) return;
 
-    bool success = false;
+    FootballMatchEventType eventType = FootballMatchEventType.values.firstWhere(
+      (e) => e.toString().split('.').last.toLowerCase() == action.toLowerCase(),
+    );
 
-    switch (action) {
-      case 'start':
-        success = await DBWrite.insertEventMatch(widget.matchId, 'start');
-        break;
-      case 'halftime':
-        success = await DBWrite.insertEventMatch(widget.matchId, 'halftime');
-        break;
-      case 'startHalf':
-        success = await DBWrite.insertEventMatch(widget.matchId, 'startHalf');
-        break;
-      case 'finish':
-        success = await DBWrite.insertEventMatch(widget.matchId, 'finish');
-        break;
-    }
+    try {
+      FootballMatchEvent event = FootballMatchEvent(
+        id: 0,
+        matchId: widget.matchId,
+        type: eventType, // Placeholder, will be set in API
+        teamId: null,
+        playerId: null,
+        minute: 0,
+        eventTime: DateTime.now(),
+      );
 
-    if (success) {
+      switch (action) {
+        case 'start':
+        case 'startHalf':
+        case 'halftime':
+        case 'finish':
+          await MatchController.Write.insertFootballMatchEvent(
+            widget.matchId.toDouble(),
+            event,
+          );
+          break;
+      }
+
       setState(() {
         _hasChanges = true;
       });
@@ -487,7 +491,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           SnackBar(content: Text(_l10n.matchActionSuccess(actionLabel))),
         );
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_l10n.failedToMatchAction(actionLabel))),
@@ -671,21 +675,16 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (result == null) return;
 
     final Player selectedPlayer = result['player'];
-    final int teamId = result['teamId'];
 
     print(
       "Assigning MOTM to player ${selectedPlayer.playerId} in match ${widget.matchId}",
     );
+    try {
+      await MatchController.Write.addMotmToMatch(
+        widget.matchId.toDouble(),
+        selectedPlayer.playerId.toDouble(),
+      );
 
-    final success = await DBWrite.addFootballMotm(
-      widget.matchId,
-      selectedPlayer.playerId,
-      teamId,
-      _match!.tournamentId,
-      _coordinatorId!,
-    );
-
-    if (success) {
       setState(() {
         _hasChanges = true;
       });
@@ -695,7 +694,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(_l10n.motmAdded)));
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -773,9 +772,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     if (!confirmed) return;
 
     // Delete the event
-    final success = await DBWrite.deleteMatchEvent(widget.matchId, event.id);
+    try {
+      await MatchController.Write.deleteFootballMatchEvent(
+        widget.matchId.toDouble(),
+        event.id.toDouble(),
+      );
 
-    if (success) {
       setState(() {
         _hasChanges = true;
       });
@@ -785,7 +787,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(_l10n.eventDeleted)));
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,

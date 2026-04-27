@@ -1,3 +1,6 @@
+import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/controller/field_controller.dart';
+import 'package:atl_app/database/requests/update_account_info_request.dart';
 import 'package:atl_app/models/account.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,8 +12,6 @@ import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/info_row_widget.dart';
-import '../../database/db_read.dart';
-import '../../database/db_write.dart';
 import '../../l10n/app_localizations.dart';
 
 class EditInfosScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       listen: false,
     ).activeAccount;
     try {
-      final List<City> cities = await DBRead.getCities();
+      final List<City> cities = await FieldController.Read.getAllCities();
       if (mounted) {
         City? currentCity;
         if (user?.preferredCityId != null) {
@@ -168,24 +169,22 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Update account info through repository
-      final Account? data = await DBWrite.updateAccountInfo(
-        id: user.id,
+      UpdateAccountInfoRequest request = UpdateAccountInfoRequest(
         username: _usernameController.text != user.username
             ? _usernameController.text
             : null,
         phone: _phoneController.text != user.phone
             ? _phoneController.text
             : null,
-        oldPasswordMD5: _oldPasswordController.text.isNotEmpty
-            ? _oldPasswordController.text
-            : null,
-        newPasswordMD5: _newPasswordController.text.isNotEmpty
-            ? _newPasswordController.text
-            : null,
         preferredCityId: _selectedCity?.id != user.preferredCityId
             ? _selectedCity?.id
             : null,
+        birthdate: null, // Non modificabile in questa schermata
+        imageUrl: null, // TODO: Implement image upload
+      );
+      // Update account info through repository
+      final Account? data = await AccountController.Write.updateAccountInfos(
+        request,
       );
 
       if (data == null) {

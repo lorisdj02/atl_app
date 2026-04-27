@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/field_controller.dart';
 import 'package:atl_app/database/db_write.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -43,7 +44,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final List<City> cities = await DBRead.getCities();
+      final List<City> cities = await FieldController.Read.getAllCities();
       if (mounted) {
         setState(() {
           _availableCities = cities;

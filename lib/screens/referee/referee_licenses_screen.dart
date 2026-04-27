@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/account_controller.dart';
 import 'package:atl_app/database/responses/referee_licenses_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,8 +12,6 @@ import '../../widgets/referee_license_widget.dart';
 import '../../widgets/add_referee_license_dialog.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../../database/db_read.dart';
-import '../../database/db_write.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class RefereeLicensesScreen extends StatefulWidget {
@@ -134,30 +133,17 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
     if (confirmed != true) return;
 
     try {
-      final userProvider = Provider.of<AccountProvider>(context, listen: false);
-      final refereeId = userProvider.activeRoleId!;
-      final success = await DBWrite.deleteRefereeLicense(
-        refereeId,
-        license.sportId,
-      );
+      await AccountController.Write.deleteRefereeLicense(license.sportId.toDouble());
       if (mounted) {
-        if (success) {
-          await _loadData();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.licenseDeletedSuccessfully)),
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.failedToDeleteLicense)));
-        }
+        await _loadData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.licenseDeletedSuccessfully)),
+        );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorText(e.toString()))));
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.failedToDeleteLicense)));
     }
   }
 
@@ -179,17 +165,17 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
       return;
     }
 
-    final added = await showDialog<bool>(
+    final added = await showDialog<RefereeLicense>(
       context: context,
       builder: (ctx) => AddRefereeLicenseDialog(
         availableSports: availableSports,
         refereeId: refereeId,
-        onSubmit: (sportId, refId, id, issuedAt) =>
-            DBWrite.insertRefereeLicense(sportId, refId, id, issuedAt),
+        onSubmit: (license) =>
+            AccountController.Write.insertRefereeLicense(license),
       ),
     );
 
-    if (added == true && mounted) {
+    if (added != null && mounted) {
       await _loadData();
     }
   }

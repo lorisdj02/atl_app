@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/account_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/account_provider.dart';
@@ -17,9 +18,7 @@ import 'profile_screens/settings_screen.dart';
 import 'profile_screens/contact_us_screen.dart';
 import '../widgets/referee_bottom_bar.dart';
 import '../widgets/organization_bottom_bar.dart';
-import '../database/db_read.dart';
 import 'referee/referee_licenses_screen.dart';
-import '../config/api_json_keys.dart';
 import 'profile_screens/reviews_screen.dart';
 import 'profile_screens/invite_friends_screen.dart';
 import 'profile_screens/my_growth_screen.dart';
@@ -47,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     if (userProvider.isCoordinator || userProvider.isReferee) {
       try{
-      final int? level = await DBRead.getUserLevel(userProvider.activeAccount!.id);
+      final int level = await AccountController.Read.getAccountLevel();
       if (mounted) {
         setState(() {
           _level = level;

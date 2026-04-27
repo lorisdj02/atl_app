@@ -1,9 +1,8 @@
+import 'package:atl_app/database/controller/account_controller.dart';
 import 'package:flutter/material.dart';
-import '../database/db_read.dart';
 import '../l10n/app_localizations.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import '../config/api_json_keys.dart';
 
 class BottomBarItem {
   final IconData icon;
@@ -62,7 +61,7 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
   Future<void> _checkNotifications() async {
     if (widget.userId == null) return;
     try {
-      final bool result = await DBRead.hasNotification(widget.userId!);
+      final bool result = await AccountController.Read.hasNotifications();
       if (mounted) {
         setState(() {
           _hasUnreadNotifications = result;

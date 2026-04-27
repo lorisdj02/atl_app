@@ -51,10 +51,6 @@ class ApiClient {
         },
         onError: (error, handler) async {
           // TODO: Gestisci errori comuni (401, 403, 500, etc.)
-          if (error.response?.statusCode == 401) {
-            // TODO: Refresh token o logout
-            print('🔒 Unauthorized - Token expired');
-          }
           return handler.next(error);
         },
       ),

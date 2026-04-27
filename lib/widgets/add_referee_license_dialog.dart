@@ -1,3 +1,4 @@
+import 'package:atl_app/models/referee_license.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/sport.dart';
@@ -7,7 +8,7 @@ import '../l10n/app_localizations.dart';
 class AddRefereeLicenseDialog extends StatefulWidget {
   final List<Sport> availableSports;
   final int refereeId;
-  final Future<bool> Function(int sportId, int refereeId, String id, DateTime issuedAt) onSubmit;
+  final Future<RefereeLicense> Function(RefereeLicense license) onSubmit;
 
   const AddRefereeLicenseDialog({
     super.key,
@@ -17,7 +18,8 @@ class AddRefereeLicenseDialog extends StatefulWidget {
   });
 
   @override
-  State<AddRefereeLicenseDialog> createState() => _AddRefereeLicenseDialogState();
+  State<AddRefereeLicenseDialog> createState() =>
+      _AddRefereeLicenseDialogState();
 }
 
 class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
@@ -43,9 +45,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: ATLColors.darkBlue,
-            ),
+            colorScheme: const ColorScheme.light(primary: ATLColors.darkBlue),
           ),
           child: child!,
         );
@@ -60,35 +60,32 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
     final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
     if (_selectedSport == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectSportFirst2)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.selectSportFirst2)));
       return;
     }
     if (_issuedAt == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectIssueDate)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.selectIssueDate)));
       return;
     }
 
     setState(() => _isLoading = true);
     try {
-      final success = await widget.onSubmit(
-        _selectedSport!.id,
-        widget.refereeId,
-        _idController.text.trim(),
-        _issuedAt!,
+      final license = await widget.onSubmit(
+        RefereeLicense(
+          sportId: _selectedSport!.id,
+          refereeId: widget.refereeId,
+          id: _idController.text.trim(),
+          issuedAt: _issuedAt!,
+          status: LicenseStatus.notVerified,
+          createdAt: DateTime.now(),
+        ),
       );
       if (mounted) {
-        if (success) {
-          Navigator.of(context).pop(true);
-        } else {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.failedToAddLicense)),
-          );
-        }
+        Navigator.of(context).pop(license);
       }
     } catch (e) {
       if (mounted) {
@@ -182,9 +179,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                 GestureDetector(
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.photoUploadComingSoon),
-                      ),
+                      SnackBar(content: Text(l10n.photoUploadComingSoon)),
                     );
                   },
                   child: Container(
@@ -318,8 +313,9 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed:
-                            _isLoading ? null : () => Navigator.of(context).pop(false),
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.of(context).pop(false),
                         child: Text(
                           l10n.cancelButton,
                           style: TextStyle(color: ATLColors.subtext),

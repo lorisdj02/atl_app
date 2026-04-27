@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/field_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/city.dart';
@@ -65,7 +66,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await DBRead.getCities();
+      final cities = await FieldController.Read.getAllCities();
       if (mounted) {
         setState(() {
           _cities = cities;

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/booking_controller.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,6 @@ import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../models/sport_category.dart';
 import '../../database/db_write.dart';
-import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../shop/checkout_screen.dart';
 import '../../models/checkout_session.dart';
 
@@ -100,7 +99,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final BookFieldResponse data = await DBRead.getBookFieldScreen();
+      final BookFieldResponse data = await BookingController.Read.getBookFieldScreen(widget.sportCategory);
 
       final preferredCityId = Provider.of<AccountProvider>(
         context,
@@ -229,9 +228,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _endTime!.minute,
       );
 
-      final FieldsAndMaxPlayersPerFieldResponse data = await DBRead.getFreeFieldsByPlayerAndCityAndDate(
+      final FieldsAndMaxPlayersPerFieldResponse data = await BookingController.Read.getFreeFieldsByPlayerAndCityAndDate(
         maxPlayers: _maxPlayers,
-        cityId: _selectedCity!,
+        cityId: _selectedCity!.toDouble(),
         startTime: startDateTime,
         finishTime: endDateTime,
         sportCategory: widget.sportCategory,

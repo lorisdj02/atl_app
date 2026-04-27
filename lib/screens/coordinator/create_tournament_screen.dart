@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/field_controller.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/database/responses/tournament_parameters_response.dart';
 import 'package:flutter/material.dart';
@@ -149,7 +150,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await DBRead.getCities();
+      final cities = await FieldController.Read.getAllCities();
       setState(() {
         _cities = cities;
       });
@@ -171,9 +172,9 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
     try {
       final FieldsAndMaxPlayersPerFieldResponse data =
-          await DBRead.getFieldsByPlayersAndCityAndSportCategory(
+          await FieldController.Read.getFieldsByMaxPlayersAndCityAndSportCategory(
             maxPlayers: _selectedSport!.maxPlayersPerTeam,
-            cityId: _selectedCity!,
+            cityId: _selectedCity!.toDouble(),
             sportCategory: _selectedSport!.category,
           );
 

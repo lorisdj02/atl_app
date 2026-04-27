@@ -2,7 +2,7 @@
 class AppConfig {
   static const bool isDebug = true; // TODO: Cambia a false in produzione
   static const String apiBaseUrl =
-      'https://api.yourapp.com/api/v1'; // TODO: URL API reale
+      'localhost:8081/api/v1'; // TODO: URL API reale
   static const String apiKey = 'YOUR_API_KEY_HERE'; // TODO: Chiave API reale
 
   // Timeout configuration

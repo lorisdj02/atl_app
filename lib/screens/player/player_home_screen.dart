@@ -1,3 +1,4 @@
+import 'package:atl_app/database/controller/home_screen_controller.dart';
 import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/responses/player_home_response.dart';
 import '../../l10n/app_localizations.dart';
@@ -63,7 +64,6 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
   bool _isLoading = true;
   int _currentPage = 0;
 
-
   @override
   void initState() {
     super.initState();
@@ -78,10 +78,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
     try {
       final PlayerHomeResponse playerHomeData =
-          await DBRead.getPlayerHomeScreen(
-            playerId: playerId,
-            currentSport: _currentSport,
-          );
+          await HomeScreenController.getPlayerHomeScreen(_currentSport);
 
       List<dynamic> bookings = [];
       bookings.addAll(playerHomeData.privateBookings);
@@ -108,12 +105,9 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         setState(() {
           _bookings = bookings;
           _activeTournaments = playerHomeData.activeTournaments;
-          _minutesRoundPerTournament =
-              playerHomeData.minutesRoundPerTournament;
-          _minutesPausePerTournament =
-              playerHomeData.minutesPausePerTournament;
-          _matchesPerTournament =
-              playerHomeData.footballMatchesPerTournament;
+          _minutesRoundPerTournament = playerHomeData.minutesRoundPerTournament;
+          _minutesPausePerTournament = playerHomeData.minutesPausePerTournament;
+          _matchesPerTournament = playerHomeData.footballMatchesPerTournament;
           _standingsPerTournament =
               playerHomeData.footballStandingsPerTournament;
           _teamsCache = playerHomeData.teamsCache;
@@ -121,12 +115,9 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
           _usernamePerBooking = playerHomeData.usernamePerBooking;
           _fieldCache = playerHomeData.fieldsCache;
           _maxPlayersPerLobby = playerHomeData.maxPlayersPerLobby;
-          _currentPlayersPerLobby =
-              playerHomeData.currentPlayersPerLobby;
-          _completeAddressPerField =
-              playerHomeData.completeAddressPerField;
-          _playersPaidPerBooking =
-              playerHomeData.playersPaidPerBooking;
+          _currentPlayersPerLobby = playerHomeData.currentPlayersPerLobby;
+          _completeAddressPerField = playerHomeData.completeAddressPerField;
+          _playersPaidPerBooking = playerHomeData.playersPaidPerBooking;
           _isLoading = false;
         });
       }
@@ -138,9 +129,13 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         // ✓ FIX: Usa addPostFrameCallback
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).errorLoadingData(e.toString()))));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context).errorLoadingData(e.toString()),
+                ),
+              ),
+            );
           }
         });
       }
@@ -260,9 +255,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     await _loadPlayerData();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l10n.fieldBookedSuccessfully),
-                        ),
+                        SnackBar(content: Text(l10n.fieldBookedSuccessfully)),
                       );
                     }
                   }
@@ -452,7 +445,8 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
             key: ValueKey('${isPrivate ? 'private' : 'lobby'}_$bookingId'),
             field: _fieldCache[booking.fieldId]!,
             completeAddress:
-                _completeAddressPerField[booking.fieldId] ?? l10n.unknownAddress,
+                _completeAddressPerField[booking.fieldId] ??
+                l10n.unknownAddress,
             booking: booking,
             startTime: isPrivate
                 ? booking.startTime

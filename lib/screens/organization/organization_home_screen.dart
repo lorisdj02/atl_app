@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/controller/home_screen_controller.dart';
 import 'package:atl_app/database/responses/organization_home_response.dart';
 import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/team.dart';
@@ -103,10 +103,8 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         return;
       }
 
-      final OrganizationHomeResponse organizationData = await DBRead.getOrganizationHomeScreen(
-        organizationId: organizationId,
-        currentSport: _currentSport,
-      );
+      final OrganizationHomeResponse organizationData =
+          await HomeScreenController.getOrganizationHomeScreen(_currentSport);
 
       Map<int, List<Booking>> bookingsByField = {};
 
@@ -150,13 +148,15 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         });
       }
     } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
-            backgroundColor: Colors.red,
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).errorGeneric(e.toString()),
           ),
-        );
-        print('Error loading organization data: $e');
+          backgroundColor: Colors.red,
+        ),
+      );
+      print('Error loading organization data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -248,7 +248,10 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount!.id,
+        userId: Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        ).activeAccount!.id,
       ),
     );
   }
@@ -446,7 +449,6 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
     }
 
     if (flatList.isEmpty) {
-      
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -466,8 +468,9 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
               const SizedBox(height: 8),
               Text(
                 l10n.noBookingsOn(
-                  DateFormat.yMMMd(Localizations.localeOf(context).toString())
-                      .format(_selectedDate),
+                  DateFormat.yMMMd(
+                    Localizations.localeOf(context).toString(),
+                  ).format(_selectedDate),
                 ),
                 style: TextStyle(color: ATLColors.subtext, fontSize: 14),
                 textAlign: TextAlign.center,

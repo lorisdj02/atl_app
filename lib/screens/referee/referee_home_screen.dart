@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/controller/home_screen_controller.dart';
 import 'package:atl_app/database/responses/referee_home_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,8 +25,12 @@ class RefereeHomeScreen extends StatefulWidget {
 }
 
 class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
-  late final userProvider = Provider.of<AccountProvider>(context, listen: false);
-  late final SportCategory _currentSport = userProvider.selectedSportCategory ?? SportCategory.football;
+  late final userProvider = Provider.of<AccountProvider>(
+    context,
+    listen: false,
+  );
+  late final SportCategory _currentSport =
+      userProvider.selectedSportCategory ?? SportCategory.football;
 
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
@@ -97,13 +101,11 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         setState(() => _isLoading = false);
         return;
       }
-      final RefereeHomeResponse data = await DBRead.getRefereeHomeScreen(
-        refereeId: refereeId,
-        currentSport: _currentSport,
-      );
+      final RefereeHomeResponse data =
+          await HomeScreenController.getRefereeHomeScreen(_currentSport);
 
       // Sort matches by scheduled start time
-      
+
       final assignedMatches = data.assignedFootballMatches;
       assignedMatches.sort((a, b) {
         if (a.scheduledStart == null && b.scheduledStart == null) return 0;
@@ -138,7 +140,9 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+          content: Text(
+            AppLocalizations.of(context).errorGeneric(e.toString()),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -239,7 +243,10 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount!.id,
+        userId: Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        ).activeAccount!.id,
       ),
     );
   }
@@ -424,7 +431,10 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
 
     if (matchesForDay.isEmpty) {
       final locale = Localizations.localeOf(context).toString();
-      final formattedDate = DateFormat('MMM d, yyyy', locale).format(_selectedDate);
+      final formattedDate = DateFormat(
+        'MMM d, yyyy',
+        locale,
+      ).format(_selectedDate);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -466,8 +476,10 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
             homeTeam: _teamsCache[match.homeTeamId],
             awayTeam: _teamsCache[match.awayTeamId],
             currentSport: _currentSport,
-            minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
-            minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
+            minutesPerRound:
+                _minutesRoundPerTournament[match.tournamentId] ?? 0,
+            minutesPerPause:
+                _minutesPausePerTournament[match.tournamentId] ?? 0,
             onMatchUpdated: _loadData,
           ),
         );

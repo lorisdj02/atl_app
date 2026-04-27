@@ -1,8 +1,8 @@
+import 'package:atl_app/database/controller/account_controller.dart';
 import 'package:flutter/material.dart';
 import '../models/review.dart';
 import '../models/account.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_write.dart';
 import '../models/sport_category.dart';
 import '../l10n/app_localizations.dart';
 
@@ -53,17 +53,24 @@ class _ReviewWidgetState extends State<ReviewWidget> {
 
     setState(() => _isCommitting = true);
 
-    final success = await DBWrite.commitReview(
-      widget.review.id,
-      rating: avgRating,
-      comment: comment.isEmpty ? null : comment,
+    Review updatedReview = Review(
+      id: widget.review.id,
       tournamentId: widget.review.tournamentId,
       matchId: widget.review.matchId,
+      reviewerAccountId: widget.review.reviewerAccountId,
+      reviewedAccountId: widget.review.reviewedAccountId,
+      createdAt: widget.review.createdAt,
+      sportCategory: widget.review.sportCategory,
+      reviewType: widget.review.reviewType,
+      rating: avgRating,
+      comment: comment.isEmpty ? null : comment,
     );
 
-    if (!mounted) return;
+    try {
+      await AccountController.Write.commitReview(updatedReview);
 
-    if (success) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.reviewSubmitted),
@@ -71,7 +78,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
         ),
       );
       widget.onCommitted();
-    } else {
+    } catch (e) {
       setState(() => _isCommitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -145,19 +152,28 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         _reviewTypeLabel(context, review.reviewType),
-                        style: const TextStyle(color: Colors.white, fontSize: 11),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: sportColor,
                         borderRadius: BorderRadius.circular(20),
@@ -165,7 +181,11 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(review.sportCategory.icon, color: Colors.white, size: 12),
+                          Icon(
+                            review.sportCategory.icon,
+                            color: Colors.white,
+                            size: 12,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             review.sportCategory.name,
@@ -206,7 +226,9 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                 ...List.generate(
                   fields.length,
                   (i) => Padding(
-                    padding: EdgeInsets.only(bottom: i < fields.length - 1 ? 20 : 0),
+                    padding: EdgeInsets.only(
+                      bottom: i < fields.length - 1 ? 20 : 0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -279,7 +301,9 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                       ),
                     )
                   : const Icon(Icons.check_circle_outline),
-              label: Text(_isCommitting ? l10n.submittingLabel : l10n.commitReviewButton),
+              label: Text(
+                _isCommitting ? l10n.submittingLabel : l10n.commitReviewButton,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ATLColors.darkBlue,
                 foregroundColor: Colors.white,
@@ -303,10 +327,18 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     final l10n = AppLocalizations.of(context);
     switch (type) {
       case ReviewType.coordinatorToReferee:
-        return [l10n.impartialityField, l10n.competenceField, l10n.matchManagementField];
+        return [
+          l10n.impartialityField,
+          l10n.competenceField,
+          l10n.matchManagementField,
+        ];
       case ReviewType.refereeToCoordinator:
       case ReviewType.playerToCoordinator:
-        return [l10n.organisationField, l10n.communicationField, l10n.availabilityField];
+        return [
+          l10n.organisationField,
+          l10n.communicationField,
+          l10n.availabilityField,
+        ];
     }
   }
 
@@ -327,7 +359,11 @@ class StarRatingRow extends StatelessWidget {
   final double value;
   final ValueChanged<double> onChanged;
 
-  const StarRatingRow({super.key, required this.value, required this.onChanged});
+  const StarRatingRow({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -352,8 +388,8 @@ class StarRatingRow extends StatelessWidget {
               full
                   ? Icons.star
                   : half
-                      ? Icons.star_half
-                      : Icons.star_border,
+                  ? Icons.star_half
+                  : Icons.star_border,
               color: Colors.amber,
               size: 40,
             ),

@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/controller/account_controller.dart';
 import 'package:atl_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -68,9 +68,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) {
                 setState(() => _notificationsEnabled = value);
                 // TODO: Save preference
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.settingsSavedSoon)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(l10n.settingsSavedSoon)));
               },
               activeThumbColor: ATLColors.getPrimaryColor(widget.currentSport),
             ),
@@ -147,9 +147,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Show privacy policy
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.privacyComingSoon)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.privacyComingSoon)));
             },
           ),
           _SettingTile(
@@ -159,9 +159,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Show terms
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.termsComingSoon)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.termsComingSoon)));
             },
           ),
 
@@ -199,9 +199,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Show help
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.helpComingSoon)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.helpComingSoon)));
             },
           ),
           _SettingTile(
@@ -211,9 +211,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // TODO: Open app store
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.rateUsComingSoon)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.rateUsComingSoon)));
             },
           ),
 
@@ -382,27 +382,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (user == null) return;
 
     // Delete account
-    final success = await DBWrite.deleteAccount(user.id, user.passwordMD5!);
-
-    if (success) {
-      // Logout user
-      await userProvider.logout();
-
-      if (mounted) {
-        // Navigate back to login
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (route) => false,
-        );
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.accountDeletedSuccessfully),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } else {
+    try {
+      await AccountController.Write.deleteAccount();
+    } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -412,6 +394,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       }
+      return;
+    }
+    // Logout user
+    await userProvider.logout();
+
+    if (mounted) {
+      // Navigate back to login
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.accountDeletedSuccessfully),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 }
