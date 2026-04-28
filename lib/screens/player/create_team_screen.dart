@@ -1,10 +1,10 @@
-import 'package:atl_app/database/controller/field_controller.dart';
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/services/field_service.dart';
+import 'package:atl_app/database/services/team_service.dart';
+import 'package:atl_app/models/team.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../database/db_read.dart';
 import '../../models/sport_category.dart';
 import '../../models/city.dart';
 import '../../providers/account_provider.dart';
@@ -29,7 +29,6 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   int? _selectedCity;
   List<City> _availableCities = [];
-  bool _isVip = false;
   bool _visibility = true; // Public by default
   File? _imageFile;
   bool _isLoading = false;
@@ -44,7 +43,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final List<City> cities = await FieldController.Read.getAllCities();
+      final List<City> cities = await FieldService.Read.getAllCities();
       if (mounted) {
         setState(() {
           _availableCities = cities;
@@ -55,7 +54,9 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).errorLoadingCitiesShort(e.toString()),
+              AppLocalizations.of(
+                context,
+              ).errorLoadingCitiesShort(e.toString()),
             ),
           ),
         );
@@ -114,13 +115,15 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         throw Exception(l10n.userNotFound);
       }
 
-      try{
-        final success = await DBRead.checkTeamNameInCategory(_nameController.text, widget.currentSport);
-        if(success == false){
+      try {
+        final success = await TeamService.Read.checkTeamNameInCategoryExists(
+          widget.currentSport,
+          _nameController.text.trim(),
+        );
+        if (success == false) {
           throw Exception(l10n.teamNameAlreadyInUse);
         }
-      }
-      catch (_){
+      } catch (_) {
         throw Exception(l10n.teamNameAlreadyInUse);
       }
 
@@ -136,28 +139,32 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
       // Crea il team nel database
 
-      final int newTeamId = await DBWrite.createTeam(
-        _selectedCity,
-        _nameController.text.trim(),
-        _aliasController.text.trim(),
-        _descriptionController.text.trim().isEmpty
+      Team createdTeam = Team(
+        id: -1, // Placeholder, verrà aggiornato dopo la creazione
+        name: _nameController.text.trim(),
+        alias: _aliasController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
-        captainId,
-        widget.currentSport,
-        imageUrl,
-        _isVip,
-        _visibility,
+        cityId: _selectedCity!,
+        sportCategory: widget.currentSport,
+        imageUrl: imageUrl,
+        vip: false,
+        visibility: _visibility,
+        players: 1,
+        captainId: captainId,
       );
-
-      if (newTeamId == -1) {
+      final Team newTeam;
+      try {
+        newTeam = await TeamService.Write.createTeam(createdTeam);
+      } catch (e) {
         throw Exception(l10n.failedToCreateTeam);
       }
 
       // Aggiorna l'utente con il teamId
-      final updatedAccount = currentUser.copyWith(teamId: newTeamId);
+      final updatedAccount = currentUser.copyWith(teamId: newTeam.id);
       await userProvider.updateAccount(updatedAccount);
-      userProvider.setCurrentTeamId(newTeamId);
+      userProvider.setCurrentTeamId(newTeam.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -399,8 +406,14 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                           hintText: l10n.visibilityHint,
                         ),
                         items: [
-                          DropdownMenuItem(value: true, child: Text(l10n.public)),
-                          DropdownMenuItem(value: false, child: Text(l10n.private)),
+                          DropdownMenuItem(
+                            value: true,
+                            child: Text(l10n.public),
+                          ),
+                          DropdownMenuItem(
+                            value: false,
+                            child: Text(l10n.private),
+                          ),
                         ],
                         onChanged: (value) {
                           setState(() {

@@ -1,10 +1,8 @@
-import 'package:atl_app/database/responses/football_match_bracket_response.dart';
 import 'package:flutter/material.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Widget per visualizzare un match all'interno del tabellone Road to Victory
@@ -42,6 +40,7 @@ class _FootballMatchBracketState extends State<FootballMatchBracket> {
   }
 
   Future<void> _loadMatchData() async {
+/*    
     try {
       final FootballMatchBracketResponse data =
           await DBRead.getFootballMatchBracket(
@@ -95,6 +94,8 @@ class _FootballMatchBracketState extends State<FootballMatchBracket> {
         setState(() => _isLoading = false);
       }
     }
+    */
+    // TODO: implementare caricamento dati da API
   }
 
   Color? _getBorderColor(int? teamId) {

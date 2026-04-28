@@ -1,5 +1,5 @@
-import 'package:atl_app/database/controller/match_controller.dart';
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/services/booking_service.dart';
+import 'package:atl_app/database/services/match_service.dart';
 import 'package:atl_app/database/responses/football_match_events_response.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
@@ -174,7 +174,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       // Carica la partita dal database
       switch (widget.currentSport) {
         case SportCategory.football:
-          final data = await MatchController.Read.getMatchScreen(
+          final data = await MatchService.Read.getMatchScreen(
             widget.matchId.toDouble(),
             widget.currentSport,
           );
@@ -223,7 +223,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       switch (widget.currentSport) {
         case SportCategory.football:
           final FootballMatchEventsResponse events =
-              await MatchController.Read.getMatchEvents(
+              await MatchService.Read.getMatchEvents(
                 widget.matchId.toDouble(),
                 widget.currentSport,
               );
@@ -308,7 +308,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     try {
-      await MatchController.Write.insertRefereeAssignment(
+      await MatchService.Write.insertRefereeAssignment(
         widget.matchId.toDouble(),
         selectedRole,
       );
@@ -357,13 +357,12 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (scheduledStart == null || !mounted) return;
 
-    final success = await DBWrite.scheduleMatch(
-      widget.matchId,
-      scheduledStart,
-      _coordinatorId!,
-    );
+    try {
+      await BookingService.Write.scheduleMatch(
+        widget.matchId.toDouble(),
+        scheduledStart,
+      );
 
-    if (success) {
       setState(() {
         _hasChanges = true;
       });
@@ -379,7 +378,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           ),
         );
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -475,7 +474,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         case 'startHalf':
         case 'halftime':
         case 'finish':
-          await MatchController.Write.insertFootballMatchEvent(
+          await MatchService.Write.insertFootballMatchEvent(
             widget.matchId.toDouble(),
             event,
           );
@@ -636,8 +635,21 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     );
     if (!confirmed) return;
 
-    final success = await DBWrite.startFootballPenaltyShootOut(widget.matchId);
-    if (success) {
+    try {
+      FootballMatchEvent event = FootballMatchEvent(
+        id: 0,
+        matchId: widget.matchId,
+        type: FootballMatchEventType
+            .penaltyShootOut, // Placeholder, will be set in API
+        teamId: null,
+        playerId: null,
+        minute: 0,
+        eventTime: DateTime.now(),
+      );
+      await MatchService.Write.insertFootballMatchEvent(
+        widget.matchId.toDouble(),
+        event,
+      );
       setState(() {
         _hasChanges = true;
       });
@@ -647,7 +659,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(_l10n.penaltyShootoutStarted)));
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -680,7 +692,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       "Assigning MOTM to player ${selectedPlayer.playerId} in match ${widget.matchId}",
     );
     try {
-      await MatchController.Write.addMotmToMatch(
+      await MatchService.Write.addMotmToMatch(
         widget.matchId.toDouble(),
         selectedPlayer.playerId.toDouble(),
       );
@@ -773,7 +785,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     // Delete the event
     try {
-      await MatchController.Write.deleteFootballMatchEvent(
+      await MatchService.Write.deleteFootballMatchEvent(
         widget.matchId.toDouble(),
         event.id.toDouble(),
       );

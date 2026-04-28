@@ -1,5 +1,5 @@
-import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/database/responses/tournament_details_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -18,7 +18,6 @@ import '../../widgets/tournament_info_dialog.dart';
 import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
 import './football_tournament_screen.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class TournamentDetailsScreen extends StatefulWidget {
@@ -32,7 +31,8 @@ class TournamentDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<TournamentDetailsScreen> createState() => _TournamentDetailScreenState();
+  State<TournamentDetailsScreen> createState() =>
+      _TournamentDetailScreenState();
 }
 
 class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
@@ -57,26 +57,12 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
 
   Future<void> _loadAllData() async {
     setState(() => _isLoading = true);
-    AccountProvider userProvider = Provider.of<AccountProvider>(
-      context,
-      listen: false,
-    );
 
     try {
       final TournamentDetailsResponse data;
-      if (userProvider.isPlayer && userProvider.activeAccount != null) {
-        data = await DBRead.getTournamentDetailsScreen(
-          widget.tournament.id,
-          widget.currentSport,
-          userProvider.activeAccount!.id,
-        );
-      } else {
-        data = await DBRead.getTournamentDetailsScreen(
-          widget.tournament.id,
-          widget.currentSport,
-          null, // Pass null for userId if not a player
-        );
-      }
+      data = await TournamentService.Read.getTournamentDetailsScreen(
+        widget.tournament.id.toDouble(),
+      );
 
       setState(() {
         _teamCache = data.teamsCache;
@@ -722,10 +708,6 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
   }
 
   Future<void> _handleStartTournament() async {
-    final AccountProvider userProvider = Provider.of<AccountProvider>(
-      context,
-      listen: false,
-    );
 
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
@@ -761,41 +743,32 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
     );
 
     try {
-      final success = await DBWrite.startTournament(
-        widget.tournament.id,
+      await TournamentService.Write.startTournament(
+        widget.tournament.id.toDouble(),
       );
 
       if (!mounted) return;
       Navigator.pop(context); // Remove loading dialog
 
-      if (success) {
-        // Update tournament status locally
-        widget.tournament.status = TournamentStatus.scheduled;
+      // Update tournament status locally
+      widget.tournament.status = TournamentStatus.scheduled;
 
-        // Navigate to tournament screen and remove this page from stack
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FootballTournamentScreen(
-              tournament: widget.tournament,
-              sportCategory: widget.currentSport,
-            ),
+      // Navigate to tournament screen and remove this page from stack
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FootballTournamentScreen(
+            tournament: widget.tournament,
+            sportCategory: widget.currentSport,
           ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_l10n.failedToStartTournament),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context); // Remove loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_l10n.errorText(e.toString())),
+          content: Text(_l10n.failedToStartTournament),
           backgroundColor: Colors.red,
         ),
       );
@@ -946,9 +919,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
               if (mounted) {
                 if (result == true) {
                   await _loadAllData();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(_l10n.callUpsUpdated)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(_l10n.callUpsUpdated)));
                 }
               }
             },
@@ -1076,16 +1049,18 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
                   );
 
                   if (confirmed == true) {
-                    bool success = await DBWrite.deleteCallups(
-                      widget.tournament.id,
-                      _playerTeam!.id,
-                    );
-                    if (mounted && success) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(_l10n.callUpsDeleted)),
+                    try {
+                      await TournamentService.Write.deleteCallups(
+                        widget.tournament.id.toDouble(),
+                        _playerTeam!.id.toDouble(),
                       );
-                      await _loadAllData();
-                    } else if (mounted && !success) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(_l10n.callUpsDeleted)),
+                        );
+                        await _loadAllData();
+                      }
+                    } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(_l10n.failedToDeleteCallUps),
@@ -1210,8 +1185,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
     }
 
     // Mostra "No participating teams" solo se il caricamento è terminato
-    if (!_isLoadingTeams &&
-        (_teamCache.isEmpty)) {
+    if (!_isLoadingTeams && (_teamCache.isEmpty)) {
       return Container(
         height: 200,
         width: double.infinity,

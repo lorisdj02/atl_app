@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/booking_controller.dart';
+import 'package:atl_app/database/services/booking_service.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -323,11 +323,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                         if (confirm == true) {
                           try {
                             if (isLobby) {
-                              await BookingController.Write.leaveLobbyBooking(
+                              await BookingService.Write.leaveLobbyBooking(
                                 widget.booking.id,
                               );
                             } else {
-                              await BookingController.Write.refundPrivateBooking(
+                              await BookingService.Write.refundPrivateBooking(
                                 widget.booking.id,
                               );
                             }

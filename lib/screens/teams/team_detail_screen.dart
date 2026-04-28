@@ -1,4 +1,5 @@
 import 'package:atl_app/database/responses/team_details_response.dart';
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -6,8 +7,6 @@ import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_floating_button.dart';
 import 'abstract_team_screen.dart';
-import '../../database/db_read.dart';
-import '../../database/db_write.dart';
 
 class TeamDetailScreen extends AbstractTeamScreen {
   final int teamId;
@@ -40,7 +39,8 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
 
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
-        final TeamDetailsResponse data = await DBRead.getTeamDetailsScreen(playerId!, widget.teamId);
+        final TeamDetailsResponse data = await TeamService
+            .Read.getTeamDetailsScreen(widget.teamId.toDouble());
         if (mounted) {
           setState(() {
             team = data.team;
@@ -64,9 +64,9 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingTeamData(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorLoadingTeamData(e.toString()))),
+        );
         setState(() => _requestLoaded = true);
       }
     }
@@ -84,25 +84,19 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       return;
     }
     try {
-      if (await DBWrite.sendTeamRequest(widget.teamId, playerId!) == false) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorSendingRequest)),
-          );
-        }
-        return;
-      }
+      await TeamService.Write.sendTeamRequest(widget.teamId.toDouble());
+
       await loadData();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.requestSentSuccessfully)),
-        );
-      }
-    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorSendingRequestDetail(e.toString()))));
+        ).showSnackBar(SnackBar(content: Text(l10n.requestSentSuccessfully)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorSendingRequestDetail(e.toString()))),
+        );
       }
     }
   }
@@ -121,18 +115,9 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
     if (_existingRequest == null) return;
 
     try {
-      if (await DBWrite.cancelTeamRequest(
-            _existingRequest!.teamId,
-            _existingRequest!.playerId,
-          ) ==
-          false) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorCancellingRequest)),
-          );
-        }
-        return;
-      }
+      await TeamService.Write.cancelTeamRequest(
+        _existingRequest!.teamId.toDouble(),
+      );
       await loadData();
       if (mounted) {
         ScaffoldMessenger.of(
@@ -141,9 +126,11 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorCancellingRequestDetail(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.errorCancellingRequestDetail(e.toString())),
+          ),
+        );
       }
     }
   }
@@ -210,7 +197,9 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
                   ? Colors.red
                   : ATLColors.getPrimaryColor(widget.currentSport),
               icon: _existingRequest != null ? Icons.cancel : Icons.add,
-              label: _existingRequest != null ? l10n.cancelRequest : l10n.joinTeam,
+              label: _existingRequest != null
+                  ? l10n.cancelRequest
+                  : l10n.joinTeam,
             )
           : null,
     );

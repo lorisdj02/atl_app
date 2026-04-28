@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/account_provider.dart';
@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     if (userProvider.isCoordinator || userProvider.isReferee) {
       try{
-      final int level = await AccountController.Read.getAccountLevel();
+      final int level = await AccountService.Read.getAccountLevel();
       if (mounted) {
         setState(() {
           _level = level;

@@ -1,12 +1,11 @@
 import 'package:atl_app/database/responses/invite_friends_response.dart';
+import 'package:atl_app/database/services/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class InviteFriendsScreen extends StatefulWidget {
@@ -39,7 +38,7 @@ class _InviteFriendsScreenState extends State<InviteFriendsScreen> {
       return;
     }
     try {
-      final InviteFriendsResponse data = await DBRead.getInviteFriendsScreen(user.id);
+      final InviteFriendsResponse data = await ProfileService.getInviteFriendsScreen();
       if (mounted) {
         setState(() {
           _referralCode = data.referralCode;

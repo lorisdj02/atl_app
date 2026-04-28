@@ -1,5 +1,5 @@
-import 'package:atl_app/database/controller/booking_controller.dart';
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/services/booking_service.dart';
+import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
@@ -96,19 +96,21 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         }
       }
 
-      final JoinLobbyResponse data = await BookingController.Read.getJoinLobbyScreen(
-        sportCategory: widget.sportCategory,
-        totalPlayers: _selectedTotalPlayers,
-        selectedCityId: _selectedCity?.toDouble(),
-        startTime: startDateTime,
-        finishTime: endDateTime,
-      );
-
+      final JoinLobbyResponse data =
+          await BookingService.Read.getJoinLobbyScreen(
+            sportCategory: widget.sportCategory,
+            totalPlayers: _selectedTotalPlayers,
+            selectedCityId: _selectedCity?.toDouble(),
+            startTime: startDateTime,
+            finishTime: endDateTime,
+          );
 
       List<LobbyBooking> lobbies = data.lobbies;
 
       // Filter out lobbies where current user is the owner
-      lobbies = lobbies.where((lobby) => lobby.ownerPlayerId != playerId).toList();
+      lobbies = lobbies
+          .where((lobby) => lobby.ownerPlayerId != playerId)
+          .toList();
 
       // Additional filter for playersToPay
       if (_maxPlayersToPay != null) {
@@ -131,9 +133,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              l10n.errorLoadingLobbies(e.toString()),
-            ),
+            content: Text(l10n.errorLoadingLobbies(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -171,9 +171,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   Future<void> _selectTime(bool isStartTime) async {
     final l10n = AppLocalizations.of(context);
     if (_selectedDay == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.selectDayFirst)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.selectDayFirst)));
       return;
     }
 
@@ -197,9 +197,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(
-            isStartTime
-                ? l10n.startTimeLabel
-                : l10n.endTimeLabel,
+            isStartTime ? l10n.startTimeLabel : l10n.endTimeLabel,
             style: TextStyle(
               color: ATLColors.getPrimaryColor(widget.sportCategory),
               fontWeight: FontWeight.bold,
@@ -432,26 +430,22 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   Future<void> _joinLobby(LobbyBooking lobby, int playersPaid) async {
-    final userProvider = Provider.of<AccountProvider>(context, listen: false);
-    final playerId = userProvider.activeRoleId!;
 
     CheckoutPayload checkoutPayload = CheckoutPayload(
       lobbyId: lobby.id,
       playersPaid: playersPaid,
       amount: lobby.feePerPlayer * playersPaid,
-      type: CheckoutType.lobbyBookingParticipate
+      type: CheckoutType.lobbyBookingParticipate,
     );
 
-    final int sessionId = await DBWrite.createCheckoutSession(
-      userId: userProvider.activeAccount!.id,
-      payload: checkoutPayload,
-    );
+    final CheckoutSession checkoutSession =
+        await PaymentService.Write.createCheckoutSession(checkoutPayload);
 
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (context) => CheckoutScreen(
           sportCategory: widget.sportCategory,
-          sessionId: sessionId,
+          sessionId: checkoutSession.id,
         ),
       ),
     );
@@ -476,7 +470,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
-      final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -738,9 +732,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                                 onPressed: () => _showJoinDialog(lobby),
                                 icon: const Icon(Icons.add_circle),
                                 label: Text(
-                                  l10n.joinSpotsLeft(
-                                    lobby.playersToFind,
-                                  ),
+                                  l10n.joinSpotsLeft(lobby.playersToFind),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ATLColors.getPrimaryColor(

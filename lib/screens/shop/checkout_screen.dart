@@ -1,3 +1,4 @@
+import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/database/responses/checkout_response.dart';
 import 'package:flutter/material.dart';
 import '../../models/checkout_session.dart';
@@ -5,9 +6,6 @@ import '../../models/sport_category.dart';
 import '../../models/wallet.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
-import '../../database/db_read.dart';
-import '../../database/db_write.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -65,7 +63,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _loadData() async {
     try {
-      final CheckoutResponse data = await DBRead.getCheckoutScreen(widget.sessionId);
+      final CheckoutResponse data = await PaymentService.Read.getCheckoutScreen(
+        widget.sessionId.toDouble(),
+      );
       setState(() {
         _session = data.checkoutSession;
         _wallet = data.wallet;
@@ -130,7 +130,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final remaining = _session!.amount - _discountAmount;
     if (remaining <= 0) return 0;
 
-    double available = _wallet!.prizeBalance +
+    double available =
+        _wallet!.prizeBalance +
         _wallet!.inviteBalance +
         _wallet!.personalBalance;
     return available >= remaining ? remaining : available;
@@ -148,33 +149,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _onPay() async {
     setState(() => _isProcessing = true);
     try {
-      final success = await DBWrite.payCheckoutSession(
-        widget.sessionId,
-        useWallet: _useWallet,
-        sportCategory: widget.sportCategory,
+      await PaymentService.Write.payCheckoutSession(
+        widget.sessionId.toDouble(),
+        _useWallet,
       );
       if (!mounted) return;
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_l10n.paymentCompletedSuccessfully),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop(true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_l10n.paymentFailed),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_l10n.paymentCompletedSuccessfully),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_l10n.errorText(e.toString())),
+          content: Text(_l10n.paymentFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -185,8 +176,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
-  Color get _primaryColor =>
-      ATLColors.getPrimaryColor(widget.sportCategory);
+  Color get _primaryColor => ATLColors.getPrimaryColor(widget.sportCategory);
 
   @override
   Widget build(BuildContext context) {
@@ -247,8 +237,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: switch (_session!.type) {
         CheckoutType.tournamentFee => _buildTournamentDetails(),
         CheckoutType.lobbyBookingCreate ||
-        CheckoutType.lobbyBookingParticipate =>
-          _buildLobbyDetails(),
+        CheckoutType.lobbyBookingParticipate => _buildLobbyDetails(),
         CheckoutType.privateBooking => _buildPrivateDetails(),
       },
     );
@@ -275,7 +264,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _buildDetailRow(
             Icons.access_time,
             '${_formatTime(_startTime!)} – ${_formatTime(_endTime!)}'
-                '  •  ${_formatDate(_startTime!)}',
+            '  •  ${_formatDate(_startTime!)}',
           ),
         ],
         if (_playersToPay != null && _maxPlayers != null)
@@ -284,7 +273,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             _l10n.playersDetail(_playersToPay!, _maxPlayers!),
           ),
         if (_bookingUsername != null)
-          _buildDetailRow(Icons.person_outlined, _l10n.ownerDetail(_bookingUsername!)),
+          _buildDetailRow(
+            Icons.person_outlined,
+            _l10n.ownerDetail(_bookingUsername!),
+          ),
       ],
     );
   }
@@ -310,7 +302,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _buildDetailRow(
             Icons.access_time,
             '${_formatTime(_startTime!)} – ${_formatTime(_endTime!)}'
-                '  •  ${_formatDate(_startTime!)}',
+            '  •  ${_formatDate(_startTime!)}',
           ),
         ],
       ],
@@ -342,7 +334,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           Expanded(
             child: Text(
               text,
-              style: style ??
+              style:
+                  style ??
                   const TextStyle(fontSize: 14, color: ATLColors.subtext),
             ),
           ),
@@ -366,11 +359,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   controller: _discountController,
                   decoration: InputDecoration(
                     hintText: _l10n.enterDiscountCode,
-                    hintStyle:
-                        const TextStyle(color: Colors.grey, fontSize: 14),
+                    hintStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -392,10 +389,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primaryColor,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: Text(_l10n.applyButton),
               ),
@@ -409,11 +409,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const SizedBox(width: 6),
                 Text(
                   _l10n.discountApplied(
-                      _appliedCode!, '€${_discountAmount.toStringAsFixed(2)}'),
+                    _appliedCode!,
+                    '€${_discountAmount.toStringAsFixed(2)}',
+                  ),
                   style: const TextStyle(
-                      color: Colors.green,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600),
+                    color: Colors.green,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -437,8 +440,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             children: [
               Text(
                 _l10n.useWalletBalance,
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Switch(
                 value: _useWallet,
@@ -461,24 +466,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               decoration: BoxDecoration(
                 color: ATLColors.lightBlue.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                    color: ATLColors.darkBlue.withOpacity(0.2)),
+                border: Border.all(color: ATLColors.darkBlue.withOpacity(0.2)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline,
-                          size: 16, color: ATLColors.darkBlue),
+                      const Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: ATLColors.darkBlue,
+                      ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           _l10n.walletOrderInfo,
                           style: const TextStyle(
-                              fontSize: 12,
-                              color: ATLColors.darkBlue,
-                              fontWeight: FontWeight.w500),
+                            fontSize: 12,
+                            color: ATLColors.darkBlue,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       Icon(
@@ -495,29 +503,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const Divider(height: 1),
                     const SizedBox(height: 8),
                     _buildBalanceRow(
-                        _l10n.prizeBalanceLabel,
-                        _wallet?.prizeBalance ?? 0,
-                        Colors.amber.shade700),
+                      _l10n.prizeBalanceLabel,
+                      _wallet?.prizeBalance ?? 0,
+                      Colors.amber.shade700,
+                    ),
                     const SizedBox(height: 4),
                     _buildBalanceRow(
-                        _l10n.inviteBalanceLabel,
-                        _wallet?.inviteBalance ?? 0,
-                        Colors.teal),
+                      _l10n.inviteBalanceLabel,
+                      _wallet?.inviteBalance ?? 0,
+                      Colors.teal,
+                    ),
                     const SizedBox(height: 4),
                     _buildBalanceRow(
-                        _l10n.personalBalanceLabel,
-                        _wallet?.personalBalance ?? 0,
-                        _primaryColor),
+                      _l10n.personalBalanceLabel,
+                      _wallet?.personalBalance ?? 0,
+                      _primaryColor,
+                    ),
                     const SizedBox(height: 8),
                     const Divider(height: 1),
                     const SizedBox(height: 6),
                     _buildBalanceRow(
-                        _l10n.totalAvailable,
-                        (_wallet?.prizeBalance ?? 0) +
-                            (_wallet?.inviteBalance ?? 0) +
-                            (_wallet?.personalBalance ?? 0),
-                        ATLColors.darkBlue,
-                        bold: true),
+                      _l10n.totalAvailable,
+                      (_wallet?.prizeBalance ?? 0) +
+                          (_wallet?.inviteBalance ?? 0) +
+                          (_wallet?.personalBalance ?? 0),
+                      ATLColors.darkBlue,
+                      bold: true,
+                    ),
                   ],
                 ],
               ),
@@ -527,15 +539,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (_useWallet && _walletDeduction() > 0) ...[
             const SizedBox(height: 8),
             Text(
-              _l10n.walletDeduction('€${_walletDeduction().toStringAsFixed(2)}'),
+              _l10n.walletDeduction(
+                '€${_walletDeduction().toStringAsFixed(2)}',
+              ),
               style: TextStyle(
-                  fontSize: 13,
-                  color: _primaryColor,
-                  fontWeight: FontWeight.w600),
+                fontSize: 13,
+                color: _primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
           if (_useWallet && _wallet != null) ...[
-            if ((_wallet!.prizeBalance + _wallet!.inviteBalance + _wallet!.personalBalance) == 0)
+            if ((_wallet!.prizeBalance +
+                    _wallet!.inviteBalance +
+                    _wallet!.personalBalance) ==
+                0)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
@@ -549,8 +567,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildBalanceRow(String label, double amount, Color color,
-      {bool bold = false}) {
+  Widget _buildBalanceRow(
+    String label,
+    double amount,
+    Color color, {
+    bool bold = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -560,23 +582,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               width: 10,
               height: 10,
               margin: const EdgeInsets.only(right: 6),
-              decoration: BoxDecoration(
-                  color: color, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: ATLColors.subtext,
-                    fontWeight:
-                        bold ? FontWeight.bold : FontWeight.normal)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: ATLColors.subtext,
+                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ],
         ),
         Text(
           '€${amount.toStringAsFixed(2)}',
           style: TextStyle(
-              fontSize: 12,
-              color: color,
-              fontWeight: bold ? FontWeight.bold : FontWeight.w600),
+            fontSize: 12,
+            color: color,
+            fontWeight: bold ? FontWeight.bold : FontWeight.w600,
+          ),
         ),
       ],
     );
@@ -595,11 +619,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           _buildPriceRow(_l10n.subtotal, baseAmount),
           if (_discountAmount > 0)
-            _buildPriceRow(_l10n.discount(_appliedCode!),
-                -_discountAmount, color: Colors.green),
+            _buildPriceRow(
+              _l10n.discount(_appliedCode!),
+              -_discountAmount,
+              color: Colors.green,
+            ),
           if (walletDed > 0)
-            _buildPriceRow(_l10n.walletDeductionLabel, -walletDed,
-                color: _primaryColor),
+            _buildPriceRow(
+              _l10n.walletDeductionLabel,
+              -walletDed,
+              color: _primaryColor,
+            ),
           const Divider(height: 20),
           _buildPriceRow(
             _l10n.totalToPay,
@@ -626,17 +656,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-                  color: displayColor)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              color: displayColor,
+            ),
+          ),
           Text(
             '${amount < 0 ? '-' : ''}€${amount.abs().toStringAsFixed(2)}',
             style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-                color: displayColor),
+              fontSize: fontSize,
+              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+              color: displayColor,
+            ),
           ),
         ],
       ),
@@ -667,8 +701,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           foregroundColor: Colors.white,
           disabledBackgroundColor: Colors.grey.shade300,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 2,
         ),
         child: _isProcessing
@@ -676,14 +711,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2),
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
               )
             : Text(
                 finalPrice == 0
                     ? _l10n.confirmFree
                     : _l10n.payAmount('€${finalPrice.toStringAsFixed(2)}'),
                 style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
       ),
     );

@@ -1,12 +1,12 @@
-import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/requests/confirm_callups_request.dart';
 import 'package:atl_app/database/responses/callups_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
 import '../../models/sport.dart';
-import '../../database/db_write.dart';
 import '../../models/team.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -36,10 +36,8 @@ class _CallupsScreenState extends State<CallupsScreen> {
 
   Future<void> _loadData() async {
     try {
-      final CallupsResponse data = await DBRead.getCallupsScreen(
-        widget.tournament.id,
-        widget.team.id,
-      );
+      final CallupsResponse data = await TournamentService
+          .Read.getCallupsScreen(widget.tournament.id.toDouble());
 
       setState(() {
         _teamPlayers = data.players;
@@ -60,35 +58,24 @@ class _CallupsScreenState extends State<CallupsScreen> {
   }
 
   Future<bool> _confirmCallUps() async {
-    if ((await DBWrite.confirmCallUps(
-          _tournament?.id ?? 0,
-          widget.team.id,
-          _selectedPlayerIds,
-          _tournament?.fee ?? 0.0,
-        )) ==
-        false) {
-      if (mounted) {
-        bool isThereCaptain = false;
-        for (int playerId in _selectedPlayerIds) {
-          if (playerId == widget.team.captainId ||
-              playerId == widget.team.vice1Id ||
-              playerId == widget.team.vice2Id) {
-            isThereCaptain = true;
-            break;
-          }
-        }
-        if (!isThereCaptain && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).atLeastOneCaptain)),
-          );
-        } else if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context).errorConfirmingCalups),
-            ),
-          );
-        }
-      }
+    ConfirmCallupsRequest request = ConfirmCallupsRequest(
+      teamId: widget.team.id,
+      tournamentId: _tournament?.id ?? 0,
+      selectedPlayerIds: _selectedPlayerIds.toList(),
+    );
+    try {
+      await TournamentService.Write.confirmCallups(
+        widget.tournament.id.toDouble(),
+        request,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).errorLoadingCallupsData(e.toString()),
+          ),
+        ),
+      );
       return false;
     }
     return true;
@@ -160,11 +147,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    l10n.darkModeComingSoonSnack,
-                  ),
-                ),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
           ),
@@ -179,9 +162,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.selectedCount(
-                    _selectedPlayerIds.length,
-                  ),
+                  l10n.selectedCount(_selectedPlayerIds.length),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

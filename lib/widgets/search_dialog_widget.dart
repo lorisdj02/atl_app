@@ -1,9 +1,10 @@
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
-import '../database/db_read.dart';
 import '../models/team.dart';
 import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
+import '../database/services/tournament_service.dart';
 
 typedef SearchResultCallback =
     void Function(Team? team, Tournament? tournament);
@@ -86,20 +87,16 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
     Tournament? foundTournament;
     try {
       if (widget.isTeam) {
-        foundTeam = await DBRead.searchTeamOrTournament(
-          id,
-          isTeam: true,
-          isTournament: false,
+        foundTeam = await TeamService.Read.getTeamById(
+          id.toDouble(),
         );
 
         widget.onFound?.call(_foundTeam, null);
         //Navigator.of(context).pop();
         return;
       } else if (widget.isTournament) {
-        foundTournament = await DBRead.searchTeamOrTournament(
-          id,
-          isTeam: false,
-          isTournament: true,
+        foundTournament = await TournamentService.Read.getTournamentById(
+          id.toDouble(),
         );
         widget.onFound?.call(null, _foundTournament);
         //Navigator.of(context).pop();

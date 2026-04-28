@@ -1,9 +1,9 @@
 import 'package:atl_app/database/responses/schedule_match_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_read.dart';
 import '../models/booking.dart';
 import '../l10n/app_localizations.dart';
 
@@ -46,8 +46,8 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final ScheduleMatchResponse data = await DBRead.getScheduleData(
-        widget.tournamentId,
+      final ScheduleMatchResponse data = await TournamentService.Read.getScheduleData(
+        widget.tournamentId.toDouble(),
       );
 
       int minutesPerRound = 0;

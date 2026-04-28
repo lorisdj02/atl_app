@@ -1,5 +1,4 @@
-import 'package:atl_app/database/controller/home_screen_controller.dart';
-import 'package:atl_app/database/db_read.dart';
+import 'package:atl_app/database/services/home_screen_service.dart';
 import 'package:atl_app/database/responses/player_home_response.dart';
 import '../../l10n/app_localizations.dart';
 import 'package:atl_app/models/field.dart';
@@ -78,7 +77,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
 
     try {
       final PlayerHomeResponse playerHomeData =
-          await HomeScreenController.getPlayerHomeScreen(_currentSport);
+          await HomeScreenService.getPlayerHomeScreen(_currentSport);
 
       List<dynamic> bookings = [];
       bookings.addAll(playerHomeData.privateBookings);

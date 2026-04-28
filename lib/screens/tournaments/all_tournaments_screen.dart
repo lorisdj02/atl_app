@@ -1,6 +1,6 @@
-import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/responses/all_tournaments_response.dart';
 import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +64,6 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   double feeMin = 0;
   double feeMax = 200;
 
-
   /// Verifica se ci sono filtri attivi
   bool get _hasActiveFilters {
     return _selectedCity != null ||
@@ -104,20 +103,13 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   }
 
   Future<void> _loadTournaments() async {
-    AccountProvider userProvider = Provider.of<AccountProvider>(
-      context,
-      listen: false,
-    );
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final AllTournamentsResponse data = await DBRead.getAllTournamentsScreen(
-        !userProvider.isGuest ? userProvider.activeAccount?.id : null,
-        userProvider.currentTeamId,
-        widget.currentSport,
-      );
+      final AllTournamentsResponse data = await TournamentService
+          .Read.getAllTournamentsScreen(widget.currentSport);
 
       setState(() {
         _tournaments = data.tournaments;
@@ -143,7 +135,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).errorLoadingTournaments(e.toString()),
+              AppLocalizations.of(
+                context,
+              ).errorLoadingTournaments(e.toString()),
             ),
           ),
         );
@@ -153,10 +147,6 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
   void _showFilterDialog() {
     // Inizializza filtri temporanei con valori correnti
-    final AccountProvider userProvider = Provider.of<AccountProvider>(
-      context,
-      listen: false,
-    );
 
     // copy current selections into temporaries so sliders start on current values
     _tempSelectedCity = _selectedCity;
@@ -368,16 +358,19 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                 });
 
                 try {
-                  final ApplyTournamentFiltersResponse results = await DBRead.applyTournamentFilters(
-                    userProvider.activeAccount?.id,
-                    userProvider.currentTeamId,
-                    cityId: _selectedCity,
-                    numTeams: _selectedNumTeams,
-                    prizeRange: _prizeRange,
-                    feeRange: _feeRange,
-                    nameOrCode: null,
-                    sportCategory: widget.currentSport,
-                  );
+                  //TODO: separa i teams
+                  final ApplyTournamentFiltersResponse results =
+                      await TournamentService.Read.applyTournamentFilters(
+                        cityId: _selectedCity?.toDouble(),
+                        minTeams: _selectedNumTeams,
+                        maxTeams: _selectedNumTeams,
+                        minFee: _feeRange.start.toDouble(),
+                        maxFee: _feeRange.end.toDouble(),
+                        minPrize: _prizeRange.start.toDouble(),
+                        maxPrize: _prizeRange.end.toDouble(),
+                        name: null,
+                        sportCategory: widget.currentSport,
+                      );
 
                   setState(() {
                     _tournaments = results.tournaments;
@@ -392,8 +385,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          AppLocalizations.of(context)
-                              .errorApplyingFilters(e.toString()),
+                          AppLocalizations.of(
+                            context,
+                          ).errorApplyingFilters(e.toString()),
                         ),
                       ),
                     );
@@ -657,214 +651,246 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
             child: _isLoading
                 ? const LoadingATL()
                 : (() {
-                    // Determine which list to check based on current tab
-                    final currentList = _showMyTournaments ? _myTournaments : _tournaments;
-                    final isEmpty = currentList.isEmpty;
+                        // Determine which list to check based on current tab
+                        final currentList = _showMyTournaments
+                            ? _myTournaments
+                            : _tournaments;
+                        final isEmpty = currentList.isEmpty;
 
-                    if (isEmpty) {
-                      // Show different messages based on tab and filter state
-                      if (_showMyTournaments) {
-                        // If user searched in "My Tournaments" and no results, suggest changing search/filters
-                        if (_searchController.text.isNotEmpty) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  color: ATLColors.getPrimaryColor(widget.currentSport),
-                                  size: 80,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  AppLocalizations.of(context).noTournamentsFound,
-                                  style: const TextStyle(
-                                    color: ATLColors.darkBlue,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  AppLocalizations.of(context).tryChangingFilters,
-                                  style: const TextStyle(
-                                    color: ATLColors.subtext,
-                                    fontSize: 16,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        // My Tournaments without active search: show "no favorites"
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.emoji_events,
-                                color: ATLColors.getPrimaryColor(widget.currentSport),
-                                size: 80,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(context).noTournamentsFavorite,
-                                style: const TextStyle(
-                                  color: ATLColors.darkBlue,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context).addToFavorites,
-                                style: const TextStyle(
-                                  color: ATLColors.subtext,
-                                  fontSize: 16,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
-                      } else if (_hasActiveFilters) {
-                        // Search tab with active filters: suggest widening filters
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                color: ATLColors.getPrimaryColor(widget.currentSport),
-                                size: 80,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(context).noTournamentsFound,
-                                style: const TextStyle(
-                                  color: ATLColors.darkBlue,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context).tryChangingFilters,
-                                style: const TextStyle(
-                                  color: ATLColors.subtext,
-                                  fontSize: 16,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
-                      } else {
-                        // Search tab without filters: no tournaments available
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.emoji_events,
-                                color: ATLColors.getPrimaryColor(widget.currentSport),
-                                size: 80,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                AppLocalizations.of(context).noTournamentsRunning,
-                                style: const TextStyle(
-                                  color: ATLColors.darkBlue,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context).comeBackLater,
-                                style: const TextStyle(
-                                  color: ATLColors.subtext,
-                                  fontSize: 16,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    }
-
-                    // Show the list
-                    return null;
-                  }()) ??
-                  ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: (_showMyTournaments ? _myTournaments : _tournaments).length,
-                    itemBuilder: (context, index) {
-                      final tournament = (_showMyTournaments
-                          ? _myTournaments
-                          : _tournaments)[index];
-                      return TournamentCard(
-                        key: ValueKey(tournament.id),
-                        tournament: tournament,
-                        currentSport: widget.currentSport,
-                        field: _fieldsCache[tournament.fieldId]!,
-                        coordinator:
-                            _coordinatorsCache[tournament.coordinatorId]!,
-                        cityName:
-                            _cityNamePerField[tournament.fieldId] ??
-                            AppLocalizations.of(context)
-                                .unknownCity, // Usa la mappa cityNamePerField
-                        onFavoriteToggle: () {
-                          setState(() {
-                            tournament.isFavorite = !tournament.isFavorite;
-                            if (tournament.isFavorite) {
-                              _myTournaments.add(tournament);
-                            } else {
-                              _myTournaments.removeWhere((t) => t.id == tournament.id);
-                            }
-                            _myTournaments.sort((a, b) => a.name.compareTo(b.name));
-                          });
-                        },
-                        onTap: () async {
-                          if (tournament.status == TournamentStatus.created) {
-                            await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => TournamentDetailsScreen(
-                                  tournament: tournament,
-                                  currentSport: widget.currentSport,
-                                ),
-                              ),
-                            );
-                          } else if (tournament.status ==
-                              TournamentStatus.scheduled) {
-                            //TODO: Navigare alla schermata del torneo in corso
-                            if (widget.currentSport == SportCategory.football) {
-                              await Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      FootballTournamentScreen(
-                                        tournament: tournament,
-                                        sportCategory: widget.currentSport,
+                        if (isEmpty) {
+                          // Show different messages based on tab and filter state
+                          if (_showMyTournaments) {
+                            // If user searched in "My Tournaments" and no results, suggest changing search/filters
+                            if (_searchController.text.isNotEmpty) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      color: ATLColors.getPrimaryColor(
+                                        widget.currentSport,
                                       ),
+                                      size: 80,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).noTournamentsFound,
+                                      style: const TextStyle(
+                                        color: ATLColors.darkBlue,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      ).tryChangingFilters,
+                                      style: const TextStyle(
+                                        color: ATLColors.subtext,
+                                        fontSize: 16,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
                               );
                             }
+                            // My Tournaments without active search: show "no favorites"
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.emoji_events,
+                                    color: ATLColors.getPrimaryColor(
+                                      widget.currentSport,
+                                    ),
+                                    size: 80,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).noTournamentsFavorite,
+                                    style: const TextStyle(
+                                      color: ATLColors.darkBlue,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    AppLocalizations.of(context).addToFavorites,
+                                    style: const TextStyle(
+                                      color: ATLColors.subtext,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else if (_hasActiveFilters) {
+                            // Search tab with active filters: suggest widening filters
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    color: ATLColors.getPrimaryColor(
+                                      widget.currentSport,
+                                    ),
+                                    size: 80,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).noTournamentsFound,
+                                    style: const TextStyle(
+                                      color: ATLColors.darkBlue,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).tryChangingFilters,
+                                    style: const TextStyle(
+                                      color: ATLColors.subtext,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            // Search tab without filters: no tournaments available
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.emoji_events,
+                                    color: ATLColors.getPrimaryColor(
+                                      widget.currentSport,
+                                    ),
+                                    size: 80,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    ).noTournamentsRunning,
+                                    style: const TextStyle(
+                                      color: ATLColors.darkBlue,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    AppLocalizations.of(context).comeBackLater,
+                                    style: const TextStyle(
+                                      color: ATLColors.subtext,
+                                      fontSize: 16,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            );
                           }
-                          setState(() {
-                            _isLoading = true;
-                            _loadTournaments();
-                            _isLoading = false;
-                          });
+                        }
+
+                        // Show the list
+                        return null;
+                      }()) ??
+                      ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount:
+                            (_showMyTournaments ? _myTournaments : _tournaments)
+                                .length,
+                        itemBuilder: (context, index) {
+                          final tournament = (_showMyTournaments
+                              ? _myTournaments
+                              : _tournaments)[index];
+                          return TournamentCard(
+                            key: ValueKey(tournament.id),
+                            tournament: tournament,
+                            currentSport: widget.currentSport,
+                            field: _fieldsCache[tournament.fieldId]!,
+                            coordinator:
+                                _coordinatorsCache[tournament.coordinatorId]!,
+                            cityName:
+                                _cityNamePerField[tournament.fieldId] ??
+                                AppLocalizations.of(
+                                  context,
+                                ).unknownCity, // Usa la mappa cityNamePerField
+                            onFavoriteToggle: () {
+                              setState(() {
+                                tournament.isFavorite = !tournament.isFavorite;
+                                if (tournament.isFavorite) {
+                                  _myTournaments.add(tournament);
+                                } else {
+                                  _myTournaments.removeWhere(
+                                    (t) => t.id == tournament.id,
+                                  );
+                                }
+                                _myTournaments.sort(
+                                  (a, b) => a.name.compareTo(b.name),
+                                );
+                              });
+                            },
+                            onTap: () async {
+                              if (tournament.status ==
+                                  TournamentStatus.created) {
+                                await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        TournamentDetailsScreen(
+                                          tournament: tournament,
+                                          currentSport: widget.currentSport,
+                                        ),
+                                  ),
+                                );
+                              } else if (tournament.status ==
+                                  TournamentStatus.scheduled) {
+                                //TODO: Navigare alla schermata del torneo in corso
+                                if (widget.currentSport ==
+                                    SportCategory.football) {
+                                  await Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          FootballTournamentScreen(
+                                            tournament: tournament,
+                                            sportCategory: widget.currentSport,
+                                          ),
+                                    ),
+                                  );
+                                }
+                              }
+                              setState(() {
+                                _isLoading = true;
+                                _loadTournaments();
+                                _isLoading = false;
+                              });
+                            },
+                          );
                         },
-                      );
-                    },
-                  ),
+                      ),
           ),
           // Floating Action Button "New" - SOLO per coordinatori in My Tournaments
           if (!Provider.of<AccountProvider>(context).isGuest &&
@@ -905,7 +931,8 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
         isHome: false,
         userId: userProvider.activeAccount?.id,
       ),
-    );}
+    );
+  }
 
   Widget _buildTabButton(String text, int index) {
     final isSelected = _tabController.index == index;

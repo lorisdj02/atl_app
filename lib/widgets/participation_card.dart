@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:atl_app/providers/account_provider.dart';
 import 'package:provider/provider.dart';
@@ -91,11 +91,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.check_circle,
-                          size: 14,
-                          color: Colors.white,
-                        ),
+                        Icon(Icons.check_circle, size: 14, color: Colors.white),
                         SizedBox(width: 4),
                         Text(
                           l10n.calledUpLabel,
@@ -121,11 +117,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.cancel,
-                          size: 14,
-                          color: Colors.white,
-                        ),
+                        Icon(Icons.cancel, size: 14, color: Colors.white),
                         SizedBox(width: 4),
                         Text(
                           l10n.notCalledUpLabel,
@@ -145,7 +137,10 @@ class _ParticipationCardState extends State<ParticipationCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.payOutOf(paid.toStringAsFixed(0), totalCost.toStringAsFixed(0)),
+                  l10n.payOutOf(
+                    paid.toStringAsFixed(0),
+                    totalCost.toStringAsFixed(0),
+                  ),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -211,7 +206,8 @@ class _ParticipationCardState extends State<ParticipationCard> {
   void _showPaymentDialog() async {
     final l10n = AppLocalizations.of(context);
     final toPay = widget.participation.toPay ?? 0;
-    final tournamentName = widget.tournament?.name ??
+    final tournamentName =
+        widget.tournament?.name ??
         '${l10n.tournamentLabel} #${widget.participation.tournamentId}';
     final amountController = TextEditingController();
 
@@ -243,8 +239,9 @@ class _ParticipationCardState extends State<ParticipationCard> {
             TextField(
               controller: amountController,
               autofocus: true,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
                 _MaxValueInputFormatter(maxValue: toPay),
@@ -287,17 +284,15 @@ class _ParticipationCardState extends State<ParticipationCard> {
           ),
         ],
       ),
-    ).then((chosenAmount) async{
+    ).then((chosenAmount) async {
       if (chosenAmount == null || !mounted) return;
 
-      final Map<String, dynamic> payload = {
-        'tournamentId': widget.participation.tournamentId,
-        'teamId': widget.participation.teamId,
-      };
+      AccountProvider userProvider = Provider.of<AccountProvider>(
+        context,
+        listen: false,
+      );
 
-      AccountProvider userProvider = Provider.of<AccountProvider>(context, listen: false);
-
-      if(userProvider.activeAccount == null){
+      if (userProvider.activeAccount == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.userNotLoggedIn),
@@ -307,27 +302,30 @@ class _ParticipationCardState extends State<ParticipationCard> {
         return;
       }
 
-      final int sessionId = await DBWrite.createCheckoutSession(
-        userId: userProvider.activeAccount!.id,
-        payload: CheckoutPayload(
-          tournamentId: widget.participation.tournamentId,
-          amount: chosenAmount,
-          type: CheckoutType.tournamentFee,
-        ),
+      CheckoutPayload payload = CheckoutPayload(
+        tournamentId: widget.participation.tournamentId,
+        amount: chosenAmount,
+        type: CheckoutType.tournamentFee,
       );
-      Navigator.of(context).push<bool>(
-        MaterialPageRoute(
-          builder: (context) => CheckoutScreen(
-            sportCategory: widget.sportCategory,
-            sessionId: sessionId,
-          ),
-        ),
-      ).then((result) {
-        if (result == true && mounted) {
-          // TODO: handle post-payment transition
-          widget.onPaymentCompleted();
-        }
-      });
+
+      final CheckoutSession checkoutSession = await PaymentService.Write.createCheckoutSession(
+        payload,
+      );
+      Navigator.of(context)
+          .push<bool>(
+            MaterialPageRoute(
+              builder: (context) => CheckoutScreen(
+                sportCategory: widget.sportCategory,
+                sessionId: checkoutSession.id,
+              ),
+            ),
+          )
+          .then((result) {
+            if (result == true && mounted) {
+              // TODO: handle post-payment transition
+              widget.onPaymentCompleted();
+            }
+          });
     });
   }
 }

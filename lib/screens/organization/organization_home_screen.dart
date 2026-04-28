@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/home_screen_controller.dart';
+import 'package:atl_app/database/services/home_screen_service.dart';
 import 'package:atl_app/database/responses/organization_home_response.dart';
 import 'package:atl_app/models/football_match.dart';
 import 'package:atl_app/models/team.dart';
@@ -104,7 +104,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
       }
 
       final OrganizationHomeResponse organizationData =
-          await HomeScreenController.getOrganizationHomeScreen(_currentSport);
+          await HomeScreenService.getOrganizationHomeScreen(_currentSport);
 
       Map<int, List<Booking>> bookingsByField = {};
 

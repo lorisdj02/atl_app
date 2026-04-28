@@ -1,4 +1,3 @@
-import 'package:atl_app/database/responses/road_to_victory_response.dart';
 import 'package:flutter/material.dart';
 import '../models/football_match.dart';
 import '../models/sport_category.dart';
@@ -6,7 +5,6 @@ import '../models/tournament.dart';
 import '../utils/atl_colors.dart';
 import '../widgets/loading_atl.dart';
 import 'football_match_bracket.dart';
-import '../database/db_read.dart';
 import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare il tabellone Road to Victory di un torneo
@@ -36,6 +34,7 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
   }
 
   Future<void> _loadData() async {
+    /*
     try {
 
       final RoadToVictoryResponse data = await DBRead.getRoadToVictoryWidget(widget.tournamentId, widget.sportCategory);
@@ -64,6 +63,8 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
         setState(() => _isLoading = false);
       }
     }
+    */
+    // TODO: implementare caricamento dati da API
   }
 
   List<String> _getPhasesForQualified(int qualified) {

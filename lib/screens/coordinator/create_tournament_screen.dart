@@ -1,6 +1,7 @@
-import 'package:atl_app/database/controller/field_controller.dart';
+import 'package:atl_app/database/services/field_service.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/database/responses/tournament_parameters_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -18,8 +19,6 @@ import '../../widgets/atl_button.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../widgets/tournament_summary.dart';
-import '../../database/db_read.dart';
-import '../../database/db_write.dart';
 
 enum Round2Option { none, groupStageOnly, finalStageOnly, both }
 
@@ -150,7 +149,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await FieldController.Read.getAllCities();
+      final cities = await FieldService.Read.getAllCities();
       setState(() {
         _cities = cities;
       });
@@ -172,7 +171,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
     try {
       final FieldsAndMaxPlayersPerFieldResponse data =
-          await FieldController.Read.getFieldsByMaxPlayersAndCityAndSportCategory(
+          await FieldService.Read.getFieldsByMaxPlayersAndCityAndSportCategory(
             maxPlayers: _selectedSport!.maxPlayersPerTeam,
             cityId: _selectedCity!.toDouble(),
             sportCategory: _selectedSport!.category,
@@ -312,26 +311,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
         startDate = DateTime(year, month, 1);
       }
 
-      final bool success = await DBWrite.createTournament(
-        name: _nameController.text.trim(),
-        coordinatorId: userProvider.activeRoleId!,
-        fieldId: _selectedField!.id,
-        cityId: _selectedCity!,
-        startDate: startDate,
-        sportId: _getSportId(),
-        numTeams: _numTeams,
-        numGroups: _numGroups!,
-        round2GroupStage: round2GroupStage,
-        round2FinalStage: round2FinalStage,
-        qualified: _qualified!,
-        description: _descriptionController.text.trim(),
-        payCoordinator: _hasProfit,
-        prize1: _prize1,
-        prize2: _prize2,
-        isPublic: _isPublic,
-      );
+      Tournament dummyTournament = _createFictitiousTournament();
 
-      if (mounted && success) {
+      final Tournament createdTournament =
+          await TournamentService.Write.createTournament(dummyTournament);
+
+      if (mounted && createdTournament.id != 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -1230,12 +1215,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     final l10n = AppLocalizations.of(context);
     final fictitiousTournament = _createFictitiousTournament();
     try {
-      final TournamentParametersResponse data =
-          await DBRead.calculateTournamentParameters(
-            fictitiousTournament,
-            _prize1,
-            _prize2,
-          );
+      final TournamentParametersResponse data = await TournamentService
+          .Read.calculateTournamentParameters(fictitiousTournament);
 
       // Calculate all values from backend
       final fee = data.fee;

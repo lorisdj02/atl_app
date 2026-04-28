@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/match_controller.dart';
+import 'package:atl_app/database/services/match_service.dart';
 import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -51,8 +51,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         return;
       }
 
-      final PastAssignedMatchesResponse data = await MatchController
-          .Read.getPastAssignedMatchesScreen(widget.currentSport);
+      final PastAssignedMatchesResponse data = await MatchService.Read.getPastAssignedMatchesScreen(widget.currentSport);
 
       if (widget.currentSport != SportCategory.football) {
         setState(() => _isLoading = false);

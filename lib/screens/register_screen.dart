@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/database/requests/register_account_request.dart';
 import 'package:flutter/material.dart';
 import '../models/account.dart';
@@ -101,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         profilePictureUrl: _profileImagePath,
       );
 
-      await AccountController.Write.registerAccount(request);
+      await AccountService.Write.registerAccount(request);
 
       if (!mounted) return;
 

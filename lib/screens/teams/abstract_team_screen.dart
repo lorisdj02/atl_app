@@ -1,6 +1,6 @@
-import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/responses/abstract_team_response.dart';
 import 'package:atl_app/database/responses/players_in_team_response.dart';
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/sport_category.dart';
@@ -76,24 +76,25 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
 
   Future<void> loadData() async {
     try {
-      final AbstractTeamResponse data = await DBRead.getAbstractTeamScreen(getTeamId());
+      final AbstractTeamResponse data =
+          await TeamService.Read.getAbstractTeamScreen(getTeamId().toDouble());
       setState(() {
         team = data.team;
         players = data.players;
         palmares = data.palmares;
         tournaments = data.tournaments;
-        coordinatorsCache = data.coordinatorsCache ?? {};
-        fieldsCache = data.fieldsCache ?? {};
-        playerStatsCache = data.footballPlayerStatsCache ?? {};
-        cityNamePerField = data.cityNamePerField ?? {};
-        historicalPlayers = data.historicalPlayers ?? [];
+        coordinatorsCache = data.coordinatorsCache;
+        fieldsCache = data.fieldsCache;
+        playerStatsCache = data.footballPlayerStatsCache;
+        cityNamePerField = data.cityNamePerField;
+        historicalPlayers = data.historicalPlayers;
         playersLoaded = true;
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingTeamData(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorLoadingTeamData(e.toString()))),
+        );
       }
     }
   }
@@ -119,7 +120,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   int getTeamId();
 
   Future<void> loadPlayersData(int teamId) async {
-    final PlayersInTeamResponse data = await DBRead.getPlayersInTeam(teamId);
+    final PlayersInTeamResponse data = await TeamService.Read.getPlayersInTeam(teamId.toDouble());
 
     List<Player> loadedPlayers = data.players;
     if (loadedPlayers.isNotEmpty) {
@@ -315,7 +316,10 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                 ),
                 child: Text(
                   l10n.upgradeToVip,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

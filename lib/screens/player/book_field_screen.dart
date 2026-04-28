@@ -1,4 +1,5 @@
-import 'package:atl_app/database/controller/booking_controller.dart';
+import 'package:atl_app/database/services/booking_service.dart';
+import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ import '../../widgets/atl_button.dart';
 import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../models/sport_category.dart';
-import '../../database/db_write.dart';
 import '../shop/checkout_screen.dart';
 import '../../models/checkout_session.dart';
 
@@ -99,7 +99,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final BookFieldResponse data = await BookingController.Read.getBookFieldScreen(widget.sportCategory);
+      final BookFieldResponse data =
+          await BookingService.Read.getBookFieldScreen(widget.sportCategory);
 
       final preferredCityId = Provider.of<AccountProvider>(
         context,
@@ -118,7 +119,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).errorLoadingCities(e.toString())),
+            content: Text(
+              AppLocalizations.of(context).errorLoadingCities(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -228,13 +231,14 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         _endTime!.minute,
       );
 
-      final FieldsAndMaxPlayersPerFieldResponse data = await BookingController.Read.getFreeFieldsByPlayerAndCityAndDate(
-        maxPlayers: _maxPlayers,
-        cityId: _selectedCity!.toDouble(),
-        startTime: startDateTime,
-        finishTime: endDateTime,
-        sportCategory: widget.sportCategory,
-      );
+      final FieldsAndMaxPlayersPerFieldResponse data =
+          await BookingService.Read.getFreeFieldsByPlayerAndCityAndDate(
+            maxPlayers: _maxPlayers,
+            cityId: _selectedCity!.toDouble(),
+            startTime: startDateTime,
+            finishTime: endDateTime,
+            sportCategory: widget.sportCategory,
+          );
 
       // Filter available fields
       setState(() {
@@ -413,7 +417,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           content: SizedBox(
             width: double.maxFinite,
             height: 400,
-                child: timeSlots.isEmpty
+            child: timeSlots.isEmpty
                 ? Center(
                     child: Text(
                       AppLocalizations.of(context).noTimeSlotsAvailable,
@@ -479,10 +483,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     if (userProvider.activeAccount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar( 
-          content: Text(l10n.userNotFound),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(l10n.userNotFound), backgroundColor: Colors.red),
       );
       return;
     }
@@ -504,26 +505,23 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     final totalToPay = _calculateTotalToPay();
 
     if (_selectedBookingType == BookingType.private) {
-
       CheckoutPayload checkoutPayload = CheckoutPayload(
         ownerPlayerId: userProvider.activeRoleId!,
         fieldId: _selectedField!.id,
         startTime: startDateTime,
         finishTime: endDateTime,
-          amount: totalToPay,
-          type: CheckoutType.privateBooking,
+        amount: totalToPay,
+        type: CheckoutType.privateBooking,
       );
 
-      final int sessionId = await DBWrite.createCheckoutSession(
-        userId: userProvider.activeAccount!.id,
-        payload: checkoutPayload,
-      );
+      final CheckoutSession checkoutSession =
+          await PaymentService.Write.createCheckoutSession(checkoutPayload);
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => CheckoutScreen(
             sportCategory: widget.sportCategory,
-            sessionId: sessionId,
+            sessionId: checkoutSession.id,
           ),
         ),
       );
@@ -551,16 +549,15 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
       // Ricorda che playersToPay = maxPlayers - playersToFind
 
-      final int sessionId = await DBWrite.createCheckoutSession(
-        userId: userProvider.activeAccount!.id,
-        payload: payload,
+      final CheckoutSession checkoutSession = await PaymentService.Write.createCheckoutSession(
+        payload,
       );
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (context) => CheckoutScreen(
             sportCategory: widget.sportCategory,
-            sessionId: sessionId,
+            sessionId: checkoutSession.id,
           ),
         ),
       );
@@ -878,7 +875,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
               children: [
                 Text(
                   l10n.maxPlayersLabel,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 DropdownButton<int>(
                   value: _maxPlayers,
@@ -1251,7 +1251,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                 builder: (context, snapshot) {
                   return _SummaryRow(
                     label: AppLocalizations.of(context).labelCity,
-                    value: snapshot.data ?? AppLocalizations.of(context).loading,
+                    value:
+                        snapshot.data ?? AppLocalizations.of(context).loading,
                   );
                 },
               ),
@@ -1298,9 +1299,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Confirm button
         ATLButton(
-          text: AppLocalizations.of(context).confirmBooking(
-            '€${totalToPay.toStringAsFixed(2)}',
-          ),
+          text: AppLocalizations.of(
+            context,
+          ).confirmBooking('€${totalToPay.toStringAsFixed(2)}'),
           onPressed: _createBooking,
           size: ATLButtonSize.large,
           isFilled: true,

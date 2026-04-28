@@ -1,4 +1,5 @@
-import 'package:atl_app/database/repositories/reviews_response.dart';
+import 'package:atl_app/database/responses/reviews_response.dart';
+import 'package:atl_app/database/services/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -6,8 +7,6 @@ import '../../models/sport_category.dart';
 import '../../models/review.dart';
 import '../../models/account.dart';
 import '../../utils/atl_colors.dart';
-import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../widgets/review_widget.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -49,7 +48,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       return;
     }
     try {
-      final ReviewsResponse data = await DBRead.getReviewsScreen(user.id);
+      final ReviewsResponse data = await ProfileService.getReviewsScreen();
       if (mounted) {
         setState(() {
           _reviews = data.reviews;

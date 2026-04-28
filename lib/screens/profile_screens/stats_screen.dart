@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
-import '../../models/player.dart';
 import '../../models/football_team_stats.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/football_stat_card.dart';
-import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
+import '../../database/services/profile_service.dart';
 import '../../l10n/app_localizations.dart';
 
 class StatsScreen extends StatefulWidget {
@@ -27,9 +25,10 @@ class _StatsScreenState extends State<StatsScreen> {
 
   FootballTeamStats? _footballTeamStats;
   Map<SportCategory, int> _numTournamentPerCategory = {};
+  //TODO: questi NON li uso ancora!
   Map<SportCategory, int> _numPrivateBookingPerCategory = {};
   Map<SportCategory, int> _numLobbyJoinedPerCategory = {};
-  
+
   // Hardcoded available categories (only football for now)
   static const List<SportCategory> _availableCategories = [
     SportCategory.football,
@@ -48,9 +47,8 @@ class _StatsScreenState extends State<StatsScreen> {
     if (userProvider.activeRoleId == null || !userProvider.isPlayer) return;
     setState(() => _isLoading = true);
     try {
-      final PersonalPlayerStatsResponse data = await DBRead.getPersonalPlayerStatsScreen(
-        userProvider.activeRoleId!,
-      );
+      final PersonalPlayerStatsResponse data =
+          await ProfileService.getPersonalPlayerStatsScreen();
 
       // Estraggo le stats per categoria
       if (mounted) {

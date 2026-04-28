@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/home_screen_controller.dart';
+import 'package:atl_app/database/services/home_screen_service.dart';
 import 'package:atl_app/database/responses/referee_home_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -102,7 +102,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         return;
       }
       final RefereeHomeResponse data =
-          await HomeScreenController.getRefereeHomeScreen(_currentSport);
+          await HomeScreenService.getRefereeHomeScreen(_currentSport);
 
       // Sort matches by scheduled start time
 

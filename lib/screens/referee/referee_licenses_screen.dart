@@ -1,5 +1,6 @@
-import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/database/responses/referee_licenses_response.dart';
+import 'package:atl_app/database/services/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -11,7 +12,6 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/referee_license_widget.dart';
 import '../../widgets/add_referee_license_dialog.dart';
 import '../../widgets/atl_floating_button.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class RefereeLicensesScreen extends StatefulWidget {
@@ -38,12 +38,8 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final userProvider = Provider.of<AccountProvider>(context, listen: false);
-      assert(userProvider.isReferee, 'Only referees can access this screen');
-      final refereeId = userProvider.activeRoleId!;
-
       final RefereeLicensesResponse data =
-          await DBRead.getRefereeLicensesScreen(refereeId);
+          await ProfileService.getRefereeLicensesScreen();
 
       if (mounted) {
         setState(() {
@@ -133,7 +129,9 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
     if (confirmed != true) return;
 
     try {
-      await AccountController.Write.deleteRefereeLicense(license.sportId.toDouble());
+      await AccountService.Write.deleteRefereeLicense(
+        license.sportId.toDouble(),
+      );
       if (mounted) {
         await _loadData();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -171,7 +169,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
         availableSports: availableSports,
         refereeId: refereeId,
         onSubmit: (license) =>
-            AccountController.Write.insertRefereeLicense(license),
+            AccountService.Write.insertRefereeLicense(license),
       ),
     );
 

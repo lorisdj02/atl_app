@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -383,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     // Delete account
     try {
-      await AccountController.Write.deleteAccount();
+      await AccountService.Write.deleteAccount();
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);

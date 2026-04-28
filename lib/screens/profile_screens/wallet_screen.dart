@@ -1,12 +1,12 @@
 import 'package:atl_app/database/responses/wallet_response.dart';
+import 'package:atl_app/models/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../models/wallet.dart';
-import '../../config/api_json_keys.dart';
-import '../../database/db_read.dart';
+import '../../database/services/profile_service.dart';
 import '../../l10n/app_localizations.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -20,6 +20,8 @@ class WalletScreen extends StatefulWidget {
 
 class _WalletScreenState extends State<WalletScreen> {
   Wallet? _wallet;
+  //TODO: implement pagination for transactions and load only a few at a time
+  List<Transaction> _transactions = [];
   bool _isLoading = true;
 
   @override
@@ -32,10 +34,11 @@ class _WalletScreenState extends State<WalletScreen> {
     final userProvider = Provider.of<AccountProvider>(context, listen: false);
     final user = userProvider.activeAccount;
     if (user != null) {
-      final WalletResponse data = await DBRead.getWalletScreen(user.id);
+      final WalletResponse data = await ProfileService.getWalletScreen();
       if (mounted) {
         setState(() {
           _wallet = data.wallet;
+          _transactions = data.transactions;
           _isLoading = false;
         });
       }

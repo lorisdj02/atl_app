@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/home_screen_controller.dart';
+import 'package:atl_app/database/services/home_screen_service.dart';
 import 'package:atl_app/database/responses/coordinator_home_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -106,7 +106,7 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
       }
 
       final CoordinatorHomeResponse coordinatorData =
-          await HomeScreenController.getCoordinatorHomeScreen(_sportCategory);
+          await HomeScreenService.getCoordinatorHomeScreen(_sportCategory);
 
       Map<DateTime, List<FootballMatch>> matchesPerDate = {};
       if (_sportCategory == SportCategory.football) {

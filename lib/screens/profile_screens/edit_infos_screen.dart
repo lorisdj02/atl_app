@@ -1,5 +1,5 @@
-import 'package:atl_app/database/controller/account_controller.dart';
-import 'package:atl_app/database/controller/field_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
+import 'package:atl_app/database/services/field_service.dart';
 import 'package:atl_app/database/requests/update_account_info_request.dart';
 import 'package:atl_app/models/account.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +66,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       listen: false,
     ).activeAccount;
     try {
-      final List<City> cities = await FieldController.Read.getAllCities();
+      final List<City> cities = await FieldService.Read.getAllCities();
       if (mounted) {
         City? currentCity;
         if (user?.preferredCityId != null) {
@@ -183,7 +183,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         imageUrl: null, // TODO: Implement image upload
       );
       // Update account info through repository
-      final Account? data = await AccountController.Write.updateAccountInfos(
+      final Account? data = await AccountService.Write.updateAccountInfos(
         request,
       );
 

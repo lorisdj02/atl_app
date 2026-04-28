@@ -1,4 +1,5 @@
 import 'package:atl_app/database/responses/pay_participation_response.dart';
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/tournament_participation.dart';
@@ -6,7 +7,6 @@ import '../../models/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/participation_card.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class PayParticipationScreen extends StatefulWidget {
@@ -37,9 +37,10 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
     _loadData();
   }
 
-  Future<void> _loadData() async{
-      try{
-      final PayParticipationResponse data = await DBRead.getPayParticipationScreen(widget.playerId, widget.sportCategory);
+  Future<void> _loadData() async {
+    try {
+      final PayParticipationResponse data = await TeamService
+          .Read.getPayParticipationScreen(widget.teamId.toDouble());
 
       setState(() {
         _tournamentParticipations = data.tournamentParticipations;
@@ -47,12 +48,14 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
         _isCalledUpPerTournament = data.isCalledUpPerTournament;
         _isLoading = false;
       });
-    
     } catch (e) {
-      
       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).errorLoadingData(e.toString()))),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).errorLoadingData(e.toString()),
+            ),
+          ),
         );
       }
       setState(() {
@@ -107,14 +110,17 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
               itemCount: _tournamentParticipations.length,
               itemBuilder: (context, index) {
                 final participation = _tournamentParticipations[index];
-                final tournament = _tournamentsCache[participation.tournamentId];
+                final tournament =
+                    _tournamentsCache[participation.tournamentId];
                 return ParticipationCard(
                   participation: participation,
                   tournament: tournament,
                   playerId: widget.playerId,
                   sportCategory: widget.sportCategory,
                   onPaymentCompleted: _loadData,
-                  isCalledUp: _isCalledUpPerTournament[participation.tournamentId] ?? false,
+                  isCalledUp:
+                      _isCalledUpPerTournament[participation.tournamentId] ??
+                      false,
                 );
               },
             ),

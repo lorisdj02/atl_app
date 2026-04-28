@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
 import 'package:flutter/material.dart';
 import '../models/review.dart';
 import '../models/account.dart';
@@ -67,7 +67,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     );
 
     try {
-      await AccountController.Write.commitReview(updatedReview);
+      await AccountService.Write.commitReview(updatedReview);
 
       if (!mounted) return;
 

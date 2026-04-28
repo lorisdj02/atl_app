@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/match_controller.dart';
+import 'package:atl_app/database/services/match_service.dart';
 import 'package:atl_app/models/football_match_event.dart';
 import 'package:flutter/material.dart';
 import '../models/team.dart';
@@ -146,7 +146,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
         eventTime: DateTime.now(), // Mocked
       );
 
-      await MatchController.Write.insertFootballMatchEvent(
+      await MatchService.Write.insertFootballMatchEvent(
         widget.matchId.toDouble(),
         newEvent,
       );

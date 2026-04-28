@@ -1,12 +1,10 @@
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:flutter/material.dart';
 import '../models/tournament.dart';
 import '../models/sport_category.dart';
 import '../utils/atl_colors.dart';
-import 'package:provider/provider.dart';
-import '../providers/account_provider.dart';
-import '../database/db_write.dart';
 import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare una card torneo
@@ -140,14 +138,9 @@ class _TournamentCardStatus extends State<TournamentCard> {
                           return;
                         }
 
-                        int userId = Provider.of<AccountProvider>(
-                          context,
-                          listen: false,
-                        ).activeAccount!.id;
                         Future.microtask(() async {
-                          await DBWrite.toggleTournamentFavoriteStatus(
-                            widget.tournament.id,
-                            userId,
+                          await TournamentService.Write.toggleFavoriteStatus(
+                            widget.tournament.id.toDouble(),
                           );
                         });
 

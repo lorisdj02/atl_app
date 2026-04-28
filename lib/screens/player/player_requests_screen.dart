@@ -1,5 +1,5 @@
-import 'package:atl_app/database/db_write.dart';
 import 'package:atl_app/database/responses/player_requests_response.dart';
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import '../../models/player.dart';
 import '../../models/sport_category.dart';
@@ -7,8 +7,6 @@ import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/player_request_widget.dart';
-import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 import '../../l10n/app_localizations.dart';
 
 class PlayerRequestsScreen extends StatefulWidget {
@@ -39,7 +37,8 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   Future<void> _loadRequests() async {
     final l10n = AppLocalizations.of(context);
     try {
-      final PlayerRequestsResponse data = await DBRead.getTeamRequestsScreen(widget.teamId);
+      final PlayerRequestsResponse data = await TeamService
+          .Read.getTeamRequestsScreen(widget.teamId.toDouble());
 
       if (mounted) {
         setState(() {
@@ -53,14 +52,8 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
         setState(() {
           _isLoading = false;
         });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.errorLoadingRequests(e.toString()),
-            ),
-          ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorLoadingRequests(e.toString()))),
         );
       }
     }
@@ -69,13 +62,10 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   Future<void> _acceptRequest(TeamRequest request) async {
     final l10n = AppLocalizations.of(context);
     try {
-      if ((await DBWrite.acceptTeamRequest(
-            widget.teamId,
-            playerId: request.playerId,
-          )) ==
-          false) {
-        throw Exception(l10n.failedToAcceptRequest);
-      }
+      await TeamService.Write.acceptTeamRequest(
+        teamId: widget.teamId.toDouble(),
+        playerId: request.playerId.toDouble(),
+      );
 
       if (mounted) {
         setState(() {
@@ -86,8 +76,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
           SnackBar(
             content: Text(
               l10n.playerJoinedTeam(
-                _playersCache[request.playerId]?.username ??
-                    l10n.player,
+                _playersCache[request.playerId]?.username ?? l10n.player,
               ),
             ),
             backgroundColor: Colors.green,
@@ -96,14 +85,8 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.errorAcceptingRequest(e.toString()),
-            ),
-          ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorAcceptingRequest(e.toString()))),
         );
       }
     }
@@ -112,26 +95,20 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   Future<void> _rejectRequest(TeamRequest request) async {
     final l10n = AppLocalizations.of(context);
     try {
-      final success = await DBWrite.rejectTeamRequest(
-        widget.teamId,
-        playerId: request.playerId,
+      await TeamService.Write.rejectTeamRequest(
+        teamId: widget.teamId.toDouble(),
+        playerId: request.playerId.toDouble(),
       );
 
-      if (mounted && success) {
+      if (mounted) {
         setState(() {
           _requests.removeWhere((r) => r.playerId == request.playerId);
         });
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.errorRejectingRequest(e.toString()),
-            ),
-          ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorRejectingRequest(e.toString()))),
         );
       }
     }
@@ -139,12 +116,12 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _acceptAll() async {
     final l10n = AppLocalizations.of(context);
-    final success = await DBWrite.acceptTeamRequest(
-      widget.teamId,
-      allRequests: true,
+    await TeamService.Write.acceptTeamRequest(
+      teamId: widget.teamId.toDouble(),
+      acceptAll: true,
     );
 
-    if (mounted && success) {
+    if (mounted) {
       setState(() {
         _requests.clear();
       });
@@ -155,35 +132,31 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
           backgroundColor: Colors.green,
         ),
       );
-    }else{
+    } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.errorAcceptingAllRequests),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorAcceptingAllRequests)));
       }
     }
   }
 
   Future<void> _rejectAll() async {
     final l10n = AppLocalizations.of(context);
-    final success = await DBWrite.rejectTeamRequest(
-      widget.teamId,
-      allRequests: true,
+    await TeamService.Write.rejectTeamRequest(
+      teamId: widget.teamId.toDouble(),
+      rejectAll: true,
     );
 
-    if (mounted && success) {
+    if (mounted) {
       setState(() {
         _requests.clear();
       });
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.errorRejectingAllRequests),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.errorRejectingAllRequests)));
       }
     }
   }
@@ -213,11 +186,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
             icon: const Icon(Icons.dark_mode, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    l10n.darkModeComingSoonSnack,
-                  ),
-                ),
+                SnackBar(content: Text(l10n.darkModeComingSoonSnack)),
               );
             },
           ),

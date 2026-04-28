@@ -1,6 +1,5 @@
-import 'package:atl_app/config/api_json_keys.dart';
-import 'package:atl_app/database/db_read.dart';
 import 'package:atl_app/database/responses/teams_response.dart';
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/team.dart';
@@ -155,10 +154,11 @@ class _TeamScreenState extends State<TeamScreen>
       );
       final isPlayer = userProvider.activeAccount?.role == AccountRole.player;
 
-      final TeamsResponse data = await DBRead.getTeamsScreen(widget.currentSport);
+      final TeamsResponse data = await TeamService.Read.getTeamsScreen(
+        widget.currentSport,
+      );
       final Map<int, Team> teamsCache = data.teamsCache;
-      final Map<int, String> captainNamePerTeam =
-          data.captainNamePerTeam;
+      final Map<int, String> captainNamePerTeam = data.captainNamePerTeam;
 
       // Calcola l'indice di Ranks in base alla presenza di My team tab
       final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
@@ -178,9 +178,9 @@ class _TeamScreenState extends State<TeamScreen>
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(_l10n.errorLoadingTeams(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_l10n.errorLoadingTeams(e.toString()))),
+        );
       }
     }
   }
@@ -221,7 +221,10 @@ class _TeamScreenState extends State<TeamScreen>
                     underline: const SizedBox(),
                     hint: Text(_l10n.selectCity),
                     items: [
-                      DropdownMenuItem(value: null, child: Text(_l10n.allCities)),
+                      DropdownMenuItem(
+                        value: null,
+                        child: Text(_l10n.allCities),
+                      ),
                       ...['1', '2', '3'].map((city) {
                         return DropdownMenuItem(
                           value: city,
@@ -295,7 +298,10 @@ class _TeamScreenState extends State<TeamScreen>
                   },
                 ),
                 Text(
-                  _l10n.playersRangeLabel(_tempPlayersRange.start.round(), _tempPlayersRange.end.round()),
+                  _l10n.playersRangeLabel(
+                    _tempPlayersRange.start.round(),
+                    _tempPlayersRange.end.round(),
+                  ),
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -354,7 +360,7 @@ class _TeamScreenState extends State<TeamScreen>
       if (_searchController.text.isNotEmpty) {
         final query = _searchController.text.toLowerCase();
         final matchesName = t.name.toLowerCase().contains(query);
-        final matchesAlias = t.alias?.toLowerCase().contains(query) ?? false;
+        final matchesAlias = t.alias.toLowerCase().contains(query);
         if (!matchesName && !matchesAlias) {
           return false;
         }
@@ -409,7 +415,9 @@ class _TeamScreenState extends State<TeamScreen>
               )
             : null,
         title: Text(
-          widget.currentSport == SportCategory.football ? l10n.footballTeamsTitle.toUpperCase() : '',
+          widget.currentSport == SportCategory.football
+              ? l10n.footballTeamsTitle.toUpperCase()
+              : '',
           style: const TextStyle(
             color: ATLColors.title,
             fontSize: 20,
@@ -445,7 +453,10 @@ class _TeamScreenState extends State<TeamScreen>
                     ],
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildTabButton(_l10n.ranksTab, showMyTeamTab ? 2 : 1),
+                      child: _buildTabButton(
+                        _l10n.ranksTab,
+                        showMyTeamTab ? 2 : 1,
+                      ),
                     ),
                   ],
                 ),

@@ -1,9 +1,8 @@
+import 'package:atl_app/database/services/sport_service.dart';
 import 'package:flutter/material.dart';
 import '../models/sport_category.dart';
 import '../models/sport.dart';
 import '../utils/atl_colors.dart';
-import '../database/db_read.dart';
-import '../config/api_json_keys.dart';
 import '../l10n/app_localizations.dart';
 
 /// Widget per la selezione dello sport all'interno di una categoria
@@ -40,7 +39,7 @@ class _SportSelectorWidgetState extends State<SportSelectorWidget> {
   Future<void> _loadSports() async {
     final l10n = AppLocalizations.of(context);
     try {
-      final List<Sport> data = await DBRead.getSportsByCategory(widget.sportCategory);
+      final List<Sport> data = await SportService.getSportsByCategory(widget.sportCategory);
       setState(() {
         _availableSports = data;
         _isLoading = false;

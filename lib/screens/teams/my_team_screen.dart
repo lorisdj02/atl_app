@@ -1,4 +1,4 @@
-import 'package:atl_app/database/db_write.dart';
+import 'package:atl_app/database/services/team_service.dart';
 import 'package:atl_app/models/tournament_participation.dart';
 import 'package:atl_app/utils/home_router.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +10,6 @@ import '../player/player_requests_screen.dart';
 import '../player/pay_participation_screen.dart';
 import '../../widgets/atl_floating_button.dart';
 import 'abstract_team_screen.dart';
-import '../../database/db_read.dart';
-import '../../config/api_json_keys.dart';
 
 class MyTeamScreen extends AbstractTeamScreen {
   const MyTeamScreen({super.key, required super.currentSport});
@@ -41,12 +39,12 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (teamId == null) return;
 
-      final List<TournamentParticipation> participations = await DBRead.getTeamParticipations(teamId);
+      final List<TournamentParticipation> participations = await TeamService
+          .Read.getNotPaidTeamParticipations(teamId.toDouble());
 
       if (mounted) {
         setState(() {
-          _pendingPaymentsCount =
-              participations.length;
+          _pendingPaymentsCount = participations.length;
         });
       }
     } catch (e) {
@@ -178,34 +176,27 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     final hasVice2 = team!.vice2Id != null;
 
     if (hasVice1 && hasVice2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.maxViceCaptains),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.maxViceCaptains)));
       return;
     }
 
     try {
-      final success = await DBWrite.promoteOrDemoteInTeam(
-        team!.id,
-        player.playerId,
-        promote: true,
+      await TeamService.Write.promoteOrDemotePlayer(
+        team!.id.toDouble(),
+        player.playerId.toDouble(),
       );
 
-      if (success && mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.promotedToVC(player.username)),
-          ),
+          SnackBar(content: Text(l10n.promotedToVC(player.username))),
         );
         await loadPlayersData(team!.id);
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.failedToPromote),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.failedToPromote)));
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -216,21 +207,20 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
   Future<void> _demoteViceCaptain(Player player) async {
     try {
-      final success = await DBWrite.promoteOrDemoteInTeam(
-        team!.id,
-        player.playerId,
-        promote: false,
+      await TeamService.Write.promoteOrDemotePlayer(
+        team!.id.toDouble(),
+        player.playerId.toDouble(),
       );
 
-      if (success && mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.demoted(player.username))));
         await loadPlayersData(team!.id);
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.failedToDemote)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.failedToDemote)));
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -262,22 +252,19 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     if (confirm != true) return;
 
     try {
-      final success = await DBWrite.expelPlayer(team!.id, player.playerId);
+      await TeamService.Write.expelPlayer(
+        team!.id.toDouble(),
+        player.playerId.toDouble(),
+      );
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.expelled(player.username))),
-        );
-        await loadPlayersData(team!.id);
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.failedToExpel)));
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.expelled(player.username))));
+      await loadPlayersData(team!.id);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(l10n.errorText(e.toString()))));
+      ).showSnackBar(SnackBar(content: Text(l10n.failedToExpel)));
     }
   }
 
@@ -295,38 +282,35 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              if ((await DBWrite.leaveTeam(team!.id, playerId!)) == false) {
-                if (team!.captainId == playerId) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.captainCannotLeaveTeam),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.errorLeavingTeam),
-                    ),
-                  );
-                }
-              } else if (mounted) {
-                AccountProvider userProvider = Provider.of<AccountProvider>(
-                  context,
-                  listen: false,
-                );
-                userProvider.clearCurrentTeamId();
+              try {
+                await TeamService.Write.leaveTeam(team!.id.toDouble());
                 if (mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HomeRouter.getHomeScreen(userProvider.activeAccount!),
-                    ),
-                    (route) => false,
+                  AccountProvider userProvider = Provider.of<AccountProvider>(
+                    context,
+                    listen: false,
                   );
+                  userProvider.clearCurrentTeamId();
+                  if (mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => HomeRouter.getHomeScreen(
+                          userProvider.activeAccount!,
+                        ),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.errorText(e.toString()))),
+                );
               }
             },
-            child: Text(l10n.leaveButton, style: const TextStyle(color: Colors.red)),
+            child: Text(
+              l10n.leaveButton,
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

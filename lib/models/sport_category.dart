@@ -25,6 +25,13 @@ extension SportCategoryExtension on SportCategory {
     }
   }
 
+  String get apiName{
+    switch (this) {
+      case SportCategory.football:
+        return 'football';
+    }
+  }
+
 
   /// Nome dello sport
   String get name {

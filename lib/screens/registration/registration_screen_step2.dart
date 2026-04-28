@@ -1,11 +1,10 @@
-import 'package:atl_app/database/controller/field_controller.dart';
+import 'package:atl_app/database/services/field_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/city.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class RegistrationScreenStep2 extends StatefulWidget {
@@ -66,7 +65,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await FieldController.Read.getAllCities();
+      final cities = await FieldService.Read.getAllCities();
       if (mounted) {
         setState(() {
           _cities = cities;

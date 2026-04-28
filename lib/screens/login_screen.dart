@@ -1,4 +1,4 @@
-import 'package:atl_app/database/controller/account_controller.dart';
+import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/database/responses/login_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     // Replace mock user creation with DB call
     try{
-    final LoginResponse loginData = await AccountController.Read.handleLogin();
+    final LoginResponse loginData = await AccountService.Read.handleLogin();
     final Account? account = loginData.account;
 
     if (account == null || account.passwordMD5 != password) {

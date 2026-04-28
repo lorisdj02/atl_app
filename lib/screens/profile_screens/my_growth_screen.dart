@@ -1,4 +1,5 @@
 import 'package:atl_app/database/responses/my_growth_response.dart';
+import 'package:atl_app/database/services/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
@@ -9,7 +10,6 @@ import '../../widgets/loading_atl.dart';
 import '../../widgets/growth_hero_card.dart';
 import '../../widgets/growth_timeline_item.dart';
 import '../../widgets/growth_pay_note.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class MyGrowthScreen extends StatefulWidget {
@@ -44,7 +44,7 @@ class _MyGrowthScreenState extends State<MyGrowthScreen> {
       return;
     }
     try {
-      final MyGrowthResponse data = await DBRead.getMyGrowthScreen(user.id);
+      final MyGrowthResponse data = await ProfileService.getMyGrowthScreen();
       if (mounted) {
         setState(() {
           _currentLevel = data.level;

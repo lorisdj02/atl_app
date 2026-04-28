@@ -1,10 +1,10 @@
 import 'package:atl_app/database/responses/tournament_summary_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:flutter/material.dart';
 import '../models/tournament.dart';
 import '../models/sport.dart';
 import '../models/field.dart';
 import '../widgets/info_row_widget.dart';
-import '../database/db_read.dart';
 import '../l10n/app_localizations.dart';
 
 /// Widget for displaying tournament summary information
@@ -98,7 +98,7 @@ class TournamentSummary extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _fetchData(BuildContext context) async {
-    final TournamentSummaryResponse data = await DBRead.getTournamentSummary(tournament.id);
+    final TournamentSummaryResponse data = await TournamentService.Read.getTournamentSummary(tournament.id.toDouble());
 
 
     final sportData = sport ?? data.sport;

@@ -1,5 +1,5 @@
-import 'package:atl_app/database/controller/field_controller.dart';
-import 'package:atl_app/database/controller/match_controller.dart';
+import 'package:atl_app/database/services/field_service.dart';
+import 'package:atl_app/database/services/match_service.dart';
 import 'package:atl_app/database/responses/available_matches_response.dart';
 import 'package:atl_app/models/city.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +49,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final cities = await FieldController.Read.getAllCities();
+      final cities = await FieldService.Read.getAllCities();
       if (mounted) {
         final preferredCityId =
             Provider.of<AccountProvider>(context, listen: false).cityId;
@@ -86,7 +86,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final AvailableMatchesResponse data = await MatchController.Read.getAvailableMatchesScreen(
+      final AvailableMatchesResponse data = await MatchService.Read.getAvailableMatchesScreen(
         widget.currentSport,
         cityId: _selectedCity?.id.toDouble(),
         sportId: _selectedSportId?.toDouble(),

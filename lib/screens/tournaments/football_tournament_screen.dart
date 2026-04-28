@@ -1,4 +1,5 @@
 import 'package:atl_app/database/responses/football_tournament_response.dart';
+import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/sport_category.dart';
@@ -14,7 +15,6 @@ import '../../widgets/football_standings_team_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../widgets/road_to_victory_widget.dart';
 import '../../widgets/tournament_info_dialog.dart';
-import '../../database/db_read.dart';
 import '../../l10n/app_localizations.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
@@ -100,8 +100,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     });
 
     try{
-    final FootballTournamentResponse data = await DBRead.getFootballTournamentScreen(
-      widget.tournament.id,
+    final FootballTournamentResponse data = await TournamentService.Read.getTournamentScreen(
+      widget.tournament.id.toDouble(),
+      widget.sportCategory,
     );
 
     setState(() {
