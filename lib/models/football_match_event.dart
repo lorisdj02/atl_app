@@ -10,19 +10,47 @@ enum FootballMatchEventType {
   halftime,
   startHalf,
   penaltyShootOut,
-  finish,
-}
+  finish;
 
+  String get apiName {
+    switch (this) {
+      case FootballMatchEventType.redCard:
+        return 'RED_CARD';
+      case FootballMatchEventType.yellowCard:
+        return 'YELLOW_CARD';
+      case FootballMatchEventType.redYellowCard:
+        return 'RED_YELLOW_CARD';
+      case FootballMatchEventType.goal:
+        return 'GOAL';
+      case FootballMatchEventType.penalty:
+        return 'PENALTY';
+      case FootballMatchEventType.missedPenalty:
+        return 'MISSED_PENALTY';
+      case FootballMatchEventType.ownGoal:
+        return 'OWN_GOAL';
+      case FootballMatchEventType.start:
+        return 'START';
+      case FootballMatchEventType.halftime:
+        return 'HALFTIME';
+      case FootballMatchEventType.startHalf:
+        return 'START_HALF';
+      case FootballMatchEventType.penaltyShootOut:
+        return 'PENALTY_SHOOTOUT';
+      case FootballMatchEventType.finish:
+        return 'FINISH';
+    }
+  }
+}
+// OK
 class FootballMatchEvent {
-  final int id;
+  final double id;
+  final double matchId;
+  final double? teamId;
+  final double? playerId;
   final FootballMatchEventType type;
-  final int? playerId;
-  final int? teamId;
   final int minute;
   final int additionalMinute;
-  final int matchId;
-  final DateTime eventTime;
-  String modifiedTables;
+  final DateTime createdAt;
 
   FootballMatchEvent({
     required this.id,
@@ -30,39 +58,36 @@ class FootballMatchEvent {
     this.playerId,
     required this.minute,
     required this.matchId,
-    required this.eventTime,
+    required this.createdAt,
     this.additionalMinute = 0,
     this.teamId,
-    this.modifiedTables = '',
   });
 
   factory FootballMatchEvent.fromJson(Map<String, dynamic> json) {
     return FootballMatchEvent(
       id: json['id'],
       type: FootballMatchEventType.values.firstWhere(
-        (e) => e.toString().split('.').last == json['type'],
+          (e) => e.apiName == json['type']
       ),
       playerId: json['playerId'],
       minute: json['minute'],
       matchId: json['matchId'],
-      eventTime: DateTime.parse(json['eventTime']),
+      createdAt: DateTime.parse(json['createdAt']),
       additionalMinute: json['additionalMinute'] ?? 0,
       teamId: json['teamId'],
-      modifiedTables: json['modifiedTables'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'type': type.toString().split('.').last,
+      'type': type.apiName,
       'playerId': playerId,
       'minute': minute,
       'matchId': matchId,
-      'eventTime': eventTime.toIso8601String(),
+      'createdAt': createdAt.toIso8601String(),
       'additionalMinute': additionalMinute,
       'teamId': teamId,
-      'modifiedTables': modifiedTables,
     };
   }
 }

@@ -2,78 +2,89 @@ import 'package:atl_app/models/sport_category.dart';
 
 import 'presence_status.dart';
 
+enum LegOrderType {
+  firstLeg,
+  secondLeg;
 
+  String get apiName {
+    switch (this) {
+      case LegOrderType.firstLeg:
+        return 'FIRST_LEG';
+      case LegOrderType.secondLeg:
+        return 'SECOND_LEG';
+    }
+  }
+}
+
+// OK
 class Match {
-  final int id;
-
-  final DateTime? matchDate;
-  int? scoreHome;
-  int? scoreAway;
-  final int tournamentId;
-  DateTime? startMatch;
-  DateTime? endMatch;
-  DateTime? scheduledStart;
-  final int? day;
+  final double id;
+  final DateTime? scheduledStart;
+  final DateTime? startMatch;
+  final DateTime? finishMatch;
+  final double tournamentId;
+  final double? motmPlayerId;
   final String groupName;
-  int? motmPlayerId;
-
-  PresenceStatus coordinatorStatus;
-  SportCategory sportCategory;
+  final SportCategory sportCategory;
+  final LegOrderType legOrder;
+  final PresenceStatus coordinatorStatus;
+  final double? finalStageBracketId;
 
   Match({
     required this.id,
-    this.matchDate,
-    this.scoreHome,
-    this.scoreAway,
+    required this.scheduledStart,
+    required this.startMatch,
+    required this.finishMatch,
     required this.tournamentId,
-    this.day,
+    required this.motmPlayerId,
     required this.groupName,
-    this.startMatch,
-    this.endMatch,
-    this.scheduledStart,
-    this.coordinatorStatus = PresenceStatus.assigned,
-    this.motmPlayerId,
-      this.sportCategory = SportCategory.football,
+    required this.sportCategory,
+    required this.legOrder,
+    required this.coordinatorStatus,
+    required this.finalStageBracketId,
   });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'matchDate': matchDate?.toIso8601String(),
-      'scoreHome': scoreHome,
-      'scoreAway': scoreAway,
-      'tournamentId': tournamentId,
-      'day': day,
-      'groupName': groupName,
-      'startMatch': startMatch?.toIso8601String(),
-      'endMatch': endMatch?.toIso8601String(),
-      'scheduledStart': scheduledStart?.toIso8601String(),
-      'presenceStatus': coordinatorStatus.toShortString(),
-      'motmPlayerId': motmPlayerId,
-      'sportCategory': sportCategory.toString(),
-    };
-  }
 
   factory Match.fromJson(Map<String, dynamic> json) {
     return Match(
       id: json['id'],
-      matchDate:
-          json['matchDate'] != null ? DateTime.parse(json['matchDate']) : null,
-      scoreHome: json['scoreHome'],
-      scoreAway: json['scoreAway'],
-      tournamentId: json['tournamentId'],
-      groupName: json['groupName'],
-      day: json['day'],
       scheduledStart: json['scheduledStart'] != null
           ? DateTime.parse(json['scheduledStart'])
           : null,
-      coordinatorStatus: PresenceStatusExtension.fromString(json['presenceStatus']),
+      startMatch: json['startMatch'] != null
+          ? DateTime.parse(json['startMatch'])
+          : null,
+      finishMatch: json['finishMatch'] != null
+          ? DateTime.parse(json['finishMatch'])
+          : null,
+      tournamentId: json['tournamentId'],
       motmPlayerId: json['motmPlayerId'],
+      groupName: json['groupName'],
       sportCategory: SportCategory.values.firstWhere(
-        (e) => e.toString() == json['sportCategory'],
-        orElse: () => SportCategory.football,
+        (e) => e.apiName == json['sportCategory'],
       ),
-
+      legOrder: LegOrderType.values.firstWhere(
+        (e) => e.apiName == json['legOrder'],
+      ),
+      coordinatorStatus: PresenceStatus.values.firstWhere(
+        (e) => e.apiName == json['coordinatorStatus'],
+      ),
+      finalStageBracketId: json['finalStageBracketId'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'scheduledStart': scheduledStart?.toIso8601String(),
+      'startMatch': startMatch?.toIso8601String(),
+      'finishMatch': finishMatch?.toIso8601String(),
+      'tournamentId': tournamentId,
+      'motmPlayerId': motmPlayerId,
+      'groupName': groupName,
+      'sportCategory': sportCategory.apiName,
+      'legOrder': legOrder.apiName,
+      'coordinatorStatus': coordinatorStatus.apiName,
+      'finalStageBracketId': finalStageBracketId,
+    };
   }
 }

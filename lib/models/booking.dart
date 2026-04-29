@@ -1,8 +1,47 @@
 import 'sport_category.dart';
 
-enum BookingStatus { booked, full, inProgress, finished, refund, canceled }
+enum BookingStatus {
+  booked,
+  full,
+  inProgress,
+  finished,
+  refund,
+  canceled;
 
-enum BookingType { private, lobby, match }
+  String get apiName {
+    switch (this) {
+      case BookingStatus.booked:
+        return 'BOOKED';
+      case BookingStatus.full:
+        return 'FULL';
+      case BookingStatus.inProgress:
+        return 'IN_PROGRESS';
+      case BookingStatus.finished:
+        return 'FINISHED';
+      case BookingStatus.refund:
+        return 'REFUND';
+      case BookingStatus.canceled:
+        return 'CANCELED';
+    }
+  }
+}
+
+enum BookingType {
+  private,
+  lobby,
+  match;
+
+  String get apiName {
+    switch (this) {
+      case BookingType.private:
+        return 'PRIVATE';
+      case BookingType.lobby:
+        return 'LOBBY';
+      case BookingType.match:
+        return 'MATCH';
+    }
+  }
+}
 
 extension BookingStatusExtension on BookingStatus {
   String get displayName {
@@ -42,27 +81,26 @@ extension BookingStatusExtension on BookingStatus {
   }
 }
 
+// OK
 class Booking {
-  final int id;
-  final int fieldId;
+  final double id;
   final DateTime startTime;
   final DateTime finishTime;
   BookingStatus status;
-  final BookingType type;
-  final DateTime createdAt;
   final SportCategory sportCategory;
+  final double fieldId;
+  final BookingType bookingType;
 
   Booking({
     required this.id,
     required this.fieldId,
     required DateTime startTime,
     required DateTime finishTime,
-    this.status = BookingStatus.booked,
-    required this.type,
+    required this.status,
+    required this.bookingType,
     this.sportCategory = SportCategory.football,
   }) : startTime = startTime.toUtc(),
-       finishTime = finishTime.toUtc(),
-       createdAt = DateTime.now().toUtc();
+       finishTime = finishTime.toUtc();
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
@@ -70,12 +108,18 @@ class Booking {
       fieldId: json['fieldId'],
       startTime: DateTime.parse(json['startDateTime']),
       finishTime: DateTime.parse(json['finishDateTime']),
-      status: BookingStatusExtension.fromString(json['status']),
-      type: BookingType.values.firstWhere(
-        (e) => e.toString() == json['type'],
+      status: BookingStatus.values.firstWhere(
+        (e) => e.apiName == json['status'],
+        orElse: () => BookingStatus.booked,
+      ),
+      bookingType: BookingType.values.firstWhere(
+        (e) => e.apiName == json['bookingType'],
         orElse: () => BookingType.match,
       ),
-      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
+      sportCategory: SportCategory.values.firstWhere(
+        (e) => e.apiName == json['sportCategory'],
+        orElse: () => SportCategory.football,
+      ),
     );
   }
 
@@ -85,9 +129,9 @@ class Booking {
       'fieldId': fieldId,
       'startDateTime': startTime.toIso8601String(),
       'finishDateTime': finishTime.toIso8601String(),
-      'status': status.toShortString(),
-      'type': type.toString(),
-      'sportCategory': sportCategory.toString(),
+      'status': status.apiName,
+      'bookingType': bookingType.apiName,
+      'sportCategory': sportCategory.apiName,
     };
   }
 }

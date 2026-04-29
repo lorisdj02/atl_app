@@ -1,63 +1,45 @@
-import 'account.dart';
-
 /// Modello Coordinator dal database
-class Coordinator extends Account {
-  final int coordinatorId;
+/// OK
+class Coordinator {
+  final double coordinatorId;
+  final String name;
+  final String surname;
+  final double accountId;
+  final String username;
+  final String? imageUrl;
+  final double prefferdCityId;
   final int level;
 
   Coordinator({
-    required super.id,
-    required super.username,
-    required super.email,
-    required super.firebaseUid,
-    required super.createdAt,
-    super.stripeId,
-    super.isVip = false,
-    required super.phone,
+    required this.accountId,
     required this.coordinatorId,
-    required super.name,
-    required super.surname,
     required this.level,
-    super.passwordMD5,
-    super.imageUrl,
-    required super.birthdate,
-    super.startVip,
-    super.endVip,
-    super.vipType = VipType.none,
-  }) : super(role: AccountRole.coordinator);
+    required this.name,
+    required this.surname,
+    required this.username,
+    required this.imageUrl,
+    required this.prefferdCityId,
+  });
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
     return Coordinator(
-      id: json['id'],
-      username: json['username'],
-      email: json['email'],
-      firebaseUid: json['firebaseUid'],
-      createdAt: DateTime.parse(json['createdAt']),
-      stripeId: json['stripeId'],
-      isVip: json['isVip'] ?? false,
-      phone: json['phone'],
+      accountId: json['accountId'],
       coordinatorId: json['coordinatorId'],
+      level: json['level'],
       name: json['name'],
       surname: json['surname'],
-      level: json['level'],
-      passwordMD5: json['passwordMd5'],
+      username: json['username'],
       imageUrl: json['imageUrl'],
-      birthdate: DateTime.parse(json['birthdate']),
-      startVip: json['startVip'] != null
-          ? DateTime.parse(json['startVip'])
-          : null,
-      endVip: json['endVip'] != null ? DateTime.parse(json['endVip']) : null,
-      vipType: json['vipType'] != null
-          ? VipType.values.firstWhere((e) => e.name == json['vipType'])
-          : VipType.none,
+      prefferdCityId: json['prefferdCityId'],
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     return {
-      ...super.toJson(),
+      'accountId': accountId,
       'coordinatorId': coordinatorId,
+      'username': username,
+      'imageUrl': imageUrl,
       'name': name,
       'surname': surname,
       'level': level,

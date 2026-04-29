@@ -1,56 +1,41 @@
 /// Modello per le statistiche dei giocatori nei team
+/// OK
 class FootballTeamStats {
-  final int playerId;
-  final int teamId;
-  int motm;
-  int goals;
-  int redCards;
-  int yellowCards;
+  final double teamId;
+  final double playerId;
+  final int goals;
+  final int motm;
+  final int yellowCards;
+  final int redCards;
 
   FootballTeamStats({
-    required this.playerId,
     required this.teamId,
-    this.motm = 0,
-    this.goals = 0,
-    this.redCards = 0,
-    this.yellowCards = 0,
+    required this.playerId,
+    required this.goals,
+    required this.motm,
+    required this.yellowCards,
+    required this.redCards,
   });
 
   factory FootballTeamStats.fromJson(Map<String, dynamic> json) {
     return FootballTeamStats(
-      playerId: json['playerId'] as int,
-      teamId: json['teamId'] as int,
-      motm: json['motm'] as int,
-      goals: json['goals'] as int,
-      redCards: json['redCards'] as int,
-      yellowCards: json['yellowCards'] as int,
+      teamId: json['team_id']?.toDouble() ?? 0.0,
+      playerId: json['player_id']?.toDouble() ?? 0.0,
+      goals: json['goals'] ?? 0,
+      motm: json['motm'] ?? 0,
+      yellowCards: json['yellow_cards'] ?? 0,
+      redCards: json['red_cards'] ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'playerId': playerId,
-      'teamId': teamId,
-      'motm': motm,
+      'team_id': teamId,
+      'player_id': playerId,
       'goals': goals,
-      'redCards': redCards,
-      'yellowCards': yellowCards,
+      'motm': motm,
+      'yellow_cards': yellowCards,
+      'red_cards': redCards,
     };
-  }
-
-  FootballTeamStats copyWith({int? playerId, int? teamId, int? motm, int? goals, int? redCards, int? yellowCards  }) {
-    return FootballTeamStats(
-      playerId: playerId ?? this.playerId,
-      teamId: teamId ?? this.teamId,
-      motm: motm ?? this.motm,
-      goals: goals ?? this.goals,
-      redCards: redCards ?? this.redCards,
-      yellowCards: yellowCards ?? this.yellowCards,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'FootballTeamStats(playerId: $playerId, teamId: $teamId, motm: $motm, goals: $goals, redCards: $redCards, yellowCards: $yellowCards)';
   }
 }

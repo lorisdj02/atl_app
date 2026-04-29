@@ -1,59 +1,56 @@
+// OK
 class FootballStanding {
-  final int tournamentId;
-  final int teamId;
-  int points;
-  int won;
-  int drawn;
-  int lost;
-  int goalsScored;
-  int goalsConceded;
+  final double tournamentId;
+  final double teamId;
   final String groupName;
-  int rankPos;
-  bool qualified;
+  final int won;
+  final int drawn;
+  final int lost;
+  final int goalsScored;
+  final int goalsConceded;
+  final int rankPos;
+  final bool qualified;
 
   FootballStanding({
-    required this.teamId,
-    this.points = 0,
-    this.won = 0,
-    this.drawn = 0,
-    this.lost = 0,
     required this.tournamentId,
+    required this.teamId,
     required this.groupName,
-    this.goalsScored = 0,
-    this.goalsConceded = 0,
+    required this.won,
+    required this.drawn,
+    required this.lost,
+    required this.goalsScored,
+    required this.goalsConceded,
     required this.rankPos,
-    this.qualified = false,
+    required this.qualified,
   });
 
   factory FootballStanding.fromJson(Map<String, dynamic> json) {
     return FootballStanding(
-      teamId: json['teamId'],
-      points: json['points'],
-      won: json['won'],
-      drawn: json['drawn'],
-      lost: json['lost'],
-      tournamentId: json['tournamentId'],
-      groupName: json['groupName'],
-      rankPos: json['rankPos'],
-      qualified: json['qualified'],
-      goalsScored: json['goalsScored'] ?? 0,
-      goalsConceded: json['goalsConceded'] ?? 0,
+      tournamentId: json['tournament_id']?.toDouble() ?? 0.0,
+      teamId: json['team_id']?.toDouble() ?? 0.0,
+      groupName: json['group_name'] ?? '',
+      won: json['won'] ?? 0,
+      drawn: json['drawn'] ?? 0,
+      lost: json['lost'] ?? 0,
+      goalsScored: json['goals_scored'] ?? 0,
+      goalsConceded: json['goals_conceded'] ?? 0,
+      rankPos: json['rank_pos'] ?? 0,
+      qualified: json['qualified'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'teamId': teamId,
-      'points': points,
+      'tournament_id': tournamentId,
+      'team_id': teamId,
+      'group_name': groupName,
       'won': won,
       'drawn': drawn,
       'lost': lost,
-      'tournamentId': tournamentId,
-      'groupName': groupName,
-      'rankPos': rankPos,
+      'goals_scored': goalsScored,
+      'goals_conceded': goalsConceded,
+      'rank_pos': rankPos,
       'qualified': qualified,
-      'goalsScored': goalsScored,
-      'goalsConceded': goalsConceded,
     };
   }
 }

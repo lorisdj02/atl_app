@@ -32,7 +32,6 @@ extension SportCategoryExtension on SportCategory {
     }
   }
 
-
   /// Nome dello sport
   String get name {
     switch (this) {

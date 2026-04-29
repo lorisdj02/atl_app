@@ -1,24 +1,20 @@
-import 'package:atl_app/models/sport_category.dart';
 import 'package:flutter/material.dart';
 
 /// Modello Field dal database
+/// OK
 class Field {
-  final int id;
-  final int organizationId;
+  final double id;
   final String name;
+  final String address;
   final double locationLat;
   final double locationLng;
-  final double costTournament;
-  final double hourlyCostPrivate;
-  final int cityId;
-
-  // Nuovi campi
+  final double cityId;
+  final double organizationId;
+  final double hourCostTournament;
+  final double hourCostPrivate;
   final TimeOfDay openingTime;
   final TimeOfDay closingTime;
-  final List<int> closedWeekdays; // 1=Lunedì, 7=Domenica
-  final String address;
-
-  //TODO: separa sportCategory -> ogni campo può ospitare più sport? In questo caso serve una tabella di join campo-sport
+  final String closedDays; // 0000001 (Lun-Dom, 1=chiuso, 0=aperto)
 
   Field({
     required this.id,
@@ -26,13 +22,13 @@ class Field {
     required this.name,
     required this.locationLat,
     required this.locationLng,
-    required this.costTournament,
-    required this.hourlyCostPrivate,
+    required this.hourCostTournament,
+    required this.hourCostPrivate,
     required this.cityId,
-    this.openingTime = const TimeOfDay(hour: 8, minute: 0), // Default 08:00
-    this.closingTime = const TimeOfDay(hour: 23, minute: 0), // Default 23:00
-    this.closedWeekdays = const [], // Default sempre aperto
-    this.address = 'Via Roma 1',
+    required this.openingTime,
+    required this.closingTime,
+    required this.closedDays,
+    required this.address,
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {
@@ -42,8 +38,8 @@ class Field {
       name: json['name'],
       locationLat: double.parse(json['locationLat'].toString()),
       locationLng: double.parse(json['locationLng'].toString()),
-      costTournament: double.parse(json['costTournament'].toString()),
-      hourlyCostPrivate: double.parse(json['hourlyCostPrivate'].toString()),
+      hourCostTournament: double.parse(json['hourCostTournament'].toString()),
+      hourCostPrivate: double.parse(json['hourCostPrivate'].toString()),
       cityId: json['cityId'] ?? 0,
       openingTime: json['openingTime'] != null
           ? _timeFromString(json['openingTime'])
@@ -51,9 +47,8 @@ class Field {
       closingTime: json['closingTime'] != null
           ? _timeFromString(json['closingTime'])
           : const TimeOfDay(hour: 23, minute: 0),
-      closedWeekdays: json['closedWeekdays'] != null
-          ? List<int>.from(json['closedWeekdays'])
-          : [],
+      closedDays: json['closedDays'],
+      address: json['address'],
     );
   }
 
@@ -69,28 +64,29 @@ class Field {
       'name': name,
       'locationLat': locationLat,
       'locationLng': locationLng,
-      'costTournament': costTournament,
-      'hourlyCostPrivate': hourlyCostPrivate,
+      'hourCostTournament': hourCostTournament,
+      'hourCostPrivate': hourCostPrivate,
       'cityId': cityId,
       'openingTime':
           '${openingTime.hour.toString().padLeft(2, '0')}:${openingTime.minute.toString().padLeft(2, '0')}',
       'closingTime':
           '${closingTime.hour.toString().padLeft(2, '0')}:${closingTime.minute.toString().padLeft(2, '0')}',
-      'closedWeekdays': closedWeekdays,
+      'closedDays': closedDays,
+      'address': address,
     };
   }
 
   /// Formatta il costo torneo come stringa con valuta
-  String get formattedCostTournament => '€${costTournament.toStringAsFixed(2)}';
+  String get formattedCostTournament => '€${hourCostTournament.toStringAsFixed(2)}';
 
   /// Formatta il costo privato come stringa con valuta
   String get formattedHourlyCostPrivate =>
-      '€${hourlyCostPrivate.toStringAsFixed(2)}';
+      '€${hourCostPrivate.toStringAsFixed(2)}';
 
   /// Verifica se il campo è aperto in un determinato giorno/orario
   bool isOpenAt(DateTime dateTime) {
     // Controlla giorno chiusura (1=Lunedì, 7=Domenica)
-    if (closedWeekdays.contains(dateTime.weekday)) {
+    if (closedDays[dateTime.weekday - 1] == '1') {
       return false;
     }
 

@@ -1,91 +1,84 @@
+import 'package:atl_app/models/checkout_payload.dart';
+
 enum CheckoutSessionStatus {
   pending,
   completed,
   expired,
-  failed,
+  failed;
+
+  String get apiName {
+    switch (this) {
+      case CheckoutSessionStatus.pending:
+        return 'PENDING';
+      case CheckoutSessionStatus.completed:
+        return 'COMPLETED';
+      case CheckoutSessionStatus.expired:
+        return 'EXPIRED';
+      case CheckoutSessionStatus.failed:
+        return 'FAILED';
+    }
+  }
 }
 
 enum CheckoutType {
   tournamentFee,
   lobbyBookingCreate,
   lobbyBookingParticipate,
-  privateBooking
+  shop,
+  privateBooking;
+
+  String get apiName{
+    switch (this) {
+      case CheckoutType.tournamentFee:
+        return 'TOURNAMENT_FEE';
+      case CheckoutType.lobbyBookingCreate:
+        return 'LOBBY_BOOKING_CREATE';
+      case CheckoutType.lobbyBookingParticipate:
+        return 'LOBBY_BOOKING_PARTICIPATE';
+      case CheckoutType.privateBooking:
+        return 'PRIVATE_BOOKING';
+      case CheckoutType.shop:
+        return 'SHOP';
+    }
+  }
 }
 
+// OK
 class CheckoutSession {
-  final int id;
-  final int userId;
-  final String payload;
-  final double amount;
-  final DateTime createdAt;
-  CheckoutSessionStatus status;
+  final double id;
+  final double accountId;
+  final CheckoutPayload payload;
   final CheckoutType type;
-  final DateTime expiresAt;
+  final double amount;
 
   CheckoutSession({
     required this.id,
-    required this.userId,
+    required this.accountId,
     required this.payload,
-    required this.amount,
-    required this.createdAt,
-    required this.status,
     required this.type,
-    required this.expiresAt,
+    required this.amount,
   });
-
-  static CheckoutSessionStatus _parseStatus(String status) {
-    switch (status) {
-      case 'pending':
-        return CheckoutSessionStatus.pending;
-      case 'completed':
-        return CheckoutSessionStatus.completed;
-      case 'expired':
-        return CheckoutSessionStatus.expired;
-      case 'failed':
-        return CheckoutSessionStatus.failed;
-      default:
-        throw ArgumentError('Unknown status: $status');
-    }
-  }
-
-  static CheckoutType _parseType(String type) {
-    switch (type) {
-      case 'tournamentFee':
-        return CheckoutType.tournamentFee;
-      case 'lobbyBookingCreate':
-        return CheckoutType.lobbyBookingCreate;
-      case 'lobbyBookingParticipate':
-        return CheckoutType.lobbyBookingParticipate;
-      case 'privateBooking':
-        return CheckoutType.privateBooking;
-      default:
-        throw ArgumentError('Unknown type: $type');
-    }
-  }
 
   factory CheckoutSession.fromJson(Map<String, dynamic> json) {
     return CheckoutSession(
       id: json['id'],
-      userId: json['userId'],
-      payload: json['payload'],
+      accountId: json['accountId'],
+      type: CheckoutType.values.firstWhere(
+        (e) => e.apiName == json['type'],
+        orElse: () => CheckoutType.tournamentFee, // Valore di default
+      ),
+      payload: CheckoutPayload.fromJson(json['payload']),
       amount: (json['amount'] as num).toDouble(),
-      createdAt: DateTime.parse(json['createdAt']),
-      status: _parseStatus(json['status']),
-      type: _parseType(json['type']),
-      expiresAt: DateTime.parse(json['expiresAt']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userId': userId,
-      'payload': payload,
+      'accountId': accountId,
+      'type': type.apiName,
+      'payload': payload.toJson(),
       'amount': amount,
-      'createdAt': createdAt.toIso8601String(),
-      'status': status.toString().split('.').last,
-      'type': type.toString().split('.').last,
-      'expiresAt': expiresAt.toIso8601String(),
     };
   }
 }

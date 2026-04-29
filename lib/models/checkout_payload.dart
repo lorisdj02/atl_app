@@ -1,18 +1,19 @@
 import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/sport_category.dart';
 
+// OK
 class CheckoutPayload {
-  final int? tournamentId;
-  final int? lobbyId;
-  final int? playersPaid;
+  final double? tournamentId;
+  final double? lobbyId;
+  final double? playersPaid;
 
-  final int? ownerPlayerId;
+  final double? ownerPlayerId;
   final DateTime? startTime;
   final DateTime? finishTime;
   final int? totalPlayers;
   final int? playersToFind;
 
-  final int? fieldId;
+  final double? fieldId;
 
   final SportCategory? sportCategory;
 
@@ -50,11 +51,18 @@ class CheckoutPayload {
       playersToFind: json['playersToFind'],
       fieldId: json['fieldId'],
       sportCategory: json['sportCategory'] != null
-          ? SportCategory.values.byName(json['sportCategory'])
+          ? SportCategory.values.firstWhere(
+              (e) => e.apiName == json['sportCategory'],
+              orElse: () =>
+                  SportCategory.football, // Valore di default se non trovato
+            )
           : null,
       amount: json['amount']?.toDouble() ?? 0.0,
       type: json['type'] != null
-          ? CheckoutType.values.byName(json['type'])
+          ? CheckoutType.values.firstWhere(
+              (e) => e.apiName == json['type'],
+              orElse: () => CheckoutType.tournamentFee, // Valore di default
+            )
           : CheckoutType.tournamentFee, // Valore di default
     );
   }
@@ -70,9 +78,9 @@ class CheckoutPayload {
       'totalPlayers': totalPlayers,
       'playersToFind': playersToFind,
       'fieldId': fieldId,
-      'sportCategory': sportCategory?.name,
+      'sportCategory': sportCategory?.apiName,
       'amount': amount,
-      'type': type.name,
+      'type': type.apiName,
     };
   }
 }

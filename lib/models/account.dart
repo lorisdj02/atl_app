@@ -1,15 +1,10 @@
-// Import necessari per il factory
-import 'player.dart';
-import 'coordinator.dart';
-import 'referee.dart';
-import 'organization.dart';
-
 /// Enum per i ruoli utente
 enum AccountRole {
   player,
   coordinator,
   referee,
   organization,
+  admin,
   guest;
 
   String get displayName {
@@ -22,76 +17,107 @@ enum AccountRole {
         return 'Referee';
       case AccountRole.organization:
         return 'Organization';
+      case AccountRole.admin:
+        return 'Admin';
       case AccountRole.guest:
         return 'Guest';
     }
   }
+
+  String get apiValue {
+    switch (this) {
+      case AccountRole.player:
+        return 'PLAYER';
+      case AccountRole.coordinator:
+        return 'COORDINATOR';
+      case AccountRole.referee:
+        return 'REFEREE';
+      case AccountRole.organization:
+        return 'ORGANIZATION';
+      case AccountRole.guest:
+        return 'GUEST';
+      case AccountRole.admin:
+        return 'ADMIN';
+    }
+  }
 }
 
-enum VipType { none, monthly, yearly }
+enum VipType {
+  none,
+  monthly,
+  yearly;
+
+  String get apiName {
+    switch (this) {
+      case VipType.none:
+        return 'NONE';
+      case VipType.monthly:
+        return 'MONTHLY';
+      case VipType.yearly:
+        return 'YEARLY';
+    }
+  }
+}
 
 enum AccountStatus { active, inactive, deleted }
 
+// OK
 /// Modello astratto Account dal database
 class Account {
-  final int id;
-  String username;
-  int? preferredCityId;
-  String email;
-  String firebaseUid;
-  final DateTime createdAt;
-  String? stripeId;
-  final AccountRole role;
-  String phone;
-  String? passwordMD5;
-  String? imageUrl;
+  final double id;
+  final String username;
   final String name;
-  String surname;
+  final String surname;
+  final String email;
+  final String phone;
+  final String? imageUrl;
+  final AccountRole role;
   final DateTime birthdate;
-  bool isVip;
-  DateTime? startVip;
-  DateTime? endVip;
-  VipType vipType;
-  AccountStatus status;
+  final bool vip;
+  final VipType vipType;
+  final DateTime? startVip;
+  final DateTime? endVip;
+  final double? preferredCityId;
 
   Account({
     required this.id,
     required this.username,
     required this.email,
-    required this.firebaseUid,
-    required this.createdAt,
-    this.stripeId,
     required this.role,
-    this.isVip = false,
     required this.phone,
-    this.passwordMD5,
-    this.imageUrl,
     required this.name,
     required this.surname,
     required this.birthdate,
-    this.startVip,
-    this.endVip,
-    this.vipType = VipType.none,
-    this.status = AccountStatus.active,
-    this.preferredCityId = 1,
+    required this.vip,
+    required this.vipType,
+    required this.startVip,
+    required this.endVip,
+    required this.preferredCityId,
+    required this.imageUrl,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
   factory Account.fromJson(Map<String, dynamic> json) {
-    final role = _roleFromString(json['role']);
-
-    switch (role) {
-      case AccountRole.player:
-        return Player.fromJson(json);
-      case AccountRole.coordinator:
-        return Coordinator.fromJson(json);
-      case AccountRole.referee:
-        return Referee.fromJson(json);
-      case AccountRole.organization:
-        return Organization.fromJson(json);
-      case AccountRole.guest:
-        return throw Exception('Guest role cannot be instantiated from JSON');
-    }
+    return Account(
+      id: json['id'],
+      username: json['username'],
+      email: json['email'],
+      role: AccountRole.values.firstWhere((e) => e.apiValue == json['role']),
+      phone: json['phone'],
+      name: json['name'],
+      surname: json['surname'],
+      birthdate: DateTime.parse(json['birthdate']),
+      vip: json['vip'],
+      vipType: VipType.values.firstWhere((e) => e.apiName == json['vipType']),
+      startVip: json['startVip'] != null
+          ? DateTime.parse(json['startVip'])
+          : null,
+      endVip: json['endVip'] != null ? DateTime.parse(json['endVip']) : null,
+      preferredCityId: json['preferredCityId'] != null
+          ? (json['preferredCityId'] as num).toDouble()
+          : null,
+      imageUrl: json['imageUrl'],
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -99,89 +125,22 @@ class Account {
       'id': id,
       'username': username,
       'email': email,
-      'firebaseUid': firebaseUid,
-      'createdAt': createdAt.toIso8601String(),
-      'stripeId': stripeId,
-      'role': role.name.toUpperCase(),
-      'vip': isVip,
+      'role': role.apiValue,
+      'vip': vip,
       'phone': phone,
-      'passwordMd5': passwordMD5,
       'imageUrl': imageUrl,
       'name': name,
       'surname': surname,
       'birthdate': birthdate.toIso8601String(),
       'startVip': startVip?.toIso8601String(),
       'endVip': endVip?.toIso8601String(),
-      'vipType': vipType.name.toUpperCase(),
-      'status': status.name.toUpperCase(),
+      'vipType': vipType.apiName,
       'preferredCityId': preferredCityId,
     };
   }
 
   /// Nome visualizzato del ruolo
   String get roleDisplayName => role.displayName;
-
-  static AccountRole _roleFromString(String role) {
-    switch (role.toUpperCase()) {
-      case 'PLAYER':
-        return AccountRole.player;
-      case 'COORDINATOR':
-        return AccountRole.coordinator;
-      case 'REFEREE':
-        return AccountRole.referee;
-      case 'ORGANIZATION':
-        return AccountRole.organization;
-      default:
-        throw Exception('Unknown role: $role');
-    }
-  }
-
-  Account copyWith({
-    int? id,
-    String? username,
-    String? email,
-    String? firebaseUid,
-    DateTime? createdAt,
-    double? balance,
-    DateTime? lastWithdraw,
-    String? stripeId,
-    AccountRole? role,
-    bool? isVip,
-    String? phone,
-    String? passwordMD5,
-    String? imageUrl,
-    int? teamId,
-    DateTime? birthdate,
-    String? name,
-    String? surname,
-    DateTime? startVip,
-    DateTime? endVip,
-    VipType? vipType,
-    AccountStatus? status,
-    int? preferredCityId,
-  }) {
-    return Account(
-      id: id ?? this.id,
-      username: username ?? this.username,
-      email: email ?? this.email,
-      firebaseUid: firebaseUid ?? this.firebaseUid,
-      createdAt: createdAt ?? this.createdAt,
-      stripeId: stripeId ?? this.stripeId,
-      role: role ?? this.role,
-      isVip: isVip ?? this.isVip,
-      phone: phone ?? this.phone,
-      passwordMD5: passwordMD5 ?? this.passwordMD5,
-      imageUrl: imageUrl ?? this.imageUrl,
-      name: name ?? this.name,
-      surname: surname ?? this.surname,
-      birthdate: birthdate ?? this.birthdate,
-      startVip: startVip ?? this.startVip,
-      endVip: endVip ?? this.endVip,
-      vipType: vipType ?? this.vipType,
-      status: status ?? this.status,
-      preferredCityId: preferredCityId ?? this.preferredCityId,
-    );
-  }
 
   bool get isGuest => role == AccountRole.guest;
   bool get isPlayer => role == AccountRole.player;

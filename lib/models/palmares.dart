@@ -4,7 +4,24 @@ enum PalmaresPosition {
   semi,
   round8,
   round16,
-  group_stage;
+  groupStage;
+
+  String get apiName {
+    switch (this) {
+      case PalmaresPosition.winner:
+        return 'WINNER';
+      case PalmaresPosition.finalist:
+        return 'FINALIST';
+      case PalmaresPosition.semi:
+        return 'SEMI';
+      case PalmaresPosition.round8:
+        return 'ROUND8';
+      case PalmaresPosition.round16:
+        return 'ROUND16';
+      case PalmaresPosition.groupStage:
+        return 'GROUP_STAGE';
+    }
+  }
 
   String get displayName {
     switch (this) {
@@ -18,7 +35,7 @@ enum PalmaresPosition {
         return 'Round of 8';
       case PalmaresPosition.round16:
         return 'Round of 16';
-      case PalmaresPosition.group_stage:
+      case PalmaresPosition.groupStage:
         return 'Group Stage';
     }
   }
@@ -26,35 +43,28 @@ enum PalmaresPosition {
   static PalmaresPosition fromString(String value) {
     return PalmaresPosition.values.firstWhere(
       (e) => e.name == value,
-      orElse: () => PalmaresPosition.group_stage,
+      orElse: () => PalmaresPosition.groupStage,
     );
   }
 }
 
 class Palmares {
-  final int tournamentId;
-  final int teamId;
+  final double tournamentId;
   final PalmaresPosition position;
 
-  Palmares({
-    required this.tournamentId,
-    required this.teamId,
-    required this.position,
-  });
+  Palmares({required this.tournamentId, required this.position});
 
   factory Palmares.fromJson(Map<String, dynamic> json) {
     return Palmares(
       tournamentId: json['tournamentId'],
-      teamId: json['teamId'],
-      position: PalmaresPosition.fromString(json['position']),
+      position: PalmaresPosition.values.firstWhere(
+        (e) => e.apiName == json['position'],
+        orElse: () => PalmaresPosition.groupStage,
+      ),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'tournamentId': tournamentId,
-      'teamId': teamId,
-      'position': position.name,
-    };
+    return {'tournamentId': tournamentId, 'position': position.apiName};
   }
 }

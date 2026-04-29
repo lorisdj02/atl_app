@@ -1,60 +1,64 @@
 enum GrowthStepType {
   referee,
-  coordinator
+  coordinator;
+
+  String get apiName {
+    switch (this) {
+      case GrowthStepType.referee:
+        return 'REFEREE';
+      case GrowthStepType.coordinator:
+        return 'COORDINATOR';
+    }
+  }
 }
 
-class GrowthStep{
-  final GrowthStepType type;
+// OK
+class GrowthStep {
   final String title;
   final int level;
-  final int x; // Number of games or tournaments to consider for the average rating
+  final int x;
 
-  final double? minRatingOverLastXGames; // For referee: minimum average rating over the last x games
-  final int? minRefereedGames;
+  final double? minRatingOverLastXMatches;
+  final int? minRefereedMatches;
 
-  final double? minRatingOverLastXTournaments; // For coordinator: minimum average rating over the last x tournaments
+  final double? minRatingOverLastXTournaments;
   final int? minCoordinatedTournaments;
-  final double? coordinatorPayPerGame;
-
+  final double? coordinatorPayPerMatch;
 
   GrowthStep({
-    required this.type,
     required this.title,
     required this.level,
     required this.x,
-    this.minRatingOverLastXGames,
-    this.minRatingOverLastXTournaments,
-    this.minRefereedGames,
-    this.minCoordinatedTournaments,
-    this.coordinatorPayPerGame,
+    required this.minRatingOverLastXMatches,
+    required this.minRefereedMatches,
+    required this.minRatingOverLastXTournaments,
+    required this.minCoordinatedTournaments,
+    required this.coordinatorPayPerMatch,
   });
 
   factory GrowthStep.fromJson(Map<String, dynamic> json) {
     return GrowthStep(
-      type: GrowthStepType.values.firstWhere((e) => e.toString() == 'GrowthStepType.' + json['type']),
-      title: json['title'],
-      level: json['level'],
-      x: json['x'],
-      minRatingOverLastXGames: json['minRatingOverLastXGames'] != null ? (json['minRatingOverLastXGames'] as num).toDouble() : null,
-      minRatingOverLastXTournaments: json['minRatingOverLastXTournaments'] != null ? (json['minRatingOverLastXTournaments'] as num).toDouble() : null,
-      minRefereedGames: json['minRefereedGames'],
-      minCoordinatedTournaments: json['minCoordinatedTournaments'],
-      coordinatorPayPerGame: json['coordinatorPayPerGame'] != null ? (json['coordinatorPayPerGame'] as num).toDouble() : null,
+      title: json['title'] ?? '',
+      level: json['level'] ?? 0,
+      x: json['x'] ?? 0,
+      minRatingOverLastXMatches: (json['min_rating_over_last_x_matches'] as num?)?.toDouble(),
+      minRefereedMatches: json['min_refereed_matches'],
+      minRatingOverLastXTournaments: (json['min_rating_over_last_x_tournaments'] as num?)?.toDouble(),
+      minCoordinatedTournaments: json['min_coordinated_tournaments'],
+      coordinatorPayPerMatch: (json['coordinator_pay_per_match'] as num?)?.toDouble(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'type': type.toString().split('.').last,
       'title': title,
       'level': level,
       'x': x,
-      'minRatingOverLastXGames': minRatingOverLastXGames,
-      'minRatingOverLastXTournaments': minRatingOverLastXTournaments,
-      'minRefereedGames': minRefereedGames,
-      'minCoordinatedTournaments': minCoordinatedTournaments,
-      'coordinatorPayPerGame': coordinatorPayPerGame,
+      'min_rating_over_last_x_matches': minRatingOverLastXMatches,
+      'min_refereed_matches': minRefereedMatches,
+      'min_rating_over_last_x_tournaments': minRatingOverLastXTournaments,
+      'min_coordinated_tournaments': minCoordinatedTournaments,
+      'coordinator_pay_per_match': coordinatorPayPerMatch,
     };
   }
-
 }

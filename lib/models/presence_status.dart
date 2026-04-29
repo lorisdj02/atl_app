@@ -2,7 +2,21 @@ enum PresenceStatus {
   assigned,
   present,
   absent,
-  late}
+  late;
+
+  String get apiName {
+    switch (this) {
+      case PresenceStatus.assigned:
+        return 'ASSIGNED';
+      case PresenceStatus.present:
+        return 'PRESENT';
+      case PresenceStatus.absent:
+        return 'ABSENT';
+      case PresenceStatus.late:
+        return 'LATE';
+    }
+  }
+}
 
 extension PresenceStatusExtension on PresenceStatus {
   String toShortString() {
@@ -21,8 +35,6 @@ extension PresenceStatusExtension on PresenceStatus {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'presenceStatus': toShortString(),
-    };
+    return {'presenceStatus': toShortString()};
   }
 }
