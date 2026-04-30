@@ -29,6 +29,7 @@ class Match {
   final LegOrderType legOrder;
   final PresenceStatus coordinatorStatus;
   final double? finalStageBracketId;
+  final int? day;
 
   Match({
     required this.id,
@@ -42,6 +43,7 @@ class Match {
     required this.legOrder,
     required this.coordinatorStatus,
     required this.finalStageBracketId,
+    required this.day,
   });
 
   factory Match.fromJson(Map<String, dynamic> json) {
@@ -69,6 +71,7 @@ class Match {
         (e) => e.apiName == json['coordinatorStatus'],
       ),
       finalStageBracketId: json['finalStageBracketId'],
+      day: json['day'],
     );
   }
 
@@ -85,6 +88,7 @@ class Match {
       'legOrder': legOrder.apiName,
       'coordinatorStatus': coordinatorStatus.apiName,
       'finalStageBracketId': finalStageBracketId,
+      'day': day,
     };
   }
 }

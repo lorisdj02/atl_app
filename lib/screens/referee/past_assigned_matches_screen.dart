@@ -29,9 +29,9 @@ class PastAssignedMatchesScreen extends StatefulWidget {
 class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
   bool _isLoading = true;
   List<FootballMatch> _assignedMatches = [];
-  Map<int, Team> _teamsCache = {};
-  Map<int, int> _minutesRoundPerTournament = {};
-  Map<int, int> _minutesPausePerTournament = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, int> _minutesRoundPerTournament = {};
+  Map<double, int> _minutesPausePerTournament = {};
 
   @override
   void initState() {
@@ -160,7 +160,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         onTap: _onNavTap,
         currentSport: widget.currentSport,
         isHome: false,
-        userId: Provider.of<AccountProvider>(
+        accountId: Provider.of<AccountProvider>(
           context,
           listen: false,
         ).activeAccount?.id,

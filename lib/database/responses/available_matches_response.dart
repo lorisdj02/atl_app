@@ -4,11 +4,11 @@ import 'package:atl_app/models/team.dart';
 
 class AvailableMatchesResponse {
   final List<FootballMatch> footballMatches;
-  final Map<int, Team> teamsCache;
-  final Map<int, int> minutesRoundPerTournament;
-  final Map<int, int> minutesPausePerTournament;
-  final Map<int, List<FootballMatch>> footballMatchesPerSport;
-  final Map<int, String> sportNames;
+  final Map<double, Team> teamsCache;
+  final Map<double, int> minutesRoundPerTournament;
+  final Map<double, int> minutesPausePerTournament;
+  final Map<double, List<FootballMatch>> footballMatchesPerSport;
+  final Map<double, String> sportNames;
 
   AvailableMatchesResponse({
     required this.footballMatches,
@@ -26,35 +26,35 @@ class AvailableMatchesResponse {
           (e) => FootballMatch.fromJson(e as Map<String, dynamic>),
         ),
       ),
-      teamsCache: Map<int, Team>.from(
+      teamsCache: Map<double, Team>.from(
         (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
-          (key, value) => MapEntry(int.parse(key), Team.fromJson(value as Map<String, dynamic>)),
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value as Map<String, dynamic>)),
         ),
       ),
       minutesRoundPerTournament:
-          Map<int, int>.from(
+          Map<double, int>.from(
         (json[ApiJsonKeys.minutesRoundPerTournament] as Map<String, dynamic>)
-            .map((key, value) => MapEntry(int.parse(key), value as int)),
+            .map((key, value) => MapEntry(double.parse(key), value as int)),
       ),
           minutesPausePerTournament:
-          Map<int, int>.from(
+          Map<double, int>.from(
             (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
-                .map((key, value) => MapEntry(int.parse(key), value as int)),
+                .map((key, value) => MapEntry(double.parse(key), value as int)),
           ),
       footballMatchesPerSport:
-          Map<int, List<FootballMatch>>.from(
+          Map<double, List<FootballMatch>>.from(
             (json[ApiJsonKeys.footballMatchesPerSport] as Map<String, dynamic>).map(
               (key, value) => MapEntry(
-                int.parse(key),
+                double.parse(key),
                 (value as List<dynamic>)
                     .map((e) => FootballMatch.fromJson(e as Map<String, dynamic>))
                     .toList(),
               ),
             ),
           ),
-      sportNames: Map<int, String>.from(
+      sportNames: Map<double, String>.from(
         (json[ApiJsonKeys.sportNames] as Map<String, dynamic>).map(
-          (key, value) => MapEntry(int.parse(key), value as String),
+          (key, value) => MapEntry(double.parse(key), value as String),
         ),
       ),
     );

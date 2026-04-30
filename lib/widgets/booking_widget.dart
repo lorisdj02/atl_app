@@ -182,7 +182,7 @@ class _BookingWidgetState extends State<BookingWidget> {
                       Icon(Icons.group, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
                       Text(
-                        '${_lobbyBooking.maxPlayers - _lobbyBooking.playersToFind}/${_lobbyBooking.maxPlayers} ${l10n.players}',
+                        '${_lobbyBooking.totalPlayers - _lobbyBooking.playersToFind}/${_lobbyBooking.totalPlayers} ${l10n.players}',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

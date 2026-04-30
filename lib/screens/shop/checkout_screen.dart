@@ -10,7 +10,7 @@ import '../../l10n/app_localizations.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final SportCategory sportCategory;
-  final int sessionId;
+  final double sessionId;
 
   const CheckoutScreen({
     super.key,
@@ -239,6 +239,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         CheckoutType.lobbyBookingCreate ||
         CheckoutType.lobbyBookingParticipate => _buildLobbyDetails(),
         CheckoutType.privateBooking => _buildPrivateDetails(),
+        _ => const SizedBox(),
       },
     );
   }

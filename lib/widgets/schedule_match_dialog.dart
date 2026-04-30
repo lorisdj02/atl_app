@@ -8,8 +8,8 @@ import '../models/booking.dart';
 import '../l10n/app_localizations.dart';
 
 class ScheduleMatchDialog extends StatefulWidget {
-  final int tournamentId;
-  final int fieldId;
+  final double tournamentId;
+  final double fieldId;
   final SportCategory currentSport;
   final DateTime? currentScheduledStart;
 

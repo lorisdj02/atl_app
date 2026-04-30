@@ -6,7 +6,7 @@ class FootballMatchBracketResponse {
   final FootballMatch match;
   final Team? homeTeam;
   final Team? awayTeam;
-  final int? winnerId;
+  final double? winnerId;
 
   FootballMatchBracketResponse({
     required this.match,
@@ -28,7 +28,7 @@ class FootballMatchBracketResponse {
           : Team.fromJson(json[ApiJsonKeys.awayTeam] as Map<String, dynamic>),
       winnerId: json[ApiJsonKeys.winnerId] == null
           ? null
-          : json[ApiJsonKeys.winnerId] as int?,
+          : json[ApiJsonKeys.winnerId] as double?,
     );
   }
 }

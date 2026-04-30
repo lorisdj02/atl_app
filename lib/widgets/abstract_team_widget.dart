@@ -29,7 +29,7 @@ abstract class AbstractTeamWidget extends StatelessWidget {
     );
 
     if (userProvider.isPlayer && userProvider.activeRoleId != null) {
-      final int? teamId = userProvider.currentTeamId;
+      final double? teamId = userProvider.currentTeamId;
 
 
       if (!context.mounted) return;

@@ -7,10 +7,10 @@ import 'package:atl_app/models/tournament.dart';
 class AllTournamentsResponse {
   final List<Tournament> tournaments;
   final List<Tournament> myTournaments;
-  final Map<int, Coordinator> coordinatorsCache;
-  final Map<int, Field> fieldsCache;
+  final Map<double, Coordinator> coordinatorsCache;
+  final Map<double, Field> fieldsCache;
   final List<City> cities;
-  final Map<int, String> cityNamePerField;
+  final Map<double, String> cityNamePerField;
   final double prizeMin;
   final double prizeMax;
   final double feeMin;
@@ -40,17 +40,17 @@ class AllTournamentsResponse {
       coordinatorsCache:
           (json[ApiJsonKeys.coordinatorsCache] as Map<String, dynamic>).map(
             (key, value) =>
-                MapEntry(int.parse(key), Coordinator.fromJson(value)),
+                MapEntry(double.parse(key), Coordinator.fromJson(value)),
           ),
       fieldsCache: (json[ApiJsonKeys.fieldsCache] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(int.parse(key), Field.fromJson(value)),
+        (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
       ),
       cities: (json[ApiJsonKeys.cities] as List)
           .map((e) => City.fromJson(e))
           .toList(),
       cityNamePerField:
           (json[ApiJsonKeys.cityNamePerField] as Map<String, dynamic>).map(
-            (key, value) => MapEntry(int.parse(key), value as String),
+            (key, value) => MapEntry(double.parse(key), value as String),
           ),
       prizeMin: json[ApiJsonKeys.prizeMin] as double,
       prizeMax: json[ApiJsonKeys.prizeMax] as double,

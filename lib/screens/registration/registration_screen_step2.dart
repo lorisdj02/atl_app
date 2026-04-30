@@ -13,8 +13,8 @@ class RegistrationScreenStep2 extends StatefulWidget {
   final TextEditingController phoneController;
   final String phonePrefix;
   final Function(String) onPhonePrefixChanged;
-  final int? preferredCityId;
-  final Function(int?) onCityChanged;
+  final double? preferredCityId;
+  final Function(double?) onCityChanged;
   final DateTime? birthday;
   final Function(DateTime) onBirthdayChanged;
   final VoidCallback onContinue;
@@ -254,7 +254,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: DropdownButtonFormField<int>(
+      child: DropdownButtonFormField<double>(
         value: widget.preferredCityId,
         decoration: const InputDecoration(border: InputBorder.none),
         hint: Text(

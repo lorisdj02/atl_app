@@ -10,9 +10,9 @@ import '../../widgets/participation_card.dart';
 import '../../l10n/app_localizations.dart';
 
 class PayParticipationScreen extends StatefulWidget {
-  final int teamId;
+  final double teamId;
   final SportCategory sportCategory;
-  final int playerId;
+  final double playerId;
 
   const PayParticipationScreen({
     super.key,
@@ -27,8 +27,8 @@ class PayParticipationScreen extends StatefulWidget {
 
 class _PayParticipationScreenState extends State<PayParticipationScreen> {
   List<TournamentParticipation> _tournamentParticipations = [];
-  Map<int, Tournament?> _tournamentsCache = {};
-  Map<int, bool> _isCalledUpPerTournament = {};
+  Map<double, Tournament?> _tournamentsCache = {};
+  Map<double, bool> _isCalledUpPerTournament = {};
   bool _isLoading = true;
 
   @override

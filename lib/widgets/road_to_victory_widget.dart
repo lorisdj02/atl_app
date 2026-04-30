@@ -9,7 +9,7 @@ import '../l10n/app_localizations.dart';
 
 /// Widget per visualizzare il tabellone Road to Victory di un torneo
 class RoadToVictoryWidget extends StatefulWidget {
-  final int tournamentId;
+  final double tournamentId;
   final SportCategory sportCategory;
 
   const RoadToVictoryWidget({
@@ -116,7 +116,7 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Center(child: _buildBracket(_tournament!.qualified)),
+      child: Center(child: _buildBracket(_tournament!.numTeamsQualified)),
     );
   }
 
@@ -313,8 +313,8 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
     // Ordina per ID e prendi quello con ID più basso (per gestire andata/ritorno)
     matches.sort((a, b) => a.id.compareTo(b.id));
     final match = matches.first;
-    int? nextRoundHomeTeamId;
-    int? nextRoundAwayTeamId;
+    double? nextRoundHomeTeamId;
+    double? nextRoundAwayTeamId;
 
     // Trova i team del turno successivo per determinare i vincitori
     if (!isFinal) {

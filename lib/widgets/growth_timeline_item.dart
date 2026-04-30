@@ -185,13 +185,13 @@ class GrowthTimelineItem extends StatelessWidget {
         children: [
           _reqRow(
             Icons.sports_score_outlined,
-            l10n.minGamesRefereed(step.minRefereedGames ?? 0),
+            l10n.minGamesRefereed(step.minRefereedMatches ?? 0),
             color,
           ),
           const SizedBox(height: 4),
           _reqRow(
             Icons.star_outline,
-            l10n.avgRatingGames(step.minRatingOverLastXGames ?? 0, step.x),
+            l10n.avgRatingGames(step.minRatingOverLastXMatches ?? 0, step.x),
             color,
           ),
         ],
@@ -234,12 +234,12 @@ class GrowthTimelineItem extends StatelessWidget {
       return Wrap(spacing: 8, runSpacing: 6, children: chips);
     }
 
-    if (isCoordinator && step.coordinatorPayPerGame != null) {
+    if (isCoordinator && step.coordinatorPayPerMatch != null) {
       final color =
           ATLColors.darkBlue.withOpacity(_isFuture ? 0.35 : 1.0);
       return _infoChip(
         icon: Icons.payments_outlined,
-        text: l10n.payPerGame(step.coordinatorPayPerGame!.toStringAsFixed(2)),
+        text: l10n.payPerMatch(step.coordinatorPayPerMatch!.toStringAsFixed(2)),
         bg: ATLColors.darkBlue.withOpacity(_isFuture ? 0.05 : 0.08),
         color: color,
       );
@@ -253,8 +253,8 @@ class GrowthTimelineItem extends StatelessWidget {
     final base = ATLColors.getPrimaryColor(cat);
     final textColor = base.withOpacity(_isFuture ? 0.35 : 1.0);
     final payText = (min == max)
-        ? l10n.payPerGame(min.toStringAsFixed(2))
-        : l10n.payPerGame('€${min.toStringAsFixed(2)} – €${max.toStringAsFixed(2)}');
+        ? l10n.payPerMatch(min.toStringAsFixed(2))
+        : l10n.payPerMatch('€${min.toStringAsFixed(2)} – €${max.toStringAsFixed(2)}');
 
     return _infoChip(
       icon: cat.icon,

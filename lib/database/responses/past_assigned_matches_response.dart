@@ -4,9 +4,9 @@ import 'package:atl_app/models/team.dart';
 
 class PastAssignedMatchesResponse {
   final List<FootballMatch> footballMatches;
-  final Map<int, Team> teamsCache;
-  final Map<int, int> minutesRoundPerTournament;
-  final Map<int, int> minutesPausePerTournament;
+  final Map<double, Team> teamsCache;
+  final Map<double, int> minutesRoundPerTournament;
+  final Map<double, int> minutesPausePerTournament;
 
   PastAssignedMatchesResponse({
     required this.footballMatches,
@@ -22,18 +22,18 @@ class PastAssignedMatchesResponse {
           (e) => FootballMatch.fromJson(e),
         ),
       ),
-      teamsCache: Map<int, Team>.from(
+      teamsCache: Map<double, Team>.from(
         (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
-          (key, value) => MapEntry(int.parse(key), Team.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
         ),
       ),
-      minutesRoundPerTournament: Map<int, int>.from(
+      minutesRoundPerTournament: Map<double, int>.from(
         (json[ApiJsonKeys.minutesRoundPerTournament] as Map<String, dynamic>)
-            .map((key, value) => MapEntry(int.parse(key), value as int)),
+            .map((key, value) => MapEntry(double.parse(key), value as int)),
       ),
-      minutesPausePerTournament: Map<int, int>.from(
+      minutesPausePerTournament: Map<double, int>.from(
         (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
-            .map((key, value) => MapEntry(int.parse(key), value as int)),
+            .map((key, value) => MapEntry(double.parse(key), value as int)),
       ),
     );
   }

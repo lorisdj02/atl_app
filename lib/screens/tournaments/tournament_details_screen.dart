@@ -36,7 +36,7 @@ class TournamentDetailsScreen extends StatefulWidget {
 }
 
 class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
-  Map<int, Team> _teamCache = {};
+  Map<double, Team> _teamCache = {};
   bool _isLoading = true;
   bool _isLoadingTeams = false;
   Field? _tournamentField;
@@ -91,9 +91,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
     if (_currentPlayer == null || _playerTeam == null) return false;
 
     // Può gestire call-ups se è capitano, vice1 o vice2
-    return _currentPlayer!.id == _playerTeam!.captainId ||
-        _currentPlayer!.id == _playerTeam!.vice1Id ||
-        _currentPlayer!.id == _playerTeam!.vice2Id;
+    return _currentPlayer!.playerId == _playerTeam!.captainPlayerId ||
+        _currentPlayer!.playerId == _playerTeam!.vice1PlayerId ||
+        _currentPlayer!.playerId == _playerTeam!.vice2PlayerId;
   }
 
   bool _canStartTournament() {
@@ -319,7 +319,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
                     ),
 
                   // Header Image o Team Logos
-                  if (widget.tournament.isATL)
+                  if (widget.tournament.atlEvent)
                     _buildATLHeader()
                   else
                     _buildNonATLHeader(),
@@ -504,11 +504,11 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
                               ),
                               const SizedBox(height: 12),
                               _buildInfoRow(
-                                widget.tournament.isATL
+                                widget.tournament.atlEvent
                                     ? Icons.verified
                                     : Icons.public,
                                 _l10n.typeLabel,
-                                widget.tournament.isATL
+                                widget.tournament.atlEvent
                                     ? _l10n.atlEventType
                                     : _l10n.tournamentType,
                               ),
@@ -1128,17 +1128,17 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
       height: 250,
       width: double.infinity,
       decoration: BoxDecoration(
-        image: widget.tournament.photoURL != null
+        image: widget.tournament.photoUrl != null
             ? DecorationImage(
-                image: NetworkImage(widget.tournament.photoURL!),
+                image: NetworkImage(widget.tournament.photoUrl!),
                 fit: BoxFit.cover,
               )
             : null,
-        color: widget.tournament.photoURL == null
+        color: widget.tournament.photoUrl == null
             ? ATLColors.getPrimaryColor(widget.currentSport)
             : null,
       ),
-      child: widget.tournament.photoURL == null
+      child: widget.tournament.photoUrl == null
           ? Center(
               child: Icon(
                 widget.currentSport.icon,

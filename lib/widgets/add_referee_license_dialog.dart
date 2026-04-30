@@ -7,7 +7,7 @@ import '../l10n/app_localizations.dart';
 
 class AddRefereeLicenseDialog extends StatefulWidget {
   final List<Sport> availableSports;
-  final int refereeId;
+  final double refereeId;
   final Future<RefereeLicense> Function(RefereeLicense license) onSubmit;
 
   const AddRefereeLicenseDialog({
@@ -76,9 +76,12 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
     try {
       final license = await widget.onSubmit(
         RefereeLicense(
+          photoUrl: null, // TODO: implement actual photo upload and use real URL
+          expiresAt: null,
+          verifiedAt: null,
           sportId: _selectedSport!.id,
           refereeId: widget.refereeId,
-          id: _idController.text.trim(),
+          licenseId: _idController.text.trim(),
           issuedAt: _issuedAt!,
           status: LicenseStatus.notVerified,
           createdAt: DateTime.now(),

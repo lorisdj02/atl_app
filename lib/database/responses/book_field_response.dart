@@ -5,8 +5,8 @@ import '../../utils/time_of_day_parser.dart';
 
 class BookFieldResponse {
   final List<City> cities;
-  final Map<int, TimeOfDay> minOpeningTimePerCity;
-  final Map<int, TimeOfDay> maxClosingTimePerCity;
+  final Map<double, TimeOfDay> minOpeningTimePerCity;
+  final Map<double, TimeOfDay> maxClosingTimePerCity;
 
   BookFieldResponse({
     required this.cities,
@@ -18,14 +18,14 @@ class BookFieldResponse {
     final cities = List<City>.from(
       json[ApiJsonKeys.cities].map((x) => City.fromJson(x)),
     );
-    final minOpeningTimePerCity = Map<int, TimeOfDay>.from(
+    final minOpeningTimePerCity = Map<double, TimeOfDay>.from(
       json[ApiJsonKeys.minOpeningTimePerCity].map(
-        (key, value) => MapEntry(int.parse(key), timeOfDayFromJson(value)),
+        (key, value) => MapEntry(double.parse(key), timeOfDayFromJson(value)),
       ),
     );
-    final maxClosingTimePerCity = Map<int, TimeOfDay>.from(
+    final maxClosingTimePerCity = Map<double, TimeOfDay>.from(
       json[ApiJsonKeys.maxClosingTimePerCity].map(
-        (key, value) => MapEntry(int.parse(key), timeOfDayFromJson(value)),
+        (key, value) => MapEntry(double.parse(key), timeOfDayFromJson(value)),
       ),
     );
     return BookFieldResponse(

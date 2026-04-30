@@ -63,13 +63,13 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
   List<RefereeLicense> get _filteredLicenses {
     if (_selectedCategory == null) return _licenses;
     final sportIds = _sports
-        .where((s) => s.category == _selectedCategory)
+        .where((s) => s.sportCategory == _selectedCategory)
         .map((s) => s.id)
         .toSet();
     return _licenses.where((l) => sportIds.contains(l.sportId)).toList();
   }
 
-  Sport? _sportById(int id) {
+  Sport? _sportById(double id) {
     try {
       return _sports.firstWhere((s) => s.id == id);
     } catch (_) {
@@ -100,7 +100,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
           ),
         ),
         content: Text(
-          l10n.confirmDeleteLicense(licenseName, license.id),
+          l10n.confirmDeleteLicense(licenseName, license.licenseId),
           style: const TextStyle(color: ATLColors.subtext),
         ),
         actions: [
@@ -182,7 +182,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     // Build category filter tabs from available sport categories in _sports
-    final categories = _sports.map((s) => s.category).toSet().toList();
+    final categories = _sports.map((s) => s.sportCategory).toSet().toList();
 
     return Scaffold(
       backgroundColor: ATLColors.background,

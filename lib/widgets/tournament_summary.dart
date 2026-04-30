@@ -36,7 +36,7 @@ class TournamentSummary extends StatelessWidget {
 
   String _getSportDisplayName(Sport? sportData) {
     if (sportData == null) return 'N/A';
-    final sportName = sportData.category.name.toUpperCase();
+    final sportName = sportData.sportCategory.name.toUpperCase();
     final playersPerSide = sportData.minPlayersPerTeam;
     return '$sportName ${playersPerSide}v$playersPerSide';
   }
@@ -89,7 +89,7 @@ class TournamentSummary extends StatelessWidget {
         ? groupMatches * 2
         : groupMatches;
 
-    int knockoutMatches = tournament.qualified - 1;
+    int knockoutMatches = tournament.numTeamsQualified - 1;
     final knockoutMatchesTotal = tournament.round2FinalStage
         ? knockoutMatches * 2
         : knockoutMatches;
@@ -207,7 +207,7 @@ class TournamentSummary extends StatelessWidget {
               InfoRowWidget(label: l10n.groupsLabel, value: '${tournament.numGroups}'),
               InfoRowWidget(
                 label: l10n.qualifiedTeamsLabel,
-                value: '${tournament.qualified}',
+                value: '${tournament.numTeamsQualified}',
               ),
               InfoRowWidget(
                 label: l10n.totalMatchesLabel,

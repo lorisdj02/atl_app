@@ -16,7 +16,7 @@ class ShopScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
+    final AccountProvider accountProvider = Provider.of<AccountProvider>(context);
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -61,7 +61,7 @@ class ShopScreen extends StatelessWidget {
                   l10n.shopComingSoon,
                   style: TextStyle(color: ATLColors.subtext, fontSize: 16),
                 ),
-                if (userProvider.isGuest) ...[
+                if (accountProvider.isGuest) ...[
                   const SizedBox(height: 24),
                   Text(
                     l10n.loginToPurchase,
@@ -77,7 +77,7 @@ class ShopScreen extends StatelessWidget {
           ),
 
           // Banner guest mode
-          if (userProvider.isGuest)
+          if (accountProvider.isGuest)
             Positioned(
               top: 16,
               left: 16,
@@ -114,9 +114,9 @@ class ShopScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar:
-          userProvider.isCoordinator ||
-              userProvider.isPlayer ||
-              userProvider.isGuest
+          accountProvider.isCoordinator ||
+              accountProvider.isPlayer ||
+              accountProvider.isGuest
           ? PlayerCoordinatorBottomBar(
               currentIndex: 0,
               onTap: (index) {
@@ -129,9 +129,9 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
-              userId: userProvider.activeAccount?.id,
+              accountId: accountProvider.activeAccount?.id,
             )
-          : userProvider.isReferee
+          : accountProvider.isReferee
           ? RefereeBottomBar(
               currentIndex: 0,
               onTap: (index) {
@@ -144,9 +144,9 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
-              userId: userProvider.activeAccount?.id,
+              accountId: accountProvider.activeAccount?.id,
             )
-          : userProvider.isOrganization
+          : accountProvider.isOrganization
           ? OrganizationBottomBar(
               currentIndex: 0,
               onTap: (index) {
@@ -159,7 +159,7 @@ class ShopScreen extends StatelessWidget {
               },
               currentSport: currentSport,
               isHome: false,
-              userId: userProvider.activeAccount?.id,
+              accountId: accountProvider.activeAccount?.id,
             )
           : null,
     );

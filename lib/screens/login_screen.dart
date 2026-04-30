@@ -60,49 +60,53 @@ class _LoginScreenState extends State<LoginScreen> {
       listen: false,
     );
     // Replace mock user creation with DB call
-    try{
-    final LoginResponse loginData = await AccountService.Read.handleLogin();
-    final Account? account = loginData.account;
+    try {
+      final LoginResponse loginData = await AccountService.Read.handleLogin();
+      final Account? account = loginData.account;
 
-    if (account == null || account.passwordMD5 != password) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).invalidCredentials),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    final int? roleId = loginData.roleId;
-    if (roleId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).invalidCredentials),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    userProvider.setActiveAccount(loginData.account!, roleId: roleId);
-
-    if (loginData.account!.role == AccountRole.player) {
-      final int? teamId = loginData.teamId;
-      if (teamId != null) {
-        userProvider.setCurrentTeamId(teamId);
-      } else {
-        userProvider.setCurrentTeamId(-1);
+      if (account == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).invalidCredentials),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
       }
-    }
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => HomeRouter.getHomeScreen(loginData.account!)),
-    );
+      final double? roleId = loginData.roleId;
+      if (roleId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).invalidCredentials),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      userProvider.setActiveAccount(loginData.account!, roleId: roleId);
+
+      if (loginData.account!.role == AccountRole.player) {
+        final double? teamId = loginData.teamId;
+        if (teamId != null) {
+          userProvider.setCurrentTeamId(teamId);
+        } else {
+          userProvider.setCurrentTeamId(-1);
+        }
+      }
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => HomeRouter.getHomeScreen(loginData.account!),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+          content: Text(
+            AppLocalizations.of(context).errorGeneric(e.toString()),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -119,14 +123,18 @@ class _LoginScreenState extends State<LoginScreen> {
         id: 0,
         username: AppLocalizations.of(context).guestUserLabel,
         email: '',
-        passwordMD5: '',
         role: AccountRole.guest,
-        firebaseUid: '',
-        createdAt: DateTime.now(),
         phone: '',
         name: AppLocalizations.of(context).guestUserLabel,
         surname: '',
         birthdate: DateTime.now(),
+        vip: false,
+        vipType: VipType.none,
+        startVip: null,
+        endVip: null,
+        preferredCityId: null,
+        imageUrl: null,
+        createdAt: DateTime.now(),
       ),
     );
     Navigator.of(context).pushReplacement(

@@ -43,8 +43,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadLevel() async {
-    final userProvider = Provider.of<AccountProvider>(context, listen: false);
-    if (userProvider.isCoordinator || userProvider.isReferee) {
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    if (accountProvider.isCoordinator || accountProvider.isReferee) {
       try{
       final int level = await AccountService.Read.getAccountLevel();
       if (mounted) {
@@ -83,12 +83,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
-    final user = userProvider.activeAccount;
+    final AccountProvider accountProvider = Provider.of<AccountProvider>(context);
+    final account = accountProvider.activeAccount;
     final l10n = AppLocalizations.of(context);
 
     // Add null check
-    if (user == null) {
+    if (account == null) {
       return Scaffold(
         backgroundColor: ATLColors.background,
         body: Center(
@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       extendBodyBehindAppBar: true,
       body: Column(
         children: [
-          // Header con avatar e username
+          // Header con avatar e accountname
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -162,15 +162,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      l10n.hiUser(user.username),
+                      l10n.hiUser(account.username),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (userProvider.isReferee ||
-                        userProvider.isCoordinator) ...[
+                    if (accountProvider.isReferee ||
+                        accountProvider.isCoordinator) ...[
                       const SizedBox(height: 8),
                       Text(
                         _level != null
@@ -195,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    if (!userProvider.isOrganization) ...[
+                    if (!accountProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.emoji_events,
                         text: l10n.achievement,
@@ -224,7 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    if (!userProvider.isOrganization) ...[
+                    if (!accountProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.rate_review,
                         text: l10n.reviews,
@@ -238,7 +238,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ],
-                    if (userProvider.isReferee) ...[
+                    if (accountProvider.isReferee) ...[
                       ProfileMenuItem(
                         icon: Icons.school,
                         text: l10n.licenses,
@@ -254,7 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ],
-                    if (userProvider.isReferee || userProvider.isCoordinator) ...[
+                    if (accountProvider.isReferee || accountProvider.isCoordinator) ...[
                       ProfileMenuItem(
                         icon: Icons.trending_up,
                         text: l10n.myGrowth,
@@ -281,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         );
                       },
                     ),
-                    if (userProvider.isPlayer) ...[
+                    if (accountProvider.isPlayer) ...[
                       ProfileMenuItem(
                         icon: Icons.bar_chart,
                         text: l10n.stats,
@@ -298,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         },
                       ),
                     ],
-                    if (!userProvider.isOrganization) ...[
+                    if (!accountProvider.isOrganization) ...[
                       ProfileMenuItem(
                         icon: Icons.share,
                         text: l10n.inviteAFriend,
@@ -373,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: userProvider.isCoordinator || userProvider.isPlayer
+      bottomNavigationBar: accountProvider.isCoordinator || accountProvider.isPlayer
           ? PlayerCoordinatorBottomBar(
               currentIndex: 3,
               onTap: (index) {
@@ -386,9 +386,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               currentSport: widget.currentSport,
               isHome: false,
-              userId: user.id,
+              accountId: account.id,
             )
-          : userProvider.isReferee
+          : accountProvider.isReferee
           ? RefereeBottomBar(
               currentIndex: 3,
               onTap: (index) {
@@ -401,9 +401,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               currentSport: widget.currentSport,
               isHome: false,
-              userId: user.id,
+              accountId: account.id,
             )
-          : userProvider.isOrganization
+          : accountProvider.isOrganization
           ? OrganizationBottomBar(
               currentIndex: 3,
               onTap: (index) {
@@ -416,7 +416,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
               currentSport: widget.currentSport,
               isHome: false,
-              userId: user.id,
+              accountId: account.id,
             )
           : null,
     );

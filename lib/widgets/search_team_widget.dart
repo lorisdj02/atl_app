@@ -101,7 +101,7 @@ class SearchTeamWidget extends AbstractTeamWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${team.players}/${team.maxPlayers}',
+                        '${team.numPlayers}/${team.maxPlayers}',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,

@@ -136,7 +136,7 @@ class _SportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final primaryColor = ATLColors.getPrimaryColor(sport.category);
+    final primaryColor = ATLColors.getPrimaryColor(sport.sportCategory);
 
     return GestureDetector(
       onTap: onTap,
@@ -175,7 +175,7 @@ class _SportCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                sport.category.icon,
+                sport.sportCategory.icon,
                 size: 32,
                 color: isSelected ? Colors.white : Colors.grey.shade600,
               ),

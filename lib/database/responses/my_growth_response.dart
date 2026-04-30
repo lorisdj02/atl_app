@@ -28,9 +28,7 @@ class MyGrowthResponse {
               Map<SportCategory, double>.from(
                 value.map(
                   (catKey, catValue) => MapEntry(
-                    SportCategory.values.firstWhere(
-                      (e) => e.toString() == catKey,
-                    ),
+                    SportCategory.values.firstWhere((e) => e.apiName == catKey),
                     catValue,
                   ),
                 ),
@@ -46,9 +44,7 @@ class MyGrowthResponse {
               Map<SportCategory, double>.from(
                 value.map(
                   (catKey, catValue) => MapEntry(
-                    SportCategory.values.firstWhere(
-                      (e) => e.toString() == catKey,
-                    ),
+                    SportCategory.values.firstWhere((e) => e.apiName == catKey),
                     catValue,
                   ),
                 ),

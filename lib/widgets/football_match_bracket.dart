@@ -3,14 +3,13 @@ import '../models/football_match.dart';
 import '../models/sport_category.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';
-import '../../l10n/app_localizations.dart';
 
 /// Widget per visualizzare un match all'interno del tabellone Road to Victory
 class FootballMatchBracket extends StatefulWidget {
-  final int matchId;
+  final double matchId;
   final SportCategory sportCategory;
-  final int? nextRoundHomeTeamId;
-  final int? nextRoundAwayTeamId;
+  final double? nextRoundHomeTeamId;
+  final double? nextRoundAwayTeamId;
   final bool isFinal;
 
   const FootballMatchBracket({
@@ -98,7 +97,7 @@ class _FootballMatchBracketState extends State<FootballMatchBracket> {
     // TODO: implementare caricamento dati da API
   }
 
-  Color? _getBorderColor(int? teamId) {
+  Color? _getBorderColor(double? teamId) {
     if (teamId == null || _winnerId == null) return null;
 
     if (widget.isFinal && _match?.status == FootballMatchStatus.finished) {
@@ -279,11 +278,11 @@ class _FootballMatchBracketState extends State<FootballMatchBracket> {
           ),
         ],
       ),
-      child: team.imageUrl != null
+      child: team.logoUrl != null
           ? ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                team.imageUrl!,
+                team.logoUrl!,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return _buildPlaceholder(team, size);

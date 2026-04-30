@@ -8,7 +8,7 @@ import 'package:atl_app/models/tournament_participation.dart';
 class TournamentDetailsResponse {
   final Field field;
   final String cityName;
-  final Map<int, Team> teamsCache;
+  final Map<double, Team> teamsCache;
   final Player? currentPlayer;
   final Team? accountTeam;
   final TournamentParticipation? teamParticipation;
@@ -28,9 +28,9 @@ class TournamentDetailsResponse {
     return TournamentDetailsResponse(
       field: Field.fromJson(json[ApiJsonKeys.field]),
       cityName: json[ApiJsonKeys.cityName],
-      teamsCache: Map<int, Team>.from(
+      teamsCache: Map<double, Team>.from(
         json[ApiJsonKeys.teamsCache].map(
-          (key, value) => MapEntry(int.parse(key), Team.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
         ),
       ),
       currentPlayer: json[ApiJsonKeys.currentPlayer] != null

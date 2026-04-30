@@ -41,7 +41,7 @@ class Review {
   final double? matchId;
   final double reviewerAccountId;
   final double reviewedAccountId;
-  final String comment;
+  final String? comment;
   final double rating;
   final ReviewType type;
   final SportCategory sportCategory;

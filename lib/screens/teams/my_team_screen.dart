@@ -28,14 +28,14 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
   }
 
   @override
-  int getTeamId() => userProvider.currentTeamId!;
+  double getTeamId() => accountProvider.currentTeamId!;
 
   @override
   double getBottomPadding() => 120;
 
   Future<void> _loadPendingPaymentsCount() async {
     try {
-      final int? teamId = userProvider.currentTeamId;
+      final double? teamId = accountProvider.currentTeamId;
 
       if (teamId == null) return;
 
@@ -53,7 +53,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
   }
 
   Future<void> _showRequestsScreen() async {
-    final int? teamId = userProvider.currentTeamId;
+    final double? teamId = accountProvider.currentTeamId;
 
     if (teamId == null) return;
 
@@ -67,12 +67,12 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
           ),
         )
         .then((_) {
-          loadPlayersData(userProvider.currentTeamId!);
+          loadPlayersData(accountProvider.currentTeamId!);
         });
   }
 
   Future<void> _showPaymentScreen() async {
-    final int? teamId = userProvider.currentTeamId;
+    final double? teamId = accountProvider.currentTeamId;
 
     if (teamId == null) return;
 
@@ -94,14 +94,14 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
   Future<void> _handlePlayerLongPress(Player player) async {
     if (team == null) return;
 
-    final isCaptain = playerId == team!.captainId;
+    final isCaptain = playerId == team!.captainPlayerId;
     final isViceCaptain =
-        playerId == team!.vice1Id || playerId == team!.vice2Id;
+        playerId == team!.vice1PlayerId || playerId == team!.vice2PlayerId;
     if (!isCaptain && !isViceCaptain) return;
 
     final isPlayerVice =
-        player.playerId == team!.vice1Id || player.playerId == team!.vice2Id;
-    final isPlayerCaptain = player.playerId == team!.captainId;
+        player.playerId == team!.vice1PlayerId || player.playerId == team!.vice2PlayerId;
+    final isPlayerCaptain = player.playerId == team!.captainPlayerId;
 
     if (player.playerId == playerId || isPlayerCaptain) return;
 
@@ -172,8 +172,8 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
   }
 
   Future<void> _promoteToViceCaptain(Player player) async {
-    final hasVice1 = team!.vice1Id != null;
-    final hasVice2 = team!.vice2Id != null;
+    final hasVice1 = team!.vice1PlayerId != null;
+    final hasVice2 = team!.vice2PlayerId != null;
 
     if (hasVice1 && hasVice2) {
       ScaffoldMessenger.of(
@@ -285,16 +285,16 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
               try {
                 await TeamService.Write.leaveTeam(team!.id.toDouble());
                 if (mounted) {
-                  AccountProvider userProvider = Provider.of<AccountProvider>(
+                  AccountProvider accountProvider = Provider.of<AccountProvider>(
                     context,
                     listen: false,
                   );
-                  userProvider.clearCurrentTeamId();
+                  accountProvider.clearCurrentTeamId();
                   if (mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
                         builder: (context) => HomeRouter.getHomeScreen(
-                          userProvider.activeAccount!,
+                          accountProvider.activeAccount!,
                         ),
                       ),
                       (route) => false,

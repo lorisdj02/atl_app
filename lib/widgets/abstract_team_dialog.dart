@@ -8,8 +8,8 @@ import '../l10n/app_localizations.dart';
 abstract class AbstractTeamDialog extends StatefulWidget {
   final Team homeTeam;
   final Team awayTeam;
-  final int tournamentId;
-  final int matchId;
+  final double tournamentId;
+  final double matchId;
   final SportCategory sportCategory;
 
   const AbstractTeamDialog({
@@ -62,10 +62,10 @@ mixin TeamDialogMixin<T extends AbstractTeamDialog> on State<T> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    backgroundImage: team.imageUrl != null
-                        ? NetworkImage(team.imageUrl!)
+                    backgroundImage: team.logoUrl != null
+                        ? NetworkImage(team.logoUrl!)
                         : null,
-                    child: team.imageUrl == null
+                    child: team.logoUrl == null
                         ? Text(
                             team.name[0],
                             style: const TextStyle(

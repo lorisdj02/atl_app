@@ -10,13 +10,13 @@ import 'package:atl_app/models/team.dart';
 class OrganizationHomeResponse {
   final List<Field> fields;
   final List<Booking> generalBookings;
-  final Map<int, String> cityNamePerField;
-  final Map<int, LobbyBooking> lobbyBookingsCache;
-  final Map<int, PrivateBooking> privateBookingsCache;
-  final Map<int, MatchBooking> matchBookingsCache;
-  final Map<int, FootballMatch> footballMatchPerBooking;
-  final Map<int, Team> teamsCache;
-  final Map<int, String> usernamePerBooking;
+  final Map<double, String> cityNamePerField;
+  final Map<double, LobbyBooking> lobbyBookingsCache;
+  final Map<double, PrivateBooking> privateBookingsCache;
+  final Map<double, MatchBooking> matchBookingsCache;
+  final Map<double, FootballMatch> footballMatchPerBooking;
+  final Map<double, Team> teamsCache;
+  final Map<double, String> usernamePerBooking;
 
   OrganizationHomeResponse({
     required this.fields,
@@ -38,38 +38,42 @@ class OrganizationHomeResponse {
       generalBookings: (json[ApiJsonKeys.generalBookings] as List)
           .map((e) => Booking.fromJson(e))
           .toList(),
-      cityNamePerField: Map<int, String>.from(
-        json[ApiJsonKeys.cityNamePerField],
+      cityNamePerField: Map<double, String>.from(
+        json[ApiJsonKeys.cityNamePerField].map(
+          (key, value) => MapEntry(double.parse(key), value),
+        ),
       ),
-      lobbyBookingsCache: Map<int, LobbyBooking>.from(
+      lobbyBookingsCache: Map<double, LobbyBooking>.from(
         (json[ApiJsonKeys.lobbyBookingsCache] as Map<String, dynamic>).map(
           (key, value) =>
-              MapEntry(int.parse(key), LobbyBooking.fromJson(value)),
+              MapEntry(double.parse(key), LobbyBooking.fromJson(value)),
         ),
       ),
-      privateBookingsCache: Map<int, PrivateBooking>.from(
+      privateBookingsCache: Map<double, PrivateBooking>.from(
         (json[ApiJsonKeys.privateBookingsCache] as Map<String, dynamic>).map(
           (key, value) =>
-              MapEntry(int.parse(key), PrivateBooking.fromJson(value)),
+              MapEntry(double.parse(key), PrivateBooking.fromJson(value)),
         ),
       ),
-      matchBookingsCache: Map<int, MatchBooking>.from(
+      matchBookingsCache: Map<double, MatchBooking>.from(
         (json[ApiJsonKeys.matchBookingsCache] as Map<String, dynamic>).map(
           (key, value) =>
-              MapEntry(int.parse(key), MatchBooking.fromJson(value)),
+              MapEntry(double.parse(key), MatchBooking.fromJson(value)),
         ),
       ),
       footballMatchPerBooking:
           (json[ApiJsonKeys.footballMatchPerBooking] as Map<String, dynamic>)
               .map(
                 (key, value) =>
-                    MapEntry(int.parse(key), FootballMatch.fromJson(value)),
+                    MapEntry(double.parse(key), FootballMatch.fromJson(value)),
               ),
       teamsCache: (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(int.parse(key), Team.fromJson(value)),
+        (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
       ),
-      usernamePerBooking: Map<int, String>.from(
-        json[ApiJsonKeys.usernamePerBooking],
+      usernamePerBooking: Map<double, String>.from(
+        json[ApiJsonKeys.usernamePerBooking].map(
+          (key, value) => MapEntry(double.parse(key), value),
+        ),
       ),
     );
   }

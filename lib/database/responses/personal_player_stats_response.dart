@@ -1,6 +1,5 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/football_team_stats.dart';
-import 'package:atl_app/models/sport.dart';
 import 'package:atl_app/models/sport_category.dart';
 
 class PersonalPlayerStatsResponse {
@@ -24,7 +23,7 @@ class PersonalPlayerStatsResponse {
       numTournamentPerCategory: Map<SportCategory, int>.from(
         json[ApiJsonKeys.numTournamentPerCategory].map(
           (key, value) => MapEntry(
-            SportCategory.values.firstWhere((e) => e.toString() == key),
+            SportCategory.values.firstWhere((e) => e.apiName == key),
             value,
           ),
         ),
@@ -32,7 +31,7 @@ class PersonalPlayerStatsResponse {
       numPrivateBookingPerCategory: Map<SportCategory, int>.from(
         json[ApiJsonKeys.numPrivateBookingPerCategory].map(
           (key, value) => MapEntry(
-            SportCategory.values.firstWhere((e) => e.toString() == key),
+            SportCategory.values.firstWhere((e) => e.apiName == key),
             value,
           ),
         ),
@@ -40,7 +39,7 @@ class PersonalPlayerStatsResponse {
       numLobbyJoinedPerCategory: Map<SportCategory, int>.from(
         json[ApiJsonKeys.numLobbyJoinedPerCategory].map(
           (key, value) => MapEntry(
-            SportCategory.values.firstWhere((e) => e.toString() == key),
+            SportCategory.values.firstWhere((e) => e.apiName == key),
             value,
           ),
         ),

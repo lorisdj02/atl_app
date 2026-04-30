@@ -6,7 +6,7 @@ class UpdateAccountInfoRequest {
   final String? phone;
   final DateTime? birthdate;
   final String? imageUrl;
-  final int? preferredCityId;
+  final double? preferredCityId;
 
   UpdateAccountInfoRequest({
     required this.username,

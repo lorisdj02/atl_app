@@ -1667,7 +1667,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentType => 'Tournament';
 
   @override
-  String tournamentIdLabel(int id) => 'Tournament ID: #$id';
+  String tournamentIdLabel(double id) => 'Tournament ID: #$id';
 
   @override
   String get startTournamentTitle => 'Start Tournament';
@@ -1838,7 +1838,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get penaltyShootoutEvent => 'Penalty Shootout';
 
   @override
-  String matchIdLabel(int id) => 'Match ID: #$id';
+  String matchIdLabel(double id) => 'Match ID: #$id';
 
   @override
   String get unknownPlayer => 'Unknown Player';
@@ -2332,7 +2332,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Avg. rating ≥ $rating over last $tournaments tournaments';
 
   @override
-  String payPerGame(String amount) => '€$amount / game';
+  String payPerMatch(String amount) => '€$amount / match';
 
   // Match event dialog
   @override
@@ -2468,7 +2468,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No scheduled matches for the selected filters';
 
   @override
-  String sportWithId(int sportId) => 'Sport $sportId';
+  String sportWithId(double sportId) => 'Sport $sportId';
 
   @override
   String noScheduledMatchesInSport(String sportName) =>
@@ -2505,7 +2505,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viceCaptainAbbr => 'VC';
 
   @override
-  String teamAliasAndId(String alias, int id) => "Alias: ${alias} - ID: ${id}";
+  String teamAliasAndId(String alias, double id) => "Alias: ${alias} - ID: ${id}";
 
   // Abstract football match widget - match statuses
   @override

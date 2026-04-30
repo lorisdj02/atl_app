@@ -39,8 +39,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   List<FootballMatch> _matches = [];
   List<FootballStanding> _standings = [];
   List<Player> _players = [];
-  Map<int, Team> _teamsCache = {};
-  Map<int, FootballTeamStats> _playerStatsCache = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, FootballTeamStats> _playerStatsCache = {};
 
   bool _fixturesLoaded = false;
   bool _tablesLoaded = false;
@@ -110,7 +110,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       _standings = data.standings;
       _players = data.players;
       _teamsCache = data.teamsCache;
-      _playerStatsCache = Map<int, FootballTeamStats>.from(
+      _playerStatsCache = Map<double, FootballTeamStats>.from(
         data.footballPlayerStatsCache,
       );
       _minutesPerRound = data.minutesPerRound;
@@ -277,7 +277,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     }
 
     // Add playoff phases based on qualified count
-    final qualified = widget.tournament.qualified;
+    final qualified = widget.tournament.numTeamsQualified;
 
     if (qualified >= 16) {
       phases.add({
@@ -326,7 +326,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   }
 
   String _getSpecificGroupInfoMessage(String group, String groupPrefix) {
-    final qualified = widget.tournament.qualified;
+    final qualified = widget.tournament.numTeamsQualified;
 
     // Special case for Final (FI) which doesn't have a number
     if (groupPrefix == 'FI') {
@@ -456,7 +456,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
     if (selectedPhaseData['isDay'] == true) {
       // Group stage day
-      return _buildGroupStageMatches(selectedPhaseData['day'] as int);
+      return _buildGroupStageMatches(selectedPhaseData['day'] as double);
     } else {
       // Playoff phase
       return _buildPlayoffMatches(
@@ -466,7 +466,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     }
   }
 
-  Widget _buildGroupStageMatches(int day) {
+  Widget _buildGroupStageMatches(double day) {
     final groups = _getGroups();
 
     return ListView.builder(
@@ -475,7 +475,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       itemBuilder: (context, index) {
         final group = groups[index];
         final groupMatches = _matches
-            .where((m) => m.groupName == group && m.day == day)
+          .where((m) => m.groupName == group && m.day == day)
             .toList();
 
         if (groupMatches.isEmpty) return const SizedBox.shrink();
@@ -768,7 +768,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
                       rank: standing.rankPos,
                       sportCategory: widget.sportCategory,
                       standingRecord:
-                          '${standing.points} - ${standing.won} - ${standing.drawn} - ${standing.lost}',
+                          '${standing.pts} - ${standing.won} - ${standing.drawn} - ${standing.lost}',
                       goalDifference: goalDifference,
                     );
                   }),
@@ -811,6 +811,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   }
 
   Widget _buildRoadToVictoryView() {
+    // TODO: da rifare totalmente!
     return RoadToVictoryWidget(
       tournamentId: widget.tournament.id,
       sportCategory: widget.sportCategory,

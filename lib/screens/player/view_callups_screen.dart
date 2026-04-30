@@ -9,7 +9,7 @@ import '../../l10n/app_localizations.dart';
 
 class ViewCallupsScreen extends StatefulWidget {
   final Tournament tournament;
-  final int teamId;
+  final double teamId;
   final SportCategory sportCategory;
 
   const ViewCallupsScreen({

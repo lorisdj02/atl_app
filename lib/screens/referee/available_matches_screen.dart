@@ -30,14 +30,14 @@ class AvailableMatchesScreen extends StatefulWidget {
 class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
   bool _isLoading = true;
   List<FootballMatch> _availableMatches = [];
-  Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesRoundPerTournament = {};
-  Map<int, int?> _minutesPausePerTournament = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, int> _minutesRoundPerTournament = {};
+  Map<double, int> _minutesPausePerTournament = {};
   List<City> _cities = [];
   City? _selectedCity;
-  int? _selectedSportId;
-  Map<int, List<FootballMatch>> _matchesPerSport = {};
-  Map<int, String> _sportNames = {};
+  double? _selectedSportId;
+  Map<double, List<FootballMatch>> _matchesPerSport = {};
+  Map<double, String> _sportNames = {};
 
   @override
   void initState() {
@@ -51,8 +51,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     try {
       final cities = await FieldService.Read.getAllCities();
       if (mounted) {
-        final preferredCityId =
-            Provider.of<AccountProvider>(context, listen: false).cityId;
+        final preferredCityId = Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        ).cityId;
         City? defaultCity;
         if (preferredCityId != null) {
           try {
@@ -67,11 +69,12 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
         if (_selectedCity != null) await _loadMatches();
       }
     } catch (e) {
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            content: Text(
+              AppLocalizations.of(context).errorGeneric(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -86,14 +89,14 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final AvailableMatchesResponse data = await MatchService.Read.getAvailableMatchesScreen(
-        widget.currentSport,
-        cityId: _selectedCity?.id.toDouble(),
-        sportId: _selectedSportId?.toDouble(),
-      );
+      final AvailableMatchesResponse data =
+          await MatchService.Read.getAvailableMatchesScreen(
+            widget.currentSport,
+            cityId: _selectedCity?.id.toDouble(),
+            sportId: _selectedSportId?.toDouble(),
+          );
 
       List<FootballMatch> availableMatches = data.footballMatches;
-      
 
       // Sort matches by scheduled start time
       availableMatches.sort((a, b) {
@@ -119,7 +122,9 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+            content: Text(
+              AppLocalizations.of(context).errorGeneric(e.toString()),
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -203,7 +208,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
         onTap: _onNavTap,
         currentSport: widget.currentSport,
         isHome: false,
-        userId: Provider.of<AccountProvider>(context, listen: false).activeAccount?.id,
+        accountId: Provider.of<AccountProvider>(
+          context,
+          listen: false,
+        ).activeAccount?.id,
       ),
     );
   }
@@ -236,7 +244,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               ),
               const SizedBox(height: 12),
               // Sport type dropdown
-              _buildDropdown<int?>(
+              _buildDropdown<double?>(
                 label: l10n.sportLabel,
                 value: _selectedSportId,
                 items: [null, ..._sportNames.keys.toList()],
@@ -248,7 +256,9 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                 },
                 itemBuilder: (sportId) {
                   if (sportId == null) return Text(l10n.allFilter);
-                  return Text(_sportNames[sportId] ?? l10n.sportWithId(sportId));
+                  return Text(
+                    _sportNames[sportId] ?? l10n.sportWithId(sportId),
+                  );
                 },
               ),
             ],
@@ -366,8 +376,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
               homeTeam: _teamsCache[match.homeTeamId],
               awayTeam: _teamsCache[match.awayTeamId],
               currentSport: widget.currentSport,
-              minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
-              minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
+              minutesPerRound:
+                  _minutesRoundPerTournament[match.tournamentId] ?? 0,
+              minutesPerPause:
+                  _minutesPausePerTournament[match.tournamentId] ?? 0,
               onMatchUpdated: () => _loadMatches(),
             ),
           );
@@ -416,8 +428,10 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
                 homeTeam: _teamsCache[match.homeTeamId],
                 awayTeam: _teamsCache[match.awayTeamId],
                 currentSport: widget.currentSport,
-                minutesPerRound: _minutesRoundPerTournament[match.tournamentId] ?? 0,
-                minutesPerPause: _minutesPausePerTournament[match.tournamentId] ?? 0,
+                minutesPerRound:
+                    _minutesRoundPerTournament[match.tournamentId] ?? 0,
+                minutesPerPause:
+                    _minutesPausePerTournament[match.tournamentId] ?? 0,
                 onMatchUpdated: () => _loadMatches(),
               ),
             ),

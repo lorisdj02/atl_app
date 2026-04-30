@@ -9,8 +9,8 @@ class FootballTournamentResponse {
   final List<FootballMatch> matches;
   final List<FootballStanding> standings;
   final List<Player> players;
-  final Map<int, Team> teamsCache;
-  final Map<int, FootballTeamStats> footballPlayerStatsCache;
+  final Map<double, Team> teamsCache;
+  final Map<double, FootballTeamStats> footballPlayerStatsCache;
   final int minutesPerRound;
   final int minutesPerPause;
   final bool? canContinue;
@@ -43,16 +43,16 @@ class FootballTournamentResponse {
           (p) => Player.fromJson(p),
         ),
       ),
-      teamsCache: Map<int, Team>.from(
+      teamsCache: Map<double, Team>.from(
         (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
-          (key, value) => MapEntry(int.parse(key), Team.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
         ),
       ),
-      footballPlayerStatsCache: Map<int, FootballTeamStats>.from(
+      footballPlayerStatsCache: Map<double, FootballTeamStats>.from(
         (json[ApiJsonKeys.footballPlayerStatsCache] as Map<String, dynamic>)
             .map(
           (key, value) =>
-              MapEntry(int.parse(key), FootballTeamStats.fromJson(value)),
+              MapEntry(double.parse(key), FootballTeamStats.fromJson(value)),
         ),
       ),
       minutesPerRound: json[ApiJsonKeys.minutesPerRound] as int,

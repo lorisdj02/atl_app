@@ -9,7 +9,7 @@ import '../../widgets/atl_floating_button.dart';
 import 'abstract_team_screen.dart';
 
 class TeamDetailScreen extends AbstractTeamScreen {
-  final int teamId;
+  final double teamId;
 
   const TeamDetailScreen({
     super.key,
@@ -27,7 +27,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
   bool _isPlayerInTeam = false;
 
   @override
-  int getTeamId() => widget.teamId;
+  double getTeamId() => widget.teamId;
 
   @override
   Future<void> loadData() async {

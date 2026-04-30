@@ -5,7 +5,7 @@ import 'abstract_team_dialog.dart';
 import '../l10n/app_localizations.dart';
 
 class FootballMotmSelectorDialog extends AbstractTeamDialog {
-  Map<int, List<Player>> playersByTeam = {};
+  Map<double, List<Player>> playersByTeam = {};
 
   FootballMotmSelectorDialog({
     super.key,
@@ -14,7 +14,7 @@ class FootballMotmSelectorDialog extends AbstractTeamDialog {
     required super.tournamentId,
     required super.matchId,
     required super.sportCategory,
-    required Map<int, List<Player>> playersByTeam,
+    required Map<double, List<Player>> playersByTeam,
   });
 
   @override

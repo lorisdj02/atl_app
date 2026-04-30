@@ -112,7 +112,7 @@ class PlayersWidget extends StatelessWidget {
                   Icon(Icons.people, size: 18, color: Colors.grey.shade600),
                   const SizedBox(width: 6),
                   Text(
-                    '${players.isNotEmpty ? team?.players ?? 0 : 0}/24 ${l10n.players}',
+                    '${players.isNotEmpty ? team?.numPlayers ?? 0 : 0}/${team?.maxPlayers ?? 24} ${l10n.players}',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade700,
@@ -176,9 +176,9 @@ class PlayersWidget extends StatelessWidget {
         else
           ...players.map((player) {
             // Card giocatore
-            final isCaptain = player.playerId == team?.captainId;
-            final isVice1 = player.playerId == team?.vice1Id;
-            final isVice2 = player.playerId == team?.vice2Id;
+            final isCaptain = player.playerId == team?.captainPlayerId;
+            final isVice1 = player.playerId == team?.vice1PlayerId;
+            final isVice2 = player.playerId == team?.vice2PlayerId;
 
             return GestureDetector(
               onLongPress: onLongPress != null

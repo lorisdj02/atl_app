@@ -9,26 +9,26 @@ class RefereeBottomBar extends StatelessWidget {
   final Function(int) onTap;
   final SportCategory currentSport;
   final bool isHome;
-  final int? userId;
+  final double? accountId;
 
   const RefereeBottomBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     required this.currentSport,
-    this.userId,
+    this.accountId,
     this.isHome = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return ATLBottomBar(
       currentIndex: currentIndex,
       onTap: onTap,
       currentSport: currentSport,
       isHome: isHome,
-      userId: userId,
+      accountId: accountId,
       leftItems: [
         BottomBarItem(icon: Icons.shopping_cart, label: l10n.shopNavLabel, index: 0),
         BottomBarItem(icon: Icons.sports_soccer, label: l10n.matchesNavLabel, index: 1),

@@ -49,7 +49,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     switch (match.status) {
       case FootballMatchStatus.scheduled:
-        if (match.matchDate != null) {
+        if (match.scheduledStart != null) {
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -60,7 +60,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.375),
               Text(
-                DateFormat('dd-MM-yyyy').format(match.matchDate!),
+                DateFormat('dd-MM-yyyy').format(match.scheduledStart!),
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
               ),
               SizedBox(width: statusIconSize * 0.375),
               Text(
-                DateFormat('HH:mm').format(match.matchDate!),
+                DateFormat('HH:mm').format(match.scheduledStart!),
                 style: TextStyle(
                   fontSize: statusFontSize,
                   fontWeight: FontWeight.bold,

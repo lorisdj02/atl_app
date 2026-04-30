@@ -10,7 +10,7 @@ import 'package:atl_app/models/tournament.dart';
 class TeamDetailsResponse extends AbstractTeamResponse {
   final bool isPlayerInTeam;
   final TeamRequest? existingRequest;
-  
+
   TeamDetailsResponse({
     required super.team,
     required super.players,
@@ -41,10 +41,10 @@ class TeamDetailsResponse extends AbstractTeamResponse {
       ),
       coordinatorsCache: json[ApiJsonKeys.coordinatorsCache] ?? {},
       fieldsCache: json[ApiJsonKeys.fieldsCache] ?? {},
-      footballPlayerStatsCache: Map<int, FootballTeamStats>.from(
+      footballPlayerStatsCache: Map<double, FootballTeamStats>.from(
         (json[ApiJsonKeys.footballPlayerStatsCache] as Map).map(
           (key, value) =>
-              MapEntry(int.parse(key), FootballTeamStats.fromJson(value)),
+              MapEntry(double.parse(key), FootballTeamStats.fromJson(value)),
         ),
       ),
       cityNamePerField: json[ApiJsonKeys.cityNamePerField] ?? {},

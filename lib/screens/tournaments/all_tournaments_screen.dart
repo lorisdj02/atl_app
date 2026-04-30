@@ -35,9 +35,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
     with SingleTickerProviderStateMixin {
   List<Tournament> _tournaments = [];
   List<Tournament> _myTournaments = [];
-  Map<int, Coordinator> _coordinatorsCache = {};
-  Map<int, Field> _fieldsCache = {};
-  Map<int, String> _cityNamePerField = {};
+  Map<double, Coordinator> _coordinatorsCache = {};
+  Map<double, Field> _fieldsCache = {};
+  Map<double, String> _cityNamePerField = {};
 
   bool _isLoading = true;
   late TabController _tabController;
@@ -47,14 +47,14 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
   bool _showMyTournaments = false;
 
   // Filtri avanzati
-  int? _selectedCity;
+  double? _selectedCity;
   List<City> _availableCities = [];
   int? _selectedNumTeams;
   RangeValues _prizeRange = const RangeValues(0, 2000);
   RangeValues _feeRange = const RangeValues(0, 50);
 
   // Filtri temporanei per il dialog
-  int? _tempSelectedCity;
+  double? _tempSelectedCity;
   int? _tempSelectedNumTeams;
   RangeValues _tempPrizeRange = const RangeValues(0, 2000);
   RangeValues _tempFeeRange = const RangeValues(0, 50);
@@ -203,7 +203,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: DropdownButton<int?>(
+                  child: DropdownButton<double?>(
                     value: _tempSelectedCity,
                     isExpanded: true,
                     underline: const SizedBox(),
@@ -929,7 +929,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
         },
         currentSport: widget.currentSport,
         isHome: false,
-        userId: userProvider.activeAccount?.id,
+        accountId: userProvider.activeAccount?.id,
       ),
     );
   }

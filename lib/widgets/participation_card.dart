@@ -15,7 +15,7 @@ import '../l10n/app_localizations.dart';
 class ParticipationCard extends StatefulWidget {
   final TournamentParticipation participation;
   final Tournament? tournament;
-  final int playerId;
+  final double playerId;
   final SportCategory sportCategory;
   final VoidCallback onPaymentCompleted;
   final bool isCalledUp;
@@ -45,7 +45,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final double toPay = widget.participation.toPay ?? 0;
+    final double toPay = widget.participation.toPay;
     final double totalCost = widget.tournament?.fee ?? toPay;
     final double paid = totalCost - toPay;
     final double progress = totalCost > 0 ? paid / totalCost : 0.0;
@@ -205,7 +205,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
 
   void _showPaymentDialog() async {
     final l10n = AppLocalizations.of(context);
-    final toPay = widget.participation.toPay ?? 0;
+    final toPay = widget.participation.toPay;
     final tournamentName =
         widget.tournament?.name ??
         '${l10n.tournamentLabel} #${widget.participation.tournamentId}';

@@ -9,9 +9,9 @@ import '../utils/atl_colors.dart';
 class PlayersStatsWidget extends StatelessWidget {
   final List<Player> players;
   final SportCategory sportCategory;
-  final Map<int, FootballTeamStats?> playerStats;
+  final Map<double, FootballTeamStats?> playerStats;
   final bool inTournament;
-  final Map<int, Team>? teamsCache;
+  final Map<double, Team>? teamsCache;
 
   const PlayersStatsWidget({
     super.key,

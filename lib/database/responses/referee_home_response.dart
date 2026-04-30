@@ -4,9 +4,9 @@ import 'package:atl_app/models/team.dart';
 
 class RefereeHomeResponse {
   final List<FootballMatch> assignedFootballMatches;
-  final Map<int, Team> teamsCache;
-  final Map<int, int> minutesRoundPerTournament;
-  final Map<int, int> minutesPausePerTournament;
+  final Map<double, Team> teamsCache;
+  final Map<double, int> minutesRoundPerTournament;
+  final Map<double, int> minutesPausePerTournament;
 
   RefereeHomeResponse({
     required this.assignedFootballMatches,
@@ -22,19 +22,19 @@ class RefereeHomeResponse {
           (m) => FootballMatch.fromJson(m),
         ),
       ),
-      teamsCache: Map<int, Team>.from(
+      teamsCache: Map<double, Team>.from(
         json[ApiJsonKeys.teamsCache].map(
-          (key, value) => MapEntry(int.parse(key), Team.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
         ),
       ),
-      minutesRoundPerTournament: Map<int, int>.from(
+      minutesRoundPerTournament: Map<double, int>.from(
         json[ApiJsonKeys.minutesRoundPerTournament].map(
-          (key, value) => MapEntry(int.parse(key), value),
+          (key, value) => MapEntry(double.parse(key), value),
         ),
       ),
-      minutesPausePerTournament: Map<int, int>.from(
+      minutesPausePerTournament: Map<double, int>.from(
         json[ApiJsonKeys.minutesPausePerTournament].map(
-          (key, value) => MapEntry(int.parse(key), value),
+          (key, value) => MapEntry(double.parse(key), value),
         ),
       ),
     );

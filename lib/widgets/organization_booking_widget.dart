@@ -64,9 +64,9 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
   Future<void> _loadData() async {
     setState(() {
       _isLoading = false;
-      _isMatchBooking = widget.booking.type == BookingType.match;
-      _isLobbyBooking = widget.booking.type == BookingType.lobby;
-      _isPrivateBooking = widget.booking.type == BookingType.private;
+      _isMatchBooking = widget.booking.bookingType == BookingType.match;
+      _isLobbyBooking = widget.booking.bookingType == BookingType.lobby;
+      _isPrivateBooking = widget.booking.bookingType == BookingType.private;
     });
   }
 
@@ -292,7 +292,7 @@ class _OrganizationBookingWidgetState extends State<OrganizationBookingWidget> {
                 Icon(Icons.group, color: ATLColors.darkBlue, size: 20),
                 const SizedBox(width: 12),
                 Text(
-                  '${(widget.lobbyBooking!.maxPlayers) - (widget.lobbyBooking!.playersToFind)}/${widget.lobbyBooking!.maxPlayers}',
+                  '${(widget.lobbyBooking!.totalPlayers) - (widget.lobbyBooking!.playersToFind)}/${widget.lobbyBooking!.totalPlayers}',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

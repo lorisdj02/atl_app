@@ -609,7 +609,7 @@ abstract class AppLocalizations {
   String get tba;
   String get atlEventType;
   String get tournamentType;
-  String tournamentIdLabel(int id);
+  String tournamentIdLabel(double id);
   String get startTournamentTitle;
   String get startTournamentConfirm;
   String get startButton;
@@ -663,7 +663,7 @@ abstract class AppLocalizations {
   String get secondHalfStartedEvent;
   String get fullTimeEvent;
   String get penaltyShootoutEvent;
-  String matchIdLabel(int id);
+  String matchIdLabel(double id);
   String get unknownPlayer;
   String matchActionSuccess(String action);
   String failedToMatchAction(String action);
@@ -839,7 +839,7 @@ abstract class AppLocalizations {
   String avgRatingGames(double rating, int games);
   String minTournamentsCoordinated(int count);
   String avgRatingTournaments(double rating, int tournaments);
-  String payPerGame(String amount);
+  String payPerMatch(String amount);
 
   // Match event dialog
   String get confirmEventTitle;
@@ -900,7 +900,7 @@ abstract class AppLocalizations {
   String get selectCityToSeeMatchesSubtitle;
   String get noMatchesAvailable;
   String get noScheduledMatchesForSelectedFilters;
-  String sportWithId(int sportId);
+  String sportWithId(double sportId);
   String noScheduledMatchesInSport(String sportName);
 
   // Rank teams widget
@@ -920,7 +920,7 @@ abstract class AppLocalizations {
   String get teamDisabledMsg;
   String get captainAbbr;
   String get viceCaptainAbbr;
-  String teamAliasAndId(String alias, int id);
+  String teamAliasAndId(String alias, double id);
 
   // Abstract football match widget - match statuses
   String get matchStatusLive;

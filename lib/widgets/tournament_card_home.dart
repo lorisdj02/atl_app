@@ -71,7 +71,7 @@ class TournamentCardHome extends StatelessWidget {
 
     final groupStandings =
         standings.where((s) => s.groupName == userStanding.groupName).toList()
-          ..sort((a, b) => b.points.compareTo(a.points));
+          ..sort((a, b) => b.pts.compareTo(a.pts));
 
     // Find next match
     final userMatches =
@@ -82,10 +82,10 @@ class TournamentCardHome extends StatelessWidget {
             )
             .toList()
           ..sort((a, b) {
-            if (a.matchDate == null && b.matchDate == null) return 0;
-            if (a.matchDate == null) return 1;
-            if (b.matchDate == null) return -1;
-            return a.matchDate!.compareTo(b.matchDate!);
+            if (a.scheduledStart == null && b.scheduledStart == null) return 0;
+            if (a.scheduledStart == null) return 1;
+            if (b.scheduledStart == null) return -1;
+            return a.scheduledStart!.compareTo(b.scheduledStart!);
           });
 
     final nextMatch = userMatches.isNotEmpty ? userMatches.first : null;
@@ -134,7 +134,7 @@ class TournamentCardHome extends StatelessWidget {
                     ? ATLColors.getPrimaryColor(sportCategory)
                     : Colors.white,
                 rank: rank,
-                standingRecord: '${standing.points} pts',
+                standingRecord: '${standing.pts} pts',
                 sportCategory: sportCategory,
               ),
             );

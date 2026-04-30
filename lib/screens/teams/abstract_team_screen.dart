@@ -30,8 +30,8 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
   Team? team;
-  late AccountProvider userProvider;
-  late int? playerId;
+  late AccountProvider accountProvider;
+  late double? playerId;
 
   List<Player>? players;
   List<Palmares>? palmares;
@@ -40,14 +40,14 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   List<Player>? historicalPlayers;
 
   // Cache per palmares
-  Map<int, Coordinator?> coordinatorsCache = {};
-  Map<int, Field?> fieldsCache = {};
+  Map<double, Coordinator?> coordinatorsCache = {};
+  Map<double, Field?> fieldsCache = {};
 
   // Cache per stats
-  Map<int, FootballTeamStats?> playerStatsCache = {};
+  Map<double, FootballTeamStats?> playerStatsCache = {};
 
   // Cache for city names
-  Map<int, String> cityNamePerField = {};
+  Map<double, String> cityNamePerField = {};
 
   bool playersLoaded = false;
   bool palmaresLoaded = false;
@@ -61,8 +61,8 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     super.initState();
     tabController = TabController(length: 3, vsync: this);
     tabController.addListener(onTabChanged);
-    userProvider = Provider.of<AccountProvider>(context, listen: false);
-    playerId = userProvider.activeRoleId;
+    accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    playerId = accountProvider.activeRoleId;
     loadData();
   }
 
@@ -117,21 +117,21 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     });
   }
 
-  int getTeamId();
+  double getTeamId();
 
-  Future<void> loadPlayersData(int teamId) async {
-    final PlayersInTeamResponse data = await TeamService.Read.getPlayersInTeam(teamId.toDouble());
+  Future<void> loadPlayersData(double teamId) async {
+    final PlayersInTeamResponse data = await TeamService.Read.getPlayersInTeam(teamId);
 
     List<Player> loadedPlayers = data.players;
     if (loadedPlayers.isNotEmpty) {
       // Sort players: Captain, Vice1, Vice2, then others
       loadedPlayers.sort((a, b) {
-        if (a.playerId == team!.captainId) return -1;
-        if (b.playerId == team!.captainId) return 1;
-        if (a.playerId == team!.vice1Id) return -1;
-        if (b.playerId == team!.vice1Id) return 1;
-        if (a.playerId == team!.vice2Id) return -1;
-        if (b.playerId == team!.vice2Id) return 1;
+        if (a.playerId == team!.captainPlayerId) return -1;
+        if (b.playerId == team!.captainPlayerId) return 1;
+        if (a.playerId == team!.vice1PlayerId) return -1;
+        if (b.playerId == team!.vice1PlayerId) return 1;
+        if (a.playerId == team!.vice2PlayerId) return -1;
+        if (b.playerId == team!.vice2PlayerId) return 1;
         return 0;
       });
 
@@ -270,7 +270,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     }
 
     // Only VIP teams can see palmares
-    if (team == null || (team!.vip != true && team!.players > 0)) {
+    if (team == null || (team!.vip != true && team!.numPlayers > 0)) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -383,14 +383,14 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     }
 
     // Non-VIP teams default to players-only view
-    if (team == null || (team!.vip == false && team!.players > 0)) {
+    if (team == null || (team!.vip == false && team!.numPlayers > 0)) {
       statsShowAll = false;
     }
 
     // Prepare playerStats map depending on filter
-    Map<int, FootballTeamStats?> statsToShow = {};
+    Map<double, FootballTeamStats?> statsToShow = {};
     if (statsShowAll) {
-      statsToShow = Map<int, FootballTeamStats?>.from(playerStatsCache);
+      statsToShow = Map<double, FootballTeamStats?>.from(playerStatsCache);
     } else {
       final playerIds = (players ?? []).map((p) => p.playerId).toSet();
       statsToShow = Map.fromEntries(

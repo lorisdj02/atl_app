@@ -1,13 +1,12 @@
-
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:atl_app/models/tournament_participation.dart';
 
 class PayParticipationResponse {
-  final Map<int, Tournament> tournamentsCache;
+  final Map<double, Tournament> tournamentsCache;
   final List<TournamentParticipation> tournamentParticipations;
-  final Map<int, bool> isCalledUpPerTournament;
-  
+  final Map<double, bool> isCalledUpPerTournament;
+
   PayParticipationResponse({
     required this.tournamentsCache,
     required this.tournamentParticipations,
@@ -16,9 +15,15 @@ class PayParticipationResponse {
 
   factory PayParticipationResponse.fromJson(Map<String, dynamic> json) {
     return PayParticipationResponse(
-      tournamentsCache: Map<int, Tournament>.from(json[ApiJsonKeys.tournamentsCache]),
-      tournamentParticipations: List<TournamentParticipation>.from(json[ApiJsonKeys.tournamentParticipations]),
-      isCalledUpPerTournament: Map<int, bool>.from(json[ApiJsonKeys.isCalledUpPerTournament]),
+      tournamentsCache: Map<double, Tournament>.from(
+        json[ApiJsonKeys.tournamentsCache],
+      ),
+      tournamentParticipations: List<TournamentParticipation>.from(
+        json[ApiJsonKeys.tournamentParticipations],
+      ),
+      isCalledUpPerTournament: Map<double, bool>.from(
+        json[ApiJsonKeys.isCalledUpPerTournament],
+      ),
     );
   }
 }

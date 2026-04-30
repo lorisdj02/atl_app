@@ -10,7 +10,7 @@ import '../../widgets/player_request_widget.dart';
 import '../../l10n/app_localizations.dart';
 
 class PlayerRequestsScreen extends StatefulWidget {
-  final int teamId;
+  final double teamId;
   final SportCategory sportCategory;
 
   const PlayerRequestsScreen({
@@ -25,7 +25,7 @@ class PlayerRequestsScreen extends StatefulWidget {
 
 class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   List<TeamRequest> _requests = [];
-  Map<int, Player> _playersCache = {};
+  Map<double, Player> _playersCache = {};
   bool _isLoading = true;
 
   @override

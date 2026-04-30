@@ -237,7 +237,7 @@ class _TournamentCardStatus extends State<TournamentCard> {
 
   /// Background color basato sullo stato del torneo
   Color _getBackgroundColor() {
-    if (widget.tournament.isATL) {
+    if (widget.tournament.atlEvent) {
       return ATLColors.getSecondaryColor(widget.currentSport); // Verde ATL
     } else if (widget.tournament.paidTeams >= widget.tournament.numTeams) {
       return const Color(0xFFC5C5C5); // Grigio se torneo pieno
@@ -248,7 +248,7 @@ class _TournamentCardStatus extends State<TournamentCard> {
 
   /// Leading indicator: Logo ATL o color indicator
   Widget _buildLeadingIndicator() {
-    if (widget.tournament.isATL) {
+    if (widget.tournament.atlEvent) {
       // Logo ATL
       return Container(
         width: 40,

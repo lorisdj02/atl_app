@@ -14,11 +14,11 @@ class FootballMatchResponse {
   final int minutesPerRound;
   final int minutesPerPause;
   final List<String> availableRefereeRoles;
-  final Map<int, List<Player>> playersPerTeam;
+  final Map<double, List<Player>> playersPerTeam;
   final Map<String, String> assignmentPerRefereeNameSurname;
   final Field field;
   final String cityName;
-  final int coordinatorId;
+  final double coordinatorId;
   final bool refereeCheck;
   final bool canMatchFinish;
   final bool hasRefereeLicense;
@@ -61,7 +61,7 @@ class FootballMatchResponse {
           List<String>.from(json[ApiJsonKeys.availableRefereeRoles] as List),
       playersPerTeam: (json[ApiJsonKeys.playersPerTeam] as Map<String, dynamic>)
           .map((key, value) => MapEntry(
-              int.parse(key),
+              double.parse(key),
               (value as List)
                   .map((e) => Player.fromJson(e))
                   .toList())),

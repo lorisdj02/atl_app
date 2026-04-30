@@ -14,10 +14,10 @@ class AbstractTeamResponse {
   final List<Player> players;
   final List<Palmares> palmares;
   final List<Tournament> tournaments;
-  final Map<int, Coordinator> coordinatorsCache;
-  final Map<int, Field> fieldsCache;
-  final Map<int, FootballTeamStats> footballPlayerStatsCache;
-  final Map<int, String> cityNamePerField;
+  final Map<double, Coordinator> coordinatorsCache;
+  final Map<double, Field> fieldsCache;
+  final Map<double, FootballTeamStats> footballPlayerStatsCache;
+  final Map<double, String> cityNamePerField;
   final List<Player> historicalPlayers;
 
   AbstractTeamResponse({
@@ -39,11 +39,11 @@ class AbstractTeamResponse {
       palmares: List<Palmares>.from(json[ApiJsonKeys.palmares].map((x) => Palmares.fromJson(x))),
       tournaments: List<Tournament>.from(json[ApiJsonKeys.tournaments].map((x) => Tournament.fromJson(x))),
       coordinatorsCache:
-          Map<int, Coordinator>.from(json[ApiJsonKeys.coordinatorsCache].map((key, value) => MapEntry(int.parse(key), Coordinator.fromJson(value)))),
-      fieldsCache: Map<int, Field>.from(json[ApiJsonKeys.fieldsCache].map((key, value) => MapEntry(int.parse(key), Field.fromJson(value)))),
-      footballPlayerStatsCache: Map<int, FootballTeamStats>.from(json[ApiJsonKeys.footballPlayerStatsCache].map((key, value) => MapEntry(int.parse(key), FootballTeamStats.fromJson(value)))),
+          Map<double, Coordinator>.from(json[ApiJsonKeys.coordinatorsCache].map((key, value) => MapEntry(double.parse(key), Coordinator.fromJson(value)))),
+      fieldsCache: Map<double, Field>.from(json[ApiJsonKeys.fieldsCache].map((key, value) => MapEntry(double.parse(key), Field.fromJson(value)))),
+      footballPlayerStatsCache: Map<double, FootballTeamStats>.from(json[ApiJsonKeys.footballPlayerStatsCache].map((key, value) => MapEntry(double.parse(key), FootballTeamStats.fromJson(value)))),
       cityNamePerField:
-          Map<int, String>.from(json[ApiJsonKeys.cityNamePerField].map((key, value) => MapEntry(int.parse(key), value as String))),
+          Map<double, String>.from(json[ApiJsonKeys.cityNamePerField].map((key, value) => MapEntry(double.parse(key), value as String))),
       historicalPlayers:
           List<Player>.from(json[ApiJsonKeys.historicalPlayers].map((x) => Player.fromJson(x))),
     );

@@ -4,13 +4,13 @@ import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/lobby_booking.dart';
 
 class JoinLobbyResponse {
-  final Map<int, String> usernamePerBooking;
+  final Map<double, String> usernamePerBooking;
   final List<LobbyBooking> lobbies;
-  final Map<int, int> maxPlayersPerLobby;
-  final Map<int, int> currentPlayersPerLobby;
-  final Map<int, int> playersPaidPerBooking;
-  final Map<int, Field> fieldsCache;
-  final Map<int, String> completeAddressPerField;
+  final Map<double, int> maxPlayersPerLobby;
+  final Map<double, int> currentPlayersPerLobby;
+  final Map<double, int> playersPaidPerBooking;
+  final Map<double, Field> fieldsCache;
+  final Map<double, String> completeAddressPerField;
   final List<City> cities;
 
   JoinLobbyResponse({
@@ -26,37 +26,37 @@ class JoinLobbyResponse {
 
   factory JoinLobbyResponse.fromJson(Map<String, dynamic> json) {
     return JoinLobbyResponse(
-      usernamePerBooking: Map<int, String>.from(
+      usernamePerBooking: Map<double, String>.from(
         json[ApiJsonKeys.usernamePerBooking].map(
-          (k, v) => MapEntry(int.parse(k), v),
+          (k, v) => MapEntry(double.parse(k), v),
         ),
       ),
       lobbies: List<LobbyBooking>.from(
         json[ApiJsonKeys.lobbies].map((x) => LobbyBooking.fromJson(x)),
       ),
-      maxPlayersPerLobby: Map<int, int>.from(
+      maxPlayersPerLobby: Map<double, int>.from(
         json[ApiJsonKeys.maxPlayersPerLobby].map(
-          (k, v) => MapEntry(int.parse(k), v),
+          (k, v) => MapEntry(double.parse(k), v),
         ),
       ),
-      currentPlayersPerLobby: Map<int, int>.from(
+      currentPlayersPerLobby: Map<double, int>.from(
         json[ApiJsonKeys.currentPlayersPerLobby].map(
-          (k, v) => MapEntry(int.parse(k), v),
+          (k, v) => MapEntry(double.parse(k), v),
         ),
       ),
-      playersPaidPerBooking: Map<int, int>.from(
+      playersPaidPerBooking: Map<double, int>.from(
         json[ApiJsonKeys.playersPaidPerBooking].map(
-          (k, v) => MapEntry(int.parse(k), v),
+          (k, v) => MapEntry(double.parse(k), v),
         ),
       ),
-      fieldsCache: Map<int, Field>.from(
+      fieldsCache: Map<double, Field>.from(
         json[ApiJsonKeys.fieldsCache].map(
-          (k, v) => MapEntry(int.parse(k), Field.fromJson(v)),
+          (k, v) => MapEntry(double.parse(k), Field.fromJson(v)),
         ),
       ),
-      completeAddressPerField: Map<int, String>.from(
+      completeAddressPerField: Map<double, String>.from(
         json[ApiJsonKeys.completeAddressPerField].map(
-          (k, v) => MapEntry(int.parse(k), v),
+          (k, v) => MapEntry(double.parse(k), v),
         ),
       ),
       cities: List<City>.from(

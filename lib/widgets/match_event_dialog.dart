@@ -19,9 +19,9 @@ enum EventType {
 }
 
 class MatchEventDialog extends AbstractTeamDialog {
-  final int coordinatorId;
+  final double coordinatorId;
   final bool penaltyMode;
-  final Map<int, List<Player>> playersPerTeam;
+  final Map<double, List<Player>> playersPerTeam;
 
   const MatchEventDialog({
     super.key,
@@ -143,7 +143,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
         teamId: selectedTeam!.id,
         playerId: _selectedPlayer!.playerId,
         minute: 0, // Mocked
-        eventTime: DateTime.now(), // Mocked
+        createdAt: DateTime.now(), // Mocked
       );
 
       await MatchService.Write.insertFootballMatchEvent(

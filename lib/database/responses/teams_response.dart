@@ -2,21 +2,21 @@ import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/team.dart';
 
 class TeamsResponse {
-  final Map<int, Team> teamsCache;
-  final Map<int, String> captainNamePerTeam;
+  final Map<double, Team> teamsCache;
+  final Map<double, String> captainNamePerTeam;
 
   TeamsResponse({required this.teamsCache, required this.captainNamePerTeam});
 
   factory TeamsResponse.fromJson(Map<String, dynamic> json) {
     return TeamsResponse(
-      teamsCache: Map<int, Team>.from(
+      teamsCache: Map<double, Team>.from(
         json[ApiJsonKeys.teamsCache].map(
-          (key, value) => MapEntry(int.parse(key), Team.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
         ),
       ),
-      captainNamePerTeam: Map<int, String>.from(
+      captainNamePerTeam: Map<double, String>.from(
         json[ApiJsonKeys.captainNamePerTeam].map(
-          (key, value) => MapEntry(int.parse(key), value),
+          (key, value) => MapEntry(double.parse(key), value),
         ),
       ),
     );

@@ -36,9 +36,9 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
   bool _isLoading = true;
   List<FootballMatch> _assignedMatches = [];
   Map<DateTime, List<FootballMatch>> _matchesPerDate = {};
-  Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesRoundPerTournament = {};
-  Map<int, int?> _minutesPausePerTournament = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, int?> _minutesRoundPerTournament = {};
+  Map<double, int?> _minutesPausePerTournament = {};
   final ScrollController _dayScrollController = ScrollController();
 
   @override
@@ -243,7 +243,7 @@ class _RefereeHomeScreenState extends State<RefereeHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<AccountProvider>(
+        accountId: Provider.of<AccountProvider>(
           context,
           listen: false,
         ).activeAccount!.id,

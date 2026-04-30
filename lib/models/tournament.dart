@@ -106,7 +106,7 @@ class Tournament {
   final int numGroups;
   final int numTeams;
   final int paidTeams;
-  final TournamentStatus status;
+  TournamentStatus status;
   final bool atlEvent;
   final double prize1;
   final double prize2;
@@ -214,5 +214,17 @@ class Tournament {
 
   bool get isFinalStage {
     return phase != TournamentPhase.group;
+  }
+
+  String get formattedPrize1 {
+    return '${prize1.toStringAsFixed(2)}€';
+  }
+
+  String get formattedPrize2 {
+    return '${prize2.toStringAsFixed(2)}€';
+  }
+
+  String get formattedFee {
+    return '${fee.toStringAsFixed(2)}€';
   }
 }

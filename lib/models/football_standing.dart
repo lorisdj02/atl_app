@@ -3,6 +3,7 @@ class FootballStanding {
   final double tournamentId;
   final double teamId;
   final String groupName;
+  final int pts;
   final int won;
   final int drawn;
   final int lost;
@@ -22,6 +23,7 @@ class FootballStanding {
     required this.goalsConceded,
     required this.rankPos,
     required this.qualified,
+    required this.pts,
   });
 
   factory FootballStanding.fromJson(Map<String, dynamic> json) {
@@ -36,6 +38,7 @@ class FootballStanding {
       goalsConceded: json['goals_conceded'] ?? 0,
       rankPos: json['rank_pos'] ?? 0,
       qualified: json['qualified'] ?? false,
+      pts: json['points'] ?? 0,
     );
   }
 
@@ -51,6 +54,7 @@ class FootballStanding {
       'goals_conceded': goalsConceded,
       'rank_pos': rankPos,
       'qualified': qualified,
+      'points': pts,
     };
   }
 }

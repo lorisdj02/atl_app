@@ -36,11 +36,11 @@ class SquareTeamWidget extends AbstractTeamWidget {
             ),
           ],
         ),
-        child: (imageUrl ?? team.imageUrl) != null
+        child: (imageUrl ?? team.logoUrl) != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: Image.network(
-                  imageUrl ?? team.imageUrl!,
+                  imageUrl ?? team.logoUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return _buildPlaceholder();

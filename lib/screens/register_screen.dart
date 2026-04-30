@@ -26,7 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _surnameController = TextEditingController();
   final _phoneController = TextEditingController();
   String _phonePrefix = '+39';
-  int? _preferredCityId;
+  double? _preferredCityId;
   DateTime? _birthday;
 
   // Step 3 data

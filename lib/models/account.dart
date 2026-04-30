@@ -78,6 +78,7 @@ class Account {
   final DateTime? startVip;
   final DateTime? endVip;
   final double? preferredCityId;
+  final DateTime createdAt;
 
   Account({
     required this.id,
@@ -94,6 +95,7 @@ class Account {
     required this.endVip,
     required this.preferredCityId,
     required this.imageUrl,
+    required this.createdAt,
   });
 
   /// Factory per creare l'istanza corretta in base al ruolo
@@ -117,6 +119,7 @@ class Account {
           ? (json['preferredCityId'] as num).toDouble()
           : null,
       imageUrl: json['imageUrl'],
+      createdAt: DateTime.parse(json['createdAt']),
     );
   }
 
@@ -136,6 +139,7 @@ class Account {
       'endVip': endVip?.toIso8601String(),
       'vipType': vipType.apiName,
       'preferredCityId': preferredCityId,
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 

@@ -5,9 +5,9 @@ import 'package:atl_app/models/tournament.dart';
 
 class ApplyTournamentFiltersResponse {
   List<Tournament> tournaments;
-  Map<int, String> cityNamePerField;
-  Map<int, Field> fieldsCache;
-  Map<int, Coordinator> coordinatorsCache;
+  Map<double, String> cityNamePerField;
+  Map<double, Field> fieldsCache;
+  Map<double, Coordinator> coordinatorsCache;
 
   ApplyTournamentFiltersResponse({
     required this.tournaments,
@@ -21,21 +21,21 @@ class ApplyTournamentFiltersResponse {
       tournaments: List<Tournament>.from(
         json[ApiJsonKeys.tournaments].map((x) => Tournament.fromJson(x)),
       ),
-      cityNamePerField: Map<int, String>.from(
+      cityNamePerField: Map<double, String>.from(
         json[ApiJsonKeys.cityNamePerField].map(
-          (key, value) => MapEntry(int.parse(key), value),
+          (key, value) => MapEntry(double.parse(key), value),
         ),
       ),
-      fieldsCache: Map<int, Field>.from(
+      fieldsCache: Map<double, Field>.from(
         json[ApiJsonKeys.fieldsCache].map(
-          (key, value) => MapEntry(int.parse(key), Field.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
         ),
       ),
       coordinatorsCache:
-          Map<int, Coordinator>.from(
+          Map<double, Coordinator>.from(
             json[ApiJsonKeys.coordinatorsCache].map(
               (key, value) =>
-                  MapEntry(int.parse(key), Coordinator.fromJson(value)),
+                  MapEntry(double.parse(key), Coordinator.fromJson(value)),
             ),
           ),
     );

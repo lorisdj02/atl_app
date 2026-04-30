@@ -13,18 +13,18 @@ class PlayerHomeResponse {
   final List<LobbyBooking> lobbies;
   final List<PrivateBooking> privateBookings;
   final List<Tournament> activeTournaments;
-  final Map<int, int> minutesRoundPerTournament;
-  final Map<int, int> minutesPausePerTournament;
-  final Map<int, List<FootballMatch>> footballMatchesPerTournament;
-  final Map<int, List<FootballStanding>> footballStandingsPerTournament;
-  final Map<int, Team> teamsCache;
+  final Map<double, int> minutesRoundPerTournament;
+  final Map<double, int> minutesPausePerTournament;
+  final Map<double, List<FootballMatch>> footballMatchesPerTournament;
+  final Map<double, List<FootballStanding>> footballStandingsPerTournament;
+  final Map<double, Team> teamsCache;
   final Team? accountTeam;
-  final Map<int, String> usernamePerBooking;
-  final Map<int, Field> fieldsCache;
-  final Map<int, int> maxPlayersPerLobby;
-  final Map<int, int> currentPlayersPerLobby;
-  final Map<int, String> completeAddressPerField;
-  final Map<int, int> playersPaidPerBooking;
+  final Map<double, String> usernamePerBooking;
+  final Map<double, Field> fieldsCache;
+  final Map<double, int> maxPlayersPerLobby;
+  final Map<double, int> currentPlayersPerLobby;
+  final Map<double, String> completeAddressPerField;
+  final Map<double, int> playersPaidPerBooking;
 
   PlayerHomeResponse({
     required this.privateBookings,
@@ -56,18 +56,18 @@ class PlayerHomeResponse {
       activeTournaments: (json[ApiJsonKeys.activeTournaments] as List)
           .map((t) => Tournament.fromJson(t))
           .toList(),
-      minutesRoundPerTournament: Map<int, int>.from(json[ApiJsonKeys.minutesRoundPerTournament]),
-      minutesPausePerTournament: Map<int, int>.from(json[ApiJsonKeys.minutesPausePerTournament]),
-      footballMatchesPerTournament: Map<int, List<FootballMatch>>.from(json[ApiJsonKeys.footballMatchesPerTournament].map((key, value) => MapEntry(int.parse(key), (value as List).map((m) => FootballMatch.fromJson(m)).toList()))),
-      footballStandingsPerTournament: Map<int, List<FootballStanding>>.from(json[ApiJsonKeys.footballStandingsPerTournament].map((key, value) => MapEntry(int.parse(key), (value as List).map((s) => FootballStanding.fromJson(s)).toList()))),
-      teamsCache: Map<int, Team>.from(json[ApiJsonKeys.teamsCache].map((key, value) => MapEntry(int.parse(key), Team.fromJson(value)))),
+      minutesRoundPerTournament: Map<double, int>.from(json[ApiJsonKeys.minutesRoundPerTournament]),
+      minutesPausePerTournament: Map<double, int>.from(json[ApiJsonKeys.minutesPausePerTournament]),
+      footballMatchesPerTournament: Map<double, List<FootballMatch>>.from(json[ApiJsonKeys.footballMatchesPerTournament].map((key, value) => MapEntry(double.parse(key), (value as List).map((m) => FootballMatch.fromJson(m)).toList()))),
+      footballStandingsPerTournament: Map<double, List<FootballStanding>>.from(json[ApiJsonKeys.footballStandingsPerTournament].map((key, value) => MapEntry(double.parse(key), (value as List).map((s) => FootballStanding.fromJson(s)).toList()))),
+      teamsCache: Map<double, Team>.from(json[ApiJsonKeys.teamsCache].map((key, value) => MapEntry(double.parse(key), Team.fromJson(value)))),
       accountTeam: json[ApiJsonKeys.accountTeam] != null ? Team.fromJson(json[ApiJsonKeys.accountTeam]) : null,
-      usernamePerBooking: Map<int, String>.from(json[ApiJsonKeys.usernamePerBooking].map((key, value) => MapEntry(int.parse(key), value))),
-      fieldsCache: Map<int, Field>.from(json[ApiJsonKeys.fieldsCache].map((key, value) => MapEntry(int.parse(key), Field.fromJson(value)))),
-      maxPlayersPerLobby: Map<int, int>.from(json[ApiJsonKeys.maxPlayersPerLobby].map((key, value) => MapEntry(int.parse(key), value))),
-      currentPlayersPerLobby: Map<int, int>.from(json[ApiJsonKeys.currentPlayersPerLobby].map((key, value) => MapEntry(int.parse(key), value))),
-      completeAddressPerField: Map<int, String>.from(json[ApiJsonKeys.completeAddressPerField].map((key, value) => MapEntry(int.parse(key), value))),
-      playersPaidPerBooking: Map<int, int>.from(json[ApiJsonKeys.playersPaidPerBooking].map((key, value) => MapEntry(int.parse(key), value))),
+      usernamePerBooking: Map<double, String>.from(json[ApiJsonKeys.usernamePerBooking].map((key, value) => MapEntry(double.parse(key), value))),
+      fieldsCache: Map<double, Field>.from(json[ApiJsonKeys.fieldsCache].map((key, value) => MapEntry(double.parse(key), Field.fromJson(value)))),
+      maxPlayersPerLobby: Map<double, int>.from(json[ApiJsonKeys.maxPlayersPerLobby].map((key, value) => MapEntry(double.parse(key), value))),
+      currentPlayersPerLobby: Map<double, int>.from(json[ApiJsonKeys.currentPlayersPerLobby].map((key, value) => MapEntry(double.parse(key), value))),
+      completeAddressPerField: Map<double, String>.from(json[ApiJsonKeys.completeAddressPerField].map((key, value) => MapEntry(double.parse(key), value))),
+      playersPaidPerBooking: Map<double, int>.from(json[ApiJsonKeys.playersPaidPerBooking].map((key, value) => MapEntry(double.parse(key), value))),
     );
   }
 }

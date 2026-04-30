@@ -37,8 +37,8 @@ class _TeamScreenState extends State<TeamScreen>
   Key _scaffoldKey = UniqueKey(); // Chiave per forzare rebuild
 
   // Cache unificata: associa teamId -> team e captainName
-  Map<int, Team> _teamsCache = {};
-  Map<int, String> _captainNamePerTeam = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, String> _captainNamePerTeam = {};
 
   // Filtri
   final TextEditingController _searchController = TextEditingController();
@@ -74,14 +74,14 @@ class _TeamScreenState extends State<TeamScreen>
     _tabController?.dispose();
 
     setState(() {
-      final AccountProvider userProvider = Provider.of<AccountProvider>(
+      final AccountProvider accountProvider = Provider.of<AccountProvider>(
         context,
         listen: false,
       );
-      final isPlayer = userProvider.isPlayer;
-      int? teamId = userProvider.currentTeamId;
+      final isPlayer = accountProvider.isPlayer;
+      double? teamId = accountProvider.currentTeamId;
       final showMyTeamTab =
-          !userProvider.isGuest && isPlayer && teamId != null && teamId != -1;
+          !accountProvider.isGuest && isPlayer && teamId != null && teamId != -1;
 
       // Forza rebuild completo
       _scaffoldKey = UniqueKey();
@@ -148,25 +148,25 @@ class _TeamScreenState extends State<TeamScreen>
   Future<void> _loadTeams() async {
     setState(() => _isLoading = true);
     try {
-      final AccountProvider userProvider = Provider.of<AccountProvider>(
+      final AccountProvider accountProvider = Provider.of<AccountProvider>(
         context,
         listen: false,
       );
-      final isPlayer = userProvider.activeAccount?.role == AccountRole.player;
+      final isPlayer = accountProvider.activeAccount?.role == AccountRole.player;
 
       final TeamsResponse data = await TeamService.Read.getTeamsScreen(
         widget.currentSport,
       );
-      final Map<int, Team> teamsCache = data.teamsCache;
-      final Map<int, String> captainNamePerTeam = data.captainNamePerTeam;
+      final Map<double, Team> teamsCache = data.teamsCache;
+      final Map<double, String> captainNamePerTeam = data.captainNamePerTeam;
 
       // Calcola l'indice di Ranks in base alla presenza di My team tab
-      final ranksTabIndex = (!userProvider.isGuest && isPlayer) ? 2 : 1;
+      final ranksTabIndex = (!accountProvider.isGuest && isPlayer) ? 2 : 1;
 
       List<Team> teams = teamsCache.values.toList();
       // In "Ranks" ordina per rankPts - con controllo null-safe
       if (_tabController != null && _tabController!.index == ranksTabIndex) {
-        teams.sort((a, b) => (b.rankPts ?? 0).compareTo(a.rankPts ?? 0));
+        teams.sort((a, b) => (b.rankPts).compareTo(a.rankPts));
       }
 
       setState(() {
@@ -352,7 +352,7 @@ class _TeamScreenState extends State<TeamScreen>
       }
 
       // Filtro numero giocatori
-      if (t.players < _playersRange.start || t.players > _playersRange.end) {
+      if (t.numPlayers < _playersRange.start || t.numPlayers > _playersRange.end) {
         return false;
       }
 
@@ -373,11 +373,11 @@ class _TeamScreenState extends State<TeamScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final AccountProvider userProvider = Provider.of<AccountProvider>(context);
-    final isPlayer = userProvider.activeAccount?.role == AccountRole.player;
-    final isGuest = userProvider.isGuest;
+    final AccountProvider accountProvider = Provider.of<AccountProvider>(context);
+    final isPlayer = accountProvider.activeAccount?.role == AccountRole.player;
+    final isGuest = accountProvider.isGuest;
     final currentTab = _tabController?.index ?? 0;
-    final int? teamId = userProvider.currentTeamId;
+    final double? teamId = accountProvider.currentTeamId;
     final showMyTeamTab =
         !isGuest && isPlayer && teamId != null && teamId != -1;
 
@@ -673,8 +673,8 @@ class _TeamScreenState extends State<TeamScreen>
                       if (showRankPts) {
                         return RanksTeamWidget(
                           team: team,
-                          imageUrl: team.imageUrl,
-                          rankPts: showRankPts ? (team.rankPts ?? 0) : null,
+                          imageUrl: team.logoUrl,
+                          rankPts: showRankPts ? (team.rankPts) : null,
                           sportCategory: widget.currentSport,
                           captainName: _captainNamePerTeam[team.id],
                           rank: _teams!.indexOf(team) + 1,
@@ -690,7 +690,7 @@ class _TeamScreenState extends State<TeamScreen>
                         return SearchTeamWidget(
                           team: team,
                           sportCategory: widget.currentSport,
-                          imageUrl: team.imageUrl,
+                          imageUrl: team.logoUrl,
                           captainName: _captainNamePerTeam[team.id],
                         );
                       }
@@ -744,7 +744,7 @@ class _TeamScreenState extends State<TeamScreen>
         },
         currentSport: widget.currentSport,
         isHome: false,
-        userId: userProvider.activeAccount?.id,
+        accountId: accountProvider.activeAccount?.id,
       ),
     );
   }

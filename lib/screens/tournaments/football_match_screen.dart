@@ -23,7 +23,7 @@ import '../../providers/account_provider.dart';
 import '../../l10n/app_localizations.dart';
 
 class FootballMatchScreen extends StatefulWidget {
-  final int matchId;
+  final double matchId;
   final SportCategory currentSport;
 
   const FootballMatchScreen({
@@ -54,7 +54,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   bool _isLoading = true;
   late int _minutesPerRound;
   late int _minutesPerPause;
-  int? _coordinatorId;
+  double? _coordinatorId;
   bool _refereeCheck =
       false; // Indica se il controllo dei ruoli arbitrali è superato (true se non ci sono ruoli disponibili, altrimenti false)
   bool _hasRefereeLicense = false;
@@ -62,8 +62,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
   bool _isLoadingRefereeRoles = true;
   int _matchInfoKey = 0; // Counter to force MatchInfoCard rebuild
   bool _hasChanges = false; // Track if any changes were made
-  Map<int, List<Player>> _playersPerTeam = {};
-  Map<int, List<Player>> _availablePlayersPerTeam = {};
+  Map<double, List<Player>> _playersPerTeam = {};
+  Map<double, List<Player>> _availablePlayersPerTeam = {};
   Map<String, String> _assignmentPerRefereeNameSurname =
       {}; // key: Name+Surname, value: Role
   String _cityName = '';
@@ -181,7 +181,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
           List<FootballMatchEvent> events = data.events;
 
           events.sort(
-            (a, b) => b.eventTime.compareTo(a.eventTime),
+            (a, b) => b.createdAt.compareTo(a.createdAt),
           ); // Ordina per data decrescente
 
           setState(() {
@@ -229,7 +229,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
               );
           List<FootballMatchEvent> matchEvents = events.events;
           matchEvents.sort(
-            (a, b) => b.eventTime.compareTo(a.eventTime),
+            (a, b) => b.createdAt.compareTo(a.createdAt),
           ); // Ordina per data decrescente
           setState(() {
             _events = matchEvents;
@@ -295,8 +295,8 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (selectedRole == null || !mounted) return;
 
-    final userProvider = Provider.of<AccountProvider>(context, listen: false);
-    final refereeId = userProvider.activeRoleId;
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    final refereeId = accountProvider.activeRoleId;
 
     if (refereeId == null) {
       if (mounted) {
@@ -466,7 +466,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         teamId: null,
         playerId: null,
         minute: 0,
-        eventTime: DateTime.now(),
+        createdAt: DateTime.now(),
       );
 
       switch (action) {
@@ -644,7 +644,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         teamId: null,
         playerId: null,
         minute: 0,
-        eventTime: DateTime.now(),
+        createdAt: DateTime.now(),
       );
       await MatchService.Write.insertFootballMatchEvent(
         widget.matchId.toDouble(),
@@ -717,10 +717,10 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   Future<void> _handleDeleteEvent(FootballMatchEvent event) async {
     // Check if user is the coordinator of this tournament
-    final userProvider = Provider.of<AccountProvider>(context, listen: false);
-    final isCoordinator = userProvider.isCoordinator;
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    final isCoordinator = accountProvider.isCoordinator;
 
-    if (!isCoordinator || _coordinatorId != userProvider.activeRoleId) {
+    if (!isCoordinator || _coordinatorId != accountProvider.activeRoleId) {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -810,9 +810,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<AccountProvider>(context);
-    final isCoordinator = userProvider.isCoordinator;
-    final isReferee = userProvider.isReferee;
+    final accountProvider = Provider.of<AccountProvider>(context);
+    final isCoordinator = accountProvider.isCoordinator;
+    final isReferee = accountProvider.isReferee;
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -970,7 +970,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
               ),
             ),
       floatingActionButton: _match != null
-          ? (isCoordinator && _coordinatorId == userProvider.activeRoleId
+          ? (isCoordinator && _coordinatorId == accountProvider.activeRoleId
                 ? _buildFloatingActionButton()
                 : isReferee &&
                       !_isLoadingRefereeRoles &&

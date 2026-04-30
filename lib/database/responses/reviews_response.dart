@@ -4,8 +4,8 @@ import 'package:atl_app/models/review.dart';
 
 class ReviewsResponse {
   final List<Review> reviews;
-  final Map<int, Account> accountPerReview;
-  final Map<int, String> matchTeamsStringPerReview;
+  final Map<double, Account> accountPerReview;
+  final Map<double, String> matchTeamsStringPerReview;
 
   ReviewsResponse({
     required this.reviews,
@@ -18,14 +18,14 @@ class ReviewsResponse {
       reviews: List<Review>.from(
         json[ApiJsonKeys.reviews].map((x) => Review.fromJson(x)),
       ),
-      accountPerReview: Map<int, Account>.from(
+      accountPerReview: Map<double, Account>.from(
         json[ApiJsonKeys.accountPerReview].map(
-          (key, value) => MapEntry(int.parse(key), Account.fromJson(value)),
+          (key, value) => MapEntry(double.parse(key), Account.fromJson(value)),
         ),
       ),
-      matchTeamsStringPerReview: Map<int, String>.from(
+      matchTeamsStringPerReview: Map<double, String>.from(
         json[ApiJsonKeys.matchTeamsStringPerReview].map(
-          (key, value) => MapEntry(int.parse(key), value),
+          (key, value) => MapEntry(double.parse(key), value),
         ),
       ),
     );

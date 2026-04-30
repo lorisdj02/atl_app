@@ -25,7 +25,7 @@ class RefereeLicenseWidget extends StatelessWidget {
         return Colors.orange;
       case LicenseStatus.suspended:
         return Colors.deepOrange;
-      case LicenseStatus.expired:
+      case LicenseStatus.revoked:
         return Colors.red;
     }
   }
@@ -39,7 +39,7 @@ class RefereeLicenseWidget extends StatelessWidget {
         return l10n.licenseStatusNotVerified;
       case LicenseStatus.suspended:
         return l10n.licenseStatusSuspended;
-      case LicenseStatus.expired:
+      case LicenseStatus.revoked:
         return l10n.licenseStatusRevoked;
     }
   }
@@ -47,7 +47,7 @@ class RefereeLicenseWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final sportCategory = sport?.category;
+    final sportCategory = sport?.sportCategory;
     final primaryColor = sportCategory != null
         ? ATLColors.getPrimaryColor(sportCategory)
         : ATLColors.darkBlue;
@@ -109,7 +109,7 @@ class RefereeLicenseWidget extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               // License ID
-              _infoRow(Icons.badge_outlined, l10n.idLabel, license.id),
+              _infoRow(Icons.badge_outlined, l10n.idLabel, license.licenseId),
               const SizedBox(height: 6),
               // Issued at
               _infoRow(

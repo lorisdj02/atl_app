@@ -78,6 +78,7 @@ class FootballMatch extends Match {
     required super.legOrder,
     required super.finalStageBracketId,
     required super.finishMatch,
+    required super.day,
   });
 
   factory FootballMatch.fromJson(Map<String, dynamic> json) {
@@ -116,6 +117,7 @@ class FootballMatch extends Match {
       ),
       finalStageBracketId: json['finalStageBracketId'],
       finishMatch: DateTime.parse(json['finishMatch']),
+      day: json['day'],
     );
   }
 
@@ -144,6 +146,9 @@ class FootballMatch extends Match {
       'legOrder': legOrder.apiName,
       'finalStageBracketId': finalStageBracketId,
       'finishMatch': finishMatch?.toIso8601String(),
+      'day': day,
     };
   }
+
+  
 }
