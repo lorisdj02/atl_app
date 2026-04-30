@@ -1,3 +1,4 @@
+// OK
 class PurchaseDetail{
   final String title;
   final String description;

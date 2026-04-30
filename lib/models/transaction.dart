@@ -1,29 +1,79 @@
 enum TransactionStatus{
-  PENDING,
-    CONFIRMED,
-    FAILED,
-    PARTIAL_REFUND,
-    REFUNDED
+  pending,
+    confirmed,
+    failed,
+    partialRefund,
+    refunded;
+
+    String get apiName {
+      switch (this) {
+        case TransactionStatus.pending:
+          return 'PENDING';
+        case TransactionStatus.confirmed:
+          return 'CONFIRMED';
+        case TransactionStatus.failed:
+          return 'FAILED';
+        case TransactionStatus.partialRefund:
+          return 'PARTIAL_REFUND';
+        case TransactionStatus.refunded:
+          return 'REFUNDED';
+      }
+    }
 }
 
 enum TransactionSource{
-  PRIZE_WALLET,
-    PERSONAL_WALLET,
-    INVITE_WALLET,
-    STRIPE,
-    OTHER
+  prizeWallet,
+    personalWallet,
+    inviteWallet,
+    stripe,
+    other;
+
+    String get apiName {
+      switch (this) {
+        case TransactionSource.prizeWallet:
+          return 'PRIZE_WALLET';
+        case TransactionSource.personalWallet:
+          return 'PERSONAL_WALLET';
+        case TransactionSource.inviteWallet:
+          return 'INVITE_WALLET';
+        case TransactionSource.stripe:
+          return 'STRIPE';
+        case TransactionSource.other:
+          return 'OTHER';
+      }
+    }
 }
 
 enum TransactionType {
-    DEPOSIT, // NOT USED
-    PAYMENT, // OUT PERSONAL, PRIZE, INVITE WALLET
-    PRIZE, // IN PRIZE WALLET
-    WITHDRAW, // OUT PRIZE, PERSONAL WALLET
-    REFUND, // IN PRIZE, PERSONAL, INVITE WALLET
-    FEE, // IN PERSONAL WALLET
-    INVITE // IN INVITE WALLET
+    deposit, // NOT USED
+    payment, // OUT PERSONAL, PRIZE, INVITE WALLET
+    prize, // IN PRIZE WALLET
+    withdraw, // OUT PRIZE, PERSONAL WALLET
+    refund, // IN PRIZE, PERSONAL, INVITE WALLET
+    fee, // IN PERSONAL WALLET
+    invite; // IN INVITE WALLET
+
+    String get apiName {
+      switch (this) {
+        case TransactionType.deposit:
+          return 'DEPOSIT';
+        case TransactionType.payment:
+          return 'PAYMENT';
+        case TransactionType.prize:
+          return 'PRIZE';
+        case TransactionType.withdraw:
+          return 'WITHDRAW';
+        case TransactionType.refund:
+          return 'REFUND';
+        case TransactionType.fee:
+          return 'FEE';
+        case TransactionType.invite:
+          return 'INVITE';
+      }
+    }
 }
 
+// OK
 class Transaction {
   final double accountId;
   final TransactionStatus status;

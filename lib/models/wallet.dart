@@ -1,44 +1,44 @@
+// OK
 class Wallet {
-  final int id;
-  final int accountId;
-  double personalBalance;
-  double prizeBalance;
-  double inviteBalance;
-  DateTime? lastWithdraw;
-  DateTime updatedAt;
+  final double id;
+  final double prizeBalance;
+  final double personalBalance;
+  final double inviteBalance;
+  final DateTime? prizeLastWithdraw;
+  final DateTime? personalLastWithdraw;
 
   Wallet({
     required this.id,
-    required this.accountId,
-    this.personalBalance = 0,
-    this.prizeBalance = 0,
-    this.inviteBalance = 0,
-  }) : lastWithdraw = null,
-       updatedAt = DateTime.now();
+    required this.prizeBalance,
+    required this.personalBalance,
+    required this.inviteBalance,
+    required this.prizeLastWithdraw,
+    required this.personalLastWithdraw,
+  });
 
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
       id: json['id'],
-      accountId: json['accountId'],
-      personalBalance: json['personalBalance'] ?? 0,
-      prizeBalance: json['prizeBalance'] ?? 0,
-      inviteBalance: json['inviteBalance'] ?? 0,
-    )
-      ..lastWithdraw = json['lastWithdraw'] != null
-          ? DateTime.parse(json['lastWithdraw'])
-          : null
-      ..updatedAt = DateTime.parse(json['updatedAt']);
+      prizeBalance: json['prizeBalance'],
+      personalBalance: json['personalBalance'],
+      inviteBalance: json['inviteBalance'],
+      prizeLastWithdraw: json['prizeLastWithdraw'] != null
+          ? DateTime.parse(json['prizeLastWithdraw'])
+          : null,
+      personalLastWithdraw: json['personalLastWithdraw'] != null
+          ? DateTime.parse(json['personalLastWithdraw'])
+          : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'accountId': accountId,
-      'personalBalance': personalBalance,
       'prizeBalance': prizeBalance,
-      'lastWithdraw': lastWithdraw?.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'personalBalance': personalBalance,
       'inviteBalance': inviteBalance,
+      'prizeLastWithdraw': prizeLastWithdraw?.toIso8601String(),
+      'personalLastWithdraw': personalLastWithdraw?.toIso8601String(),
     };
   }
 }

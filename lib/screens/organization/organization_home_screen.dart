@@ -38,7 +38,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   Map<int, Team> _teamsCache = {};
   Map<int, String> _usernamePerBooking = {};
 
-  Map<DateTime, Map<int, List<Booking>>> _bookingsByFieldByDate = {};
+  Map<DateTime, Map<double, List<Booking>>> _bookingsByFieldByDate = {};
 
   final ScrollController _dayScrollController = ScrollController();
 
@@ -106,13 +106,13 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
       final OrganizationHomeResponse organizationData =
           await HomeScreenService.getOrganizationHomeScreen(_currentSport);
 
-      Map<int, List<Booking>> bookingsByField = {};
+      Map<double, List<Booking>> bookingsByField = {};
 
       for (var booking in organizationData.generalBookings) {
         bookingsByField.putIfAbsent(booking.fieldId, () => []).add(booking);
       }
 
-      Map<DateTime, Map<int, List<Booking>>> bookingsByFieldByDate = {};
+      Map<DateTime, Map<double, List<Booking>>> bookingsByFieldByDate = {};
 
       for (var entry in bookingsByField.entries) {
         final fieldId = entry.key;
@@ -248,7 +248,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: Provider.of<AccountProvider>(
+        accountId: Provider.of<AccountProvider>(
           context,
           listen: false,
         ).activeAccount!.id,
@@ -505,7 +505,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
           final booking = entry.value!;
           return Padding(
             padding: const EdgeInsets.only(bottom: 12, left: 0, right: 0),
-            child: booking.type == BookingType.lobby
+            child: booking.bookingType == BookingType.lobby
                 ? OrganizationBookingWidget(
                     key: ValueKey(booking.id),
                     booking: booking,
@@ -514,7 +514,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                     lobbyBooking: _detailedBookings[booking.id],
                     playerString: _usernamePerBooking[booking.id],
                   )
-                : booking.type == BookingType.match
+                : booking.bookingType == BookingType.match
                 ? OrganizationBookingWidget(
                     key: ValueKey(booking.id),
                     booking: booking,
@@ -527,7 +527,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
                         _teamsCache[_matchPerBooking[booking.id]?.awayTeamId],
                     coordinatorString: _usernamePerBooking[booking.id],
                   )
-                : booking.type == BookingType.private
+                : booking.bookingType == BookingType.private
                 ? OrganizationBookingWidget(
                     key: ValueKey(booking.id),
                     booking: booking,

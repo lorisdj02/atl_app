@@ -3,6 +3,9 @@ import 'app_localizations.dart';
 /// Localizzazioni in inglese
 class AppLocalizationsEn extends AppLocalizations {
   @override
+  String get statusPendingPayments => 'Pending payments';
+
+  @override
   String get email => 'Email';
 
   @override
@@ -543,7 +546,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String selectedCount(int count) => 'Selected: $count';
 
   @override
-  String minMaxPlayers(int min, int max) => 'Min $min players, Max $max players';
+  String minMaxPlayers(int min, int max) =>
+      'Min $min players, Max $max players';
 
   @override
   String get confirmAndParticipate => 'Confirm and participate';
@@ -611,7 +615,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get teamCreatedSuccessfully => 'Team created successfully!';
 
-
   @override
   String get teamNameAlreadyInUse => 'Team name already in use';
 
@@ -674,8 +677,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   // Player requests screen
   @override
-  String errorLoadingRequests(String error) =>
-      'Error loading requests: $error';
+  String errorLoadingRequests(String error) => 'Error loading requests: $error';
 
   @override
   String errorAcceptingRequest(String error) =>
@@ -764,7 +766,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Error loading fields: $error';
 
   @override
-  String get tournamentCreatedSuccessfully => 'Tournament created successfully!';
+  String get tournamentCreatedSuccessfully =>
+      'Tournament created successfully!';
 
   @override
   String errorCreatingTournament(String error) =>
@@ -888,7 +891,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'and grow your athletic career - all in one place.';
 
   @override
-  String get browseAsGuestHint => 'Browse as guest - register to unlock all features';
+  String get browseAsGuestHint =>
+      'Browse as guest - register to unlock all features';
 
   @override
   String get guestUserLabel => 'Guest User';
@@ -900,7 +904,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginToAccessAllFeatures => 'Log in to access all features';
 
   @override
-  String get guestRolePlayerDesc => 'Play, grow and connect with your teammates.';
+  String get guestRolePlayerDesc =>
+      'Play, grow and connect with your teammates.';
 
   @override
   String get guestRolePlayerFeature1 => 'Book fields at your favourite venues';
@@ -912,7 +917,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guestRolePlayerFeature3 => 'Participate in ranked tournaments';
 
   @override
-  String get guestRoleCoordinatorDesc => 'Organise and run tournaments end-to-end.';
+  String get guestRoleCoordinatorDesc =>
+      'Organise and run tournaments end-to-end.';
 
   @override
   String get guestRoleCoordinatorFeature1 => 'Create and manage tournaments';
@@ -927,7 +933,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guestRoleRefereeDesc => 'Officiate matches and track your career.';
 
   @override
-  String get guestRoleRefereeFeature1 => 'Receive match officiating assignments';
+  String get guestRoleRefereeFeature1 =>
+      'Receive match officiating assignments';
 
   @override
   String get guestRoleRefereeFeature2 => 'Report match events in real time';
@@ -936,7 +943,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guestRoleRefereeFeature3 => 'Track earnings and schedule';
 
   @override
-  String get guestRoleOrganizationDesc => 'Manage your club, venues and events.';
+  String get guestRoleOrganizationDesc =>
+      'Manage your club, venues and events.';
 
   @override
   String get guestRoleOrganizationFeature1 => 'List and manage your fields';
@@ -992,7 +1000,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noLicensesTitle => 'No Licenses';
 
   @override
-  String get noLicensesSubtitle => 'Tap the + button to add your first license.';
+  String get noLicensesSubtitle =>
+      'Tap the + button to add your first license.';
 
   @override
   String get noMatchHistoryTitle => 'No match history';
@@ -1007,8 +1016,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Message sent successfully! We will get back to you soon.';
 
   @override
-  String errorSendingMessage(String error) =>
-      'Error sending message: $error';
+  String errorSendingMessage(String error) => 'Error sending message: $error';
 
   @override
   String get contactUsTitle => 'CONTACT US';
@@ -1092,8 +1100,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileUpdatedSuccessfully => 'Profile updated successfully';
 
   @override
-  String errorUpdatingProfile(String error) =>
-      'Error updating profile: $error';
+  String errorUpdatingProfile(String error) => 'Error updating profile: $error';
 
   @override
   String get editProfileTitle => 'EDIT PROFILE';
@@ -1377,8 +1384,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This action cannot be undone. All your data will be permanently deleted.';
 
   @override
-  String get enterPasswordToConfirm =>
-      'Please enter your password to confirm:';
+  String get enterPasswordToConfirm => 'Please enter your password to confirm:';
 
   @override
   String get enterYourPassword => 'Enter your password';
@@ -1464,7 +1470,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withdrawPersonalBalance => 'Withdraw Personal Balance Only';
 
   @override
-  String get withdrawPersonalComingSoon => 'Withdraw Personal Balance coming soon';
+  String get withdrawPersonalComingSoon =>
+      'Withdraw Personal Balance coming soon';
 
   @override
   String get withdrawPrizeBalance => 'Withdraw Prize Balance Only';
@@ -1511,13 +1518,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginToPurchase => 'Login to purchase items';
 
   @override
-  String get guestLoginRequired =>
-      'Guest mode: Login required to purchase';
+  String get guestLoginRequired => 'Guest mode: Login required to purchase';
 
   // Checkout screen
   @override
-  String errorLoadingCheckout(String error) =>
-      'Error loading checkout: $error';
+  String errorLoadingCheckout(String error) => 'Error loading checkout: $error';
 
   @override
   String get paymentCompletedSuccessfully => 'Payment completed successfully!';
@@ -1619,8 +1624,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Error loading tournaments: $error';
 
   @override
-  String errorApplyingFilters(String error) =>
-      'Error applying filters: $error';
+  String errorApplyingFilters(String error) => 'Error applying filters: $error';
 
   @override
   String get newLabel => 'New';
@@ -1695,8 +1699,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginToManageCallUps => 'Login to manage call-ups';
 
   @override
-  String get joinTeamToManageCalups =>
-      'Join a team to manage call-ups';
+  String get joinTeamToManageCalups => 'Join a team to manage call-ups';
 
   @override
   String get viewCallUps => 'VIEW CALL-UPS';
@@ -1749,8 +1752,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCreatingAssignment => 'Error creating assignment';
 
   @override
-  String get errorFieldNotAvailable =>
-      'Error: Field information not available';
+  String get errorFieldNotAvailable => 'Error: Field information not available';
 
   @override
   String get startMatchTitle => 'Start Match';
@@ -1762,8 +1764,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get halftimeTitle => 'Go to Halftime';
 
   @override
-  String get halftimeConfirm =>
-      'Are you sure you want to end the first half?';
+  String get halftimeConfirm => 'Are you sure you want to end the first half?';
 
   @override
   String get startSecondHalfConfirm =>
@@ -1919,8 +1920,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   // Football tournament screen
   @override
-  String errorLoadingDataGeneric(String error) =>
-      'Error loading data: $error';
+  String errorLoadingDataGeneric(String error) => 'Error loading data: $error';
 
   @override
   String get chatComingSoon => 'Chat coming soon';
@@ -2035,8 +2035,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaveTeamTitle => 'Leave Team';
 
   @override
-  String get leaveTeamConfirm =>
-      'Are you sure you want to leave this team?';
+  String get leaveTeamConfirm => 'Are you sure you want to leave this team?';
 
   @override
   String get leaveButton => 'Leave';
@@ -2248,8 +2247,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaveLobbyTitle => 'Leave Lobby';
 
   @override
-  String get leaveLobbyMessage =>
-      'Are you sure you want to leave this lobby?';
+  String get leaveLobbyMessage => 'Are you sure you want to leave this lobby?';
 
   @override
   String get deleteBookingTitle => 'Delete Booking';
@@ -2278,8 +2276,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   // Football MOTM dialog
   @override
-  String errorLoadingPlayers(String error) =>
-      'Error loading players: $error';
+  String errorLoadingPlayers(String error) => 'Error loading players: $error';
 
   @override
   String get selectMotmTitle => 'Select Man of the Match';
@@ -2621,8 +2618,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'No available time slots for this date';
 
   @override
-  String fieldBookedInfo(
-          String from, String to, String date, String kickoff) =>
+  String fieldBookedInfo(String from, String to, String date, String kickoff) =>
       'Field booked from $from to $to on $date with kickoff scheduled at $kickoff';
 
   // Search dialog widget
@@ -2864,10 +2860,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get round2Label => 'Round 2';
 
   @override
-  String get specifyTeamOrTournament => 'Must specify either team or tournament search.';
+  String get specifyTeamOrTournament =>
+      'Must specify either team or tournament search.';
 
   @override
-  String get failedToLoadTimeData => 'Failed to load time data. Please try again.';
+  String get failedToLoadTimeData =>
+      'Failed to load time data. Please try again.';
 
   @override
   String get tournamentLabel => 'Tournament';

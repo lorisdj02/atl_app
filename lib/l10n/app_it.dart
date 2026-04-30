@@ -2,6 +2,10 @@ import 'app_localizations.dart';
 
 /// Localizzazioni in italiano
 class AppLocalizationsIt extends AppLocalizations {
+
+  @override
+  String get statusPendingPayments => 'Pagamenti in sospeso';
+
   @override
   String get email => 'Email';
 

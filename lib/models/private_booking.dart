@@ -1,31 +1,44 @@
 import 'booking.dart';
 import 'sport_category.dart';
-/// Modello PrivateBooking dal database
 
+/// Modello PrivateBooking dal database
+// OK
 class PrivateBooking extends Booking {
-  final int playerId;
+  final double playerId;
   final double cost;
 
   PrivateBooking({
     required super.id,
     required super.fieldId,
+    required super.startTime,
+    required super.finishTime,
+    required super.status,
+    required super.bookingType,
+    required super.sportCategory,
     required this.playerId,
-    required DateTime startTime,
-    required DateTime finishTime,
     required this.cost,
-    super.status = BookingStatus.booked,
-    super.sportCategory = SportCategory.football,
-  }) : super(startTime: startTime, finishTime: finishTime, type: BookingType.private);
+  });
 
   factory PrivateBooking.fromJson(Map<String, dynamic> json) {
     return PrivateBooking(
       id: json['id'],
       fieldId: json['fieldId'],
-      playerId: json['playerId'],
-      startTime: DateTime.parse(json['startTime']),
-      finishTime: DateTime.parse(json['finishTime']),
-      status: BookingStatusExtension.fromString(json['status']),
-      cost: json['cost'],
+      startTime: DateTime.parse(json['startDateTime']),
+      finishTime: DateTime.parse(json['finishDateTime']),
+      status: BookingStatus.values.firstWhere(
+        (e) => e.apiName == json['status'],
+        orElse: () => BookingStatus.booked,
+      ),
+      bookingType: BookingType.values.firstWhere(
+        (e) => e.apiName == json['bookingType'],
+        orElse: () => BookingType.private,
+      ),
+      sportCategory: SportCategory.values.firstWhere(
+        (e) => e.apiName == json['sportCategory'],
+        orElse: () => SportCategory.football,
+      ),
+      playerId: json['playerId']?.toDouble() ?? 0.0,
+      cost: json['cost']?.toDouble() ?? 0.0,
     );
   }
 
@@ -34,10 +47,12 @@ class PrivateBooking extends Booking {
     return {
       'id': id,
       'fieldId': fieldId,
+      'startDateTime': startTime.toIso8601String(),
+      'finishDateTime': finishTime.toIso8601String(),
+      'status': status.apiName,
+      'bookingType': bookingType.apiName,
+      'sportCategory': sportCategory.apiName,
       'playerId': playerId,
-      'startTime': startTime.toIso8601String(),
-      'finishTime': finishTime.toIso8601String(),
-      'status': status.toShortString(),
       'cost': cost,
     };
   }

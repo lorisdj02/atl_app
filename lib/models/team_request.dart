@@ -1,30 +1,16 @@
 /// Modello per le richieste di accesso ai team
+/// OK
 class TeamRequest {
-  final int teamId;
-  final int playerId;
+  final double teamId;
+  final double playerId;
 
   TeamRequest({required this.teamId, required this.playerId});
 
   factory TeamRequest.fromJson(Map<String, dynamic> json) {
-    return TeamRequest(
-      teamId: json['teamId'] as int,
-      playerId: json['playerId'] as int,
-    );
+    return TeamRequest(teamId: json['teamId'], playerId: json['playerId']);
   }
 
   Map<String, dynamic> toJson() {
     return {'teamId': teamId, 'playerId': playerId};
-  }
-
-  TeamRequest copyWith({int? teamId, int? playerId}) {
-    return TeamRequest(
-      teamId: teamId ?? this.teamId,
-      playerId: playerId ?? this.playerId,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'TeamRequest(teamId: $teamId, playerId: $playerId)';
   }
 }

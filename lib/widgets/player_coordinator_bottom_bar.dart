@@ -8,14 +8,14 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
   final Function(int) onTap;
   final SportCategory currentSport;
   final bool isHome;
-  final int? userId;
+  final double? accountId;
 
   const PlayerCoordinatorBottomBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     required this.currentSport,
-    this.userId,
+    this.accountId,
     this.isHome = false,
   });
 
@@ -27,7 +27,7 @@ class PlayerCoordinatorBottomBar extends StatelessWidget {
       onTap: onTap,
       currentSport: currentSport,
       isHome: isHome,
-      userId: userId,
+      userId: accountId,
       leftItems: [
         BottomBarItem(icon: Icons.shopping_cart, label: l10n.shopNavLabel, index: 0),
         BottomBarItem(icon: Icons.emoji_events, label: l10n.tournamentsNavLabel, index: 1),

@@ -32,7 +32,7 @@ class ATLBottomBar extends StatefulWidget {
 
   /// ID dell'utente loggato, usato per verificare notifiche non lette.
   /// Se null (es. utente guest) la verifica viene saltata.
-  final int? userId;
+  final double? accountId;
 
   const ATLBottomBar({
     super.key,
@@ -41,7 +41,7 @@ class ATLBottomBar extends StatefulWidget {
     required this.currentSport,
     required this.leftItems,
     required this.rightItems,
-    this.userId,
+    this.accountId,
     this.isHome = false,
   });
 
@@ -59,7 +59,7 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
   }
 
   Future<void> _checkNotifications() async {
-    if (widget.userId == null) return;
+    if (widget.accountId == null) return;
     try {
       final bool result = await AccountService.Read.hasNotifications();
       if (mounted) {

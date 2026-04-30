@@ -1,42 +1,58 @@
-enum LicenseStatus{
+enum LicenseStatus {
   notVerified,
   active,
-  expired,
-  suspended
+  revoked,
+  suspended;
+
+  String get apiName {
+    switch (this) {
+      case LicenseStatus.notVerified:
+        return 'NOT_VERIFIED';
+      case LicenseStatus.active:
+        return 'ACTIVE';
+      case LicenseStatus.revoked:
+        return 'REVOKED';
+      case LicenseStatus.suspended:
+        return 'SUSPENDED';
+    }
+  }
 }
 
+// OK
 class RefereeLicense {
-  final int refereeId;
-  final int sportId;
-  final String id;
-  LicenseStatus status;
+  final double sportId;
+  final double refereeId;
+  final String? photoUrl;
+  final LicenseStatus status;
   final DateTime createdAt;
   final DateTime issuedAt;
-  DateTime? verifiedAt;
-  DateTime? expiresAt;
-  final String photoUrl;
+  final DateTime? expiresAt;
+  final DateTime? verifiedAt;
+  final String licenseId;
 
   RefereeLicense({
     required this.refereeId,
     required this.sportId,
-    required this.id,
-    this.status = LicenseStatus.notVerified,
+    required this.licenseId,
+    required this.status,
     required this.createdAt,
     required this.issuedAt,
-    this.verifiedAt,
-    this.expiresAt,
-    this.photoUrl = '',
+    required this.verifiedAt,
+    required this.expiresAt,
+    required this.photoUrl,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'refereeId': refereeId,
       'sportId': sportId,
-      'status': status.name,
+      'licenseId': licenseId,
+      'status': status.apiName,
       'createdAt': createdAt.toIso8601String(),
       'issuedAt': issuedAt.toIso8601String(),
       'verifiedAt': verifiedAt?.toIso8601String(),
       'expiresAt': expiresAt?.toIso8601String(),
+      'photoUrl': photoUrl,
     };
   }
 
@@ -44,15 +60,19 @@ class RefereeLicense {
     return RefereeLicense(
       refereeId: json['refereeId'],
       sportId: json['sportId'],
-      id: json['id'],
+      licenseId: json['licenseId'],
       status: LicenseStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => LicenseStatus.active,
+        (e) => e.apiName == json['status'],
       ),
       createdAt: DateTime.parse(json['createdAt']),
       issuedAt: DateTime.parse(json['issuedAt']),
-      verifiedAt: json['verifiedAt'] != null ? DateTime.parse(json['verifiedAt']) : null,
-      expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt']) : null,
+      verifiedAt: json['verifiedAt'] != null
+          ? DateTime.parse(json['verifiedAt'])
+          : null,
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.parse(json['expiresAt'])
+          : null,
+      photoUrl: json['photoUrl'],
     );
   }
 }

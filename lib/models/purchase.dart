@@ -1,8 +1,30 @@
 import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/purchase_detail.dart';
 
-enum PurchaseStatus { CONFIRMED, REDEEMED, REFUNDED, PARTIAL_REFUND, CANCELED }
+enum PurchaseStatus {
+  confirmed,
+  redeemed,
+  refunded,
+  partialRefund,
+  canceled;
 
+  String get apiName {
+    switch (this) {
+      case PurchaseStatus.confirmed:
+        return 'CONFIRMED';
+      case PurchaseStatus.redeemed:
+        return 'REDEEMED';
+      case PurchaseStatus.refunded:
+        return 'REFUNDED';
+      case PurchaseStatus.partialRefund:
+        return 'PARTIAL_REFUND';
+      case PurchaseStatus.canceled:
+        return 'CANCELED';
+    }
+  }
+}
+
+// OK
 class Purchase {
   final double id;
   final double accountId;
@@ -26,9 +48,13 @@ class Purchase {
     return Purchase(
       id: json['id'],
       accountId: json['accountId'],
-      type: CheckoutType.values.firstWhere((e) => e.toString() == 'CheckoutType.${json['type']}'),
+      type: CheckoutType.values.firstWhere(
+        (e) => e.toString() == 'CheckoutType.${json['type']}',
+      ),
       detail: PurchaseDetail.fromJson(json['detail']),
-      status: PurchaseStatus.values.firstWhere((e) => e.toString() == 'PurchaseStatus.${json['status']}'),
+      status: PurchaseStatus.values.firstWhere(
+        (e) => e.toString() == 'PurchaseStatus.${json['status']}',
+      ),
       amount: json['amount'],
       createdAt: DateTime.parse(json['createdAt']),
     );

@@ -1,46 +1,51 @@
 import 'sport_category.dart';
-
+// OK
 class Sport {
-  final int id;
+  final double id;
   final String name;
+  final SportCategory sportCategory;
   final int minPlayersPerTeam;
   final int maxPlayersPerTeam;
   final int minutesPerRound;
   final int minutesPerPause;
-  final SportCategory category;
-  final int numReferee;
+  final int numRefereesPerMatch;
 
   Sport({
     required this.id,
     required this.name,
+    required this.sportCategory,
     required this.minPlayersPerTeam,
     required this.maxPlayersPerTeam,
     required this.minutesPerRound,
     required this.minutesPerPause,
-    required this.category,
-    required this.numReferee,
+    required this.numRefereesPerMatch,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'name': name,
+      'sportCategory': sportCategory.apiName,
       'minPlayersPerTeam': minPlayersPerTeam,
       'maxPlayersPerTeam': maxPlayersPerTeam,
       'minutesPerRound': minutesPerRound,
       'minutesPerPause': minutesPerPause,
-      'category': category.toJSON(),
-      'numReferee': numReferee,
+      'numRefereesPerMatch': numRefereesPerMatch,
+      'id': id,
     };
   }
 
-  Sport.fromJson(Map<String, dynamic> json)
-    : id = json['id'],
-      name = json['name'],
-      minPlayersPerTeam = json['minPlayersPerTeam'],
-      maxPlayersPerTeam = json['maxPlayersPerTeam'],
-      minutesPerRound = json['minutesPerRound'],
-      minutesPerPause = json['minutesPerPause'],
-      category = SportCategoryExtension.fromJson(json['category']),
-      numReferee = json['numReferee'];
+  factory Sport.fromJson(Map<String, dynamic> json) {
+    return Sport(
+      id: json['id'],
+      name: json['name'],
+      sportCategory: SportCategory.values.firstWhere(
+        (e) => e.apiName == json['sportCategory'],
+      ),
+      minPlayersPerTeam: json['minPlayersPerTeam'],
+      maxPlayersPerTeam: json['maxPlayersPerTeam'],
+      minutesPerRound: json['minutesPerRound'],
+      minutesPerPause: json['minutesPerPause'],
+      numRefereesPerMatch: json['numRefereesPerMatch'],
+    );
+  }
 }

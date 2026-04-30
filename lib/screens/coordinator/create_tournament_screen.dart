@@ -41,7 +41,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   // Step 1 - Logistic details
   bool _prize1 = true;
   bool _prize2 = false;
-  int? _selectedCity; // cityId
+  double? _selectedCityId; // cityId
   bool _isPublic = true;
   bool _hasProfit = true;
   String? _selectedMonth; // 'asap' or 'YYYY-MM'
@@ -129,7 +129,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   bool _canProceedFromStep1() {
-    return _selectedCity != null && _selectedMonth != null;
+    return _selectedCityId != null && _selectedMonth != null;
   }
 
   bool _canProceedFromStep2() {
@@ -163,7 +163,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   }
 
   Future<void> _loadAvailableFields() async {
-    if (_selectedCity == null || _selectedSport == null) {
+    if (_selectedCityId == null || _selectedSport == null) {
       return;
     }
 
@@ -173,8 +173,8 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       final FieldsAndMaxPlayersPerFieldResponse data =
           await FieldService.Read.getFieldsByMaxPlayersAndCityAndSportCategory(
             maxPlayers: _selectedSport!.maxPlayersPerTeam,
-            cityId: _selectedCity!.toDouble(),
-            sportCategory: _selectedSport!.category,
+            cityId: _selectedCityId!.toDouble(),
+            sportCategory: _selectedSport!.sportCategory,
           );
 
       setState(() {
@@ -246,7 +246,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       name: _nameController.text.trim(),
       coordinatorId: userProvider.activeRoleId!,
       fieldId: _selectedField!.id,
-      cityId: _selectedCity!,
+      cityId: _selectedCityId!,
       startDate: startDate,
       sportId: _getSportId(),
       numTeams: _numTeams,
@@ -258,13 +258,18 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       round2FinalStage:
           _round2Option == Round2Option.finalStageOnly ||
           _round2Option == Round2Option.both,
-      qualified: _qualified!,
+      numTeamsQualified: _qualified!,
       description: _descriptionController.text.trim(),
-      payCoordinator: 0,
       fee: 0,
       prize1: 0,
       prize2: 0,
       isPublic: _isPublic,
+      isFavorite: false,
+      isParticipating: false,
+      status: TournamentStatus.created,
+      atlEvent: false,
+      photoUrl: null,
+      phase: TournamentPhase.group,
     );
   }
 
@@ -347,12 +352,12 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     }
   }
 
-  int _getSportId() {
+  double _getSportId() {
     return _selectedSport!.id;
   }
 
   String _getSportDisplayName([int? maxPlayers]) {
-    final sportName = _selectedSport!.category.name.toUpperCase();
+    final sportName = _selectedSport!.sportCategory.name.toUpperCase();
     final playersPerSide = maxPlayers != null
         ? maxPlayers ~/ 2
         : _selectedSport!.minPlayersPerTeam;
@@ -633,16 +638,16 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
+            child: DropdownButton<double>(
               isExpanded: true,
-              value: _selectedCity,
+              value: _selectedCityId,
               hint: Text(l10n.cityHint),
               items: _cities.map((city) {
                 return DropdownMenuItem(value: city.id, child: Text(city.name));
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedCity = value;
+                  _selectedCityId = value;
                   _selectedField = null;
                 });
               },
@@ -1225,7 +1230,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       final prize2Value = data.prize2;
 
       // Get city name
-      final City city = _cities.firstWhere((c) => c.id == _selectedCity);
+      final City city = _cities.firstWhere((c) => c.id == _selectedCityId);
       final cityName = city.name;
 
       return Column(

@@ -89,6 +89,7 @@ abstract class AppLocalizations {
   String get statusScheduled;
   String get statusFinished;
   String get statusCanceled;
+  String get statusPendingPayments;
 
   // Tournament Phase
   String get phaseGroupStage;

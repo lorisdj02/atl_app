@@ -1,61 +1,72 @@
 import 'account.dart';
 
 /// Modello Player dal database
-class Player extends Account {
-  final int playerId;
+// OK
+class Player {
+  final double playerId;
+  final double accountId;
+  final String username;
+  final String name;
+  final String surname;
+  final String? imageUrl;
+  final bool vip;
+  final VipType vipType;
+  final DateTime? vipStart;
+  final DateTime? vipEnd;
+  final double prefferdCityId;
+  final DateTime birthdate;
 
   Player({
-    required super.id,
-    required super.username,
-    required super.email,
-    required super.firebaseUid,
-    required super.createdAt,
-    super.stripeId,
-    super.isVip = false,
-    required super.phone,
+    required this.accountId,
     required this.playerId,
-    required super.name,
-    required super.surname,
-    required super.birthdate,
-    super.passwordMD5,
-    super.imageUrl,
-    super.startVip,
-    super.endVip,
-    super.vipType = VipType.none,
-  }) : super(role: AccountRole.player);
+    required this.name,
+    required this.surname,
+    required this.username,
+    required this.imageUrl,
+    required this.vip,
+    required this.vipType,
+    required this.vipStart,
+    required this.vipEnd,
+    required this.prefferdCityId,
+    required this.birthdate,
+  });
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
-      id: json['id'],
-      username: json['username'],
-      email: json['email'],
-      firebaseUid: json['firebaseUid'],
-      createdAt: DateTime.parse(json['createdAt']),
-      stripeId: json['stripeId'],
-      isVip: json['isVip'] ?? false,
-      phone: json['phone'],
       playerId: json['playerId'],
+      accountId: json['accountId'],
       name: json['name'],
       surname: json['surname'],
-      birthdate: DateTime.parse(json['birthdate']),
-      passwordMD5: json['passwordMd5'],
+      username: json['username'],
       imageUrl: json['imageUrl'],
-      startVip: json['startVip'] != null
-          ? DateTime.parse(json['startVip'])
-          : null,
-      endVip: json['endVip'] != null ? DateTime.parse(json['endVip']) : null,
-      vipType: json['vipType'] != null
-          ? VipType.values.firstWhere((e) => e.name == json['vipType'])
-          : VipType.none,
+      vip: json['vip'],
+      vipType: VipType.values.firstWhere(
+        (e) => e.apiName == json['vipType'],
+        orElse: () => VipType.none,
+      ),
+      vipStart: json['vipStart'] != null ? DateTime.parse(json['vipStart']) : null,
+      vipEnd: json['vipEnd'] != null ? DateTime.parse(json['vipEnd']) : null,
+      prefferdCityId: json['prefferdCityId'],
+      birthdate: DateTime.parse(json['birthdate']),
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
-    return {...super.toJson(), 'playerId': playerId};
+    return {
+      'playerId': playerId,
+      'accountId': accountId,
+      'name': name,
+      'surname': surname,
+      'username': username,
+      'imageUrl': imageUrl,
+      'vip': vip,
+      'vipType': vipType.apiName,
+      'vipStart': vipStart?.toIso8601String(),
+      'vipEnd': vipEnd?.toIso8601String(),
+      'prefferdCityId': prefferdCityId,
+      'birthdate': birthdate.toIso8601String(),
+    };
   }
-
-  String get fullName => '$name $surname';
 
   /// Calcola l'età del giocatore
   int? get age {

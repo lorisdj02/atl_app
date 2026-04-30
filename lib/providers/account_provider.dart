@@ -4,16 +4,16 @@ import '../models/sport_category.dart';
 
 class AccountProvider with ChangeNotifier {
   Account? _activeAccount;
-  int? _currentTeamId;
-  int? _roleId;
+  double? _currentTeamId;
+  double? _roleId;
   SportCategory? _selectedSportCategory = SportCategory.football;
 
   Account? get activeAccount => _activeAccount;
-  int? get currentTeamId => _currentTeamId;
-  int? get activeRoleId => _roleId;
+  double? get currentTeamId => _currentTeamId;
+  double? get activeRoleId => _roleId;
   SportCategory? get selectedSportCategory => _selectedSportCategory;
 
-  Future<void> setActiveAccount(Account account, {int? roleId}) async {
+  Future<void> setActiveAccount(Account account, {double? roleId}) async {
     _activeAccount = account;
     _roleId = roleId;
     notifyListeners();
@@ -31,7 +31,7 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setCurrentTeamId(int teamId) async {
+  Future<void> setCurrentTeamId(double teamId) async {
     if (teamId != -1) {
       _currentTeamId = teamId;
       notifyListeners();
@@ -58,5 +58,5 @@ class AccountProvider with ChangeNotifier {
 
   bool get isReferee => _activeAccount?.role == AccountRole.referee;
 
-  int? get cityId => _activeAccount?.preferredCityId;
+  double? get cityId => _activeAccount?.preferredCityId;
 }

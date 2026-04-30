@@ -36,7 +36,7 @@ extension SportCategoryExtension on SportCategory {
   String get name {
     switch (this) {
       case SportCategory.football:
-        return 'Football';
+        return 'FOOTBALL';
       // TODO: Nomi per altri sport
       // case SportCategory.basketball:
       //   return 'Basketball';

@@ -9,14 +9,14 @@ class OrganizationBottomBar extends StatelessWidget {
   final Function(int) onTap;
   final SportCategory currentSport;
   final bool isHome;
-  final int? userId;
+  final double? accountId;
 
   const OrganizationBottomBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     required this.currentSport,
-    this.userId,
+    this.accountId,
     this.isHome = false,
   });
 
@@ -28,7 +28,7 @@ class OrganizationBottomBar extends StatelessWidget {
       onTap: onTap,
       currentSport: currentSport,
       isHome: isHome,
-      userId: userId,
+      accountId: accountId,
       leftItems: [
         BottomBarItem(icon: Icons.shopping_cart, label: l10n.shopNavLabel, index: 0),
       ],

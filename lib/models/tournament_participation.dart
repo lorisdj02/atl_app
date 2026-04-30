@@ -1,6 +1,7 @@
+// OK
 class TournamentParticipation {
-  final int tournamentId;
-  final int teamId;
+  final double tournamentId;
+  final double teamId;
   double toPay;
 
   TournamentParticipation({

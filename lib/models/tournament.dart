@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:atl_app/l10n/app_localizations.dart';
 
 /// Enum per lo stato del torneo
+/// OK
 enum TournamentStatus {
   created,
   scheduled,
-  pendingPayments,
   finished,
+  pendingPayments,
   canceled;
 
   String displayName(BuildContext context) {
@@ -21,7 +22,22 @@ enum TournamentStatus {
       case TournamentStatus.canceled:
         return l10n.statusCanceled;
       case TournamentStatus.pendingPayments:
-        return "Pending Payments"; // TODO: aggiungere traduzione
+        return l10n.statusPendingPayments;
+    }
+  }
+
+  String get apiName {
+    switch (this) {
+      case TournamentStatus.created:
+        return 'CREATED';
+      case TournamentStatus.scheduled:
+        return 'SCHEDULED';
+      case TournamentStatus.finished:
+        return 'FINISHED';
+      case TournamentStatus.canceled:
+        return 'CANCELED';
+      case TournamentStatus.pendingPayments:
+        return 'PENDING_PAYMENTS';
     }
   }
 }
@@ -29,6 +45,7 @@ enum TournamentStatus {
 /// Enum per la fase del torneo
 enum TournamentPhase {
   group,
+  ro32,
   ro16,
   ro8,
   quarter,
@@ -40,6 +57,8 @@ enum TournamentPhase {
     switch (this) {
       case TournamentPhase.group:
         return l10n.phaseGroupStage;
+      case TournamentPhase.ro32:
+        return l10n.phaseRoundOf32;
       case TournamentPhase.ro16:
         return l10n.phaseRoundOf16;
       case TournamentPhase.ro8:
@@ -52,208 +71,141 @@ enum TournamentPhase {
         return l10n.phaseFinal;
     }
   }
+
+  String get apiName {
+    switch (this) {
+      case TournamentPhase.group:
+        return 'GROUP';
+      case TournamentPhase.ro32:
+        return 'RO32';
+      case TournamentPhase.ro16:
+        return 'RO16';
+      case TournamentPhase.ro8:
+        return 'RO8';
+      case TournamentPhase.quarter:
+        return 'QUARTER';
+      case TournamentPhase.semi:
+        return 'SEMI';
+      case TournamentPhase.final_:
+        return 'FINAL';
+    }
+  }
 }
 
 /// Modello Tournament dal database
 class Tournament {
-  final int id;
+  final double id;
   final String name;
-  final int coordinatorId;
-  final int fieldId;
-  final int cityId;
-  final DateTime? startDate;
-  final int sportId;
-  final int numTeams;
-  int paidTeams; // Numero team iscritti (deve essere <= numTeams)
-  final int numGroups;
-  final bool round2GroupStage;
-  final bool round2FinalStage;
-  final int qualified;
   final String description;
-  final double payCoordinator;
-  final bool isPublic;
-  TournamentStatus status;
-  final double fee;
-  final double prize1;
-  final double prize2;
-  final bool isATL;
-  TournamentPhase phase;
-  final String? photoURL;
-
+  final double coordinatorId;
+  final double fieldId;
+  final double cityId;
+  final double sportId;
   bool isFavorite;
   bool isParticipating;
+  final int numGroups;
+  final int numTeams;
+  final int paidTeams;
+  final TournamentStatus status;
+  final bool atlEvent;
+  final double prize1;
+  final double prize2;
+  final DateTime? startDate;
+  final double fee;
+  final String? photoUrl;
+  final bool round2GroupStage;
+  final bool round2FinalStage;
+  final int numTeamsQualified;
+  final bool isPublic;
+  final TournamentPhase phase;
 
   Tournament({
     required this.id,
+    required this.name,
+    required this.description,
     required this.coordinatorId,
     required this.fieldId,
     required this.cityId,
-    this.startDate,
     required this.sportId,
+    required this.isFavorite,
+    required this.isParticipating,
+    required this.numGroups,
     required this.numTeams,
     required this.paidTeams,
-    required this.numGroups,
-    this.round2GroupStage = false,
-    this.round2FinalStage = false,
-    required this.qualified,
-    required this.description,
-    required this.payCoordinator,
-    this.status = TournamentStatus.created,
-    required this.fee,
+    required this.status,
+    required this.atlEvent,
     required this.prize1,
-    this.prize2 = 0,
-    this.isATL = false,
-    this.phase = TournamentPhase.group,
-    required this.name,
-    this.photoURL,
-    this.isFavorite = false,
-    this.isParticipating = false,
-    this.isPublic = true,
+    required this.prize2,
+    required this.startDate,
+    required this.fee,
+    required this.photoUrl,
+    required this.round2GroupStage,
+    required this.round2FinalStage,
+    required this.numTeamsQualified,
+    required this.isPublic,
+    required this.phase,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
     return Tournament(
       id: json['id'],
-      coordinatorId: json['coordinator'] is int
-          ? json['coordinator']
-          : json['coordinator']['id'],
-      fieldId: json['field'] is int ? json['field'] : json['field']['id'],
-      cityId: json['city'] is int ? json['city'] : json['city']['id'],
-      startDate: json['startDate'] != null
-          ? DateTime.parse(json['startDate'])
-          : null,
+      name: json['name'],
+      description: json['description'],
+      coordinatorId: json['coordinatorId'],
+      fieldId: json['fieldId'],
+      cityId: json['cityId'],
       sportId: json['sportId'],
-      numTeams: json['numTeams'] ?? 8,
-      paidTeams: json['paidTeams'] ?? 0,
-      numGroups: json['numGroups'] ?? 2,
+      isFavorite: json['isFavorite'] ?? false,
+      isParticipating: json['isParticipating'] ?? false,
+      numGroups: json['numGroups'],
+      numTeams: json['numTeams'],
+      paidTeams: json['paidTeams'],
+      status: TournamentStatus.values.firstWhere(
+        (e) => e.apiName == json['status'],
+      ),
+      atlEvent: json['atlEvent'],
+      prize1: json['prize1'].toDouble(),
+      prize2: json['prize2'].toDouble(),
+      startDate: DateTime.tryParse(json['startDate'] ?? ''),
+      fee: json['fee'].toDouble(),
+      photoUrl: json['photoUrl'],
       round2GroupStage: json['round2GroupStage'] ?? false,
       round2FinalStage: json['round2FinalStage'] ?? false,
-      qualified: json['qualified'] ?? 4,
-      description: json['description'] ?? '',
-      payCoordinator: json['payCoordinator'] ?? 0,
-      status: _statusFromString(json['status'] ?? 'CREATED'),
-      fee: double.parse(json['fee'].toString()),
-      prize1: double.parse(json['prize1'].toString()),
-      prize2: double.parse((json['prize2'] ?? 0).toString()),
-      isATL: json['isAtl'] ?? false,
-      phase: _phaseFromString(json['phase'] ?? 'GROUP'),
-      name: json['name'] ?? '',
-      photoURL: json['photoUrl'],
-      isPublic: json['is'] ?? true,
+      numTeamsQualified: json['numTeamsQualified'] ?? 0,
+      isPublic: json['isPublic'] ?? true,
+      phase: TournamentPhase.values.firstWhere(
+        (e) => e.apiName == json['phase'],
+      ),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'coordinator': coordinatorId,
-      'field': fieldId,
-      'city': cityId,
-      'startDate': startDate?.toIso8601String(),
+      'name': name,
+      'description': description,
+      'coordinatorId': coordinatorId,
+      'fieldId': fieldId,
+      'cityId': cityId,
       'sportId': sportId,
+      'isFavorite': isFavorite,
+      'isParticipating': isParticipating,
+      'numGroups': numGroups,
       'numTeams': numTeams,
       'paidTeams': paidTeams,
-      'numGroups': numGroups,
-      'round2GroupStage': round2GroupStage,
-      'round2FinalStage': round2FinalStage,
-      'qualified': qualified,
-      'description': description,
-      'payCoordinator': payCoordinator,
-      'status': status.name.toUpperCase(),
-      'fee': fee,
+      'status': status.apiName,
+      'atlEvent': atlEvent,
       'prize1': prize1,
       'prize2': prize2,
-      'isAtl': isATL,
-      'phase': phase.name.toUpperCase(),
-      'name': name,
-      'photoUrl': photoURL,
+      'startDate': startDate?.toIso8601String(),
+      'fee': fee,
+      'photoUrl': photoUrl,
+      'round2GroupStage': round2GroupStage,
+      'round2FinalStage': round2FinalStage,
+      'numTeamsQualified': numTeamsQualified,
       'isPublic': isPublic,
+      'phase': phase.apiName,
     };
-  }
-
-  /// Formatta la quota come stringa con valuta
-  String get formattedFee => '€${fee.toStringAsFixed(2)}';
-
-  /// Formatta il premio come stringa con valuta
-  String get formattedPrize1 => '€${prize1.toStringAsFixed(2)}';
-  String get formattedPrize2 => '€${prize2.toStringAsFixed(2)}';
-
-  /// Verifica se il torneo è iniziato
-  bool get hasStarted {
-    if (startDate == null) return false;
-    return DateTime.now().isAfter(startDate!);
-  }
-
-  /// Verifica se il torneo è completato
-  bool get isCompleted => status == TournamentStatus.finished;
-
-  /// Verifica se il torneo è cancellato
-  bool get isCanceled => status == TournamentStatus.canceled;
-
-  /// Verifica se il torneo è pieno
-  bool get isFull => paidTeams >= numTeams;
-
-  static TournamentStatus _statusFromString(String status) {
-    switch (status.toUpperCase()) {
-      case 'CREATED':
-        return TournamentStatus.created;
-      case 'SCHEDULED':
-        return TournamentStatus.scheduled;
-      case 'FINISHED':
-        return TournamentStatus.finished;
-      case 'CANCELED':
-        return TournamentStatus.canceled;
-      default:
-        throw Exception('Unknown tournament status: $status');
-    }
-  }
-
-  static TournamentPhase _phaseFromString(String phase) {
-    switch (phase.toUpperCase()) {
-      case 'GROUP':
-        return TournamentPhase.group;
-      case 'RO16':
-        return TournamentPhase.ro16;
-      case 'RO8':
-        return TournamentPhase.ro8;
-      case 'QUARTER':
-        return TournamentPhase.quarter;
-      case 'SEMI':
-        return TournamentPhase.semi;
-      case 'FINAL':
-        return TournamentPhase.final_;
-      default:
-        throw Exception('Unknown tournament phase: $phase');
-    }
-  }
-
-  Tournament copyWith({bool? isFavorite, bool? isParticipating}) {
-    return Tournament(
-      id: id,
-      coordinatorId: coordinatorId,
-      fieldId: fieldId,
-      cityId: cityId,
-      startDate: startDate,
-      sportId: sportId,
-      numTeams: numTeams,
-      paidTeams: paidTeams,
-      numGroups: numGroups,
-      round2GroupStage: round2GroupStage,
-      round2FinalStage: round2FinalStage,
-      qualified: qualified,
-      description: description,
-      payCoordinator: payCoordinator,
-      status: status,
-      fee: fee,
-      prize1: prize1,
-      prize2: prize2,
-      isATL: isATL,
-      phase: phase,
-      name: name,
-      photoURL: photoURL,
-      isFavorite: isFavorite ?? this.isFavorite,
-      isParticipating: isParticipating ?? this.isParticipating,
-    );
   }
 
   bool get isGroupStage {
