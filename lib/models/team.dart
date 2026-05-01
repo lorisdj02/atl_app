@@ -4,15 +4,15 @@ import 'enums/sport_category.dart';
 class Team {
   final double id;
   final double? cityId;
-  final double? captainPlayerId;
-  final double? vice1PlayerId;
-  final double? vice2PlayerId;
-  final String? logoUrl;
-  final int rankPts;
+  double? captainPlayerId;
+  double? vice1PlayerId;
+  double? vice2PlayerId;
+  String? logoUrl;
+  int rankPts;
   final String name;
   final String alias;
   final String? description;
-  final bool vip;
+  bool vip;
   final int maxPlayers;
   final int numPlayers;
   final SportCategory sportCategory;
@@ -60,15 +60,9 @@ class Team {
     return Team(
       id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       cityId: json['cityId'] != null ? (json['cityId'] as num).toDouble() : 0.0,
-      captainPlayerId: json['captainPlayerId'] != null
-          ? (json['captainPlayerId'] as num).toDouble()
-          : 0.0,
-      vice1PlayerId: json['vice1PlayerId'] != null
-          ? (json['vice1PlayerId'] as num).toDouble()
-          : 0.0,
-      vice2PlayerId: json['vice2PlayerId'] != null
-          ? (json['vice2PlayerId'] as num).toDouble()
-          : 0.0,
+      captainPlayerId: (json['captainPlayerId'] as num?)?.toDouble(),
+      vice1PlayerId: (json['vice1PlayerId'] as num?)?.toDouble(),
+      vice2PlayerId: (json['vice2PlayerId'] as num?)?.toDouble(),
       logoUrl: json['logoUrl'],
       rankPts: json['rankPts'] != null ? (json['rankPts'] as num).toInt() : 0,
       name: json['name'],

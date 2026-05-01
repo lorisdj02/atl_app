@@ -7,7 +7,7 @@ class Coordinator {
   final double accountId;
   final String username;
   final String? imageUrl;
-  final double prefferdCityId;
+  final double? preferredCityId;
   final int level;
 
   Coordinator({
@@ -18,7 +18,7 @@ class Coordinator {
     required this.surname,
     required this.username,
     required this.imageUrl,
-    required this.prefferdCityId,
+    required this.preferredCityId,
   });
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
@@ -30,7 +30,7 @@ class Coordinator {
       surname: json['surname'],
       username: json['username'],
       imageUrl: json['imageUrl'],
-      prefferdCityId: (json['prefferdCityId'] as num).toDouble(),
+      preferredCityId: (json['preferredCityId'] as num?)?.toDouble(),
     );
   }
 

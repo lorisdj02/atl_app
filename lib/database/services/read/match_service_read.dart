@@ -20,7 +20,7 @@ class MatchServiceRead {
   ) async {
     //TODO: Aggiungere parametri per filtrare per città e sport
     final response = await dio.get(
-      "$apiUrl/$sportCategory/referee/available-matches",
+      "$apiUrl/${sportCategory.apiName}/referee/available-matches",
       queryParameters: {
         if (cityId != null) 'cityId': cityId,
         if (sportId != null) 'sportId': sportId,
@@ -33,7 +33,7 @@ class MatchServiceRead {
     SportCategory sportCategory,
   ) async {
     final response = await dio.get(
-      "$apiUrl/$sportCategory/referee/past-assigned-matches",
+      "$apiUrl/${sportCategory.apiName}/referee/past-assigned-matches",
     );
     return PastAssignedMatchesResponse.fromJson(response.data);
   }
@@ -42,7 +42,7 @@ class MatchServiceRead {
     double matchId,
     SportCategory sportCategory,
   ) async {
-    final Response response = await dio.get("$apiUrl/match/$matchId");
+    final Response response = await dio.get("$apiUrl/match/${matchId.toStringAsFixed(0)}");
     switch (sportCategory) {
       case SportCategory.football:
         return FootballMatchResponse.fromJson(response.data);
@@ -54,7 +54,7 @@ class MatchServiceRead {
     double matchId,
     SportCategory sportCategory,
   ) async {
-    final Response response = await dio.get("$apiUrl/match/$matchId/events");
+    final Response response = await dio.get("$apiUrl/match/${matchId.toStringAsFixed(0)}/events");
     switch (sportCategory) {
       case SportCategory.football:
         return FootballMatchEventsResponse.fromJson(response.data);

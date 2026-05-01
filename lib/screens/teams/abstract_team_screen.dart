@@ -76,20 +76,38 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
 
   Future<void> loadData() async {
     try {
-      final AbstractTeamResponse data =
-          await TeamService.getAbstractTeamScreen(getTeamId().toDouble());
-      setState(() {
-        team = data.team;
-        players = data.players;
-        palmares = data.palmares;
-        tournaments = data.tournaments;
-        coordinatorsCache = data.coordinatorsCache;
-        fieldsCache = data.fieldsCache;
-        playerStatsCache = data.footballPlayerStatsCache;
-        cityNamePerField = data.cityNamePerField;
-        historicalPlayers = data.historicalPlayers;
-        playersLoaded = true;
-      });
+      final AbstractTeamResponse data = await TeamService.getAbstractTeamScreen(
+        getTeamId().toDouble(),
+      );
+
+      if (mounted) {
+
+        List<Player> loadedPlayers = data.players;
+        // Sort players: Captain, Vice1, Vice2, then others
+        loadedPlayers.sort((a, b) {
+          if (a.playerId == data.team.captainPlayerId) return -1;
+          if (b.playerId == data.team.captainPlayerId) return 1;
+          if (a.playerId == data.team.vice1PlayerId) return -1;
+          if (b.playerId == data.team.vice1PlayerId) return 1;
+          if (a.playerId == data.team.vice2PlayerId) return -1;
+          if (b.playerId == data.team.vice2PlayerId) return 1;
+          return 0;
+        });
+
+
+        setState(() {
+          team = data.team;
+          players = data.players;
+          palmares = data.palmares;
+          tournaments = data.tournaments;
+          coordinatorsCache = data.coordinatorsCache;
+          fieldsCache = data.fieldsCache;
+          playerStatsCache = data.footballPlayerStatsCache;
+          cityNamePerField = data.cityNamePerField;
+          historicalPlayers = data.historicalPlayers;
+          playersLoaded = true;
+        });
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,7 +138,9 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   double getTeamId();
 
   Future<void> loadPlayersData(double teamId) async {
-    final PlayersInTeamResponse data = await TeamService.getPlayersInTeam(teamId);
+    final PlayersInTeamResponse data = await TeamService.getPlayersInTeam(
+      teamId,
+    );
 
     List<Player> loadedPlayers = data.players;
     if (loadedPlayers.isNotEmpty) {

@@ -24,7 +24,7 @@ class FieldServiceRead {
     required int maxPlayers,
   }) async {
     final response = await dio.get(
-      "$apiUrl/${sportCategory.apiName}/city/$cityId/max-players/$maxPlayers",
+      "$apiUrl/${sportCategory.apiName}/city/${cityId.toStringAsFixed(0)}/max-players/${maxPlayers.toString()}",
     );
     return FieldsAndMaxPlayersPerFieldResponse.fromJson(response.data);
   }

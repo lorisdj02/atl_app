@@ -8,7 +8,7 @@ class PaymentServiceRead {
   PaymentServiceRead(this.apiUrl, this.dio);
 
   Future<CheckoutResponse> getCheckoutScreen(double sessionId) async {
-    final response = await dio.get("$apiUrl/checkout-session/$sessionId");
+    final response = await dio.get("$apiUrl/checkout-session/${sessionId.toStringAsFixed(0)}");
     return CheckoutResponse.fromJson(response.data);
   }
 }

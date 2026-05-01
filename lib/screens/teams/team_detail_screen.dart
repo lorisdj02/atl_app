@@ -39,8 +39,9 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
 
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
-        final TeamDetailsResponse data = await TeamService
-            .getTeamDetailsScreen(widget.teamId.toDouble());
+        final TeamDetailsResponse data = await TeamService.getTeamDetailsScreen(
+          widget.teamId.toDouble(),
+        );
         if (mounted) {
           setState(() {
             team = data.team;
@@ -115,9 +116,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
     if (_existingRequest == null) return;
 
     try {
-      await TeamService.cancelTeamRequest(
-        _existingRequest!.teamId.toDouble(),
-      );
+      await TeamService.cancelTeamRequest(_existingRequest!.teamId.toDouble());
       await loadData();
       if (mounted) {
         ScaffoldMessenger.of(
@@ -186,21 +185,22 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [buildPlayersTab(), buildPalmaresTab(), buildStatsTab()],
       ),
-      floatingActionButton:
-          (_requestLoaded && !_isPlayerInTeam && playerId != null)
-          ? ATLFloatingButton(
-              heroTag: 'join_team_fab',
-              onPressed: _existingRequest != null
-                  ? _handleCancelRequest
-                  : _handleJoinTeam,
-              backgroundColor: _existingRequest != null
-                  ? Colors.red
-                  : ATLColors.getPrimaryColor(widget.currentSport),
-              icon: _existingRequest != null ? Icons.cancel : Icons.add,
-              label: _existingRequest != null
-                  ? l10n.cancelRequest
-                  : l10n.joinTeam,
-            )
+      floatingActionButton: (_requestLoaded && playerId != null)
+          ? (!_isPlayerInTeam)
+                ? ATLFloatingButton(
+                    heroTag: 'join_team_fab',
+                    onPressed: _existingRequest != null
+                        ? _handleCancelRequest
+                        : _handleJoinTeam,
+                    backgroundColor: _existingRequest != null
+                        ? Colors.red
+                        : ATLColors.getPrimaryColor(widget.currentSport),
+                    icon: _existingRequest != null ? Icons.cancel : Icons.add,
+                    label: _existingRequest != null
+                        ? l10n.cancelRequest
+                        : l10n.joinTeam,
+                  )
+                : null
           : null,
     );
   }

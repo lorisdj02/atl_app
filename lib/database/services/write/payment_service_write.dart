@@ -19,7 +19,7 @@ class PaymentServiceWrite {
 
   Future<Purchase> payCheckoutSession(double sessionId, bool? useWallet) async {
     final response = await dio.patch(
-      "$apiUrl/pay-checkout-session/$sessionId",
+      "$apiUrl/pay-checkout-session/${sessionId.toStringAsFixed(0)}",
       queryParameters: {"useWallet": useWallet},
     );
     return Purchase.fromJson(response.data);

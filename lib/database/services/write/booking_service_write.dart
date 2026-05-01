@@ -9,16 +9,16 @@ class BookingServiceWrite {
     required this.dio,
   });
   Future<void> leaveLobbyBooking(double bookingId) async {
-    await dio.delete("$apiUrl/lobby-booking/$bookingId/leave");
+    await dio.delete("$apiUrl/lobby-booking/${bookingId.toStringAsFixed(0)}/leave");
   }
 
   Future<void> refundPrivateBooking(double bookingId) async {
-    await dio.delete("$apiUrl/private-booking/$bookingId/refund");
+    await dio.delete("$apiUrl/private-booking/${bookingId.toStringAsFixed(0)}/refund");
   }
 
   Future<void> scheduleMatch(double matchId, DateTime scheduledStart) async {
     await dio.post(
-      "$apiUrl/match-booking/$matchId/schedule/${scheduledStart.toIso8601String()}",
+      "$apiUrl/match-booking/${matchId.toStringAsFixed(0)}/schedule/${scheduledStart.toIso8601String()}",
     );
   }
 }

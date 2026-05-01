@@ -39,8 +39,8 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
       if (teamId == null) return;
 
-      final List<TournamentParticipation> participations = await TeamService
-          .getNotPaidTeamParticipations(teamId.toDouble());
+      final List<TournamentParticipation> participations =
+          await TeamService.getNotPaidTeamParticipations(teamId.toDouble());
 
       if (mounted) {
         setState(() {
@@ -100,7 +100,8 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     if (!isCaptain && !isViceCaptain) return;
 
     final isPlayerVice =
-        player.playerId == team!.vice1PlayerId || player.playerId == team!.vice2PlayerId;
+        player.playerId == team!.vice1PlayerId ||
+        player.playerId == team!.vice2PlayerId;
     final isPlayerCaptain = player.playerId == team!.captainPlayerId;
 
     if (player.playerId == playerId || isPlayerCaptain) return;
@@ -192,6 +193,11 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.promotedToVC(player.username))),
         );
+        if (!hasVice1) {
+          team!.vice1PlayerId = player.playerId;
+        } else {
+          team!.vice2PlayerId = player.playerId;
+        }
         await loadPlayersData(team!.id);
       } else if (mounted) {
         ScaffoldMessenger.of(
@@ -206,6 +212,16 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
   }
 
   Future<void> _demoteViceCaptain(Player player) async {
+    final hasVice1 = team!.vice1PlayerId != null;
+    final hasVice2 = team!.vice2PlayerId != null;
+    if (!hasVice1 && !hasVice2) {
+      /*
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.noViceCaptains)));
+      */
+      return;
+    }
     try {
       await TeamService.promoteOrDemotePlayer(
         team!.id.toDouble(),
@@ -216,6 +232,12 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.demoted(player.username))));
+        if (team!.vice1PlayerId == player.playerId) {
+          team!.vice1PlayerId = null;
+        } else if (team!.vice2PlayerId == player.playerId) {
+          team!.vice2PlayerId = null;
+        }
+
         await loadPlayersData(team!.id);
       } else if (mounted) {
         ScaffoldMessenger.of(
@@ -285,10 +307,8 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
               try {
                 await TeamService.leaveTeam(team!.id.toDouble());
                 if (mounted) {
-                  AccountProvider accountProvider = Provider.of<AccountProvider>(
-                    context,
-                    listen: false,
-                  );
+                  AccountProvider accountProvider =
+                      Provider.of<AccountProvider>(context, listen: false);
                   accountProvider.clearCurrentTeamId();
                   if (mounted) {
                     Navigator.of(context).pushAndRemoveUntil(

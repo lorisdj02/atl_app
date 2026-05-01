@@ -30,32 +30,63 @@ class AllTournamentsResponse {
   });
 
   factory AllTournamentsResponse.fromJson(Map<String, dynamic> json) {
+    List<Tournament> tournaments = (json[ApiJsonKeys.tournaments] as List)
+        .map((e) => Tournament.fromJson(e))
+        .toList();
+    print("Tournaments: ${tournaments.length}");
+
+    List<Tournament> myTournaments = (json[ApiJsonKeys.myTournaments] as List)
+        .map((e) => Tournament.fromJson(e))
+        .toList();
+    print("My Tournaments: ${myTournaments.length}");
+    
+    Map<double, Coordinator> coordinatorsCache =
+        (json[ApiJsonKeys.coordinatorsCache] as Map<String, dynamic>).map(
+          (key, value) =>
+              MapEntry(double.parse(key), Coordinator.fromJson(value)),
+        );
+    print("Coordinators Cache: ${coordinatorsCache.length}");
+
+    Map<double, Field> fieldsCache =
+        (json[ApiJsonKeys.fieldsCache] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
+        );
+    print("Fields Cache: ${fieldsCache.length}");
+
+    List<City> cities = (json[ApiJsonKeys.cities] as List)
+        .map((e) => City.fromJson(e))
+        .toList();
+    print("Cities: ${cities.length}");
+
+    Map<double, String> cityNamePerField =
+        (json[ApiJsonKeys.cityNamePerField] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), value as String),
+        );
+    print("City Names per Field: ${cityNamePerField.length}");
+
+    double prizeMin = json[ApiJsonKeys.prizeMin] as double;
+    print("Prize Min: $prizeMin");
+
+    double prizeMax = json[ApiJsonKeys.prizeMax] as double;
+    print("Prize Max: $prizeMax");
+
+    double feeMin = json[ApiJsonKeys.feeMin] as double;
+    print("Fee Min: $feeMin");
+
+    double feeMax = json[ApiJsonKeys.feeMax] as double;
+    print("Fee Max: $feeMax");
+
     return AllTournamentsResponse(
-      tournaments: (json[ApiJsonKeys.tournaments] as List)
-          .map((e) => Tournament.fromJson(e))
-          .toList(),
-      myTournaments: (json[ApiJsonKeys.myTournaments] as List)
-          .map((e) => Tournament.fromJson(e))
-          .toList(),
-      coordinatorsCache:
-          (json[ApiJsonKeys.coordinatorsCache] as Map<String, dynamic>).map(
-            (key, value) =>
-                MapEntry(double.parse(key), Coordinator.fromJson(value)),
-          ),
-      fieldsCache: (json[ApiJsonKeys.fieldsCache] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
-      ),
-      cities: (json[ApiJsonKeys.cities] as List)
-          .map((e) => City.fromJson(e))
-          .toList(),
-      cityNamePerField:
-          (json[ApiJsonKeys.cityNamePerField] as Map<String, dynamic>).map(
-            (key, value) => MapEntry(double.parse(key), value as String),
-          ),
-      prizeMin: json[ApiJsonKeys.prizeMin] as double,
-      prizeMax: json[ApiJsonKeys.prizeMax] as double,
-      feeMin: json[ApiJsonKeys.feeMin] as double,
-      feeMax: json[ApiJsonKeys.feeMax] as double,
+      tournaments: tournaments,
+      myTournaments: myTournaments,
+      coordinatorsCache: coordinatorsCache,
+      fieldsCache: fieldsCache,
+      cities: cities,
+      cityNamePerField: cityNamePerField,
+      prizeMin: prizeMin,
+      prizeMax: prizeMax,
+      feeMin: feeMin,
+      feeMax: feeMax,
     );
   }
 }

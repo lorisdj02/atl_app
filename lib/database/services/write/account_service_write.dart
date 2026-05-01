@@ -26,7 +26,7 @@ class AccountServiceWrite {
   }
 
   Future<void> deleteRefereeLicense(double sportId) async {
-    await dio.delete("$apiUrl/referee/delete-referee-license/$sportId");
+    await dio.delete("$apiUrl/referee/delete-referee-license/${sportId.toStringAsFixed(0)}");
   }
 
   Future<void> commitReview(Review review) async {

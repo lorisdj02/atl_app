@@ -21,20 +21,20 @@ class TournamentServiceRead {
   Future<AllTournamentsResponse> getAllTournamentsScreen(
     SportCategory currentSport,
   ) async {
-    final response = await dio.get("$apiUrl/$currentSport/all-tournaments");
+    final response = await dio.get("$apiUrl/${currentSport.apiName}/all-tournaments");
     return AllTournamentsResponse.fromJson(response.data);
   }
 
   Future<TournamentDetailsResponse> getTournamentDetailsScreen(
     double tournamentId,
   ) async {
-    final response = await dio.get("$apiUrl/tournament/$tournamentId/details");
+    final response = await dio.get("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/details");
     return TournamentDetailsResponse.fromJson(response.data);
   }
 
   Future<List<Player>> getViewCallupsScreen(double tournamentId) async {
     final response = await dio.get(
-      "$apiUrl/tournament/$tournamentId/view-callups",
+      "$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/view-callups",
     );
     return (response.data as List<dynamic>)
         .map(
@@ -44,7 +44,7 @@ class TournamentServiceRead {
   }
 
   Future<CallupsResponse> getCallupsScreen(double tournamentId) async {
-    final response = await dio.get("$apiUrl/tournament/$tournamentId/callups");
+    final response = await dio.get("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/callups");
     return CallupsResponse.fromJson(response.data);
   }
 
@@ -52,7 +52,7 @@ class TournamentServiceRead {
     double tournamentId,
     SportCategory sportCategory,
   ) async {
-    final response = await dio.get("$apiUrl/tournament/$tournamentId");
+    final response = await dio.get("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}");
     switch (sportCategory) {
       case SportCategory.football:
         return FootballTournamentResponse.fromJson(response.data);
@@ -98,17 +98,17 @@ class TournamentServiceRead {
   }
 
   Future<Tournament> getTournamentById(double tournamentId) async {
-    final response = await dio.get("$apiUrl/search-by-id/$tournamentId");
+    final response = await dio.get("$apiUrl/search-by-id/${tournamentId.toStringAsFixed(0)}");
     return Tournament.fromJson(response.data);
   }
 
   Future<ScheduleMatchResponse> getScheduleData(double tournamentId) async {
-    final response = await dio.get("$apiUrl/tournament/$tournamentId/schedule-data");
+    final response = await dio.get("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/schedule-data");
     return ScheduleMatchResponse.fromJson(response.data);
   }
 
   Future<TournamentSummaryResponse> getTournamentSummary(double tournamentId) async {
-    final response = await dio.get("$apiUrl/tournament/$tournamentId/summary");
+    final response = await dio.get("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/summary");
     return TournamentSummaryResponse.fromJson(response.data);
   }
 }

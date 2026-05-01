@@ -1,4 +1,3 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/book_field_response.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
@@ -9,17 +8,12 @@ class BookingServiceRead {
   final String apiUrl;
   final Dio dio;
 
-  BookingServiceRead({
-    required this.apiUrl,
-    required this.dio,
-  });
+  BookingServiceRead({required this.apiUrl, required this.dio});
 
   Future<BookFieldResponse> getBookFieldScreen(
     SportCategory sportCategory,
   ) async {
-    final response = await dio.get(
-      "/book-a-field/${sportCategory.apiName}",
-    );
+    final response = await dio.get("/book-a-field/${sportCategory.apiName}");
     return BookFieldResponse.fromJson(response.data);
   }
 
@@ -51,7 +45,7 @@ class BookingServiceRead {
     required DateTime finishTime,
   }) async {
     final response = await dio.get(
-      "/free-fields/${sportCategory.apiName}/max-players/$maxPlayers/city/$cityId/start-time/${startTime.toIso8601String()}/finish-time/${finishTime.toIso8601String()}",
+      "/free-fields/${sportCategory.apiName}/max-players/${maxPlayers.toString()}/city/${cityId.toStringAsFixed(0)}/start-time/${startTime.toIso8601String()}/finish-time/${finishTime.toIso8601String()}",
     );
     return FieldsAndMaxPlayersPerFieldResponse.fromJson(response.data);
   }

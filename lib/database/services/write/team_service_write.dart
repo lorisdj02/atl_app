@@ -10,7 +10,7 @@ class TeamServiceWrite {
 
   Future<Team> promoteOrDemotePlayer(double teamId, double playerId) async {
     final response = await dio.patch(
-      "$apiUrl/team/$teamId/promote-or-demote/$playerId",
+      "$apiUrl/team/${teamId.toStringAsFixed(0)}/promote-or-demote/${playerId.toStringAsFixed(0)}",
     );
     return Team.fromJson(response.data);
   }
@@ -26,7 +26,7 @@ class TeamServiceWrite {
     bool? acceptAll,
   }) async {
     await dio.patch(
-      "$apiUrl/team/$teamId/manage/requests/accept",
+      "$apiUrl/team/${teamId.toStringAsFixed(0)}/manage/requests/accept",
       queryParameters: {"playerId": playerId, "acceptAll": acceptAll},
     );
   }
@@ -37,30 +37,30 @@ class TeamServiceWrite {
     bool? rejectAll,
   }) async {
     await dio.patch(
-      "$apiUrl/team/$teamId/manage/requests/reject",
+      "$apiUrl/team/${teamId.toStringAsFixed(0)}/manage/requests/reject",
       queryParameters: {"playerId": playerId, "rejectAll": rejectAll},
     );
   }
 
   Future<TeamRequest> sendTeamRequest(double teamId) async {
-    final response = await dio.post("$apiUrl/team/$teamId/requests/send");
+    final response = await dio.post("$apiUrl/team/${teamId.toStringAsFixed(0)}/requests/send");
     return TeamRequest.fromJson(response.data);
   }
 
   Future<void> cancelTeamRequest(double teamId) async {
-    await dio.delete("$apiUrl/team/$teamId/requests/cancel");
+    await dio.delete("$apiUrl/team/${teamId.toStringAsFixed(0)}/requests/cancel");
   }
 
   Future<void> leaveTeam(double teamId) async {
-    await dio.delete("$apiUrl/team/$teamId/leave");
+    await dio.delete("$apiUrl/team/${teamId.toStringAsFixed(0)}/leave");
   }
 
   Future<void> expelPlayer(double teamId, double playerId) async {
-    await dio.delete("$apiUrl/team/$teamId/expel/$playerId");
+    await dio.delete("$apiUrl/team/${teamId.toStringAsFixed(0)}/expel/${playerId.toStringAsFixed(0)}");
   }
 
   //viene fatto con leaveTeam se il capitano lascia la squadra VUOTA
   Future<void> deleteTeam(double teamId) async {
-    await dio.delete("$apiUrl/team/$teamId/delete");
+    await dio.delete("$apiUrl/team/${teamId.toStringAsFixed(0)}/delete");
   }
 }
