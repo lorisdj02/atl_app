@@ -13,8 +13,10 @@ import 'package:atl_app/models/tournament.dart';
 import 'package:dio/dio.dart';
 
 class TournamentServiceRead {
-  final String apiUrl = "/tournaments";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  TournamentServiceRead({required this.apiUrl, required this.dio});
 
   Future<AllTournamentsResponse> getAllTournamentsScreen(
     SportCategory currentSport,

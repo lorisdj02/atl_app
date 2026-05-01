@@ -61,7 +61,7 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
   Future<void> _checkNotifications() async {
     if (widget.accountId == null) return;
     try {
-      final bool result = await AccountService.Read.hasNotifications();
+      final bool result = await AccountService.hasNotifications();
       if (mounted) {
         setState(() {
           _hasUnreadNotifications = result;

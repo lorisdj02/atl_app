@@ -43,7 +43,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final List<City> cities = await FieldService.Read.getAllCities();
+      final List<City> cities = await FieldService.getAllCities();
       if (mounted) {
         setState(() {
           _availableCities = cities;
@@ -116,7 +116,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       }
 
       try {
-        final success = await TeamService.Read.checkTeamNameInCategoryExists(
+        final success = await TeamService.checkTeamNameInCategoryExists(
           widget.currentSport,
           _nameController.text.trim(),
         );
@@ -160,7 +160,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       );
       final Team newTeam;
       try {
-        newTeam = await TeamService.Write.createTeam(createdTeam);
+        newTeam = await TeamService.createTeam(createdTeam);
       } catch (e) {
         throw Exception(l10n.failedToCreateTeam);
       }

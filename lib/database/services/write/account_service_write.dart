@@ -1,4 +1,3 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/requests/register_account_request.dart';
 import 'package:atl_app/database/requests/update_account_info_request.dart';
 import 'package:atl_app/models/account.dart';
@@ -7,8 +6,10 @@ import 'package:atl_app/models/review.dart';
 import 'package:dio/dio.dart';
 
 class AccountServiceWrite {
-  final String apiUrl = "/accounts";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  AccountServiceWrite({required this.apiUrl, required this.dio});
 
   Future<Account> updateAccountInfos(UpdateAccountInfoRequest request) async {
     final response = await dio.patch("$apiUrl/update-infos", data: request.toJson());

@@ -61,7 +61,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
 
     try {
       final TournamentDetailsResponse data;
-      data = await TournamentService.Read.getTournamentDetailsScreen(
+      data = await TournamentService.getTournamentDetailsScreen(
         widget.tournament.id.toDouble(),
       );
 
@@ -744,7 +744,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
     );
 
     try {
-      await TournamentService.Write.startTournament(
+      await TournamentService.startTournament(
         widget.tournament.id.toDouble(),
       );
 
@@ -1051,7 +1051,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailsScreen> {
 
                   if (confirmed == true) {
                     try {
-                      await TournamentService.Write.deleteCallups(
+                      await TournamentService.deleteCallups(
                         widget.tournament.id.toDouble(),
                         _playerTeam!.id.toDouble(),
                       );

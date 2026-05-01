@@ -98,7 +98,7 @@ class TournamentSummary extends StatelessWidget {
   }
 
   Future<Map<String, dynamic>> _fetchData(BuildContext context) async {
-    final TournamentSummaryResponse data = await TournamentService.Read.getTournamentSummary(tournament.id.toDouble());
+    final TournamentSummaryResponse data = await TournamentService.getTournamentSummary(tournament.id.toDouble());
 
 
     final sportData = sport ?? data.sport;

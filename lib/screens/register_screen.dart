@@ -101,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         profilePictureUrl: _profileImagePath,
       );
 
-      await AccountService.Write.registerAccount(request);
+      await AccountService.registerAccount(request);
 
       if (!mounted) return;
 

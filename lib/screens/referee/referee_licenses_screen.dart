@@ -130,7 +130,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
     if (confirmed != true) return;
 
     try {
-      await AccountService.Write.deleteRefereeLicense(
+      await AccountService.deleteRefereeLicense(
         license.sportId.toDouble(),
       );
       if (mounted) {
@@ -170,7 +170,7 @@ class _RefereeLicensesScreenState extends State<RefereeLicensesScreen> {
         availableSports: availableSports,
         refereeId: refereeId,
         onSubmit: (license) =>
-            AccountService.Write.insertRefereeLicense(license),
+            AccountService.insertRefereeLicense(license),
       ),
     );
 

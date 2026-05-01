@@ -51,7 +51,7 @@ class _PastAssignedMatchesScreenState extends State<PastAssignedMatchesScreen> {
         return;
       }
 
-      final PastAssignedMatchesResponse data = await MatchService.Read.getPastAssignedMatchesScreen(widget.currentSport);
+      final PastAssignedMatchesResponse data = await MatchService.getPastAssignedMatchesScreen(widget.currentSport);
 
       if (widget.currentSport != SportCategory.football) {
         setState(() => _isLoading = false);

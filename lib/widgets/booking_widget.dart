@@ -323,11 +323,11 @@ class _BookingWidgetState extends State<BookingWidget> {
                         if (confirm == true) {
                           try {
                             if (isLobby) {
-                              await BookingService.Write.leaveLobbyBooking(
+                              await BookingService.leaveLobbyBooking(
                                 widget.booking.id,
                               );
                             } else {
-                              await BookingService.Write.refundPrivateBooking(
+                              await BookingService.refundPrivateBooking(
                                 widget.booking.id,
                               );
                             }

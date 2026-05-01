@@ -1,4 +1,3 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/abstract_team_response.dart';
 import 'package:atl_app/database/responses/pay_participation_response.dart';
 import 'package:atl_app/database/responses/player_requests_response.dart';
@@ -11,8 +10,10 @@ import 'package:atl_app/models/tournament_participation.dart';
 import 'package:dio/dio.dart';
 
 class TeamServiceRead {
-  final String apiUrl = "/teams";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  TeamServiceRead({required this.apiUrl, required this.dio});
 
   Future<TeamsResponse> getTeamsScreen(SportCategory sportCategory) async {
     final response = await dio.get(

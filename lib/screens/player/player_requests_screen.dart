@@ -38,7 +38,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
     final l10n = AppLocalizations.of(context);
     try {
       final PlayerRequestsResponse data = await TeamService
-          .Read.getTeamRequestsScreen(widget.teamId.toDouble());
+          .getTeamRequestsScreen(widget.teamId.toDouble());
 
       if (mounted) {
         setState(() {
@@ -62,7 +62,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   Future<void> _acceptRequest(TeamRequest request) async {
     final l10n = AppLocalizations.of(context);
     try {
-      await TeamService.Write.acceptTeamRequest(
+      await TeamService.acceptTeamRequest(
         teamId: widget.teamId.toDouble(),
         playerId: request.playerId.toDouble(),
       );
@@ -95,7 +95,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
   Future<void> _rejectRequest(TeamRequest request) async {
     final l10n = AppLocalizations.of(context);
     try {
-      await TeamService.Write.rejectTeamRequest(
+      await TeamService.rejectTeamRequest(
         teamId: widget.teamId.toDouble(),
         playerId: request.playerId.toDouble(),
       );
@@ -116,7 +116,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _acceptAll() async {
     final l10n = AppLocalizations.of(context);
-    await TeamService.Write.acceptTeamRequest(
+    await TeamService.acceptTeamRequest(
       teamId: widget.teamId.toDouble(),
       acceptAll: true,
     );
@@ -143,7 +143,7 @@ class _PlayerRequestsScreenState extends State<PlayerRequestsScreen> {
 
   Future<void> _rejectAll() async {
     final l10n = AppLocalizations.of(context);
-    await TeamService.Write.rejectTeamRequest(
+    await TeamService.rejectTeamRequest(
       teamId: widget.teamId.toDouble(),
       rejectAll: true,
     );

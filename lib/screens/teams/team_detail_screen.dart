@@ -40,7 +40,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       if (userProvider.isPlayer && userProvider.activeRoleId != null) {
         playerId = userProvider.activeRoleId!;
         final TeamDetailsResponse data = await TeamService
-            .Read.getTeamDetailsScreen(widget.teamId.toDouble());
+            .getTeamDetailsScreen(widget.teamId.toDouble());
         if (mounted) {
           setState(() {
             team = data.team;
@@ -84,7 +84,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
       return;
     }
     try {
-      await TeamService.Write.sendTeamRequest(widget.teamId.toDouble());
+      await TeamService.sendTeamRequest(widget.teamId.toDouble());
 
       await loadData();
       if (mounted) {
@@ -115,7 +115,7 @@ class _TeamDetailScreenState extends AbstractTeamScreenState<TeamDetailScreen> {
     if (_existingRequest == null) return;
 
     try {
-      await TeamService.Write.cancelTeamRequest(
+      await TeamService.cancelTeamRequest(
         _existingRequest!.teamId.toDouble(),
       );
       await loadData();

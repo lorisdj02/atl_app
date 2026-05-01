@@ -1,10 +1,13 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:dio/dio.dart';
 
 class BookingServiceWrite {
-  final String apiUrl = "/bookings";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
 
+  BookingServiceWrite({
+    required this.apiUrl,
+    required this.dio,
+  });
   Future<void> leaveLobbyBooking(double bookingId) async {
     await dio.delete("$apiUrl/lobby-booking/$bookingId/leave");
   }

@@ -6,8 +6,13 @@ import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class BookingServiceRead {
-  final String apiUrl = "/bookings";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  BookingServiceRead({
+    required this.apiUrl,
+    required this.dio,
+  });
 
   Future<BookFieldResponse> getBookFieldScreen(
     SportCategory sportCategory,

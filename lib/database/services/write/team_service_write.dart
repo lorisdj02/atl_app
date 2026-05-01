@@ -1,11 +1,12 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/team_request.dart';
 import 'package:dio/dio.dart';
 
 class TeamServiceWrite {
-  final String apiUrl = "/teams";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  TeamServiceWrite({required this.apiUrl, required this.dio});
 
   Future<Team> promoteOrDemotePlayer(double teamId, double playerId) async {
     final response = await dio.patch(

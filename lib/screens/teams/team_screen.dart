@@ -154,7 +154,7 @@ class _TeamScreenState extends State<TeamScreen>
       );
       final isPlayer = accountProvider.activeAccount?.role == AccountRole.player;
 
-      final TeamsResponse data = await TeamService.Read.getTeamsScreen(
+      final TeamsResponse data = await TeamService.getTeamsScreen(
         widget.currentSport,
       );
       final Map<double, Team> teamsCache = data.teamsCache;

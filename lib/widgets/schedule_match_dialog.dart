@@ -46,7 +46,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final ScheduleMatchResponse data = await TournamentService.Read.getScheduleData(
+      final ScheduleMatchResponse data = await TournamentService.getScheduleData(
         widget.tournamentId.toDouble(),
       );
 

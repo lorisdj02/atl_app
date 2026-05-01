@@ -1,9 +1,12 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:dio/dio.dart';
 
 class FieldServiceWrite {
-  final String apiUrl = "/fields";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
 
-  
+  FieldServiceWrite({
+    required this.apiUrl,
+    required this.dio,
+  });
+
 }

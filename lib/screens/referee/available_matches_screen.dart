@@ -49,7 +49,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final cities = await FieldService.Read.getAllCities();
+      final cities = await FieldService.getAllCities();
       if (mounted) {
         final preferredCityId = Provider.of<AccountProvider>(
           context,
@@ -90,7 +90,7 @@ class _AvailableMatchesScreenState extends State<AvailableMatchesScreen> {
 
     try {
       final AvailableMatchesResponse data =
-          await MatchService.Read.getAvailableMatchesScreen(
+          await MatchService.getAvailableMatchesScreen(
             widget.currentSport,
             cityId: _selectedCity?.id.toDouble(),
             sportId: _selectedSportId?.toDouble(),

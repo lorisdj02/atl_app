@@ -77,7 +77,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   Future<void> loadData() async {
     try {
       final AbstractTeamResponse data =
-          await TeamService.Read.getAbstractTeamScreen(getTeamId().toDouble());
+          await TeamService.getAbstractTeamScreen(getTeamId().toDouble());
       setState(() {
         team = data.team;
         players = data.players;
@@ -120,7 +120,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
   double getTeamId();
 
   Future<void> loadPlayersData(double teamId) async {
-    final PlayersInTeamResponse data = await TeamService.Read.getPlayersInTeam(teamId);
+    final PlayersInTeamResponse data = await TeamService.getPlayersInTeam(teamId);
 
     List<Player> loadedPlayers = data.players;
     if (loadedPlayers.isNotEmpty) {

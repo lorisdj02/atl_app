@@ -87,7 +87,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
     Tournament? foundTournament;
     try {
       if (widget.isTeam) {
-        foundTeam = await TeamService.Read.getTeamById(
+        foundTeam = await TeamService.getTeamById(
           id.toDouble(),
         );
 
@@ -95,7 +95,7 @@ class _SearchDialogWidgetState extends State<SearchDialogWidget> {
         //Navigator.of(context).pop();
         return;
       } else if (widget.isTournament) {
-        foundTournament = await TournamentService.Read.getTournamentById(
+        foundTournament = await TournamentService.getTournamentById(
           id.toDouble(),
         );
         widget.onFound?.call(null, _foundTournament);

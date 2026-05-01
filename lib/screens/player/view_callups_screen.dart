@@ -38,7 +38,7 @@ class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final List<Player> players = await TournamentService.Read.getViewCallupsScreen(
+      final List<Player> players = await TournamentService.getViewCallupsScreen(
         widget.tournament.id.toDouble(),
       );
       

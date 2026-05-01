@@ -1,10 +1,11 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/models/football_match_event.dart';
 import 'package:dio/dio.dart';
 
 class MatchServiceWrite {
-  final String apiUrl = "/matches";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  MatchServiceWrite(this.apiUrl, this.dio);
 
   Future<double> retireFromMatch(double matchId) async {
     final response = await dio.patch("$apiUrl/match/$matchId/retire");

@@ -40,7 +40,7 @@ class _PayParticipationScreenState extends State<PayParticipationScreen> {
   Future<void> _loadData() async {
     try {
       final PayParticipationResponse data = await TeamService
-          .Read.getPayParticipationScreen(widget.teamId.toDouble());
+          .getPayParticipationScreen(widget.teamId.toDouble());
 
       setState(() {
         _tournamentParticipations = data.tournamentParticipations;

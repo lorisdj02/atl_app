@@ -46,7 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final accountProvider = Provider.of<AccountProvider>(context, listen: false);
     if (accountProvider.isCoordinator || accountProvider.isReferee) {
       try{
-      final int level = await AccountService.Read.getAccountLevel();
+      final int level = await AccountService.getAccountLevel();
       if (mounted) {
         setState(() {
           _level = level;

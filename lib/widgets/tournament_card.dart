@@ -140,7 +140,7 @@ class _TournamentCardStatus extends State<TournamentCard> {
                         }
 
                         Future.microtask(() async {
-                          await TournamentService.Write.toggleFavoriteStatus(
+                          await TournamentService.toggleFavoriteStatus(
                             widget.tournament.id.toDouble(),
                           );
                         });

@@ -1,12 +1,13 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/purchase.dart';
 import 'package:dio/dio.dart';
 
 class PaymentServiceWrite {
-  final String apiUrl = "/payments";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  PaymentServiceWrite(this.apiUrl, this.dio);
 
   Future<CheckoutSession> createCheckoutSession(CheckoutPayload payload) async {
     final response = await dio.post(

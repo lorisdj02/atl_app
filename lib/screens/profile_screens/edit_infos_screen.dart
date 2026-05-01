@@ -66,7 +66,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
       listen: false,
     ).activeAccount;
     try {
-      final List<City> cities = await FieldService.Read.getAllCities();
+      final List<City> cities = await FieldService.getAllCities();
       if (mounted) {
         City? currentCity;
         if (account?.preferredCityId != null) {
@@ -184,7 +184,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         imageUrl: null, // TODO: Implement image upload
       );
       // Update account info through repository
-      final Account? data = await AccountService.Write.updateAccountInfos(
+      final Account? data = await AccountService.updateAccountInfos(
         request,
       );
 

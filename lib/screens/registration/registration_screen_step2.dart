@@ -65,7 +65,7 @@ class _RegistrationScreenStep2State extends State<RegistrationScreenStep2> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await FieldService.Read.getAllCities();
+      final cities = await FieldService.getAllCities();
       if (mounted) {
         setState(() {
           _cities = cities;

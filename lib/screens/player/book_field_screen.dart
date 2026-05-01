@@ -100,7 +100,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   Future<void> _loadCities() async {
     try {
       final BookFieldResponse data =
-          await BookingService.Read.getBookFieldScreen(widget.sportCategory);
+          await BookingService.getBookFieldScreen(widget.sportCategory);
 
       final preferredCityId = Provider.of<AccountProvider>(
         context,
@@ -232,7 +232,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       );
 
       final FieldsAndMaxPlayersPerFieldResponse data =
-          await BookingService.Read.getFreeFieldsByPlayerAndCityAndDate(
+          await BookingService.getFreeFieldsByPlayerAndCityAndDate(
             maxPlayers: _maxPlayers,
             cityId: _selectedCity!.toDouble(),
             startTime: startDateTime,
@@ -515,7 +515,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       );
 
       final CheckoutSession checkoutSession =
-          await PaymentService.Write.createCheckoutSession(checkoutPayload);
+          await PaymentService.createCheckoutSession(checkoutPayload);
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
@@ -552,7 +552,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       // Ricorda che playersToPay = maxPlayers - playersToFind
 
       final CheckoutSession checkoutSession =
-          await PaymentService.Write.createCheckoutSession(payload);
+          await PaymentService.createCheckoutSession(payload);
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(

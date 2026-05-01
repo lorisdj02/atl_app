@@ -1,4 +1,3 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/available_matches_response.dart';
 import 'package:atl_app/database/responses/football_match_events_response.dart';
 import 'package:atl_app/database/responses/football_match_response.dart';
@@ -7,8 +6,10 @@ import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class MatchServiceRead {
-  final String apiUrl = "/matches";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  MatchServiceRead(this.apiUrl, this.dio);
 
   Future<AvailableMatchesResponse> getAvailableMatchesScreen(
     SportCategory sportCategory,

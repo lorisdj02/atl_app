@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // set token
       await accountProvider.setToken(usernameOrEmail);
 
-      final LoginResponse loginData = await AccountService.Read.handleLogin();
+      final LoginResponse loginData = await AccountService.handleLogin();
       final Account? account = loginData.account;
 
       if (account == null) {

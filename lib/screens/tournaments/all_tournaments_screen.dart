@@ -110,7 +110,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
 
     try {
       final AllTournamentsResponse data = await TournamentService
-          .Read.getAllTournamentsScreen(widget.currentSport);
+          .getAllTournamentsScreen(widget.currentSport);
 
       setState(() {
         _tournaments = data.tournaments;
@@ -361,7 +361,7 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                 try {
                   //TODO: separa i teams
                   final ApplyTournamentFiltersResponse results =
-                      await TournamentService.Read.applyTournamentFilters(
+                      await TournamentService.applyTournamentFilters(
                         cityId: _selectedCity?.toDouble(),
                         minTeams: _selectedNumTeams,
                         maxTeams: _selectedNumTeams,

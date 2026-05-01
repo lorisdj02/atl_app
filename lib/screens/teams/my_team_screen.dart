@@ -40,7 +40,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
       if (teamId == null) return;
 
       final List<TournamentParticipation> participations = await TeamService
-          .Read.getNotPaidTeamParticipations(teamId.toDouble());
+          .getNotPaidTeamParticipations(teamId.toDouble());
 
       if (mounted) {
         setState(() {
@@ -183,7 +183,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     }
 
     try {
-      await TeamService.Write.promoteOrDemotePlayer(
+      await TeamService.promoteOrDemotePlayer(
         team!.id.toDouble(),
         player.playerId.toDouble(),
       );
@@ -207,7 +207,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
 
   Future<void> _demoteViceCaptain(Player player) async {
     try {
-      await TeamService.Write.promoteOrDemotePlayer(
+      await TeamService.promoteOrDemotePlayer(
         team!.id.toDouble(),
         player.playerId.toDouble(),
       );
@@ -252,7 +252,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
     if (confirm != true) return;
 
     try {
-      await TeamService.Write.expelPlayer(
+      await TeamService.expelPlayer(
         team!.id.toDouble(),
         player.playerId.toDouble(),
       );
@@ -283,7 +283,7 @@ class _MyTeamScreenState extends AbstractTeamScreenState<MyTeamScreen> {
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await TeamService.Write.leaveTeam(team!.id.toDouble());
+                await TeamService.leaveTeam(team!.id.toDouble());
                 if (mounted) {
                   AccountProvider accountProvider = Provider.of<AccountProvider>(
                     context,

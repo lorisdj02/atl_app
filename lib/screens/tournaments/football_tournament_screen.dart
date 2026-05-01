@@ -103,7 +103,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     });
 
     try{
-    final FootballTournamentResponse data = await TournamentService.Read.getTournamentScreen(
+    final FootballTournamentResponse data = await TournamentService.getTournamentScreen(
       widget.tournament.id.toDouble(),
       widget.sportCategory,
     );

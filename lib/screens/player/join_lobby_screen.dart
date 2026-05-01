@@ -98,7 +98,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       }
 
       final JoinLobbyResponse data =
-          await BookingService.Read.getJoinLobbyScreen(
+          await BookingService.getJoinLobbyScreen(
             sportCategory: widget.sportCategory,
             totalPlayers: _selectedTotalPlayers,
             selectedCityId: _selectedCity?.toDouble(),
@@ -440,7 +440,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
     );
 
     final CheckoutSession checkoutSession =
-        await PaymentService.Write.createCheckoutSession(checkoutPayload);
+        await PaymentService.createCheckoutSession(checkoutPayload);
 
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(

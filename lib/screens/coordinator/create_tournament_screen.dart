@@ -151,7 +151,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
   Future<void> _loadCities() async {
     try {
-      final cities = await FieldService.Read.getAllCities();
+      final cities = await FieldService.getAllCities();
       setState(() {
         _cities = cities;
       });
@@ -173,7 +173,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
 
     try {
       final FieldsAndMaxPlayersPerFieldResponse data =
-          await FieldService.Read.getFieldsByMaxPlayersAndCityAndSportCategory(
+          await FieldService.getFieldsByMaxPlayersAndCityAndSportCategory(
             maxPlayers: _selectedSport!.maxPlayersPerTeam,
             cityId: _selectedCityId!.toDouble(),
             sportCategory: _selectedSport!.sportCategory,
@@ -321,7 +321,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
       Tournament dummyTournament = _createFictitiousTournament();
 
       final Tournament createdTournament =
-          await TournamentService.Write.createTournament(dummyTournament);
+          await TournamentService.createTournament(dummyTournament);
 
       if (mounted && createdTournament.id != 0) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1223,7 +1223,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
     final fictitiousTournament = _createFictitiousTournament();
     try {
       final TournamentParametersResponse data = await TournamentService
-          .Read.calculateTournamentParameters(fictitiousTournament);
+          .calculateTournamentParameters(fictitiousTournament);
 
       // Calculate all values from backend
       final fee = data.fee;

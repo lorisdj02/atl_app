@@ -37,7 +37,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
   Future<void> _loadData() async {
     try {
       final CallupsResponse data = await TournamentService
-          .Read.getCallupsScreen(widget.tournament.id.toDouble());
+          .getCallupsScreen(widget.tournament.id.toDouble());
 
       setState(() {
         _teamPlayers = data.players;
@@ -64,7 +64,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
       selectedPlayerIds: _selectedPlayerIds.toList(),
     );
     try {
-      await TournamentService.Write.confirmCallups(
+      await TournamentService.confirmCallups(
         widget.tournament.id.toDouble(),
         request,
       );

@@ -374,7 +374,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     // Delete account
     try {
-      await AccountService.Write.deleteAccount();
+      await AccountService.deleteAccount();
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context);

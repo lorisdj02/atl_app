@@ -308,7 +308,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
         type: CheckoutType.tournamentFee,
       );
 
-      final CheckoutSession checkoutSession = await PaymentService.Write.createCheckoutSession(
+      final CheckoutSession checkoutSession = await PaymentService.createCheckoutSession(
         payload,
       );
       Navigator.of(context)

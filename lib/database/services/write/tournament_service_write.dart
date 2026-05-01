@@ -1,12 +1,13 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/requests/confirm_callups_request.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:atl_app/models/tournament_participation.dart';
 import 'package:dio/dio.dart';
 
 class TournamentServiceWrite {
-  final String apiUrl = "/tournaments";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  TournamentServiceWrite({required this.apiUrl, required this.dio});
 
   Future<Tournament> createTournament(Tournament tournament) async {
     final response = await dio.post(

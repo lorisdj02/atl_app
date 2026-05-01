@@ -147,7 +147,7 @@ class _MatchEventDialogState extends State<MatchEventDialog>
         createdAt: DateTime.now(), // Mocked
       );
 
-      await MatchService.Write.insertFootballMatchEvent(
+      await MatchService.insertFootballMatchEvent(
         widget.matchId.toDouble(),
         newEvent,
       );

@@ -64,7 +64,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _loadData() async {
     try {
-      final CheckoutResponse data = await PaymentService.Read.getCheckoutScreen(
+      final CheckoutResponse data = await PaymentService.getCheckoutScreen(
         widget.sessionId.toDouble(),
       );
       setState(() {
@@ -150,7 +150,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _onPay() async {
     setState(() => _isProcessing = true);
     try {
-      await PaymentService.Write.payCheckoutSession(
+      await PaymentService.payCheckoutSession(
         widget.sessionId.toDouble(),
         _useWallet,
       );

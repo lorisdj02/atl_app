@@ -67,7 +67,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     );
 
     try {
-      await AccountService.Write.commitReview(updatedReview);
+      await AccountService.commitReview(updatedReview);
 
       if (!mounted) return;
 

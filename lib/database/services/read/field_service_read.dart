@@ -1,12 +1,16 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/models/city.dart';
 import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class FieldServiceRead {
-  final String apiUrl = "/fields";
-  final Dio dio = ApiClient.instance;
+  final String apiUrl;
+  final Dio dio;
+
+  FieldServiceRead({
+    required this.apiUrl,
+    required this.dio,
+  });
 
   Future<List<City>> getAllCities() async {
     final response = await dio.get("$apiUrl/all-cities");
