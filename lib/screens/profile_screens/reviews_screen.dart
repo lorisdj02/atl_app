@@ -3,7 +3,7 @@ import 'package:atl_app/database/services/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/review.dart';
 import '../../models/account.dart';
 import '../../utils/atl_colors.dart';
@@ -22,8 +22,8 @@ class ReviewsScreen extends StatefulWidget {
 class _ReviewsScreenState extends State<ReviewsScreen> {
   bool _isLoading = true;
   List<Review> _reviews = [];
-  Map<int, Account> _userPerReview = {};
-  Map<int, String> _matchTeamsStringPerReview = {};
+  Map<double, Account> _accountPerReview = {};
+  Map<double, String> _matchTeamsStringPerReview = {};
 
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -52,7 +52,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
       if (mounted) {
         setState(() {
           _reviews = data.reviews;
-          _userPerReview = data.accountPerReview;
+          _accountPerReview = data.accountPerReview;
           _matchTeamsStringPerReview = data.matchTeamsStringPerReview;
           _isLoading = false;
         });
@@ -66,7 +66,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
     }
   }
 
-  void _onReviewCommitted(int reviewId) {
+  void _onReviewCommitted(double reviewId) {
     setState(() {
       _reviews.removeWhere((r) => r.id == reviewId);
       if (_currentPage >= _reviews.length && _currentPage > 0) {
@@ -103,7 +103,7 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                       final review = _reviews[index];
                       return ReviewWidget(
                         review: review,
-                        reviewed: _userPerReview[review.id],
+                        reviewed: _accountPerReview[review.id],
                         matchTeamsString:
                             _matchTeamsStringPerReview[review.id],
                         onCommitted: () => _onReviewCommitted(review.id),

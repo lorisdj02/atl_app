@@ -31,7 +31,9 @@ class CheckoutResponse {
 
   factory CheckoutResponse.fromJson(Map<String, dynamic> json) {
     return CheckoutResponse(
-      checkoutSession: CheckoutSession.fromJson(json[ApiJsonKeys.checkoutSession]),
+      checkoutSession: CheckoutSession.fromJson(
+        json[ApiJsonKeys.checkoutSession],
+      ),
       wallet: Wallet.fromJson(json[ApiJsonKeys.wallet]),
       tournamentName: json[ApiJsonKeys.tournamentName] != null
           ? json[ApiJsonKeys.tournamentName] as String

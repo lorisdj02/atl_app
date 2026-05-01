@@ -19,12 +19,12 @@ class FootballTeamStats {
 
   factory FootballTeamStats.fromJson(Map<String, dynamic> json) {
     return FootballTeamStats(
-      teamId: json['team_id']?.toDouble() ?? 0.0,
-      playerId: json['player_id']?.toDouble() ?? 0.0,
-      goals: json['goals'] ?? 0,
-      motm: json['motm'] ?? 0,
-      yellowCards: json['yellow_cards'] ?? 0,
-      redCards: json['red_cards'] ?? 0,
+      teamId: (json['team_id'] as num?)?.toDouble() ?? 0.0,
+      playerId: (json['player_id'] as num?)?.toDouble() ?? 0.0,
+      goals: (json['goals'] as num?)?.toInt() ?? 0,
+      motm: (json['motm'] as num?)?.toInt() ?? 0,
+      yellowCards: (json['yellow_cards'] as num?)?.toInt() ?? 0,
+      redCards: (json['red_cards'] as num?)?.toInt() ?? 0,
     );
   }
 

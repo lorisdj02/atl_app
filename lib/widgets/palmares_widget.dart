@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
 import '../models/palmares.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../models/tournament.dart';
 import '../models/coordinator.dart';
 import '../models/field.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/palmares_position.dart';
 
 class PalmaresWidget extends StatelessWidget {
   final Palmares palmares;

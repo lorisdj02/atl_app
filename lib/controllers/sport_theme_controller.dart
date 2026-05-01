@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 
 /// Controller per gestire lo sport attivo e il tema dell'app

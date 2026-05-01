@@ -5,10 +5,14 @@ import 'providers/account_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final AccountProvider accountProvider = AccountProvider();
+  accountProvider.bindApiClientToken();
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AccountProvider())],
+      providers: [
+        ChangeNotifierProvider<AccountProvider>.value(value: accountProvider),
+      ],
       child: const AtlController(),
     ),
   );

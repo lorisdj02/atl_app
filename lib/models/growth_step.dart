@@ -1,16 +1,4 @@
-enum GrowthStepType {
-  referee,
-  coordinator;
 
-  String get apiName {
-    switch (this) {
-      case GrowthStepType.referee:
-        return 'REFEREE';
-      case GrowthStepType.coordinator:
-        return 'COORDINATOR';
-    }
-  }
-}
 
 // OK
 class GrowthStep {
@@ -39,12 +27,12 @@ class GrowthStep {
   factory GrowthStep.fromJson(Map<String, dynamic> json) {
     return GrowthStep(
       title: json['title'] ?? '',
-      level: json['level'] ?? 0,
-      x: json['x'] ?? 0,
+      level: (json['level'] as num?)?.toInt() ?? 0,
+      x: (json['x'] as num?)?.toInt() ?? 0,
       minRatingOverLastXMatches: (json['min_rating_over_last_x_matches'] as num?)?.toDouble(),
-      minRefereedMatches: json['min_refereed_matches'],
+      minRefereedMatches: (json['min_refereed_matches'] as num?)?.toInt(),
       minRatingOverLastXTournaments: (json['min_rating_over_last_x_tournaments'] as num?)?.toDouble(),
-      minCoordinatedTournaments: json['min_coordinated_tournaments'],
+      minCoordinatedTournaments: (json['min_coordinated_tournaments'] as num?)?.toInt(),
       coordinatorPayPerMatch: (json['coordinator_pay_per_match'] as num?)?.toDouble(),
     );
   }

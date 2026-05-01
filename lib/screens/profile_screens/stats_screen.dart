@@ -2,7 +2,7 @@ import 'package:atl_app/database/responses/personal_player_stats_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/football_team_stats.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
@@ -37,14 +37,14 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   void initState() {
     super.initState();
-    final userProvider = Provider.of<AccountProvider>(context, listen: false);
-    if (userProvider.isPlayer && (userProvider.activeAccount?.isVip ?? false)) {
-      _loadStats(userProvider);
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    if (accountProvider.isPlayer && (accountProvider.activeAccount?.vip ?? false)) {
+      _loadStats(accountProvider);
     }
   }
 
-  Future<void> _loadStats(AccountProvider userProvider) async {
-    if (userProvider.activeRoleId == null || !userProvider.isPlayer) return;
+  Future<void> _loadStats(AccountProvider accountProvider) async {
+    if (accountProvider.activeRoleId == null || !accountProvider.isPlayer) return;
     setState(() => _isLoading = true);
     try {
       final PersonalPlayerStatsResponse data =
@@ -68,9 +68,9 @@ class _StatsScreenState extends State<StatsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final userProvider = Provider.of<AccountProvider>(context, listen: false);
-    final user = userProvider.activeAccount;
-    final isVip = user?.isVip ?? false;
+    final accountProvider = Provider.of<AccountProvider>(context, listen: false);
+    final user = accountProvider.activeAccount;
+    final isVip = user?.vip ?? false;
 
     if (!isVip) {
       return Scaffold(

@@ -12,14 +12,14 @@ import '../../utils/atl_colors.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/atl_step_indicator.dart';
 import '../../widgets/field_size_alert_dialog.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../shop/checkout_screen.dart';
 import '../../models/checkout_session.dart';
-
 import '../../database/responses/book_field_response.dart';
+import '../../models/enums/booking_type.dart';
+import '../../models/enums/checkout_type.dart';
 
 //TODO: Ci deve essere il pagamento alla fine della prenotazione e l'inserimento nella home page del player insieme ai tornei
-enum BookingType { none, private, lobby }
 
 class BookFieldScreen extends StatefulWidget {
   final SportCategory sportCategory;
@@ -32,10 +32,10 @@ class BookFieldScreen extends StatefulWidget {
 
 class _BookFieldScreenState extends State<BookFieldScreen> {
   int _currentStep = 1; // 1, 2, 3, 4
-  BookingType _selectedBookingType = BookingType.none;
+  BookingType? _selectedBookingType; // default private
 
   // Step 2 - Data input
-  int? _selectedCity; // cityId
+  double? _selectedCity; // cityId
   Field? _selectedField;
   DateTime? _selectedDate;
   TimeOfDay? _startTime;
@@ -48,12 +48,12 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   bool _isLoading = false;
   List<Field> _fields = [];
   List<City> _cities = [];
-  Map<int, TimeOfDay> _minOpeningTimePerCity = {};
-  Map<int, TimeOfDay> _maxClosingTimePerCity = {};
+  Map<double, TimeOfDay> _minOpeningTimePerCity = {};
+  Map<double, TimeOfDay> _maxClosingTimePerCity = {};
 
   // Available player counts
   final List<int> _availablePlayerCounts = [];
-  Map<int, int> _maxPlayerPerField = {}; // fieldId -> maxPlayers
+  Map<double, int> _maxPlayerPerField = {}; // fieldId -> maxPlayers
 
   String _getSportDisplayName(int maxPlayers) {
     final playersPerSide = maxPlayers ~/ 2;
@@ -130,7 +130,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
   }
 
   void _goToNextStep() {
-    if (_currentStep == 1 && _selectedBookingType == BookingType.none) {
+    if (_currentStep == 1 && _selectedBookingType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).selectBookingTypeFirst),
@@ -272,7 +272,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     final durationHours = durationMinutes / 60.0;
 
     // Calculate base cost (hourly rate * duration)
-    final baseCost = _selectedField!.hourlyCostPrivate * durationHours;
+    final baseCost = _selectedField!.hourCostPrivate * durationHours;
 
     if (_selectedBookingType == BookingType.lobby) {
       return baseCost / _maxPlayers;
@@ -291,7 +291,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     final durationMinutes = endMinutes - startMinutes;
     final durationHours = durationMinutes / 60.0;
 
-    final baseCost = _selectedField!.hourlyCostPrivate * durationHours;
+    final baseCost = _selectedField!.hourCostPrivate * durationHours;
 
     if (_selectedBookingType == BookingType.lobby) {
       // Costo per giocatore * numero di giocatori che pago
@@ -329,7 +329,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     }
   }
 
-  Future<void> _selectTime(bool isStartTime, int cityId) async {
+  Future<void> _selectTime(bool isStartTime, double cityId) async {
     // Check if date is selected first
     if (_selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -531,7 +531,9 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         Navigator.of(context).pop(true);
       }
     } else {
-      final baseCost = _selectedField!.costTournament;
+      final baseCost =
+          _selectedField!.hourCostPrivate *
+          (endDateTime.difference(startDateTime).inMinutes / 60.0);
       final double feePerPlayer = (baseCost / _maxPlayers * 100).ceil() / 100;
       final playersToFind = _maxPlayers - _ownerPaysFor;
 
@@ -549,9 +551,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
       // Ricorda che playersToPay = maxPlayers - playersToFind
 
-      final CheckoutSession checkoutSession = await PaymentService.Write.createCheckoutSession(
-        payload,
-      );
+      final CheckoutSession checkoutSession =
+          await PaymentService.Write.createCheckoutSession(payload);
 
       final result = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
@@ -696,7 +697,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           size: ATLButtonSize.large,
           isFilled: true,
           color: ATLColors.getPrimaryColor(widget.sportCategory),
-          onPressed: _selectedBookingType != BookingType.none
+          onPressed: _selectedBookingType != null
               ? _goToNextStep
               : () {},
           fullWidth: true,
@@ -730,7 +731,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300),
           ),
-          child: DropdownButtonFormField<int>(
+          child: DropdownButtonFormField<double>(
             value: _selectedCity,
             decoration: InputDecoration(
               border: InputBorder.none,
@@ -1115,7 +1116,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
                                   final durationHours =
                                       (endMinutes - startMinutes) / 60.0;
                                   final cost =
-                                      field.hourlyCostPrivate * durationHours;
+                                      field.hourCostPrivate * durationHours;
 
                                   return _selectedBookingType ==
                                           BookingType.private

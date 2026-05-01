@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/organization_bottom_bar.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../l10n/app_localizations.dart';
@@ -16,6 +16,7 @@ import '../shop_screen.dart';
 import '../../models/field.dart';
 import '../profile_screen.dart';
 import '../../models/booking.dart';
+import '../../models/enums/booking_type.dart';
 
 class OrganizationHomeScreen extends StatefulWidget {
   const OrganizationHomeScreen({super.key});
@@ -31,12 +32,12 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   bool _isLoading = true;
 
   List<Field> _fields = [];
-  Map<int, String> _cityNamePerField = {};
+  Map<double, String> _cityNamePerField = {};
 
-  Map<int, dynamic> _detailedBookings = {};
-  Map<int, FootballMatch> _matchPerBooking = {};
-  Map<int, Team> _teamsCache = {};
-  Map<int, String> _usernamePerBooking = {};
+  Map<double, dynamic> _detailedBookings = {};
+  Map<double, FootballMatch> _matchPerBooking = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, String> _usernamePerBooking = {};
 
   Map<DateTime, Map<double, List<Booking>>> _bookingsByFieldByDate = {};
 

@@ -6,7 +6,7 @@ class City {
   City({required this.id, required this.name});
 
   factory City.fromJson(Map<String, dynamic> json) {
-    return City(id: json['id'], name: json['name']);
+    return City(id: (json['id'] as num).toDouble(), name: json['name']);
   }
 
   Map<String, dynamic> toJson() {

@@ -33,14 +33,14 @@ class Field {
 
   factory Field.fromJson(Map<String, dynamic> json) {
     return Field(
-      id: json['id'],
-      organizationId: json['organizationId'],
+      id: (json['id'] as num).toDouble(),
+      organizationId: (json['organizationId'] as num).toDouble(),
       name: json['name'],
-      locationLat: double.parse(json['locationLat'].toString()),
-      locationLng: double.parse(json['locationLng'].toString()),
-      hourCostTournament: double.parse(json['hourCostTournament'].toString()),
-      hourCostPrivate: double.parse(json['hourCostPrivate'].toString()),
-      cityId: json['cityId'] ?? 0,
+      locationLat: (json['locationLat'] as num).toDouble(),
+      locationLng: (json['locationLng'] as num).toDouble(),
+      hourCostTournament: (json['hourCostTournament'] as num).toDouble(),
+      hourCostPrivate: (json['hourCostPrivate'] as num).toDouble(),
+      cityId: (json['cityId'] as num).toDouble(),
       openingTime: json['openingTime'] != null
           ? _timeFromString(json['openingTime'])
           : const TimeOfDay(hour: 8, minute: 0),

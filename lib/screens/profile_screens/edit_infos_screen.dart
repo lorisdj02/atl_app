@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/city.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/atl_textfield.dart';

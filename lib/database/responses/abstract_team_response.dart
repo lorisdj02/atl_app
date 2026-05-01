@@ -1,5 +1,3 @@
-
-
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/coordinator.dart';
 import 'package:atl_app/models/field.dart';
@@ -35,18 +33,40 @@ class AbstractTeamResponse {
   factory AbstractTeamResponse.fromJson(Map<String, dynamic> json) {
     return AbstractTeamResponse(
       team: Team.fromJson(json[ApiJsonKeys.team]),
-      players: List<Player>.from(json[ApiJsonKeys.players].map((x) => Player.fromJson(x))),
-      palmares: List<Palmares>.from(json[ApiJsonKeys.palmares].map((x) => Palmares.fromJson(x))),
-      tournaments: List<Tournament>.from(json[ApiJsonKeys.tournaments].map((x) => Tournament.fromJson(x))),
-      coordinatorsCache:
-          Map<double, Coordinator>.from(json[ApiJsonKeys.coordinatorsCache].map((key, value) => MapEntry(double.parse(key), Coordinator.fromJson(value)))),
-      fieldsCache: Map<double, Field>.from(json[ApiJsonKeys.fieldsCache].map((key, value) => MapEntry(double.parse(key), Field.fromJson(value)))),
-      footballPlayerStatsCache: Map<double, FootballTeamStats>.from(json[ApiJsonKeys.footballPlayerStatsCache].map((key, value) => MapEntry(double.parse(key), FootballTeamStats.fromJson(value)))),
-      cityNamePerField:
-          Map<double, String>.from(json[ApiJsonKeys.cityNamePerField].map((key, value) => MapEntry(double.parse(key), value as String))),
-      historicalPlayers:
-          List<Player>.from(json[ApiJsonKeys.historicalPlayers].map((x) => Player.fromJson(x))),
+      players: List<Player>.from(
+        json[ApiJsonKeys.players].map((x) => Player.fromJson(x)),
+      ),
+      palmares: List<Palmares>.from(
+        json[ApiJsonKeys.palmares].map((x) => Palmares.fromJson(x)),
+      ),
+      tournaments: List<Tournament>.from(
+        json[ApiJsonKeys.tournaments].map((x) => Tournament.fromJson(x)),
+      ),
+      coordinatorsCache: Map<double, Coordinator>.from(
+        json[ApiJsonKeys.coordinatorsCache].map(
+          (key, value) =>
+              MapEntry(double.parse(key), Coordinator.fromJson(value)),
+        ),
+      ),
+      fieldsCache: Map<double, Field>.from(
+        json[ApiJsonKeys.fieldsCache].map(
+          (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
+        ),
+      ),
+      footballPlayerStatsCache: Map<double, FootballTeamStats>.from(
+        json[ApiJsonKeys.footballPlayerStatsCache].map(
+          (key, value) =>
+              MapEntry(double.parse(key), FootballTeamStats.fromJson(value)),
+        ),
+      ),
+      cityNamePerField: Map<double, String>.from(
+        json[ApiJsonKeys.cityNamePerField].map(
+          (key, value) => MapEntry(double.parse(key), value as String),
+        ),
+      ),
+      historicalPlayers: List<Player>.from(
+        json[ApiJsonKeys.historicalPlayers].map((x) => Player.fromJson(x)),
+      ),
     );
   }
-
 }

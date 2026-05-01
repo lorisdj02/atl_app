@@ -1,4 +1,3 @@
-
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/football_match_event.dart';
 

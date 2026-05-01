@@ -4,6 +4,7 @@ import '../models/referee_license.dart';
 import '../models/sport.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/license_status.dart';
 
 class RefereeLicenseWidget extends StatelessWidget {
   final RefereeLicense license;

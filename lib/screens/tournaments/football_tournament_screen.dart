@@ -1,8 +1,9 @@
 import 'package:atl_app/database/responses/football_tournament_response.dart';
 import 'package:atl_app/database/services/tournament_service.dart';
+import 'package:atl_app/models/final_stage_bracket.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/football_match.dart';
 import '../../models/football_standing.dart';
 import '../../models/team.dart';
@@ -41,6 +42,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   List<Player> _players = [];
   Map<double, Team> _teamsCache = {};
   Map<double, FootballTeamStats> _playerStatsCache = {};
+
+  List<FinalStageBracket> _finalStageBrackets = [];
 
   bool _fixturesLoaded = false;
   bool _tablesLoaded = false;
@@ -115,6 +118,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       );
       _minutesPerRound = data.minutesPerRound;
       _minutesPerPause = data.minutesPerPause;
+      _finalStageBrackets = data.finalStageBrackets;
       _fixturesLoaded = true;
       _tablesLoaded = true;
       _statsLoaded = true;
@@ -813,8 +817,11 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   Widget _buildRoadToVictoryView() {
     // TODO: da rifare totalmente!
     return RoadToVictoryWidget(
-      tournamentId: widget.tournament.id,
+      tournament: widget.tournament,
       sportCategory: widget.sportCategory,
+      matches: _matches,
+      finalStageBrackets: _finalStageBrackets,
+      teamsCache: _teamsCache,
     );
   }
 

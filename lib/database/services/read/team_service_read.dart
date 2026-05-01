@@ -5,7 +5,7 @@ import 'package:atl_app/database/responses/player_requests_response.dart';
 import 'package:atl_app/database/responses/players_in_team_response.dart';
 import 'package:atl_app/database/responses/team_details_response.dart';
 import 'package:atl_app/database/responses/teams_response.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/tournament_participation.dart';
 import 'package:dio/dio.dart';

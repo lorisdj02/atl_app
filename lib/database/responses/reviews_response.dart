@@ -15,18 +15,14 @@ class ReviewsResponse {
 
   factory ReviewsResponse.fromJson(Map<String, dynamic> json) {
     return ReviewsResponse(
-      reviews: List<Review>.from(
-        json[ApiJsonKeys.reviews].map((x) => Review.fromJson(x)),
+      reviews: (json[ApiJsonKeys.reviews] as List)
+          .map((e) => Review.fromJson(e))
+          .toList(),
+      accountPerReview: (json[ApiJsonKeys.accountPerReview] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(double.parse(key), Account.fromJson(value)),
       ),
-      accountPerReview: Map<double, Account>.from(
-        json[ApiJsonKeys.accountPerReview].map(
-          (key, value) => MapEntry(double.parse(key), Account.fromJson(value)),
-        ),
-      ),
-      matchTeamsStringPerReview: Map<double, String>.from(
-        json[ApiJsonKeys.matchTeamsStringPerReview].map(
-          (key, value) => MapEntry(double.parse(key), value),
-        ),
+      matchTeamsStringPerReview: (json[ApiJsonKeys.matchTeamsStringPerReview] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(double.parse(key), value as String),
       ),
     );
   }

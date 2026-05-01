@@ -15,10 +15,10 @@ class InviteFriendsResponse {
 
   factory InviteFriendsResponse.fromJson(Map<String, dynamic> json) {
     return InviteFriendsResponse(
-      inviteBalance: json[ApiJsonKeys.inviteBalance] as double,
+      inviteBalance: (json[ApiJsonKeys.inviteBalance] as num).toDouble(),
       referralCode: json[ApiJsonKeys.referralCode] as String,
-      numRedeemed: json[ApiJsonKeys.numRedeemed] as int,
-      numInvites: json[ApiJsonKeys.numInvites] as int,
+      numRedeemed: (json[ApiJsonKeys.numRedeemed] as num).toInt(),
+      numInvites: (json[ApiJsonKeys.numInvites] as num).toInt(),
     );
   }
 }

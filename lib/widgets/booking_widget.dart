@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/field.dart';
 import '../utils/atl_colors.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import 'package:provider/provider.dart';
 import '../providers/account_provider.dart';
 

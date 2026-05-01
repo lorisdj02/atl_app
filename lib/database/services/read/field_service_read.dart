@@ -1,7 +1,7 @@
 import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/models/city.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class FieldServiceRead {

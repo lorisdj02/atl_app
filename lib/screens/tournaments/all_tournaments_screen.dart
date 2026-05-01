@@ -10,7 +10,7 @@ import '../../widgets/player_coordinator_bottom_bar.dart';
 import '../../widgets/tournament_card.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/atl_floating_button.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/city.dart';
 import '../coordinator/create_tournament_screen.dart';
 import '../../models/tournament.dart';
@@ -21,6 +21,7 @@ import 'dart:async';
 import 'tournament_details_screen.dart';
 import 'football_tournament_screen.dart';
 import '../../widgets/search_dialog_widget.dart';
+import '../../models/enums/tournament_status.dart';
 
 class AllTournamentsScreen extends StatefulWidget {
   final SportCategory currentSport;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/team.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../providers/account_provider.dart';
 import '../screens/teams/my_team_screen.dart';
 import '../screens/teams/team_detail_screen.dart';

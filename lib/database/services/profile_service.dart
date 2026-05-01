@@ -38,7 +38,7 @@ class ProfileService {
   }
 
   static Future<InviteFriendsResponse> getInviteFriendsScreen() async {
-    final response = await dio.get("$apiUrl/invite-friends");
+    final response = await dio.get("$apiUrl/friend-invites");
     return InviteFriendsResponse.fromJson(response.data);
   }
 }

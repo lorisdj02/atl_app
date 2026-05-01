@@ -4,6 +4,7 @@ import 'package:atl_app/models/football_standing.dart';
 import 'package:atl_app/models/football_team_stats.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/team.dart';
+import 'package:atl_app/models/final_stage_bracket.dart';
 
 class FootballTournamentResponse {
   final List<FootballMatch> matches;
@@ -11,6 +12,7 @@ class FootballTournamentResponse {
   final List<Player> players;
   final Map<double, Team> teamsCache;
   final Map<double, FootballTeamStats> footballPlayerStatsCache;
+  final List<FinalStageBracket> finalStageBrackets;
   final int minutesPerRound;
   final int minutesPerPause;
   final bool? canContinue;
@@ -21,6 +23,7 @@ class FootballTournamentResponse {
     required this.players,
     required this.teamsCache,
     required this.footballPlayerStatsCache,
+      required this.finalStageBrackets,
     required this.minutesPerRound,
     required this.minutesPerPause,
     this.canContinue,
@@ -58,6 +61,11 @@ class FootballTournamentResponse {
       minutesPerRound: json[ApiJsonKeys.minutesPerRound] as int,
       minutesPerPause: json[ApiJsonKeys.minutesPerPause] as int,
       canContinue: json[ApiJsonKeys.canContinue] as bool?,
+      finalStageBrackets: List<FinalStageBracket>.from(
+        (json[ApiJsonKeys.finalStageBrackets] as List).map(
+          (b) => FinalStageBracket.fromJson(b),
+        ),
+      ),
     );
   }
 }

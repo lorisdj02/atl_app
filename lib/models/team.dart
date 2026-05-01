@@ -1,4 +1,4 @@
-import 'sport_category.dart';
+import 'enums/sport_category.dart';
 
 // OK
 class Team {
@@ -58,23 +58,33 @@ class Team {
 
   factory Team.fromJson(Map<String, dynamic> json) {
     return Team(
-      id: json['id'],
-      cityId: json['cityId'],
-      captainPlayerId: json['captainPlayerId'],
-      vice1PlayerId: json['vice1PlayerId'],
-      vice2PlayerId: json['vice2PlayerId'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      cityId: json['cityId'] != null ? (json['cityId'] as num).toDouble() : 0.0,
+      captainPlayerId: json['captainPlayerId'] != null
+          ? (json['captainPlayerId'] as num).toDouble()
+          : 0.0,
+      vice1PlayerId: json['vice1PlayerId'] != null
+          ? (json['vice1PlayerId'] as num).toDouble()
+          : 0.0,
+      vice2PlayerId: json['vice2PlayerId'] != null
+          ? (json['vice2PlayerId'] as num).toDouble()
+          : 0.0,
       logoUrl: json['logoUrl'],
-      rankPts: json['rankPts'],
+      rankPts: json['rankPts'] != null ? (json['rankPts'] as num).toInt() : 0,
       name: json['name'],
       alias: json['alias'],
       description: json['description'],
-      vip: json['vip'],
-      maxPlayers: json['maxPlayers'],
-      numPlayers: json['numPlayers'],
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-      ),
-      visible: json['visible'],
+      vip: json['vip'] != null ? json['vip'] as bool : false,
+      maxPlayers: json['maxPlayers'] != null
+          ? (json['maxPlayers'] as num).toInt()
+          : 0,
+      numPlayers: json['numPlayers'] != null
+          ? (json['numPlayers'] as num).toInt()
+          : 0,
+      sportCategory: json['sportCategory'] != null
+          ? SportCategoryExtension.fromJson(json['sportCategory'])
+          : SportCategory.football,
+      visible: json['visible'] != null ? json['visible'] as bool : false,
     );
   }
 }

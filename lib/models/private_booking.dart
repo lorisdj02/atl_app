@@ -1,5 +1,7 @@
 import 'booking.dart';
-import 'sport_category.dart';
+import 'enums/sport_category.dart';
+import 'enums/booking_status.dart';
+import 'enums/booking_type.dart';
 
 /// Modello PrivateBooking dal database
 // OK
@@ -21,24 +23,19 @@ class PrivateBooking extends Booking {
 
   factory PrivateBooking.fromJson(Map<String, dynamic> json) {
     return PrivateBooking(
-      id: json['id'],
-      fieldId: json['fieldId'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      fieldId: json['fieldId'] != null
+          ? (json['fieldId'] as num).toDouble()
+          : 0.0,
       startTime: DateTime.parse(json['startDateTime']),
       finishTime: DateTime.parse(json['finishDateTime']),
-      status: BookingStatus.values.firstWhere(
-        (e) => e.apiName == json['status'],
-        orElse: () => BookingStatus.booked,
-      ),
-      bookingType: BookingType.values.firstWhere(
-        (e) => e.apiName == json['bookingType'],
-        orElse: () => BookingType.private,
-      ),
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-        orElse: () => SportCategory.football,
-      ),
-      playerId: json['playerId']?.toDouble() ?? 0.0,
-      cost: json['cost']?.toDouble() ?? 0.0,
+      status: BookingStatusExtension.fromJson(json['status']),
+      bookingType: BookingTypeExtension.fromJson(json['bookingType']),
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
+      playerId: json['playerId'] != null
+          ? (json['playerId'] as num).toDouble()
+          : 0.0,
+      cost: json['cost'] != null ? (json['cost'] as num).toDouble() : 0.0,
     );
   }
 

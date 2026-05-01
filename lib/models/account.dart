@@ -1,65 +1,5 @@
-/// Enum per i ruoli utente
-enum AccountRole {
-  player,
-  coordinator,
-  referee,
-  organization,
-  admin,
-  guest;
-
-  String get displayName {
-    switch (this) {
-      case AccountRole.player:
-        return 'Player';
-      case AccountRole.coordinator:
-        return 'Coordinator';
-      case AccountRole.referee:
-        return 'Referee';
-      case AccountRole.organization:
-        return 'Organization';
-      case AccountRole.admin:
-        return 'Admin';
-      case AccountRole.guest:
-        return 'Guest';
-    }
-  }
-
-  String get apiValue {
-    switch (this) {
-      case AccountRole.player:
-        return 'PLAYER';
-      case AccountRole.coordinator:
-        return 'COORDINATOR';
-      case AccountRole.referee:
-        return 'REFEREE';
-      case AccountRole.organization:
-        return 'ORGANIZATION';
-      case AccountRole.guest:
-        return 'GUEST';
-      case AccountRole.admin:
-        return 'ADMIN';
-    }
-  }
-}
-
-enum VipType {
-  none,
-  monthly,
-  yearly;
-
-  String get apiName {
-    switch (this) {
-      case VipType.none:
-        return 'NONE';
-      case VipType.monthly:
-        return 'MONTHLY';
-      case VipType.yearly:
-        return 'YEARLY';
-    }
-  }
-}
-
-enum AccountStatus { active, inactive, deleted }
+import 'package:atl_app/models/enums/account_role.dart';
+import 'package:atl_app/models/enums/vip_type.dart';
 
 // OK
 /// Modello astratto Account dal database
@@ -101,16 +41,20 @@ class Account {
   /// Factory per creare l'istanza corretta in base al ruolo
   factory Account.fromJson(Map<String, dynamic> json) {
     return Account(
-      id: json['id'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       username: json['username'],
       email: json['email'],
-      role: AccountRole.values.firstWhere((e) => e.apiValue == json['role']),
+      role: json['role'] != null
+          ? AccountRoleExtension.fromJson(json['role'])
+          : AccountRole.guest,
       phone: json['phone'],
       name: json['name'],
       surname: json['surname'],
       birthdate: DateTime.parse(json['birthdate']),
       vip: json['vip'],
-      vipType: VipType.values.firstWhere((e) => e.apiName == json['vipType']),
+      vipType: json['vipType'] != null
+          ? VipTypeExtension.fromJson(json['vipType'])
+          : VipType.none,
       startVip: json['startVip'] != null
           ? DateTime.parse(json['startVip'])
           : null,

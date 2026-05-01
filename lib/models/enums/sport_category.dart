@@ -28,7 +28,7 @@ extension SportCategoryExtension on SportCategory {
   String get apiName{
     switch (this) {
       case SportCategory.football:
-        return 'football';
+        return 'FOOTBALL';
     }
   }
 
@@ -67,11 +67,11 @@ extension SportCategoryExtension on SportCategory {
   String toJSON() => name;
 
   static SportCategory fromJson(String json) {
-    switch (json.toUpperCase()) {
-      case 'FOOTBALL':
-        return SportCategory.football;
-    }
-    throw ArgumentError('Unknown sport category: $json');
+    final normalized = json.toUpperCase();
+    return SportCategory.values.firstWhere(
+      (e) => e.apiName == normalized,
+      orElse: () => throw ArgumentError('Unknown sport category: $json'),
+    );
   }
 
 }

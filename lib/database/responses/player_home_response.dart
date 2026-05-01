@@ -1,5 +1,3 @@
-
-
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/football_match.dart';
@@ -8,6 +6,7 @@ import 'package:atl_app/models/lobby_booking.dart';
 import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/tournament.dart';
+import 'package:atl_app/utils/json_long_print.dart';
 
 class PlayerHomeResponse {
   final List<LobbyBooking> lobbies;
@@ -44,31 +43,141 @@ class PlayerHomeResponse {
     required this.playersPaidPerBooking,
   });
 
-
   factory PlayerHomeResponse.fromJson(Map<String, dynamic> json) {
+    //JsonLongPrint.printLongJson(json);
+    final List<LobbyBooking> lobbies = (json[ApiJsonKeys.lobbies] as List)
+        .map((e) => LobbyBooking.fromJson(e))
+        .toList();
+    print("Lobbies deserialized: ${lobbies.length}");
+
+    final List<PrivateBooking> privateBookings =
+        (json[ApiJsonKeys.privateBookings] as List)
+            .map((e) => PrivateBooking.fromJson(e))
+            .toList();
+    print("PrivateBookings deserialized: ${privateBookings.length}");
+
+    final List<Tournament> activeTournaments =
+        (json[ApiJsonKeys.activeTournaments] as List)
+            .map((e) => Tournament.fromJson(e))
+            .toList();
+    print("ActiveTournaments deserialized: ${activeTournaments.length}");
+
+    final Map<double, int> minutesRoundPerTournament =
+        (json[ApiJsonKeys.minutesRoundPerTournament] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(double.parse(key), value));
+    print(
+      "MinutesRoundPerTournament deserialized: ${minutesRoundPerTournament.keys.length}",
+    );
+
+    final Map<double, int> minutesPausePerTournament =
+        (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(double.parse(key), value));
+    print(
+      "MinutesPausePerTournament deserialized: ${minutesPausePerTournament.keys.length}",
+    );
+
+    final Map<double, List<FootballMatch>> footballMatchesPerTournament =
+        (json[ApiJsonKeys.footballMatchesPerTournament] as Map<String, dynamic>)
+            .map(
+              (key, value) => MapEntry(
+                double.parse(key),
+                value == null
+                    ? <FootballMatch>[]
+                    : (value as List)
+                          .map((e) => FootballMatch.fromJson(e))
+                          .toList(),
+              ),
+            );
+    print(
+      "FootballMatchesPerTournament deserialized: ${footballMatchesPerTournament.keys.length}",
+    );
+
+    final Map<double, List<FootballStanding>> footballStandingsPerTournament =
+        (json[ApiJsonKeys.footballStandingsPerTournament]
+                as Map<String, dynamic>)
+            .map(
+              (key, value) => MapEntry(
+                double.parse(key),
+                (value as List)
+                    .map((e) => FootballStanding.fromJson(e))
+                    .toList(),
+              ),
+            );
+    print(
+      "FootballStandingsPerTournament deserialized: ${footballStandingsPerTournament.length}",
+    );
+
+    final Map<double, Team> teamsCache =
+        (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
+        );
+    print("TeamsCache deserialized: ${teamsCache.length}");
+
+    final Team? accountTeam = json[ApiJsonKeys.accountTeam] != null
+        ? Team.fromJson(json[ApiJsonKeys.accountTeam])
+        : null;
+    print(
+      "AccountTeam deserialized: ${accountTeam?.name ?? 'null'} ${accountTeam != null ? '(ID: ${accountTeam.id})' : ''}",
+    );
+
+    final Map<double, String> usernamePerBooking =
+        (json[ApiJsonKeys.usernamePerBooking] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), value),
+        );
+    print("UsernamePerBooking deserialized: ${usernamePerBooking.length}");
+
+    final Map<double, Field> fieldsCache =
+        (json[ApiJsonKeys.fieldsCache] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
+        );
+    print("FieldsCache deserialized: ${fieldsCache.length}");
+
+    final Map<double, int> maxPlayersPerLobby =
+        (json[ApiJsonKeys.maxPlayersPerLobby] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), value),
+        );
+    print("MaxPlayersPerLobby deserialized: ${maxPlayersPerLobby.length}");
+
+    final Map<double, int> currentPlayersPerLobby =
+        (json[ApiJsonKeys.currentPlayersPerLobby] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), value),
+        );
+    print(
+      "CurrentPlayersPerLobby deserialized: ${currentPlayersPerLobby.length}",
+    );
+
+    final Map<double, String> completeAddressPerField =
+        (json[ApiJsonKeys.completeAddressPerField] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), value),
+        );
+    print(
+      "CompleteAddressPerField deserialized: ${completeAddressPerField.length}",
+    );
+
+    final Map<double, int> playersPaidPerBooking =
+        (json[ApiJsonKeys.playersPaidPerBooking] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), value),
+        );
+    print(
+      "PlayersPaidPerBooking deserialized: ${playersPaidPerBooking.length}",
+    );
+
     return PlayerHomeResponse(
-      privateBookings: (json[ApiJsonKeys.privateBookings] as List)
-          .map((b) => PrivateBooking.fromJson(b))
-          .toList(),
-      lobbies: (json[ApiJsonKeys.lobbies] as List)
-          .map((l) => LobbyBooking.fromJson(l))
-          .toList(),
-      activeTournaments: (json[ApiJsonKeys.activeTournaments] as List)
-          .map((t) => Tournament.fromJson(t))
-          .toList(),
-      minutesRoundPerTournament: Map<double, int>.from(json[ApiJsonKeys.minutesRoundPerTournament]),
-      minutesPausePerTournament: Map<double, int>.from(json[ApiJsonKeys.minutesPausePerTournament]),
-      footballMatchesPerTournament: Map<double, List<FootballMatch>>.from(json[ApiJsonKeys.footballMatchesPerTournament].map((key, value) => MapEntry(double.parse(key), (value as List).map((m) => FootballMatch.fromJson(m)).toList()))),
-      footballStandingsPerTournament: Map<double, List<FootballStanding>>.from(json[ApiJsonKeys.footballStandingsPerTournament].map((key, value) => MapEntry(double.parse(key), (value as List).map((s) => FootballStanding.fromJson(s)).toList()))),
-      teamsCache: Map<double, Team>.from(json[ApiJsonKeys.teamsCache].map((key, value) => MapEntry(double.parse(key), Team.fromJson(value)))),
-      accountTeam: json[ApiJsonKeys.accountTeam] != null ? Team.fromJson(json[ApiJsonKeys.accountTeam]) : null,
-      usernamePerBooking: Map<double, String>.from(json[ApiJsonKeys.usernamePerBooking].map((key, value) => MapEntry(double.parse(key), value))),
-      fieldsCache: Map<double, Field>.from(json[ApiJsonKeys.fieldsCache].map((key, value) => MapEntry(double.parse(key), Field.fromJson(value)))),
-      maxPlayersPerLobby: Map<double, int>.from(json[ApiJsonKeys.maxPlayersPerLobby].map((key, value) => MapEntry(double.parse(key), value))),
-      currentPlayersPerLobby: Map<double, int>.from(json[ApiJsonKeys.currentPlayersPerLobby].map((key, value) => MapEntry(double.parse(key), value))),
-      completeAddressPerField: Map<double, String>.from(json[ApiJsonKeys.completeAddressPerField].map((key, value) => MapEntry(double.parse(key), value))),
-      playersPaidPerBooking: Map<double, int>.from(json[ApiJsonKeys.playersPaidPerBooking].map((key, value) => MapEntry(double.parse(key), value))),
+      lobbies: lobbies,
+      privateBookings: privateBookings,
+      activeTournaments: activeTournaments,
+      minutesRoundPerTournament: minutesRoundPerTournament,
+      minutesPausePerTournament: minutesPausePerTournament,
+      footballMatchesPerTournament: footballMatchesPerTournament,
+      footballStandingsPerTournament: footballStandingsPerTournament,
+      teamsCache: teamsCache,
+      accountTeam: accountTeam,
+      usernamePerBooking: usernamePerBooking,
+      fieldsCache: fieldsCache,
+      maxPlayersPerLobby: maxPlayersPerLobby,
+      currentPlayersPerLobby: currentPlayersPerLobby,
+      completeAddressPerField: completeAddressPerField,
+      playersPaidPerBooking: playersPaidPerBooking,
     );
   }
 }
-

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../screens/shop_screen.dart';
 import '../screens/tournaments/all_tournaments_screen.dart';
 import '../screens/teams/team_screen.dart';

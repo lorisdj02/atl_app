@@ -1,38 +1,5 @@
-import 'sport_category.dart';
-
-enum ReviewType {
-  refereeToCoordinator,
-  coordinatorToReferee,
-  playerToCoordinator;
-
-  String get apiName {
-    switch (this) {
-      case ReviewType.refereeToCoordinator:
-        return 'REFEREE_TO_COORDINATOR';
-      case ReviewType.coordinatorToReferee:
-        return 'COORDINATOR_TO_REFEREE';
-      case ReviewType.playerToCoordinator:
-        return 'PLAYER_TO_COORDINATOR';
-    }
-  }
-}
-
-enum ReviewStatus {
-  waiting,
-  pending,
-  committed;
-
-  String get apiName {
-    switch (this) {
-      case ReviewStatus.waiting:
-        return 'WAITING';
-      case ReviewStatus.pending:
-        return 'PENDING';
-      case ReviewStatus.committed:
-        return 'COMMITTED';
-    }
-  }
-}
+import 'enums/sport_category.dart';
+import 'enums/review_type.dart';
 
 // OK
 class Review {
@@ -74,17 +41,25 @@ class Review {
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      id: json['id'],
-      tournamentId: json['tournamentId'],
-      matchId: json['matchId'],
-      reviewerAccountId: json['reviewerAccountId'],
-      reviewedAccountId: json['reviewedAccountId'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      tournamentId: json['tournamentId'] != null
+          ? (json['tournamentId'] as num).toDouble()
+          : 0.0,
+      matchId: json['matchId'] != null
+          ? (json['matchId'] as num).toDouble()
+          : 0.0,
+      reviewerAccountId: json['reviewerAccountId'] != null
+          ? (json['reviewerAccountId'] as num).toDouble()
+          : 0.0,
+      reviewedAccountId: json['reviewedAccountId'] != null
+          ? (json['reviewedAccountId'] as num).toDouble()
+          : 0.0,
       comment: json['comment'],
-      rating: json['rating'],
-      type: ReviewType.values.firstWhere((e) => e.apiName == json['type']),
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-      ),
+      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : 0.0,
+      type: ReviewTypeExtension.fromJson(json['type']),
+      sportCategory: json['sportCategory'] != null
+          ? SportCategoryExtension.fromJson(json['sportCategory'])
+          : SportCategory.football,
     );
   }
 }

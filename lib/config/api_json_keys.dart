@@ -13,6 +13,8 @@ class ApiJsonKeys {
 
   static const String numMatches = 'numMatches'; // int
 
+  static const String finalStageBrackets = "finalStageBrackets"; // List<FinalStageBracket>
+
 
   // PlayerHomeScreen, CoordinatorHomeScreen
   static const String activeTournaments =

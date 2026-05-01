@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/account.dart';
 import '../../widgets/atl_role_selector.dart';
 import '../organization_contact_screen.dart';
+import '../../models/enums/account_role.dart';
 
 class RegistrationScreenStep1 extends StatelessWidget {
   final AccountRole? selectedRole;

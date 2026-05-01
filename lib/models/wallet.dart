@@ -18,10 +18,10 @@ class Wallet {
 
   factory Wallet.fromJson(Map<String, dynamic> json) {
     return Wallet(
-      id: json['id'],
-      prizeBalance: json['prizeBalance'],
-      personalBalance: json['personalBalance'],
-      inviteBalance: json['inviteBalance'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      prizeBalance: json['prizeBalance'] != null ? (json['prizeBalance'] as num).toDouble() : 0.0,
+      personalBalance: json['personalBalance'] != null ? (json['personalBalance'] as num).toDouble() : 0.0,
+      inviteBalance: json['inviteBalance'] != null ? (json['inviteBalance'] as num).toDouble() : 0.0,
       prizeLastWithdraw: json['prizeLastWithdraw'] != null
           ? DateTime.parse(json['prizeLastWithdraw'])
           : null,

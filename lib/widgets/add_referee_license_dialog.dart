@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/sport.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/license_status.dart';
 
 class AddRefereeLicenseDialog extends StatefulWidget {
   final List<Sport> availableSports;

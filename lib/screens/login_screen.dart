@@ -11,6 +11,8 @@ import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import '../utils/home_router.dart';
 import '../providers/account_provider.dart';
+import '../models/enums/account_role.dart';
+import '../models/enums/vip_type.dart';
 
 // TODO: Rimuovi db_controller
 
@@ -55,12 +57,15 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final AccountProvider userProvider = Provider.of<AccountProvider>(
+    final AccountProvider accountProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
     // Replace mock user creation with DB call
     try {
+      // set token
+      await accountProvider.setToken(usernameOrEmail);
+
       final LoginResponse loginData = await AccountService.Read.handleLogin();
       final Account? account = loginData.account;
 
@@ -85,14 +90,14 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      userProvider.setActiveAccount(loginData.account!, roleId: roleId);
+      accountProvider.setActiveAccount(loginData.account!, roleId: roleId);
 
       if (loginData.account!.role == AccountRole.player) {
         final double? teamId = loginData.teamId;
         if (teamId != null) {
-          userProvider.setCurrentTeamId(teamId);
+          accountProvider.setCurrentTeamId(teamId);
         } else {
-          userProvider.setCurrentTeamId(-1);
+          accountProvider.setCurrentTeamId(-1);
         }
       }
 
@@ -114,11 +119,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleGuestUser() {
-    final AccountProvider userProvider = Provider.of<AccountProvider>(
+    final AccountProvider accountProvider = Provider.of<AccountProvider>(
       context,
       listen: false,
     );
-    userProvider.setActiveAccount(
+    accountProvider.setActiveAccount(
       Account(
         id: 0,
         username: AppLocalizations.of(context).guestUserLabel,
@@ -140,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) =>
-            HomeRouter.getHomeScreen(userProvider.activeAccount!),
+            HomeRouter.getHomeScreen(accountProvider.activeAccount!),
       ),
     );
   }

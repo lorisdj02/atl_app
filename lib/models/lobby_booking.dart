@@ -1,6 +1,7 @@
 import 'booking.dart';
-import 'sport_category.dart';
-
+import 'enums/sport_category.dart';
+import 'enums/booking_status.dart';
+import 'enums/booking_type.dart';
 /// Modello LobbyBooking dal database
 // OK
 class LobbyBooking extends Booking {
@@ -25,26 +26,17 @@ class LobbyBooking extends Booking {
 
   factory LobbyBooking.fromJson(Map<String, dynamic> json) {
     return LobbyBooking(
-      id: json['id'],
-      ownerPlayerId: json['ownerPlayerId'],
-      playersToFind: json['playersToFind'],
-      totalPlayers: json['totalPlayers'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      ownerPlayerId: (json['ownerPlayerId'] as num).toDouble(),
+      playersToFind: (json['playersToFind'] as num).toInt(),
+      totalPlayers: (json['totalPlayers'] as num).toInt(),
       feePerPlayer: (json['feePerPlayer'] as num).toDouble(),
-      fieldId: json['fieldId'],
+      fieldId: json['fieldId'] != null ? (json['fieldId'] as num).toDouble() : 0.0,
       startTime: DateTime.parse(json['startDateTime']),
       finishTime: DateTime.parse(json['finishDateTime']),
-      status: BookingStatus.values.firstWhere(
-        (e) => e.apiName == json['status'],
-        orElse: () => BookingStatus.booked,
-      ),
-      bookingType: BookingType.values.firstWhere(
-        (e) => e.apiName == json['bookingType'],
-        orElse: () => BookingType.lobby,
-      ),
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-        orElse: () => SportCategory.football,
-      ),
+      status: BookingStatusExtension.fromJson(json['status']),
+      bookingType: BookingTypeExtension.fromJson(json['bookingType']),
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
     );
   }
 

@@ -3,7 +3,7 @@ import 'package:atl_app/database/services/profile_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/growth_step.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';

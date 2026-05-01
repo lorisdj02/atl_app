@@ -3,7 +3,7 @@ import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/team.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../utils/navigation_helper.dart';
@@ -12,12 +12,12 @@ import '../../widgets/atl_floating_button.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
 import 'my_team_screen.dart';
 import '../player/create_team_screen.dart';
-import '../../models/account.dart';
 import '../../widgets/search_team_widget.dart';
 import '../../widgets/ranks_team_widget.dart';
 import '../../widgets/search_dialog_widget.dart';
 import 'team_detail_screen.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/enums/account_role.dart';
 
 class TeamScreen extends StatefulWidget {
   final SportCategory currentSport;

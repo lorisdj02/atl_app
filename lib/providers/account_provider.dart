@@ -1,21 +1,35 @@
+import 'package:atl_app/database/api_client.dart';
 import 'package:flutter/material.dart';
 import '../models/account.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
+import '../models/enums/account_role.dart';
 
 class AccountProvider with ChangeNotifier {
   Account? _activeAccount;
   double? _currentTeamId;
   double? _roleId;
   SportCategory? _selectedSportCategory = SportCategory.football;
+  String? _token;
 
   Account? get activeAccount => _activeAccount;
   double? get currentTeamId => _currentTeamId;
   double? get activeRoleId => _roleId;
   SportCategory? get selectedSportCategory => _selectedSportCategory;
+  String? get token => _token;
 
   Future<void> setActiveAccount(Account account, {double? roleId}) async {
     _activeAccount = account;
     _roleId = roleId;
+    notifyListeners();
+  }
+
+  Future<void> setSelectedSportCategory(SportCategory sportCategory) async {
+    _selectedSportCategory = sportCategory;
+    notifyListeners();
+  }
+
+  Future<void> setToken(String token) async {
+    _token = token;
     notifyListeners();
   }
 
@@ -46,6 +60,10 @@ class AccountProvider with ChangeNotifier {
   Future<void> logout() async {
     await clearCurrentTeamId();
     await clearActiveAccount();
+  }
+
+  void bindApiClientToken() {
+    ApiClient().setTokenProvider(() => _token);
   }
 
   bool get isGuest => _activeAccount?.role == AccountRole.guest;

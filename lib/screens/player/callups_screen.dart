@@ -5,7 +5,7 @@ import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/sport.dart';
 import '../../models/team.dart';
 import '../../l10n/app_localizations.dart';
@@ -23,7 +23,7 @@ class CallupsScreen extends StatefulWidget {
 
 class _CallupsScreenState extends State<CallupsScreen> {
   List<Player> _teamPlayers = [];
-  Set<int> _selectedPlayerIds = {};
+  Set<double> _selectedPlayerIds = {};
   bool _isLoading = true;
   Sport? _tournamentSport;
   Tournament? _tournament;
@@ -81,7 +81,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
     return true;
   }
 
-  void _togglePlayerSelection(int playerId) {
+  void _togglePlayerSelection(double playerId) {
     setState(() {
       if (_selectedPlayerIds.contains(playerId)) {
         _selectedPlayerIds.remove(playerId);
@@ -128,7 +128,7 @@ class _CallupsScreenState extends State<CallupsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: ATLColors.getPrimaryColor(_tournamentSport!.category),
+        backgroundColor: ATLColors.getPrimaryColor(_tournamentSport!.sportCategory),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),

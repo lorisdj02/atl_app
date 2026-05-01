@@ -7,6 +7,7 @@ import '../utils/atl_colors.dart';
 import 'square_team_widget.dart';
 import 'abstract_team_dialog.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/football_match_event_type.dart';
 
 enum EventType {
   goal,

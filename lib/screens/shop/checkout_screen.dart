@@ -2,11 +2,12 @@ import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/database/responses/checkout_response.dart';
 import 'package:flutter/material.dart';
 import '../../models/checkout_session.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/wallet.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/enums/checkout_type.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final SportCategory sportCategory;

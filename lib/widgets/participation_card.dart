@@ -7,11 +7,11 @@ import 'package:flutter/services.dart';
 import '../screens/shop/checkout_screen.dart';
 import '../models/tournament.dart';
 import '../models/tournament_participation.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../models/checkout_session.dart';
 import '../l10n/app_localizations.dart';
-
+import '../models/enums/checkout_type.dart';
 class ParticipationCard extends StatefulWidget {
   final TournamentParticipation participation;
   final Tournament? tournament;

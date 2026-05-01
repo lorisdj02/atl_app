@@ -2,7 +2,7 @@ import 'package:atl_app/database/responses/player_requests_response.dart';
 import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import '../../models/player.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/team_request.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';

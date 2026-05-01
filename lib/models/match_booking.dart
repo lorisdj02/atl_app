@@ -1,6 +1,7 @@
 import 'booking.dart';
-import 'sport_category.dart';
-
+import 'enums/sport_category.dart';
+import 'enums/booking_status.dart';
+import 'enums/booking_type.dart';
 // OK
 class MatchBooking extends Booking {
   final double coordinatorId;
@@ -20,24 +21,15 @@ class MatchBooking extends Booking {
 
   factory MatchBooking.fromJson(Map<String, dynamic> json) {
     return MatchBooking(
-      id: json['id'],
-      fieldId: json['fieldId'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      fieldId: json['fieldId'] != null ? (json['fieldId'] as num).toDouble() : 0.0,
       startTime: DateTime.parse(json['startDateTime']),
       finishTime: DateTime.parse(json['finishDateTime']),
-      status: BookingStatus.values.firstWhere(
-        (e) => e.apiName == json['status'],
-        orElse: () => BookingStatus.booked,
-      ),
-      bookingType: BookingType.values.firstWhere(
-        (e) => e.apiName == json['bookingType'],
-        orElse: () => BookingType.match,
-      ),
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-        orElse: () => SportCategory.football,
-      ),
-      coordinatorId: json['coordinatorId']?.toDouble() ?? 0.0,
-      matchId: json['matchId']?.toDouble() ?? 0.0,
+      status: BookingStatusExtension.fromJson(json['status']),
+      bookingType: BookingTypeExtension.fromJson(json['bookingType']),
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
+      coordinatorId: json['coordinatorId'] != null ? (json['coordinatorId'] as num).toDouble() : 0.0,
+      matchId: json['matchId'] != null ? (json['matchId'] as num).toDouble() : 0.0,
     );
   }
 

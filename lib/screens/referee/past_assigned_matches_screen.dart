@@ -3,7 +3,7 @@ import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/referee_bottom_bar.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
 import '../../providers/account_provider.dart';

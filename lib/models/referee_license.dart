@@ -1,23 +1,4 @@
-enum LicenseStatus {
-  notVerified,
-  active,
-  revoked,
-  suspended;
-
-  String get apiName {
-    switch (this) {
-      case LicenseStatus.notVerified:
-        return 'NOT_VERIFIED';
-      case LicenseStatus.active:
-        return 'ACTIVE';
-      case LicenseStatus.revoked:
-        return 'REVOKED';
-      case LicenseStatus.suspended:
-        return 'SUSPENDED';
-    }
-  }
-}
-
+import 'enums/license_status.dart';
 // OK
 class RefereeLicense {
   final double sportId;
@@ -58,12 +39,10 @@ class RefereeLicense {
 
   factory RefereeLicense.fromJson(Map<String, dynamic> json) {
     return RefereeLicense(
-      refereeId: json['refereeId'],
-      sportId: json['sportId'],
+      refereeId: json['refereeId'] != null ? (json['refereeId'] as num).toDouble() : 0.0,
+      sportId: json['sportId'] != null ? (json['sportId'] as num).toDouble() : 0.0,
       licenseId: json['licenseId'],
-      status: LicenseStatus.values.firstWhere(
-        (e) => e.apiName == json['status'],
-      ),
+      status: LicenseStatusExtension.fromJson(json['status']),
       createdAt: DateTime.parse(json['createdAt']),
       issuedAt: DateTime.parse(json['issuedAt']),
       verifiedAt: json['verifiedAt'] != null

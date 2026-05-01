@@ -1,4 +1,3 @@
-
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/field.dart';
 import 'package:atl_app/models/football_match.dart';
@@ -57,16 +56,19 @@ class FootballMatchResponse {
           .toList(),
       minutesPerRound: json[ApiJsonKeys.minutesPerRound],
       minutesPerPause: json[ApiJsonKeys.minutesPerPause],
-      availableRefereeRoles:
-          List<String>.from(json[ApiJsonKeys.availableRefereeRoles] as List),
+      availableRefereeRoles: List<String>.from(
+        json[ApiJsonKeys.availableRefereeRoles] as List,
+      ),
       playersPerTeam: (json[ApiJsonKeys.playersPerTeam] as Map<String, dynamic>)
-          .map((key, value) => MapEntry(
+          .map(
+            (key, value) => MapEntry(
               double.parse(key),
-              (value as List)
-                  .map((e) => Player.fromJson(e))
-                  .toList())),
-      assignmentPerRefereeNameSurname:
-          Map<String, String>.from(json[ApiJsonKeys.assignmentPerRefereeNameSurname]),
+              (value as List).map((e) => Player.fromJson(e)).toList(),
+            ),
+          ),
+      assignmentPerRefereeNameSurname: Map<String, String>.from(
+        json[ApiJsonKeys.assignmentPerRefereeNameSurname],
+      ),
       field: Field.fromJson(json[ApiJsonKeys.field]),
       cityName: json[ApiJsonKeys.cityName],
       coordinatorId: json[ApiJsonKeys.coordinatorId],
@@ -76,6 +78,4 @@ class FootballMatchResponse {
       payPerRole: Map<String, double>.from(json[ApiJsonKeys.payPerRole]),
     );
   }
-
-
 }

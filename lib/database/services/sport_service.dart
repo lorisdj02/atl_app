@@ -1,6 +1,6 @@
 import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/models/sport.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class SportService {

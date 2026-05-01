@@ -1,47 +1,5 @@
 import 'package:atl_app/models/checkout_payload.dart';
-
-enum CheckoutSessionStatus {
-  pending,
-  completed,
-  expired,
-  failed;
-
-  String get apiName {
-    switch (this) {
-      case CheckoutSessionStatus.pending:
-        return 'PENDING';
-      case CheckoutSessionStatus.completed:
-        return 'COMPLETED';
-      case CheckoutSessionStatus.expired:
-        return 'EXPIRED';
-      case CheckoutSessionStatus.failed:
-        return 'FAILED';
-    }
-  }
-}
-
-enum CheckoutType {
-  tournamentFee,
-  lobbyBookingCreate,
-  lobbyBookingParticipate,
-  shop,
-  privateBooking;
-
-  String get apiName{
-    switch (this) {
-      case CheckoutType.tournamentFee:
-        return 'TOURNAMENT_FEE';
-      case CheckoutType.lobbyBookingCreate:
-        return 'LOBBY_BOOKING_CREATE';
-      case CheckoutType.lobbyBookingParticipate:
-        return 'LOBBY_BOOKING_PARTICIPATE';
-      case CheckoutType.privateBooking:
-        return 'PRIVATE_BOOKING';
-      case CheckoutType.shop:
-        return 'SHOP';
-    }
-  }
-}
+import 'enums/checkout_type.dart';
 
 // OK
 class CheckoutSession {
@@ -61,12 +19,11 @@ class CheckoutSession {
 
   factory CheckoutSession.fromJson(Map<String, dynamic> json) {
     return CheckoutSession(
-      id: json['id'],
-      accountId: json['accountId'],
-      type: CheckoutType.values.firstWhere(
-        (e) => e.apiName == json['type'],
-        orElse: () => CheckoutType.tournamentFee, // Valore di default
-      ),
+      id: (json['id'] as num).toDouble(),
+      accountId: (json['accountId'] as num).toDouble(),
+      type: json['type'] != null
+          ? CheckoutTypeExtension.fromJson(json['type'])
+          : CheckoutType.shop,
       payload: CheckoutPayload.fromJson(json['payload']),
       amount: (json['amount'] as num).toDouble(),
     );

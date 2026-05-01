@@ -2,7 +2,7 @@ import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../providers/account_provider.dart';
 import '../../widgets/atl_textfield.dart';
@@ -346,16 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 return;
               }
 
-              // Check if password matches
-              if (user.passwordMD5 != password) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.incorrectPassword),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                return;
-              }
+              //TODO: Check if password matches firebase auth password
 
               // Password is correct, close dialog and confirm
               Navigator.pop(context, true);

@@ -5,7 +5,7 @@ import '../providers/account_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
 import '../widgets/profile_menu_item.dart';
 import '../widgets/atl_button.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import 'login_screen.dart';

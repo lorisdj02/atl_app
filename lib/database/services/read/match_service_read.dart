@@ -3,7 +3,7 @@ import 'package:atl_app/database/responses/available_matches_response.dart';
 import 'package:atl_app/database/responses/football_match_events_response.dart';
 import 'package:atl_app/database/responses/football_match_response.dart';
 import 'package:atl_app/database/responses/past_assigned_matches_response.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class MatchServiceRead {

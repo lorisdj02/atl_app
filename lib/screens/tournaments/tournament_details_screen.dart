@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/tournament.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/team.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
@@ -19,6 +19,7 @@ import '../player/callups_screen.dart';
 import '../player/view_callups_screen.dart';
 import './football_tournament_screen.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/enums/tournament_status.dart';
 
 class TournamentDetailsScreen extends StatefulWidget {
   final Tournament tournament;

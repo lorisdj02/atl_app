@@ -1,20 +1,8 @@
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
+import 'enums/leg_order_type.dart';
+import 'enums/presence_status.dart';
 
-import 'presence_status.dart';
 
-enum LegOrderType {
-  firstLeg,
-  secondLeg;
-
-  String get apiName {
-    switch (this) {
-      case LegOrderType.firstLeg:
-        return 'FIRST_LEG';
-      case LegOrderType.secondLeg:
-        return 'SECOND_LEG';
-    }
-  }
-}
 
 // OK
 class Match {
@@ -26,7 +14,7 @@ class Match {
   final double? motmPlayerId;
   final String groupName;
   final SportCategory sportCategory;
-  final LegOrderType legOrder;
+  final LegOrderType? legOrder;
   final PresenceStatus coordinatorStatus;
   final double? finalStageBracketId;
   final int? day;
@@ -48,7 +36,7 @@ class Match {
 
   factory Match.fromJson(Map<String, dynamic> json) {
     return Match(
-      id: json['id'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       scheduledStart: json['scheduledStart'] != null
           ? DateTime.parse(json['scheduledStart'])
           : null,
@@ -58,20 +46,22 @@ class Match {
       finishMatch: json['finishMatch'] != null
           ? DateTime.parse(json['finishMatch'])
           : null,
-      tournamentId: json['tournamentId'],
-      motmPlayerId: json['motmPlayerId'],
+      tournamentId: json['tournamentId'] != null
+          ? (json['tournamentId'] as num).toDouble()
+          : 0.0,
+      motmPlayerId: json['motmPlayerId'] != null
+          ? (json['motmPlayerId'] as num).toDouble()
+          : 0.0,
       groupName: json['groupName'],
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-      ),
-      legOrder: LegOrderType.values.firstWhere(
-        (e) => e.apiName == json['legOrder'],
-      ),
-      coordinatorStatus: PresenceStatus.values.firstWhere(
-        (e) => e.apiName == json['coordinatorStatus'],
-      ),
-      finalStageBracketId: json['finalStageBracketId'],
-      day: json['day'],
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
+      legOrder: json['legOrder'] != null
+          ? LegOrderTypeExtension.fromJson(json['legOrder'])
+          : null,
+      coordinatorStatus: PresenceStatusExtension.fromJson(json['coordinatorStatus']),
+      finalStageBracketId: json['finalStageBracketId'] != null
+          ? (json['finalStageBracketId'] as num).toDouble()
+          : 0.0,
+      day: json['day'] != null ? (json['day'] as num).toInt() : 0,
     );
   }
 
@@ -85,7 +75,7 @@ class Match {
       'motmPlayerId': motmPlayerId,
       'groupName': groupName,
       'sportCategory': sportCategory.apiName,
-      'legOrder': legOrder.apiName,
+      'legOrder': legOrder?.apiName,
       'coordinatorStatus': coordinatorStatus.apiName,
       'finalStageBracketId': finalStageBracketId,
       'day': day,

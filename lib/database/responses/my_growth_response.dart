@@ -1,5 +1,5 @@
 import 'package:atl_app/models/growth_step.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import '../../config/api_json_keys.dart';
 
 class MyGrowthResponse {

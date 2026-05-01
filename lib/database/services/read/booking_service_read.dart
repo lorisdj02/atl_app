@@ -2,7 +2,7 @@ import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/book_field_response.dart';
 import 'package:atl_app/database/responses/fields_and_max_players_per_field_response.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class BookingServiceRead {

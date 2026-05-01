@@ -1,28 +1,6 @@
-import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/purchase_detail.dart';
-
-enum PurchaseStatus {
-  confirmed,
-  redeemed,
-  refunded,
-  partialRefund,
-  canceled;
-
-  String get apiName {
-    switch (this) {
-      case PurchaseStatus.confirmed:
-        return 'CONFIRMED';
-      case PurchaseStatus.redeemed:
-        return 'REDEEMED';
-      case PurchaseStatus.refunded:
-        return 'REFUNDED';
-      case PurchaseStatus.partialRefund:
-        return 'PARTIAL_REFUND';
-      case PurchaseStatus.canceled:
-        return 'CANCELED';
-    }
-  }
-}
+import 'enums/checkout_type.dart';
+import 'enums/purchase_status.dart';
 
 // OK
 class Purchase {
@@ -46,16 +24,12 @@ class Purchase {
 
   factory Purchase.fromJson(Map<String, dynamic> json) {
     return Purchase(
-      id: json['id'],
-      accountId: json['accountId'],
-      type: CheckoutType.values.firstWhere(
-        (e) => e.toString() == 'CheckoutType.${json['type']}',
-      ),
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
+      accountId: json['accountId'] != null ? (json['accountId'] as num).toDouble() : 0.0,
+      type: CheckoutTypeExtension.fromJson(json['type']),
       detail: PurchaseDetail.fromJson(json['detail']),
-      status: PurchaseStatus.values.firstWhere(
-        (e) => e.toString() == 'PurchaseStatus.${json['status']}',
-      ),
-      amount: json['amount'],
+      status: PurchaseStatusExtension.fromJson(json['status']),
+      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : 0.0,
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

@@ -6,13 +6,14 @@ import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/referee_license.dart';
 import '../../models/sport.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/referee_license_widget.dart';
 import '../../widgets/add_referee_license_dialog.dart';
 import '../../widgets/atl_floating_button.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/enums/license_status.dart';
 
 class RefereeLicensesScreen extends StatefulWidget {
   final SportCategory currentSport;

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/tournament.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
@@ -29,10 +29,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = true;
   List<Tournament> _activeTournaments = [];
-  Map<int, List<FootballMatch>> _matchesPerTournament = {};
-  Map<int, Team> _teamsCache = {};
-  Map<int, int?> _minutesRoundPerTournament = {};
-  Map<int, int?> _minutesPausePerTournament = {};
+  Map<double, List<FootballMatch>> _matchesPerTournament = {};
+  Map<double, Team> _teamsCache = {};
+  Map<double, int> _minutesRoundPerTournament = {};
+  Map<double, int> _minutesPausePerTournament = {};
   final ScrollController _dayScrollController = ScrollController();
   Map<DateTime, List<FootballMatch>> _matchesPerDate = {};
 

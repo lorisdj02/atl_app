@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../models/football_match.dart';
+import '../models/enums/football_match_status.dart';
 
 /// Widget che mostra il minutaggio in tempo reale della partita
 class FootballLiveMinuteWidget extends StatefulWidget {

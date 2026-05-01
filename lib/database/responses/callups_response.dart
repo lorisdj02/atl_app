@@ -20,15 +20,19 @@ class CallupsResponse {
   factory CallupsResponse.fromJson(Map<String, dynamic> json) {
     return CallupsResponse(
       players: List<Player>.from(
-          (json[ApiJsonKeys.players] as List<dynamic>).map((e) => Player.fromJson(e as Map<String, dynamic>))),
+        (json[ApiJsonKeys.players] as List<dynamic>).map(
+          (e) => Player.fromJson(e as Map<String, dynamic>),
+        ),
+      ),
       sport: Sport.fromJson(json[ApiJsonKeys.sport] as Map<String, dynamic>),
       calledUpPlayerIds: List<double>.from(
-          (json[ApiJsonKeys.calledUpPlayerIds] as List<dynamic>)
-              .map((e) => e as double)
-              .toList()),
-      tournament:
-          Tournament.fromJson(json[ApiJsonKeys.tournament] as Map<String, dynamic>),
+        (json[ApiJsonKeys.calledUpPlayerIds] as List<dynamic>)
+            .map((e) => e as double)
+            .toList(),
+      ),
+      tournament: Tournament.fromJson(
+        json[ApiJsonKeys.tournament] as Map<String, dynamic>,
+      ),
     );
   }
-
 }

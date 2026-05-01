@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../shop/checkout_screen.dart';
 import 'package:provider/provider.dart';
 import '../../models/lobby_booking.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/city.dart';
 import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -14,6 +14,7 @@ import '../../l10n/app_localizations.dart';
 import '../../widgets/booking_widget.dart';
 import '../../models/field.dart';
 import '../../models/checkout_session.dart';
+import '../../models/enums/checkout_type.dart';
 
 class JoinLobbyScreen extends StatefulWidget {
   final SportCategory sportCategory;
@@ -27,7 +28,7 @@ class JoinLobbyScreen extends StatefulWidget {
 class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   // Filters
   int? _selectedTotalPlayers;
-  int? _selectedCity;
+  double? _selectedCity;
   DateTime? _selectedDay;
   TimeOfDay? _startTime;
   TimeOfDay? _endTime;
@@ -36,10 +37,10 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   List<LobbyBooking> _availableLobbies = [];
   bool _isLoading = false;
 
-  Map<int, Field> _fieldsCache = {};
-  Map<int, String> _completeAddressPerField = {};
-  Map<int, String> _usernamePerBooking = {};
-  Map<int, int> _playersPaidPerBooking = {};
+  Map<double, Field> _fieldsCache = {};
+  Map<double, String> _completeAddressPerField = {};
+  Map<double, String> _usernamePerBooking = {};
+  Map<double, int> _playersPaidPerBooking = {};
 
   final List<int> _availablePlayerCounts = [10, 14, 16, 18, 22];
   List<City> _availableCities = [];
@@ -514,7 +515,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _buildFilterDropdown<int>(
+                      child: _buildFilterDropdown<double>(
                         hint: l10n.cityHint,
                         value: _selectedCity,
                         items: _availableCities.map((c) => c.id).toList(),
@@ -528,8 +529,6 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                             orElse: () => City(
                               id: 0,
                               name: '',
-                              centerLat: 0,
-                              centerLng: 0,
                             ),
                           );
                           return city.name;

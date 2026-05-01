@@ -3,7 +3,7 @@ import 'package:atl_app/database/responses/coordinator_home_response.dart';
 import 'package:atl_app/database/responses/organization_home_response.dart';
 import 'package:atl_app/database/responses/player_home_response.dart';
 import 'package:atl_app/database/responses/referee_home_response.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:dio/dio.dart';
 
 class HomeScreenService {

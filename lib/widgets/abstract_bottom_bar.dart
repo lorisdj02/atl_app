@@ -1,7 +1,7 @@
 import 'package:atl_app/database/services/account_service.dart';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 
 class BottomBarItem {

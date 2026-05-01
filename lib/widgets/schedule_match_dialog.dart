@@ -2,7 +2,7 @@ import 'package:atl_app/database/responses/schedule_match_response.dart';
 import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../models/booking.dart';
 import '../l10n/app_localizations.dart';

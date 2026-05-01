@@ -1,45 +1,8 @@
-import 'package:atl_app/models/sport_category.dart';
-
+import 'package:atl_app/models/enums/sport_category.dart';
+import 'enums/football_match_status.dart';
 import 'match.dart';
-import 'presence_status.dart';
-
-enum FootballMatchStatus {
-  scheduled,
-  started,
-  halftime,
-  startHalf,
-  finished,
-  notScheduled,
-  homeRetired,
-  awayRetired,
-  canceled,
-  penaltyShootOut;
-
-  String get apiName {
-    switch (this) {
-      case FootballMatchStatus.scheduled:
-        return 'SCHEDULED';
-      case FootballMatchStatus.started:
-        return 'STARTED';
-      case FootballMatchStatus.halftime:
-        return 'HALFTIME';
-      case FootballMatchStatus.startHalf:
-        return 'START_HALF';
-      case FootballMatchStatus.finished:
-        return 'FINISHED';
-      case FootballMatchStatus.notScheduled:
-        return 'NOT_SCHEDULED';
-      case FootballMatchStatus.homeRetired:
-        return 'HOME_RETIRED';
-      case FootballMatchStatus.awayRetired:
-        return 'AWAY_RETIRED';
-      case FootballMatchStatus.canceled:
-        return 'CANCELED';
-      case FootballMatchStatus.penaltyShootOut:
-        return 'PENALTY_SHOOTOUT';
-    }
-  }
-}
+import 'enums/presence_status.dart';
+import 'enums/leg_order_type.dart';
 
 // OK
 class FootballMatch extends Match {
@@ -83,41 +46,55 @@ class FootballMatch extends Match {
 
   factory FootballMatch.fromJson(Map<String, dynamic> json) {
     return FootballMatch(
-      id: json['id'],
-      homeTeamId: json['homeTeamId'],
-      awayTeamId: json['awayTeamId'],
-      tournamentId: json['tournamentId'],
+      id: (json['id'] as num).toDouble(),
+      homeTeamId: json['homeTeamId'] != null
+          ? (json['homeTeamId'] as num).toDouble()
+          : null,
+      awayTeamId: json['awayTeamId'] != null
+          ? (json['awayTeamId'] as num).toDouble()
+          : null,
+      tournamentId: (json['tournamentId'] as num).toDouble(),
       groupName: json['groupName'],
-      startMatch: DateTime.parse(json['startMatch']),
+      startMatch: json['startMatch'] != null
+          ? DateTime.parse(json['startMatch'])
+          : null,
       halfTime: json['halfTime'] != null
           ? DateTime.parse(json['halfTime'])
           : null,
       startHalf: json['startHalf'] != null
           ? DateTime.parse(json['startHalf'])
           : null,
-      status: FootballMatchStatus.values.firstWhere(
-        (e) => e.apiName == json['status'],
-      ),
-      scheduledStart: DateTime.parse(json['scheduledStart']),
-      coordinatorStatus: PresenceStatus.values.firstWhere(
-        (e) => e.apiName == json['coordinatorStatus'],
-      ),
-      motmPlayerId: json['motmPlayerId'],
-      scoreHome: json['scoreHome'],
-      penaltyScoreHome: json['penaltyScoreHome'],
-      missedPenaltyHome: json['missedPenaltyHome'],
-      scoreAway: json['scoreAway'],
-      penaltyScoreAway: json['penaltyScoreAway'],
-      missedPenaltyAway: json['missedPenaltyAway'],
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-      ),
-      legOrder: LegOrderType.values.firstWhere(
-        (e) => e.apiName == json['legOrder'],
-      ),
-      finalStageBracketId: json['finalStageBracketId'],
-      finishMatch: DateTime.parse(json['finishMatch']),
-      day: json['day'],
+      status: json['status'] != null
+          ? FootballMatchStatusExtension.fromJson(json['status'])
+          : FootballMatchStatus.notScheduled,
+      scheduledStart: json['scheduledStart'] != null
+          ? DateTime.parse(json['scheduledStart'])
+          : null,
+      coordinatorStatus: json['coordinatorStatus'] != null
+          ? PresenceStatusExtension.fromJson(json['coordinatorStatus'])
+          : PresenceStatus.assigned,
+      motmPlayerId: json['motmPlayerId'] != null
+          ? (json['motmPlayerId'] as num).toDouble()
+          : null,
+      scoreHome:  json['scoreHome'] != null ? (json['scoreHome'] as num).toInt() : null,
+      penaltyScoreHome: json['penaltyScoreHome'] != null ? (json['penaltyScoreHome'] as num).toInt() : null,
+      missedPenaltyHome: json['missedPenaltyHome'] != null ? (json['missedPenaltyHome'] as num).toInt() : null,
+      scoreAway: json['scoreAway'] != null ? (json['scoreAway'] as num).toInt() : null,
+      penaltyScoreAway: json['penaltyScoreAway'] != null ? (json['penaltyScoreAway'] as num).toInt() : null,
+      missedPenaltyAway: json['missedPenaltyAway'] != null ? (json['missedPenaltyAway'] as num).toInt() : null,
+      sportCategory: json['sportCategory'] != null
+          ? SportCategoryExtension.fromJson(json['sportCategory'])
+          : SportCategory.football,
+      legOrder: json['legOrder'] != null
+          ? LegOrderTypeExtension.fromJson(json['legOrder'])
+      : null,
+      finalStageBracketId: json['finalStageBracketId'] != null
+          ? (json['finalStageBracketId'] as num).toDouble()
+          : null,
+      finishMatch: json['finishMatch'] != null
+          ? DateTime.parse(json['finishMatch'])
+          : null,
+      day: json['day'] != null ? (json['day'] as num).toInt() : null,
     );
   }
 
@@ -143,12 +120,10 @@ class FootballMatch extends Match {
       'penaltyScoreAway': penaltyScoreAway,
       'missedPenaltyAway': missedPenaltyAway,
       'sportCategory': sportCategory.apiName,
-      'legOrder': legOrder.apiName,
+      'legOrder': legOrder?.apiName,
       'finalStageBracketId': finalStageBracketId,
       'finishMatch': finishMatch?.toIso8601String(),
       'day': day,
     };
   }
-
-  
 }

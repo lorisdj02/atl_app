@@ -4,11 +4,12 @@ import 'package:atl_app/models/private_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/atl_colors.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../models/team.dart';
 import '../models/booking.dart';
 import '../models/field.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/booking_type.dart';
 
 // OrganizationBookingWidget: shows a booking card for match, lobby, or private booking
 class OrganizationBookingWidget extends StatefulWidget {

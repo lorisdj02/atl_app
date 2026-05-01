@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/city.dart';
 import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -27,7 +27,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
   final _aliasController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  int? _selectedCity;
+  double? _selectedCity;
   List<City> _availableCities = [];
   bool _visibility = true; // Public by default
   File? _imageFile;
@@ -135,7 +135,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         imageUrl = null; // Placeholder
       }
 
-      int captainId = userProvider.activeRoleId!;
+      double captainId = userProvider.activeRoleId!;
 
       // Crea il team nel database
 
@@ -148,11 +148,15 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
             : _descriptionController.text.trim(),
         cityId: _selectedCity!,
         sportCategory: widget.currentSport,
-        imageUrl: imageUrl,
+        logoUrl: imageUrl,
         vip: false,
-        visibility: _visibility,
-        players: 1,
-        captainId: captainId,
+        visible: _visibility,
+        numPlayers: 1,
+        captainPlayerId: captainId,
+        vice1PlayerId: null,
+        vice2PlayerId: null,
+        rankPts: 0, // Punteggio iniziale standard
+        maxPlayers: 24, // Inutile, backend lo imposta a 24 per ogni team
       );
       final Team newTeam;
       try {
@@ -162,8 +166,6 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
       }
 
       // Aggiorna l'utente con il teamId
-      final updatedAccount = currentUser.copyWith(teamId: newTeam.id);
-      await userProvider.updateAccount(updatedAccount);
       userProvider.setCurrentTeamId(newTeam.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -362,7 +364,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: DropdownButtonFormField<int>(
+                      child: DropdownButtonFormField<double>(
                         value: _selectedCity,
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -370,7 +372,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
                         ),
                         items: _availableCities
                             .map(
-                              (city) => DropdownMenuItem<int>(
+                              (city) => DropdownMenuItem<double>(
                                 value: city.id,
                                 child: Text(city.name),
                               ),

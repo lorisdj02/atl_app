@@ -1,13 +1,13 @@
 import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/database/requests/register_account_request.dart';
 import 'package:flutter/material.dart';
-import '../models/account.dart';
 import '../utils/atl_colors.dart';
 import 'registration/registration_screen_step1.dart';
 import 'registration/registration_screen_step2.dart';
 import 'registration/registration_screen_step3.dart';
 import '../../widgets/atl_button.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/account_role.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

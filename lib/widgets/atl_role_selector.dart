@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
 import '../l10n/app_localizations.dart';
-import '../models/account.dart';
+import '../models/enums/account_role.dart';
 
 /// Widget per la selezione del ruolo utente
 class ATLRoleSelector extends StatelessWidget {

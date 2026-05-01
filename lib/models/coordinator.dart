@@ -23,14 +23,14 @@ class Coordinator {
 
   factory Coordinator.fromJson(Map<String, dynamic> json) {
     return Coordinator(
-      accountId: json['accountId'],
-      coordinatorId: json['coordinatorId'],
-      level: json['level'],
+      accountId: (json['accountId'] as num).toDouble(),
+      coordinatorId: (json['coordinatorId'] as num).toDouble(),
+      level: (json['level'] as num).toInt(),
       name: json['name'],
       surname: json['surname'],
       username: json['username'],
       imageUrl: json['imageUrl'],
-      prefferdCityId: json['prefferdCityId'],
+      prefferdCityId: (json['prefferdCityId'] as num).toDouble(),
     );
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import 'abstract_football_match_widget.dart';
 
 class SmallFootballMatchWidget extends AbstractFootballMatchWidget {

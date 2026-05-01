@@ -8,7 +8,7 @@ import 'package:atl_app/database/responses/tournament_details_response.dart';
 import 'package:atl_app/database/responses/tournament_parameters_response.dart';
 import 'package:atl_app/database/responses/tournament_summary_response.dart';
 import 'package:atl_app/models/player.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:dio/dio.dart';
 

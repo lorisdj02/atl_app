@@ -1,77 +1,7 @@
-enum TransactionStatus{
-  pending,
-    confirmed,
-    failed,
-    partialRefund,
-    refunded;
+import 'enums/transaction_type.dart';
+import 'enums/transaction_status.dart';
 
-    String get apiName {
-      switch (this) {
-        case TransactionStatus.pending:
-          return 'PENDING';
-        case TransactionStatus.confirmed:
-          return 'CONFIRMED';
-        case TransactionStatus.failed:
-          return 'FAILED';
-        case TransactionStatus.partialRefund:
-          return 'PARTIAL_REFUND';
-        case TransactionStatus.refunded:
-          return 'REFUNDED';
-      }
-    }
-}
 
-enum TransactionSource{
-  prizeWallet,
-    personalWallet,
-    inviteWallet,
-    stripe,
-    other;
-
-    String get apiName {
-      switch (this) {
-        case TransactionSource.prizeWallet:
-          return 'PRIZE_WALLET';
-        case TransactionSource.personalWallet:
-          return 'PERSONAL_WALLET';
-        case TransactionSource.inviteWallet:
-          return 'INVITE_WALLET';
-        case TransactionSource.stripe:
-          return 'STRIPE';
-        case TransactionSource.other:
-          return 'OTHER';
-      }
-    }
-}
-
-enum TransactionType {
-    deposit, // NOT USED
-    payment, // OUT PERSONAL, PRIZE, INVITE WALLET
-    prize, // IN PRIZE WALLET
-    withdraw, // OUT PRIZE, PERSONAL WALLET
-    refund, // IN PRIZE, PERSONAL, INVITE WALLET
-    fee, // IN PERSONAL WALLET
-    invite; // IN INVITE WALLET
-
-    String get apiName {
-      switch (this) {
-        case TransactionType.deposit:
-          return 'DEPOSIT';
-        case TransactionType.payment:
-          return 'PAYMENT';
-        case TransactionType.prize:
-          return 'PRIZE';
-        case TransactionType.withdraw:
-          return 'WITHDRAW';
-        case TransactionType.refund:
-          return 'REFUND';
-        case TransactionType.fee:
-          return 'FEE';
-        case TransactionType.invite:
-          return 'INVITE';
-      }
-    }
-}
 
 // OK
 class Transaction {
@@ -91,10 +21,10 @@ class Transaction {
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      accountId: json['accountId'],
-      status: TransactionStatus.values.firstWhere((e) => e.toString() == 'TransactionStatus.${json['status']}'),
-      type: TransactionType.values.firstWhere((e) => e.toString() == 'TransactionType.${json['type']}'),
-      amount: json['amount'],
+      accountId: json['accountId'] != null ? (json['accountId'] as num).toDouble() : 0.0,
+      status: TransactionStatusExtension.fromJson(json['status']),
+      type: TransactionTypeExtension.fromJson(json['type']),
+      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : 0.0,
       currency: json['currency'],
     );
   }
@@ -102,8 +32,8 @@ class Transaction {
   Map<String, dynamic> toJson() {
     return {
       'accountId': accountId,
-      'status': status.toString().split('.').last,
-      'type': type.toString().split('.').last,
+      'status': status.apiName,
+      'type': type.apiName,
       'amount': amount,
       'currency': currency,
     };

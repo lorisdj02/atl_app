@@ -1,17 +1,5 @@
-enum MatchSlotType{
-  home,
-  away;
 
-  String get apiName {
-    switch (this) {
-      case MatchSlotType.home:
-        return 'HOME';
-      case MatchSlotType.away:
-        return 'AWAY';
-    }
-  }
-}
-
+import 'enums/match_slot_type.dart';
 // OK
 class FinalStageBracket {
   final double id;
@@ -20,7 +8,7 @@ class FinalStageBracket {
   final int aggregateScoreHome;
   final int aggregateScoreAway;
   final double nextFinalStageBracketId;
-  final MatchSlotType nextFinalStageBracketSlot;
+  final MatchSlotType? nextFinalStageBracketSlot;
 
   FinalStageBracket({
     required this.id,
@@ -34,13 +22,15 @@ class FinalStageBracket {
 
   factory FinalStageBracket.fromJson(Map<String, dynamic> json) {
     return FinalStageBracket(
-      id: json['id'],
-      tournamentId: json['tournamentId'],
+      id: (json['id'] as num).toDouble(),
+      tournamentId: (json['tournamentId'] as num).toDouble(),
       groupName: json['groupName'],
-      aggregateScoreHome: json['aggregateScoreHome'],
-      aggregateScoreAway: json['aggregateScoreAway'],
-      nextFinalStageBracketId: json['nextFinalStageBracketId'],
-      nextFinalStageBracketSlot: MatchSlotType.values.firstWhere((e) => e.apiName == json['nextFinalStageBracketSlot']),
+      aggregateScoreHome: (json['aggregateScoreHome'] as num).toInt(),
+      aggregateScoreAway: (json['aggregateScoreAway'] as num).toInt(),
+      nextFinalStageBracketId: (json['nextFinalStageBracketId'] as num).toDouble(),
+      nextFinalStageBracketSlot: json['nextFinalStageBracketSlot'] != null
+          ? MatchSlotTypeExtension.fromJson(json['nextFinalStageBracketSlot'])
+          : null, // Valore di default
     );
   }
 
@@ -52,7 +42,7 @@ class FinalStageBracket {
       'aggregateScoreHome': aggregateScoreHome,
       'aggregateScoreAway': aggregateScoreAway,
       'nextFinalStageBracketId': nextFinalStageBracketId,
-      'nextFinalStageBracketSlot': nextFinalStageBracketSlot.apiName,
+      'nextFinalStageBracketSlot': nextFinalStageBracketSlot?.apiName,
     };
   }
 }

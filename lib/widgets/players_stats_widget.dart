@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/player.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../models/football_team_stats.dart';
 import '../models/team.dart';
 import '../utils/atl_colors.dart';

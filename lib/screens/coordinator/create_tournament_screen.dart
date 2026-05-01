@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import '../../models/sport.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/tournament.dart';
 import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
@@ -19,6 +19,8 @@ import '../../widgets/atl_button.dart';
 import '../../widgets/atl_textfield.dart';
 import '../../widgets/field_size_alert_dialog.dart';
 import '../../widgets/tournament_summary.dart';
+import '../../models/enums/tournament_status.dart';
+import '../../models/enums/tournament_phase.dart';
 
 enum Round2Option { none, groupStageOnly, finalStageOnly, both }
 
@@ -62,7 +64,7 @@ class _CreateTournamentScreenState extends State<CreateTournamentScreen> {
   bool _isLoading = false;
   List<Field> _fields = [];
   List<City> _cities = [];
-  Map<int, int> _maxPlayerPerField = {};
+  Map<double, int> _maxPlayerPerField = {};
 
   @override
   void initState() {

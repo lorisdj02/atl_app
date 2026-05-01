@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../widgets/referee_bottom_bar.dart';
 import '../providers/account_provider.dart';
 import '../widgets/player_coordinator_bottom_bar.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 import '../utils/navigation_helper.dart';
 import '../l10n/app_localizations.dart';

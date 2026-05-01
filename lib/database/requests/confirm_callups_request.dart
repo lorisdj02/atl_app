@@ -1,9 +1,9 @@
 import 'package:atl_app/config/api_json_keys.dart';
 
 class ConfirmCallupsRequest {
-  final int tournamentId;
-  final int teamId;
-  final List<int> selectedPlayerIds;
+  final double tournamentId;
+  final double teamId;
+  final List<double> selectedPlayerIds;
 
   ConfirmCallupsRequest({
     required this.tournamentId,

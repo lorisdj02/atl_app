@@ -3,7 +3,7 @@ import 'package:atl_app/database/responses/players_in_team_response.dart';
 import 'package:atl_app/database/services/team_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/team.dart';
 import '../../models/player.dart';
 import '../../models/palmares.dart';

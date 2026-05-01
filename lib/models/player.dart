@@ -1,5 +1,4 @@
-import 'account.dart';
-
+import 'enums/vip_type.dart';
 /// Modello Player dal database
 // OK
 class Player {
@@ -33,20 +32,17 @@ class Player {
 
   factory Player.fromJson(Map<String, dynamic> json) {
     return Player(
-      playerId: json['playerId'],
-      accountId: json['accountId'],
+      playerId: json['playerId'] != null ? (json['playerId'] as num).toDouble() : 0.0,
+      accountId: json['accountId'] != null ? (json['accountId'] as num).toDouble() : 0.0,
       name: json['name'],
       surname: json['surname'],
       username: json['username'],
       imageUrl: json['imageUrl'],
       vip: json['vip'],
-      vipType: VipType.values.firstWhere(
-        (e) => e.apiName == json['vipType'],
-        orElse: () => VipType.none,
-      ),
+      vipType: VipTypeExtension.fromJson(json['vipType']),
       vipStart: json['vipStart'] != null ? DateTime.parse(json['vipStart']) : null,
       vipEnd: json['vipEnd'] != null ? DateTime.parse(json['vipEnd']) : null,
-      prefferdCityId: json['prefferdCityId'],
+      prefferdCityId: json['prefferdCityId'] != null ? (json['prefferdCityId'] as num).toDouble() : 0.0,
       birthdate: DateTime.parse(json['birthdate']),
     );
   }

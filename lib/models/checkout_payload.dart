@@ -1,11 +1,11 @@
-import 'package:atl_app/models/checkout_session.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
+import 'enums/checkout_type.dart';
 
 // OK
 class CheckoutPayload {
   final double? tournamentId;
   final double? lobbyId;
-  final double? playersPaid;
+  final int? playersPaid;
 
   final double? ownerPlayerId;
   final DateTime? startTime;
@@ -37,19 +37,19 @@ class CheckoutPayload {
 
   factory CheckoutPayload.fromJson(Map<String, dynamic> json) {
     return CheckoutPayload(
-      tournamentId: json['tournamentId'],
-      lobbyId: json['lobbyId'],
-      playersPaid: json['playersPaid'],
-      ownerPlayerId: json['ownerPlayerId'],
+      tournamentId: (json['tournamentId'] as num?)?.toDouble(),
+      lobbyId: (json['lobbyId'] as num?)?.toDouble(),
+      playersPaid: (json['playersPaid'] as num?)?.toInt(),
+      ownerPlayerId: (json['ownerPlayerId'] as num?)?.toDouble(),
       startTime: json['startTime'] != null
           ? DateTime.parse(json['startTime'])
           : null,
       finishTime: json['finishTime'] != null
           ? DateTime.parse(json['finishTime'])
           : null,
-      totalPlayers: json['totalPlayers'],
-      playersToFind: json['playersToFind'],
-      fieldId: json['fieldId'],
+      totalPlayers: (json['totalPlayers'] as num?)?.toInt(),
+      playersToFind: (json['playersToFind'] as num?)?.toInt(),
+      fieldId: (json['fieldId'] as num?)?.toDouble(),
       sportCategory: json['sportCategory'] != null
           ? SportCategory.values.firstWhere(
               (e) => e.apiName == json['sportCategory'],
@@ -57,13 +57,10 @@ class CheckoutPayload {
                   SportCategory.football, // Valore di default se non trovato
             )
           : null,
-      amount: json['amount']?.toDouble() ?? 0.0,
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
       type: json['type'] != null
-          ? CheckoutType.values.firstWhere(
-              (e) => e.apiName == json['type'],
-              orElse: () => CheckoutType.tournamentFee, // Valore di default
-            )
-          : CheckoutType.tournamentFee, // Valore di default
+          ? CheckoutTypeExtension.fromJson(json['type'])
+          : CheckoutType.shop, // Valore di default
     );
   }
 

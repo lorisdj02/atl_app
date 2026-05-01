@@ -1,46 +1,5 @@
-enum FootballMatchEventType {
-  redCard,
-  yellowCard,
-  redYellowCard,
-  goal,
-  penalty,
-  missedPenalty,
-  ownGoal,
-  start,
-  halftime,
-  startHalf,
-  penaltyShootOut,
-  finish;
+import 'enums/football_match_event_type.dart';
 
-  String get apiName {
-    switch (this) {
-      case FootballMatchEventType.redCard:
-        return 'RED_CARD';
-      case FootballMatchEventType.yellowCard:
-        return 'YELLOW_CARD';
-      case FootballMatchEventType.redYellowCard:
-        return 'RED_YELLOW_CARD';
-      case FootballMatchEventType.goal:
-        return 'GOAL';
-      case FootballMatchEventType.penalty:
-        return 'PENALTY';
-      case FootballMatchEventType.missedPenalty:
-        return 'MISSED_PENALTY';
-      case FootballMatchEventType.ownGoal:
-        return 'OWN_GOAL';
-      case FootballMatchEventType.start:
-        return 'START';
-      case FootballMatchEventType.halftime:
-        return 'HALFTIME';
-      case FootballMatchEventType.startHalf:
-        return 'START_HALF';
-      case FootballMatchEventType.penaltyShootOut:
-        return 'PENALTY_SHOOTOUT';
-      case FootballMatchEventType.finish:
-        return 'FINISH';
-    }
-  }
-}
 // OK
 class FootballMatchEvent {
   final double id;
@@ -65,16 +24,14 @@ class FootballMatchEvent {
 
   factory FootballMatchEvent.fromJson(Map<String, dynamic> json) {
     return FootballMatchEvent(
-      id: json['id'],
-      type: FootballMatchEventType.values.firstWhere(
-          (e) => e.apiName == json['type']
-      ),
-      playerId: json['playerId'],
-      minute: json['minute'],
-      matchId: json['matchId'],
+      id: (json['id'] as num).toDouble(),
+      type: FootballMatchEventTypeExtension.fromJson(json['type']),
+      playerId: json['playerId'] != null ? (json['playerId'] as num).toDouble() : null,
+      minute: (json['minute'] as num).toInt(),
+      matchId: (json['matchId'] as num).toDouble(),
       createdAt: DateTime.parse(json['createdAt']),
-      additionalMinute: json['additionalMinute'] ?? 0,
-      teamId: json['teamId'],
+      additionalMinute: (json['additionalMinute'] as num).toInt(),
+      teamId: json['teamId'] != null ? (json['teamId'] as num).toDouble() : null,
     );
   }
 

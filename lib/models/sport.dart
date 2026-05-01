@@ -1,4 +1,5 @@
-import 'sport_category.dart';
+import 'enums/sport_category.dart';
+
 // OK
 class Sport {
   final double id;
@@ -36,16 +37,24 @@ class Sport {
 
   factory Sport.fromJson(Map<String, dynamic> json) {
     return Sport(
-      id: json['id'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       name: json['name'],
-      sportCategory: SportCategory.values.firstWhere(
-        (e) => e.apiName == json['sportCategory'],
-      ),
-      minPlayersPerTeam: json['minPlayersPerTeam'],
-      maxPlayersPerTeam: json['maxPlayersPerTeam'],
-      minutesPerRound: json['minutesPerRound'],
-      minutesPerPause: json['minutesPerPause'],
-      numRefereesPerMatch: json['numRefereesPerMatch'],
+      sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
+      minPlayersPerTeam: json['minPlayersPerTeam'] != null
+          ? (json['minPlayersPerTeam'] as num).toInt()
+          : 0,
+      maxPlayersPerTeam: json['maxPlayersPerTeam'] != null
+          ? (json['maxPlayersPerTeam'] as num).toInt()
+          : 0,
+      minutesPerRound: json['minutesPerRound'] != null
+          ? (json['minutesPerRound'] as num).toInt()
+          : 0,
+      minutesPerPause: json['minutesPerPause'] != null
+          ? (json['minutesPerPause'] as num).toInt()
+          : 0,
+      numRefereesPerMatch: json['numRefereesPerMatch'] != null
+          ? (json['numRefereesPerMatch'] as num).toInt()
+          : 0,
     );
   }
 }

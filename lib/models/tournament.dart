@@ -1,96 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:atl_app/l10n/app_localizations.dart';
-
-/// Enum per lo stato del torneo
-/// OK
-enum TournamentStatus {
-  created,
-  scheduled,
-  finished,
-  pendingPayments,
-  canceled;
-
-  String displayName(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (this) {
-      case TournamentStatus.created:
-        return l10n.statusCreated;
-      case TournamentStatus.scheduled:
-        return l10n.statusScheduled;
-      case TournamentStatus.finished:
-        return l10n.statusFinished;
-      case TournamentStatus.canceled:
-        return l10n.statusCanceled;
-      case TournamentStatus.pendingPayments:
-        return l10n.statusPendingPayments;
-    }
-  }
-
-  String get apiName {
-    switch (this) {
-      case TournamentStatus.created:
-        return 'CREATED';
-      case TournamentStatus.scheduled:
-        return 'SCHEDULED';
-      case TournamentStatus.finished:
-        return 'FINISHED';
-      case TournamentStatus.canceled:
-        return 'CANCELED';
-      case TournamentStatus.pendingPayments:
-        return 'PENDING_PAYMENTS';
-    }
-  }
-}
-
-/// Enum per la fase del torneo
-enum TournamentPhase {
-  group,
-  ro32,
-  ro16,
-  ro8,
-  quarter,
-  semi,
-  final_;
-
-  String displayName(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (this) {
-      case TournamentPhase.group:
-        return l10n.phaseGroupStage;
-      case TournamentPhase.ro32:
-        return l10n.phaseRoundOf32;
-      case TournamentPhase.ro16:
-        return l10n.phaseRoundOf16;
-      case TournamentPhase.ro8:
-        return l10n.phaseRoundOf8;
-      case TournamentPhase.quarter:
-        return l10n.phaseQuarterFinals;
-      case TournamentPhase.semi:
-        return l10n.phaseSemiFinals;
-      case TournamentPhase.final_:
-        return l10n.phaseFinal;
-    }
-  }
-
-  String get apiName {
-    switch (this) {
-      case TournamentPhase.group:
-        return 'GROUP';
-      case TournamentPhase.ro32:
-        return 'RO32';
-      case TournamentPhase.ro16:
-        return 'RO16';
-      case TournamentPhase.ro8:
-        return 'RO8';
-      case TournamentPhase.quarter:
-        return 'QUARTER';
-      case TournamentPhase.semi:
-        return 'SEMI';
-      case TournamentPhase.final_:
-        return 'FINAL';
-    }
-  }
-}
+import 'enums/tournament_phase.dart';
+import 'enums/tournament_status.dart';
 
 /// Modello Tournament dal database
 class Tournament {
@@ -148,34 +57,32 @@ class Tournament {
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
     return Tournament(
-      id: json['id'],
+      id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       name: json['name'],
       description: json['description'],
-      coordinatorId: json['coordinatorId'],
-      fieldId: json['fieldId'],
-      cityId: json['cityId'],
-      sportId: json['sportId'],
-      isFavorite: json['isFavorite'] ?? false,
-      isParticipating: json['isParticipating'] ?? false,
-      numGroups: json['numGroups'],
-      numTeams: json['numTeams'],
-      paidTeams: json['paidTeams'],
+      coordinatorId: json['coordinatorId'] != null ? (json['coordinatorId'] as num).toDouble() : 0.0,
+      fieldId: json['fieldId'] != null ? (json['fieldId'] as num).toDouble() : 0.0,
+      cityId: json['cityId'] != null ? (json['cityId'] as num).toDouble() : 0.0,
+      sportId: json['sportId'] != null ? (json['sportId'] as num).toDouble() : 0.0,
+      isFavorite: json['isFavorite'] != null ? json['isFavorite'] as bool : false,
+      isParticipating: json['isParticipating'] != null ? json['isParticipating'] as bool : false,
+      numGroups: json['numGroups'] != null ? (json['numGroups'] as num).toInt() : 0,
+      numTeams: json['numTeams'] != null ? (json['numTeams'] as num).toInt() : 0,
+      paidTeams: json['paidTeams'] != null ? (json['paidTeams'] as num).toInt() : 0,
       status: TournamentStatus.values.firstWhere(
         (e) => e.apiName == json['status'],
       ),
-      atlEvent: json['atlEvent'],
-      prize1: json['prize1'].toDouble(),
-      prize2: json['prize2'].toDouble(),
+      atlEvent: json['atlEvent'] != null ? json['atlEvent'] as bool : false,
+      prize1: json['prize1'] != null ? (json['prize1'] as num).toDouble() : 0.0,
+      prize2: json['prize2'] != null ? (json['prize2'] as num).toDouble() : 0.0,
       startDate: DateTime.tryParse(json['startDate'] ?? ''),
-      fee: json['fee'].toDouble(),
+      fee: json['fee'] != null ? (json['fee'] as num).toDouble() : 0.0,
       photoUrl: json['photoUrl'],
-      round2GroupStage: json['round2GroupStage'] ?? false,
-      round2FinalStage: json['round2FinalStage'] ?? false,
-      numTeamsQualified: json['numTeamsQualified'] ?? 0,
-      isPublic: json['isPublic'] ?? true,
-      phase: TournamentPhase.values.firstWhere(
-        (e) => e.apiName == json['phase'],
-      ),
+      round2GroupStage: json['round2GroupStage'] != null ? json['round2GroupStage'] as bool : false,
+      round2FinalStage: json['round2FinalStage'] != null ? json['round2FinalStage'] as bool : false,
+      numTeamsQualified: json['numTeamsQualified'] != null ? (json['numTeamsQualified'] as num).toInt() : 0,
+      isPublic: json['isPublic'] != null ? json['isPublic'] as bool : true,
+      phase: TournamentPhaseExtension.fromJson(json['phase']),
     );
   }
 

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/football_match.dart';
 import '../../models/team.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/football_match_event.dart';
 import '../../models/player.dart';
 import '../../utils/atl_colors.dart';
@@ -21,6 +21,9 @@ import '../../widgets/schedule_match_dialog.dart';
 import '../../widgets/referee_match_dialog.dart';
 import '../../providers/account_provider.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/enums/football_match_status.dart';
+import '../../models/enums/football_match_event_type.dart';
+
 
 class FootballMatchScreen extends StatefulWidget {
   final double matchId;

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/football_match.dart';
 import '../models/team.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
 import 'football_live_minute_widget.dart';
 import '../screens/tournaments/football_match_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../models/enums/football_match_status.dart';
 
 abstract class AbstractFootballMatchWidget extends StatelessWidget {
   final FootballMatch match;

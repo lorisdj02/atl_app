@@ -28,33 +28,33 @@ class FootballStanding {
 
   factory FootballStanding.fromJson(Map<String, dynamic> json) {
     return FootballStanding(
-      tournamentId: json['tournament_id']?.toDouble() ?? 0.0,
-      teamId: json['team_id']?.toDouble() ?? 0.0,
-      groupName: json['group_name'] ?? '',
-      won: json['won'] ?? 0,
-      drawn: json['drawn'] ?? 0,
-      lost: json['lost'] ?? 0,
-      goalsScored: json['goals_scored'] ?? 0,
-      goalsConceded: json['goals_conceded'] ?? 0,
-      rankPos: json['rank_pos'] ?? 0,
+      tournamentId: (json['tournamentId'] as num?)?.toDouble() ?? 0.0,
+      teamId: (json['teamId'] as num?)?.toDouble() ?? 0.0,
+      groupName: json['groupName'] ?? '',
+      won: (json['won'] as num?)?.toInt() ?? 0,
+      drawn: (json['drawn'] as num?)?.toInt() ?? 0,
+      lost: (json['lost'] as num?)?.toInt() ?? 0,
+      goalsScored: (json['goalsScored'] as num?)?.toInt() ?? 0,
+      goalsConceded: (json['goalsConceded'] as num?)?.toInt() ?? 0,
+      rankPos: (json['rankPos'] as num?)?.toInt() ?? 0,
       qualified: json['qualified'] ?? false,
-      pts: json['points'] ?? 0,
+      pts: (json['pts'] as num?)?.toInt() ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tournament_id': tournamentId,
-      'team_id': teamId,
-      'group_name': groupName,
+      'tournamentId': tournamentId,
+      'teamId': teamId,
+      'groupName': groupName,
       'won': won,
       'drawn': drawn,
       'lost': lost,
-      'goals_scored': goalsScored,
-      'goals_conceded': goalsConceded,
-      'rank_pos': rankPos,
+      'goalsScored': goalsScored,
+      'goalsConceded': goalsConceded,
+      'rankPos': rankPos,
       'qualified': qualified,
-      'points': pts,
+      'pts': pts,
     };
   }
 }

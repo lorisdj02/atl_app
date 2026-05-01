@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/football_match.dart';
-import '../models/sport_category.dart';
+import '../models/enums/sport_category.dart';
 import '../models/field.dart';
 import '../utils/atl_colors.dart';
 import 'info_row_with_icon.dart';

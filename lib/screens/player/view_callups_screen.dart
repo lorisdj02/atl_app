@@ -4,7 +4,7 @@ import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
 import '../../models/tournament.dart';
 import '../../models/player.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../l10n/app_localizations.dart';
 
 class ViewCallupsScreen extends StatefulWidget {

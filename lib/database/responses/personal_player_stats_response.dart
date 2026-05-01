@@ -1,6 +1,6 @@
 import 'package:atl_app/config/api_json_keys.dart';
 import 'package:atl_app/models/football_team_stats.dart';
-import 'package:atl_app/models/sport_category.dart';
+import 'package:atl_app/models/enums/sport_category.dart';
 
 class PersonalPlayerStatsResponse {
   final FootballTeamStats footballStats;

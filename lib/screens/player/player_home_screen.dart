@@ -6,7 +6,7 @@ import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/account.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/player_coordinator_bottom_bar.dart';
-import '../../models/sport_category.dart';
+import '../../models/enums/sport_category.dart';
 import '../../models/tournament.dart';
 import '../../models/football_match.dart';
 import '../../models/football_standing.dart';
@@ -33,32 +33,32 @@ class PlayerHomeScreen extends StatefulWidget {
 }
 
 class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
-  late final AccountProvider userProvider = Provider.of<AccountProvider>(
+  late final AccountProvider accountProvider = Provider.of<AccountProvider>(
     context,
     listen: false,
   );
-  late final Account user = userProvider.activeAccount!;
-  late final int? teamId = userProvider.currentTeamId;
-  late final int playerId = userProvider.activeRoleId!;
+  late final Account account = accountProvider.activeAccount!;
+  late final double? teamId = accountProvider.currentTeamId;
+  late final double playerId = accountProvider.activeRoleId!;
   late final SportCategory _currentSport =
-      userProvider.selectedSportCategory ?? SportCategory.football;
+      accountProvider.selectedSportCategory ?? SportCategory.football;
 
   List<Tournament>? _activeTournaments;
-  Map<int, int> _minutesRoundPerTournament = {};
-  Map<int, int> _minutesPausePerTournament = {};
-  Map<int, List<FootballMatch>> _matchesPerTournament = {};
-  Map<int, List<FootballStanding>> _standingsPerTournament = {};
-  Map<int, String> _usernamePerBooking = {};
-  Map<int, Field> _fieldCache = {};
+  Map<double, int> _minutesRoundPerTournament = {};
+  Map<double, int> _minutesPausePerTournament = {};
+  Map<double, List<FootballMatch>> _matchesPerTournament = {};
+  Map<double, List<FootballStanding>> _standingsPerTournament = {};
+  Map<double, String> _usernamePerBooking = {};
+  Map<double, Field> _fieldCache = {};
 
-  Map<int, int> _maxPlayersPerLobby = {};
-  Map<int, int> _currentPlayersPerLobby = {};
-  Map<int, int> _playersPaidPerBooking = {};
-  Map<int, String> _completeAddressPerField = {};
+  Map<double, int> _maxPlayersPerLobby = {};
+  Map<double, int> _currentPlayersPerLobby = {};
+  Map<double, int> _playersPaidPerBooking = {};
+  Map<double, String> _completeAddressPerField = {};
 
-  Map<int, Team> _teamsCache = {};
+  Map<double, Team> _teamsCache = {};
 
-  Team? _userTeam;
+  Team? _accountTeam;
   List<dynamic> _bookings = [];
   bool _isLoading = true;
   int _currentPage = 0;
@@ -110,7 +110,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
           _standingsPerTournament =
               playerHomeData.footballStandingsPerTournament;
           _teamsCache = playerHomeData.teamsCache;
-          _userTeam = playerHomeData.accountTeam;
+          _accountTeam = playerHomeData.accountTeam;
           _usernamePerBooking = playerHomeData.usernamePerBooking;
           _fieldCache = playerHomeData.fieldsCache;
           _maxPlayersPerLobby = playerHomeData.maxPlayersPerLobby;
@@ -320,7 +320,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
         onTap: _onNavTap,
         currentSport: _currentSport,
         isHome: true,
-        userId: user.id,
+        accountId: account.id,
       ),
     );
   }
@@ -392,7 +392,7 @@ class _PlayerHomeScreenState extends State<PlayerHomeScreen> {
                     matches: _matchesPerTournament[tournament.id] ?? [],
                     standings: _standingsPerTournament[tournament.id] ?? [],
                     teamsCache: _teamsCache,
-                    userTeam: _userTeam,
+                    accountTeam: _accountTeam,
                     sportCategory: _currentSport,
                     minutesPerRound: _minutesRoundPerTournament[tournament.id]!,
                     minutesPerPause: _minutesPausePerTournament[tournament.id]!,

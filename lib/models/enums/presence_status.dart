@@ -30,8 +30,12 @@ extension PresenceStatusExtension on PresenceStatus {
     );
   }
 
-  fromJson(Map<String, dynamic> json) {
-    return PresenceStatusExtension.fromString(json['presenceStatus']);
+  static PresenceStatus fromJson(String json) {
+    final normalized = json.toUpperCase();
+    return PresenceStatus.values.firstWhere(
+      (e) => e.apiName == normalized,
+      orElse: () => throw ArgumentError('Unknown presence status: $json'),
+    );
   }
 
   Map<String, dynamic> toJson() {

@@ -6,6 +6,9 @@ class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
   late final Dio dio;
 
+  // Callback che ritorna il token corrente (username)
+  String? Function()? _tokenProvider;
+
   factory ApiClient() => _instance;
 
   ApiClient._internal() {
@@ -23,6 +26,10 @@ class ApiClient {
     );
 
     _setupInterceptors();
+  }
+
+  void setTokenProvider(String? Function() provider) {
+    _tokenProvider = provider;
   }
 
   void _setupInterceptors() {
@@ -43,15 +50,13 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          // Aggiungi token auth se disponibile
-          if (AppConfig.apiKey.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer ${AppConfig.apiKey}';
+          final token = _tokenProvider?.call();
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          } else {
+            options.headers.remove('Authorization');
           }
           return handler.next(options);
-        },
-        onError: (error, handler) async {
-          // TODO: Gestisci errori comuni (401, 403, 500, etc.)
-          return handler.next(error);
         },
       ),
     );

@@ -12,9 +12,9 @@ class TournamentParticipation {
 
   factory TournamentParticipation.fromJson(Map<String, dynamic> json) {
     return TournamentParticipation(
-      tournamentId: json['tournamentId'],
-      teamId: json['teamId'],
-      toPay: json['toPay'],
+      tournamentId: json['tournamentId'] != null ? (json['tournamentId'] as num).toDouble() : 0.0,
+      teamId: json['teamId'] != null ? (json['teamId'] as num).toDouble() : 0.0,
+      toPay: json['toPay'] != null ? (json['toPay'] as num).toDouble() : 0.0,
     );
   }
 
