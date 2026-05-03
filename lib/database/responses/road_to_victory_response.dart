@@ -14,12 +14,12 @@ class RoadToVictoryResponse {
     final tournament = Tournament.fromJson(
       json[ApiJsonKeys.tournament] as Map<String, dynamic>,
     );
-    final matches = List<FootballMatch>.from(
-      (json[ApiJsonKeys.matches] as List<dynamic>).map(
-        (matchJson) =>
-            FootballMatch.fromJson(matchJson as Map<String, dynamic>),
-      ),
-    );
+    print("Tournament deserialized: ${tournament.name}");
+
+    final matches = (json[ApiJsonKeys.matches] as List)
+        .map((e) => FootballMatch.fromJson(e as Map<String, dynamic>))
+        .toList();
+    print("Matches deserialized: ${matches.length}");
 
     return RoadToVictoryResponse(tournament: tournament, matches: matches);
   }

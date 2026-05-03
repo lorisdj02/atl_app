@@ -11,13 +11,17 @@ class FootballMatchEventsResponse {
   });
 
   factory FootballMatchEventsResponse.fromJson(Map<String, dynamic> json) {
+      final List<FootballMatchEvent> events = (json[ApiJsonKeys.events] as List)
+          .map((e) => FootballMatchEvent.fromJson(e))
+          .toList();
+      print("Events parsed: ${events.length}");
+
+  final bool canMatchFinish = json[ApiJsonKeys.canMatchFinish] as bool;
+  print("Can match finish parsed: $canMatchFinish");
+
     return FootballMatchEventsResponse(
-      events: List<FootballMatchEvent>.from(
-        (json[ApiJsonKeys.events] as List).map(
-          (eventJson) => FootballMatchEvent.fromJson(eventJson),
-        ),
-      ),
-      canMatchFinish: json[ApiJsonKeys.canMatchFinish] as bool,
+      events: events,
+      canMatchFinish: canMatchFinish,
     );
   }
 }

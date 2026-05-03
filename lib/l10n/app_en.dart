@@ -1838,7 +1838,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get penaltyShootoutEvent => 'Penalty Shootout';
 
   @override
-  String matchIdLabel(double id) => 'Match ID: #$id';
+    String matchIdLabel(int id) => 'Match ID: #$id';
 
   @override
   String get unknownPlayer => 'Unknown Player';
@@ -2505,7 +2505,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viceCaptainAbbr => 'VC';
 
   @override
-  String teamAliasAndId(String alias, double id) => "Alias: ${alias} - ID: ${id}";
+  String teamAliasAndId(String alias, double id) =>
+      "Alias: ${alias} - ID: ${id}";
 
   // Abstract football match widget - match statuses
   @override
@@ -2884,4 +2885,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectADate => 'Select a date';
+
+  @override
+  String get startDateLabel => 'Start date';
+
+  @override
+  String get unknownDate => 'Unknown date';
+
+  @override
+  String get unknownTime => 'Unknown time';
 }

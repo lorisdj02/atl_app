@@ -202,7 +202,7 @@ class TournamentSummary extends StatelessWidget {
                 label: l10n.sportLabel,
                 value: _getSportDisplayName(sportData),
               ),
-              InfoRowWidget(label: l10n.selectDateRequired, value: _getStartDateDisplay(context)),
+              InfoRowWidget(label: l10n.startDateLabel, value: _getStartDateDisplay(context)),
               InfoRowWidget(label: l10n.teamsLabel, value: '${tournament.numTeams}'),
               InfoRowWidget(label: l10n.groupsLabel, value: '${tournament.numGroups}'),
               InfoRowWidget(

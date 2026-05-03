@@ -1,4 +1,3 @@
-import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/all_tournaments_response.dart';
 import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
 import 'package:atl_app/database/responses/callups_response.dart';

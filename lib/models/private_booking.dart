@@ -27,8 +27,8 @@ class PrivateBooking extends Booking {
       fieldId: json['fieldId'] != null
           ? (json['fieldId'] as num).toDouble()
           : 0.0,
-      startTime: DateTime.parse(json['startDateTime']),
-      finishTime: DateTime.parse(json['finishDateTime']),
+      startTime: DateTime.parse(json['startTime']),
+      finishTime: DateTime.parse(json['finishTime']),
       status: BookingStatusExtension.fromJson(json['status']),
       bookingType: BookingTypeExtension.fromJson(json['bookingType']),
       sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
@@ -44,8 +44,8 @@ class PrivateBooking extends Booking {
     return {
       'id': id,
       'fieldId': fieldId,
-      'startDateTime': startTime.toIso8601String(),
-      'finishDateTime': finishTime.toIso8601String(),
+      'startTime': startTime.toIso8601String(),
+      'finishTime': finishTime.toIso8601String(),
       'status': status.apiName,
       'bookingType': bookingType.apiName,
       'sportCategory': sportCategory.apiName,

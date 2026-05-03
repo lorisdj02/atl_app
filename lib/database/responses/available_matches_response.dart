@@ -20,43 +20,61 @@ class AvailableMatchesResponse {
   });
 
   factory AvailableMatchesResponse.fromJson(Map<String, dynamic> json) {
-    return AvailableMatchesResponse(
-      footballMatches: List<FootballMatch>.from(
-        (json[ApiJsonKeys.footballMatches] as List<dynamic>).map(
-          (e) => FootballMatch.fromJson(e as Map<String, dynamic>),
-        ),
-      ),
-      teamsCache: Map<double, Team>.from(
+    final List<FootballMatch> footballMatches =
+        (json[ApiJsonKeys.footballMatches] as List<dynamic>)
+            .map((e) => FootballMatch.fromJson(e as Map<String, dynamic>))
+            .toList();
+    print("Football matches parsed: ${footballMatches.length}");
+
+    final Map<double, Team> teamsCache =
         (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
-          (key, value) => MapEntry(double.parse(key), Team.fromJson(value as Map<String, dynamic>)),
-        ),
-      ),
-      minutesRoundPerTournament:
-          Map<double, int>.from(
+          (key, value) => MapEntry(
+            double.parse(key),
+            Team.fromJson(value as Map<String, dynamic>),
+          ),
+        );
+    print("Teams parsed: ${teamsCache.values.length}");
+
+    final Map<double, int> minutesRoundPerTournament =
         (json[ApiJsonKeys.minutesRoundPerTournament] as Map<String, dynamic>)
-            .map((key, value) => MapEntry(double.parse(key), value as int)),
-      ),
-          minutesPausePerTournament:
-          Map<double, int>.from(
-            (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
-                .map((key, value) => MapEntry(double.parse(key), value as int)),
+            .map((key, value) => MapEntry(double.parse(key), value as int));
+    print(
+      "Minutes round per tournament parsed: ${minutesRoundPerTournament.values.length}",
+    );
+
+    final Map<double, int> minutesPausePerTournament =
+        (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(double.parse(key), value as int));
+    print(
+      "Minutes pause per tournament parsed: ${minutesPausePerTournament.values.length}",
+    );
+
+    final Map<double, List<FootballMatch>> footballMatchesPerSport =
+        (json[ApiJsonKeys.footballMatchesPerSport] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(
+            double.parse(key),
+            (value as List<dynamic>)
+                .map((e) => FootballMatch.fromJson(e as Map<String, dynamic>))
+                .toList(),
           ),
-      footballMatchesPerSport:
-          Map<double, List<FootballMatch>>.from(
-            (json[ApiJsonKeys.footballMatchesPerSport] as Map<String, dynamic>).map(
-              (key, value) => MapEntry(
-                double.parse(key),
-                (value as List<dynamic>)
-                    .map((e) => FootballMatch.fromJson(e as Map<String, dynamic>))
-                    .toList(),
-              ),
-            ),
-          ),
-      sportNames: Map<double, String>.from(
+        );
+    print(
+      "Football matches per sport parsed: ${footballMatchesPerSport.values.length}",
+    );
+
+    final Map<double, String> sportNames =
         (json[ApiJsonKeys.sportNames] as Map<String, dynamic>).map(
           (key, value) => MapEntry(double.parse(key), value as String),
-        ),
-      ),
+        );
+    print("Sport names parsed: ${sportNames.values.length}");
+
+    return AvailableMatchesResponse(
+      footballMatches: footballMatches,
+      teamsCache: teamsCache,
+      minutesRoundPerTournament: minutesRoundPerTournament,
+      minutesPausePerTournament: minutesPausePerTournament,
+      footballMatchesPerSport: footballMatchesPerSport,
+      sportNames: sportNames,
     );
   }
 }

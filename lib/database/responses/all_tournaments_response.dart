@@ -39,7 +39,7 @@ class AllTournamentsResponse {
         .map((e) => Tournament.fromJson(e))
         .toList();
     print("My Tournaments: ${myTournaments.length}");
-    
+
     Map<double, Coordinator> coordinatorsCache =
         (json[ApiJsonKeys.coordinatorsCache] as Map<String, dynamic>).map(
           (key, value) =>
@@ -64,16 +64,16 @@ class AllTournamentsResponse {
         );
     print("City Names per Field: ${cityNamePerField.length}");
 
-    double prizeMin = json[ApiJsonKeys.prizeMin] as double;
+    double prizeMin = (json[ApiJsonKeys.prizeMin] as num).toDouble();
     print("Prize Min: $prizeMin");
 
-    double prizeMax = json[ApiJsonKeys.prizeMax] as double;
+    double prizeMax = (json[ApiJsonKeys.prizeMax] as num).toDouble();
     print("Prize Max: $prizeMax");
 
-    double feeMin = json[ApiJsonKeys.feeMin] as double;
+    double feeMin = (json[ApiJsonKeys.feeMin] as num).toDouble();
     print("Fee Min: $feeMin");
 
-    double feeMax = json[ApiJsonKeys.feeMax] as double;
+    double feeMax = (json[ApiJsonKeys.feeMax] as num).toDouble();
     print("Fee Max: $feeMax");
 
     return AllTournamentsResponse(

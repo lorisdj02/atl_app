@@ -31,50 +31,75 @@ class OrganizationHomeResponse {
   });
 
   factory OrganizationHomeResponse.fromJson(Map<String, dynamic> json) {
-    return OrganizationHomeResponse(
-      fields: (json[ApiJsonKeys.fields] as List)
-          .map((e) => Field.fromJson(e))
-          .toList(),
-      generalBookings: (json[ApiJsonKeys.generalBookings] as List)
-          .map((e) => Booking.fromJson(e))
-          .toList(),
-      cityNamePerField: Map<double, String>.from(
-        json[ApiJsonKeys.cityNamePerField].map(
+    final List<Field> fields = (json[ApiJsonKeys.fields] as List)
+        .map((e) => Field.fromJson(e))
+        .toList();
+    print("Fields parsed: ${fields.length}");
+
+    final List<Booking> generalBookings =
+        (json[ApiJsonKeys.generalBookings] as List)
+            .map((e) => Booking.fromJson(e))
+            .toList();
+    print("General bookings parsed: ${generalBookings.length}");
+
+    final Map<double, String> cityNamePerField =
+        (json[ApiJsonKeys.cityNamePerField] as Map<String, dynamic>).map(
           (key, value) => MapEntry(double.parse(key), value),
-        ),
-      ),
-      lobbyBookingsCache: Map<double, LobbyBooking>.from(
+        );
+    print("City name per field parsed: ${cityNamePerField.length}");
+
+    final Map<double, LobbyBooking> lobbyBookingsCache =
         (json[ApiJsonKeys.lobbyBookingsCache] as Map<String, dynamic>).map(
           (key, value) =>
               MapEntry(double.parse(key), LobbyBooking.fromJson(value)),
-        ),
-      ),
-      privateBookingsCache: Map<double, PrivateBooking>.from(
+        );
+    print("Lobby bookings cache parsed: ${lobbyBookingsCache.length}");
+
+    final Map<double, PrivateBooking> privateBookingsCache =
         (json[ApiJsonKeys.privateBookingsCache] as Map<String, dynamic>).map(
           (key, value) =>
               MapEntry(double.parse(key), PrivateBooking.fromJson(value)),
-        ),
-      ),
-      matchBookingsCache: Map<double, MatchBooking>.from(
+        );
+    print("Private bookings cache parsed: ${privateBookingsCache.length}");
+
+    final Map<double, MatchBooking> matchBookingsCache =
         (json[ApiJsonKeys.matchBookingsCache] as Map<String, dynamic>).map(
           (key, value) =>
               MapEntry(double.parse(key), MatchBooking.fromJson(value)),
-        ),
-      ),
-      footballMatchPerBooking:
-          (json[ApiJsonKeys.footballMatchPerBooking] as Map<String, dynamic>)
-              .map(
-                (key, value) =>
-                    MapEntry(double.parse(key), FootballMatch.fromJson(value)),
-              ),
-      teamsCache: (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
-      ),
-      usernamePerBooking: Map<double, String>.from(
-        json[ApiJsonKeys.usernamePerBooking].map(
+        );
+    print("Match bookings cache parsed: ${matchBookingsCache.length}");
+
+    final Map<double, FootballMatch> footballMatchPerBooking =
+        (json[ApiJsonKeys.footballMatchPerBooking] as Map<String, dynamic>).map(
+          (key, value) =>
+              MapEntry(double.parse(key), FootballMatch.fromJson(value)),
+        );
+    print(
+      "Football matches per booking parsed: ${footballMatchPerBooking.length}",
+    );
+
+    final Map<double, Team> teamsCache =
+        (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
+        );
+    print("Teams cache parsed: ${teamsCache.length}");
+
+    final Map<double, String> usernamePerBooking =
+        (json[ApiJsonKeys.usernamePerBooking] as Map<String, dynamic>).map(
           (key, value) => MapEntry(double.parse(key), value),
-        ),
-      ),
+        );
+    print("Usernames per booking parsed: ${usernamePerBooking.length}");
+
+    return OrganizationHomeResponse(
+      fields: fields,
+      generalBookings: generalBookings,
+      cityNamePerField: cityNamePerField,
+      lobbyBookingsCache: lobbyBookingsCache,
+      privateBookingsCache: privateBookingsCache,
+      matchBookingsCache: matchBookingsCache,
+      footballMatchPerBooking: footballMatchPerBooking,
+      teamsCache: teamsCache,
+      usernamePerBooking: usernamePerBooking,
     );
   }
 }

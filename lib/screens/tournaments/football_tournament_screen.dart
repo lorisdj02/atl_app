@@ -91,7 +91,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       setState(() {
         _currentIndex = newIndex;
       });
-      await _loadData();
+      // await _loadData();
     }
   }
 
@@ -113,9 +113,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       _standings = data.standings;
       _players = data.players;
       _teamsCache = data.teamsCache;
-      _playerStatsCache = Map<double, FootballTeamStats>.from(
-        data.footballPlayerStatsCache,
-      );
+      _playerStatsCache = data.footballPlayerStatsCache;
       _minutesPerRound = data.minutesPerRound;
       _minutesPerPause = data.minutesPerPause;
       _finalStageBrackets = data.finalStageBrackets;
@@ -460,7 +458,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
     if (selectedPhaseData['isDay'] == true) {
       // Group stage day
-      return _buildGroupStageMatches(selectedPhaseData['day'] as double);
+      return _buildGroupStageMatches(selectedPhaseData['day'] as int);
     } else {
       // Playoff phase
       return _buildPlayoffMatches(
@@ -470,7 +468,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     }
   }
 
-  Widget _buildGroupStageMatches(double day) {
+  Widget _buildGroupStageMatches(int day) {
     final groups = _getGroups();
 
     return ListView.builder(
@@ -834,11 +832,14 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.bar_chart, size: 80, color: Colors.grey),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               _l10n.noStatsAvailable,
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18, color: ATLColors.subtext),
             ),
           ],

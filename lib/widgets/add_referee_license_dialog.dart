@@ -319,7 +319,7 @@ class _AddRefereeLicenseDialogState extends State<AddRefereeLicenseDialog> {
                       child: TextButton(
                         onPressed: _isLoading
                             ? null
-                            : () => Navigator.of(context).pop(false),
+                            : () => Navigator.of(context).pop(),
                         child: Text(
                           l10n.cancelButton,
                           style: TextStyle(color: ATLColors.subtext),

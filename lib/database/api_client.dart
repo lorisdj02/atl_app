@@ -39,7 +39,7 @@ class ApiClient {
         LogInterceptor(
           requestBody: true,
           responseBody: true,
-          error: true,
+          error: false,
           requestHeader: true,
           responseHeader: false,
         ),
@@ -58,8 +58,44 @@ class ApiClient {
           }
           return handler.next(options);
         },
+        onError: (error, handler) {
+          final statusCode = error.response?.statusCode;
+          final responseText = error.response?.data?.toString();
+          if (statusCode != null) {
+            throw Exception(
+              _formatStatusMessage(statusCode, responseText),
+            );
+          }
+          throw Exception('NETWORK_ERROR');
+        },
       ),
     );
+  }
+
+  String _formatStatusMessage(int statusCode, String? textStatus) {
+    final trimmed = textStatus?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      return '$statusCode $trimmed';
+    }
+    return '$statusCode ${_statusLabel(statusCode)}';
+  }
+
+  String _statusLabel(int statusCode) {
+    switch (statusCode) {
+      case 401:
+      case 403:
+        return 'AUTHENTICATION';
+      case 404:
+        return 'NOT_FOUND';
+      case 409:
+        return 'CONFLICT';
+      case 422:
+        return 'VALIDATION';
+      case 500:
+        return 'SERVER_ERROR';
+      default:
+        return 'HTTP_ERROR';
+    }
   }
 
   /// Ottieni l'istanza Dio configurata

@@ -18,11 +18,23 @@ class TournamentSummaryResponse {
   });
 
   factory TournamentSummaryResponse.fromJson(Map<String, dynamic> json) {
+      final Tournament tournament = Tournament.fromJson(json[ApiJsonKeys.tournament] as Map<String, dynamic>);
+  print("Tournament deserialized: ${tournament.name}");
+
+  final Sport sport = Sport.fromJson(json[ApiJsonKeys.sport] as Map<String, dynamic>);
+  print("Sport deserialized: ${sport.name}");
+
+  final Field field = Field.fromJson(json[ApiJsonKeys.field] as Map<String, dynamic>);
+  print("Field deserialized: ${field.name}");
+
+  final String cityName = json[ApiJsonKeys.cityName] as String;
+  print("City name deserialized: $cityName");
+
     return TournamentSummaryResponse(
-      tournament: Tournament.fromJson(json[ApiJsonKeys.tournament] as Map<String, dynamic>),
-      sport: Sport.fromJson(json[ApiJsonKeys.sport] as Map<String, dynamic>),
-      field: Field.fromJson(json[ApiJsonKeys.field] as Map<String, dynamic>),
-      cityName: json[ApiJsonKeys.cityName] as String,
+      tournament: tournament,
+      sport: sport,
+      field: field,
+      cityName: cityName,
     );
   }
 }

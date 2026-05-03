@@ -13,15 +13,26 @@ class ScheduleMatchResponse {
   });
 
   factory ScheduleMatchResponse.fromJson(Map<String, dynamic> json) {
-    return ScheduleMatchResponse(
-      minutesPerRound: json[ApiJsonKeys.minutesPerRound] as int,
-      minutesPerPause: json[ApiJsonKeys.minutesPerPause] as int,
-      bookings: List<Booking>.from(
-        (json[ApiJsonKeys.generalBookings] as List<dynamic>).map(
+    final int minutesPerRound = (json[ApiJsonKeys.minutesPerRound] as num)
+        .toInt();
+    print("Minutes per round deserialized: $minutesPerRound");
+
+    final int minutesPerPause = (json[ApiJsonKeys.minutesPerPause] as num)
+        .toInt();
+    print("Minutes per pause deserialized: $minutesPerPause");
+
+    final List<Booking> bookings = (json[ApiJsonKeys.generalBookings] as List)
+        .map(
           (bookingJson) =>
               Booking.fromJson(bookingJson as Map<String, dynamic>),
-        ),
-      ),
+        )
+        .toList();
+    print("Bookings deserialized: ${bookings.length}");
+
+    return ScheduleMatchResponse(
+      minutesPerRound: minutesPerRound,
+      minutesPerPause: minutesPerPause,
+      bookings: bookings,
     );
   }
 }

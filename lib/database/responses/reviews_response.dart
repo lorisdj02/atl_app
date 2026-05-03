@@ -14,16 +14,28 @@ class ReviewsResponse {
   });
 
   factory ReviewsResponse.fromJson(Map<String, dynamic> json) {
+    List<Review> reviews = (json[ApiJsonKeys.reviews] as List)
+        .map((e) => Review.fromJson(e))
+        .toList();
+    print('Parsed ${reviews.length} reviews from JSON');
+
+    Map<double, Account> accountPerReview =
+        (json[ApiJsonKeys.accountPerReview] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), Account.fromJson(value)),
+        );
+    print('Parsed ${accountPerReview.length} accounts from JSON');
+
+    Map<double, String> matchTeamsStringPerReview =
+        (json[ApiJsonKeys.matchTeamsStringPerReview] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(double.parse(key), value as String));
+    print(
+      'Parsed ${matchTeamsStringPerReview.length} match team strings from JSON',
+    );
+
     return ReviewsResponse(
-      reviews: (json[ApiJsonKeys.reviews] as List)
-          .map((e) => Review.fromJson(e))
-          .toList(),
-      accountPerReview: (json[ApiJsonKeys.accountPerReview] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(double.parse(key), Account.fromJson(value)),
-      ),
-      matchTeamsStringPerReview: (json[ApiJsonKeys.matchTeamsStringPerReview] as Map<String, dynamic>).map(
-        (key, value) => MapEntry(double.parse(key), value as String),
-      ),
+      reviews: reviews,
+      accountPerReview: accountPerReview,
+      matchTeamsStringPerReview: matchTeamsStringPerReview,
     );
   }
 }

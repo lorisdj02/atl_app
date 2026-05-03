@@ -13,15 +13,20 @@ class FieldsAndMaxPlayersPerFieldResponse {
   factory FieldsAndMaxPlayersPerFieldResponse.fromJson(
     Map<String, dynamic> json,
   ) {
-    return FieldsAndMaxPlayersPerFieldResponse(
-      fields: List<Field>.from(
-        json[ApiJsonKeys.fields].map((x) => Field.fromJson(x)),
-      ),
-      maxPlayersPerField: Map<double, int>.from(
-        json[ApiJsonKeys.maxPlayersPerField].map(
+    final List<Field> fields = (json[ApiJsonKeys.fields] as List)
+        .map((x) => Field.fromJson(x))
+        .toList();
+    print("Fields parsed: ${fields.length}");
+
+    final Map<double, int> maxPlayersPerField =
+        (json[ApiJsonKeys.maxPlayersPerField] as Map<String, dynamic>).map(
           (key, value) => MapEntry(double.parse(key), value),
-        ),
-      ),
+        );
+    print("Max players per field parsed: ${maxPlayersPerField.length}");
+
+    return FieldsAndMaxPlayersPerFieldResponse(
+      fields: fields,
+      maxPlayersPerField: maxPlayersPerField,
     );
   }
 }

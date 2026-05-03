@@ -8,18 +8,13 @@ class TeamsResponse {
   TeamsResponse({required this.teamsCache, required this.captainNamePerTeam});
 
   factory TeamsResponse.fromJson(Map<String, dynamic> json) {
-    Map<double, Team> teamsCache = Map<double, Team>.from(
-      json[ApiJsonKeys.teamsCache].map(
-        (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
-      ),
+    Map<double, Team> teamsCache = (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
+      (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
     );
     print("TeamsCache size: ${teamsCache.length}");
 
-    Map<double, String> captainNamePerTeam = Map<double, String>.from(
-      json[ApiJsonKeys.captainNamePerTeam].map(
-        (key, value) => MapEntry(double.parse(key), value),
-      ),
-    );
+    Map<double, String> captainNamePerTeam = (json[ApiJsonKeys.captainNamePerTeam] as Map<String, dynamic>)
+        .map((key, value) => MapEntry(double.parse(key), value as String));
     print("CaptainNamePerTeam size: ${captainNamePerTeam.length}");
 
     return TeamsResponse(

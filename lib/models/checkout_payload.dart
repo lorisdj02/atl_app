@@ -18,7 +18,7 @@ class CheckoutPayload {
   final SportCategory? sportCategory;
 
   final double amount;
-  final CheckoutType type;
+  final CheckoutType checkoutType;
 
   CheckoutPayload({
     this.tournamentId,
@@ -32,7 +32,7 @@ class CheckoutPayload {
     this.fieldId,
     this.sportCategory,
     required this.amount,
-    required this.type,
+    required this.checkoutType,
   });
 
   factory CheckoutPayload.fromJson(Map<String, dynamic> json) {
@@ -58,8 +58,8 @@ class CheckoutPayload {
             )
           : null,
       amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
-      type: json['type'] != null
-          ? CheckoutTypeExtension.fromJson(json['type'])
+      checkoutType: json['checkoutType'] != null
+          ? CheckoutTypeExtension.fromJson(json['checkoutType'])
           : CheckoutType.shop, // Valore di default
     );
   }
@@ -77,7 +77,7 @@ class CheckoutPayload {
       'fieldId': fieldId,
       'sportCategory': sportCategory?.apiName,
       'amount': amount,
-      'type': type.apiName,
+      'checkoutType': checkoutType.apiName,
     };
   }
 }

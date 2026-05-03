@@ -14,11 +14,24 @@ class InviteFriendsResponse {
   });
 
   factory InviteFriendsResponse.fromJson(Map<String, dynamic> json) {
+    final double inviteBalance = (json[ApiJsonKeys.inviteBalance] as num)
+        .toDouble();
+    print("Invite balance parsed: $inviteBalance");
+
+    final String referralCode = json[ApiJsonKeys.referralCode] as String;
+    print("Referral code parsed: $referralCode");
+
+    final int numRedeemed = (json[ApiJsonKeys.numRedeemed] as num).toInt();
+    print("Number of redeemed invites parsed: $numRedeemed");
+
+    final int numInvites = (json[ApiJsonKeys.numInvites] as num).toInt();
+    print("Number of invites parsed: $numInvites");
+
     return InviteFriendsResponse(
-      inviteBalance: (json[ApiJsonKeys.inviteBalance] as num).toDouble(),
-      referralCode: json[ApiJsonKeys.referralCode] as String,
-      numRedeemed: (json[ApiJsonKeys.numRedeemed] as num).toInt(),
-      numInvites: (json[ApiJsonKeys.numInvites] as num).toInt(),
+      inviteBalance: inviteBalance,
+      referralCode: referralCode,
+      numRedeemed: numRedeemed,
+      numInvites: numInvites,
     );
   }
 }

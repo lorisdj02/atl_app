@@ -12,6 +12,9 @@ class ScheduleMatchDialog extends StatefulWidget {
   final double fieldId;
   final SportCategory currentSport;
   final DateTime? currentScheduledStart;
+  final TimeOfDay fieldOpeningTime;
+  final TimeOfDay fieldClosingTime;
+  final String fieldClosedDays;
 
   const ScheduleMatchDialog({
     super.key,
@@ -19,6 +22,9 @@ class ScheduleMatchDialog extends StatefulWidget {
     required this.fieldId,
     required this.currentSport,
     this.currentScheduledStart,
+    required this.fieldOpeningTime,
+    required this.fieldClosingTime,
+    required this.fieldClosedDays,
   });
 
   @override
@@ -34,6 +40,12 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   int _totalBookingDuration = 0;
   List<TimeOfDay> _availableSlots = [];
   List<Booking> _existingBookings = [];
+
+  bool _isClosedDay(DateTime date) {
+    if (widget.fieldClosedDays.length != 7) return false;
+    final index = date.weekday - 1; // 0 = Monday ... 6 = Sunday
+    return widget.fieldClosedDays[index] == '1';
+  }
 
   @override
   void initState() {
@@ -80,6 +92,13 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     setState(() => _isLoading = true);
 
     try {
+      if (_isClosedDay(date)) {
+        setState(() {
+          _availableSlots = [];
+          _isLoading = false;
+        });
+        return;
+      }
       final List<TimeOfDay> slots = [];
       final now = DateTime.now();
 
@@ -87,6 +106,10 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
       for (int hour = 0; hour < 24; hour++) {
         for (int minute = 0; minute < 60; minute += 15) {
           final slot = TimeOfDay(hour: hour, minute: minute);
+          if(slot.isBefore(widget.fieldOpeningTime) || slot.isAfter(widget.fieldClosingTime)) {
+            continue; // Skip slots outside of field opening hours
+          }
+          
 
           // Create DateTime for the kickoff time
           final kickoffTime = DateTime(

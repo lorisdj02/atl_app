@@ -33,68 +33,57 @@ class TeamDetailsResponse extends AbstractTeamResponse {
       "TeamDetailsResponse.fromJson: teamId=${team.id}, teamName=${team.name}",
     );
 
-    List<Player> players = List<Player>.from(
-      (json[ApiJsonKeys.players] as List).map((e) => Player.fromJson(e)),
-    );
+    List<Player> players = (json[ApiJsonKeys.players] as List)
+        .map((e) => Player.fromJson(e))
+        .toList();
     print("TeamDetailsResponse.fromJson: players count=${players.length}");
 
-    List<Palmares> palmares = List<Palmares>.from(
-      (json[ApiJsonKeys.palmares] as List).map((e) => Palmares.fromJson(e)),
-    );
+    List<Palmares> palmares = (json[ApiJsonKeys.palmares] as List)
+        .map((e) => Palmares.fromJson(e))
+        .toList();
     print("TeamDetailsResponse.fromJson: palmares count=${palmares.length}");
 
-    List<Tournament> tournaments = List<Tournament>.from(
-      (json[ApiJsonKeys.tournaments] as List).map(
-        (e) => Tournament.fromJson(e),
-      ),
-    );
+    List<Tournament> tournaments = (json[ApiJsonKeys.tournaments] as List)
+        .map((e) => Tournament.fromJson(e))
+        .toList();
     print(
       "TeamDetailsResponse.fromJson: tournaments count=${tournaments.length}",
     );
 
     Map<double, FootballTeamStats> footballPlayerStatsCache =
-        Map<double, FootballTeamStats>.from(
-          (json[ApiJsonKeys.footballPlayerStatsCache] as Map).map(
-            (key, value) =>
-                MapEntry(double.parse(key), FootballTeamStats.fromJson(value)),
-          ),
-        );
+        (json[ApiJsonKeys.footballPlayerStatsCache] as Map<String, dynamic>)
+            .map(
+              (key, value) => MapEntry(
+                double.parse(key),
+                FootballTeamStats.fromJson(value),
+              ),
+            );
     print(
       "TeamDetailsResponse.fromJson: footballPlayerStatsCache count=${footballPlayerStatsCache.length}",
     );
 
-    Map<double, String> cityNamePerField = Map<double, String>.from(
-      (json[ApiJsonKeys.cityNamePerField] as Map).map(
-        (key, value) => MapEntry(double.parse(key), value as String),
-      ),
-    );
+    Map<double, String> cityNamePerField = (json[ApiJsonKeys.cityNamePerField] as Map<String, dynamic>)
+        .map((key, value) => MapEntry(double.parse(key), value as String));
     print(
       "TeamDetailsResponse.fromJson: cityNamePerField count=${cityNamePerField.length}",
     );
 
-    List<Player> historicalPlayers = List<Player>.from(
-      (json[ApiJsonKeys.historicalPlayers] as List).map(
-        (e) => Player.fromJson(e),
-      ),
-    );
+    List<Player> historicalPlayers = (json[ApiJsonKeys.historicalPlayers] as List)
+        .map((e) => Player.fromJson(e))
+        .toList();
     print(
       "TeamDetailsResponse.fromJson: historicalPlayers count=${historicalPlayers.length}",
     );
 
-    Map<double, Coordinator> coordinatorsCache = Map<double, Coordinator>.from(
-      (json[ApiJsonKeys.coordinatorsCache] as Map).map(
-        (key, value) =>
-            MapEntry(double.parse(key), Coordinator.fromJson(value)),
-      ),
+    Map<double, Coordinator> coordinatorsCache = (json[ApiJsonKeys.coordinatorsCache] as Map<String, dynamic>).map(
+      (key, value) => MapEntry(double.parse(key), Coordinator.fromJson(value)),
     );
     print(
       "TeamDetailsResponse.fromJson: coordinatorsCache count=${coordinatorsCache.length}",
     );
 
-    Map<double, Field> fieldsCache = Map<double, Field>.from(
-      (json[ApiJsonKeys.fieldsCache] as Map).map(
-        (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
-      ),
+    Map<double, Field> fieldsCache = (json[ApiJsonKeys.fieldsCache] as Map<String, dynamic>).map(
+      (key, value) => MapEntry(double.parse(key), Field.fromJson(value)),
     );
     print(
       "TeamDetailsResponse.fromJson: fieldsCache count=${fieldsCache.length}",

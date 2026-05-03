@@ -1871,7 +1871,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get penaltyShootoutEvent => 'Calci di rigore';
 
   @override
-  String matchIdLabel(double id) => 'ID partita: #$id';
+    String matchIdLabel(int id) => 'ID partita: #$id';
 
   @override
   String get unknownPlayer => 'Giocatore sconosciuto';
@@ -2930,4 +2930,13 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get selectADate => 'Seleziona una data';
+
+  @override
+  String get startDateLabel => 'Data di inizio';
+
+    @override
+  String get unknownDate => 'Data sconosciuta';
+
+  @override
+  String get unknownTime => 'Orario sconosciuto';
 }

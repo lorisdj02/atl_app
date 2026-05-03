@@ -97,14 +97,13 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         }
       }
 
-      final JoinLobbyResponse data =
-          await BookingService.getJoinLobbyScreen(
-            sportCategory: widget.sportCategory,
-            totalPlayers: _selectedTotalPlayers,
-            selectedCityId: _selectedCity?.toDouble(),
-            startTime: startDateTime,
-            finishTime: endDateTime,
-          );
+      final JoinLobbyResponse data = await BookingService.getJoinLobbyScreen(
+        sportCategory: widget.sportCategory,
+        totalPlayers: _selectedTotalPlayers,
+        selectedCityId: _selectedCity?.toDouble(),
+        startTime: startDateTime,
+        finishTime: endDateTime,
+      );
 
       List<LobbyBooking> lobbies = data.lobbies;
 
@@ -431,25 +430,26 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   }
 
   Future<void> _joinLobby(LobbyBooking lobby, int playersPaid) async {
-
     CheckoutPayload checkoutPayload = CheckoutPayload(
       lobbyId: lobby.id,
       playersPaid: playersPaid,
       amount: lobby.feePerPlayer * playersPaid,
-      type: CheckoutType.lobbyBookingParticipate,
+      checkoutType: CheckoutType.lobbyBookingParticipate,
     );
 
     final CheckoutSession checkoutSession =
         await PaymentService.createCheckoutSession(checkoutPayload);
-
-    final result = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (context) => CheckoutScreen(
-          sportCategory: widget.sportCategory,
-          sessionId: checkoutSession.id,
+    bool? result = false;
+    if (mounted) {
+      result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => CheckoutScreen(
+            sportCategory: widget.sportCategory,
+            sessionId: checkoutSession.id,
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     if (result == true && mounted) {
       // TODO: handle post-payment transition
@@ -526,10 +526,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                         displayText: (val) {
                           final city = _availableCities.firstWhere(
                             (c) => c.id == val,
-                            orElse: () => City(
-                              id: 0,
-                              name: '',
-                            ),
+                            orElse: () => City(id: 0, name: ''),
                           );
                           return city.name;
                         },

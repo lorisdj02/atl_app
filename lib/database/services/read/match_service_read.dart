@@ -18,12 +18,11 @@ class MatchServiceRead {
       double? sportId,
     }
   ) async {
-    //TODO: Aggiungere parametri per filtrare per città e sport
     final response = await dio.get(
       "$apiUrl/${sportCategory.apiName}/referee/available-matches",
       queryParameters: {
-        if (cityId != null) 'cityId': cityId,
-        if (sportId != null) 'sportId': sportId,
+        if (cityId != null) 'cityId': cityId.toStringAsFixed(0),
+        if (sportId != null) 'sportId': sportId.toStringAsFixed(0),
       },
     );
     return AvailableMatchesResponse.fromJson(response.data);

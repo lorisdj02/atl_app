@@ -10,7 +10,7 @@ class Review {
   final double reviewedAccountId;
   final String? comment;
   final double rating;
-  final ReviewType type;
+  final ReviewType reviewType;
   final SportCategory sportCategory;
 
   Review({
@@ -21,7 +21,7 @@ class Review {
     required this.reviewedAccountId,
     required this.comment,
     required this.rating,
-    required this.type,
+    required this.reviewType,
     required this.sportCategory,
   });
 
@@ -34,7 +34,7 @@ class Review {
       'reviewedAccountId': reviewedAccountId,
       'comment': comment,
       'rating': rating,
-      'type': type.apiName,
+      'reviewType': reviewType.apiName,
       'sportCategory': sportCategory.apiName,
     };
   }
@@ -56,7 +56,7 @@ class Review {
           : 0.0,
       comment: json['comment'],
       rating: json['rating'] != null ? (json['rating'] as num).toDouble() : 0.0,
-      type: ReviewTypeExtension.fromJson(json['type']),
+      reviewType: ReviewTypeExtension.fromJson(json['reviewType']),
       sportCategory: json['sportCategory'] != null
           ? SportCategoryExtension.fromJson(json['sportCategory'])
           : SportCategory.football,

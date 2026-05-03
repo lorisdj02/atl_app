@@ -18,14 +18,29 @@ class CheckoutSession {
   });
 
   factory CheckoutSession.fromJson(Map<String, dynamic> json) {
+    final double id = (json['id'] as num).toDouble();
+    print("Checkout session ID parsed: $id");
+
+  final double accountId = (json['accountId'] as num).toDouble();
+    print("Checkout session account ID parsed: $accountId");
+
+  final CheckoutPayload payload = CheckoutPayload.fromJson(json['payload']);
+    print("Checkout session payload parsed: ${payload.toString()}");
+
+  final CheckoutType type = json['type'] != null
+        ? CheckoutTypeExtension.fromJson(json['type'])
+        : CheckoutType.shop;
+    print("Checkout session type parsed: ${type.toString()}");
+
+  final double amount = (json['amount'] as num).toDouble();
+    print("Checkout session amount parsed: $amount");
+
     return CheckoutSession(
-      id: (json['id'] as num).toDouble(),
-      accountId: (json['accountId'] as num).toDouble(),
-      type: json['type'] != null
-          ? CheckoutTypeExtension.fromJson(json['type'])
-          : CheckoutType.shop,
-      payload: CheckoutPayload.fromJson(json['payload']),
-      amount: (json['amount'] as num).toDouble(),
+      id: id,
+      accountId: accountId,
+      type: type,
+      payload: payload,
+      amount: amount,
     );
   }
 

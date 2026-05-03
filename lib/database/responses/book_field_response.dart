@@ -15,19 +15,27 @@ class BookFieldResponse {
   });
 
   factory BookFieldResponse.fromJson(Map<String, dynamic> json) {
-    final cities = List<City>.from(
-      json[ApiJsonKeys.cities].map((x) => City.fromJson(x)),
+    final cities = (json[ApiJsonKeys.cities] as List<dynamic>)
+        .map((cityJson) => City.fromJson(cityJson))
+        .toList();
+    print("Cities parsed: ${cities.length}");
+
+    final minOpeningTimePerCity =
+        (json[ApiJsonKeys.minOpeningTimePerCity] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), timeOfDayFromJson(value)),
+        );
+    print(
+      "Min opening time per city parsed: ${minOpeningTimePerCity.values.length}",
     );
-    final minOpeningTimePerCity = Map<double, TimeOfDay>.from(
-      json[ApiJsonKeys.minOpeningTimePerCity].map(
-        (key, value) => MapEntry(double.parse(key), timeOfDayFromJson(value)),
-      ),
+
+    final maxClosingTimePerCity =
+        (json[ApiJsonKeys.maxClosingTimePerCity] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(double.parse(key), timeOfDayFromJson(value)),
+        );
+    print(
+      "Max closing time per city parsed: ${maxClosingTimePerCity.values.length}",
     );
-    final maxClosingTimePerCity = Map<double, TimeOfDay>.from(
-      json[ApiJsonKeys.maxClosingTimePerCity].map(
-        (key, value) => MapEntry(double.parse(key), timeOfDayFromJson(value)),
-      ),
-    );
+
     return BookFieldResponse(
       cities: cities,
       minOpeningTimePerCity: minOpeningTimePerCity,

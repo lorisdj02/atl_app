@@ -18,21 +18,27 @@ class CallupsResponse {
   });
 
   factory CallupsResponse.fromJson(Map<String, dynamic> json) {
+    final List<Player> players = (json[ApiJsonKeys.players] as List<dynamic>)
+        .map((e) => Player.fromJson(e as Map<String, dynamic>))
+        .toList();
+    print("Players parsed: ${players.length}");
+
+    final Sport sport = Sport.fromJson(json[ApiJsonKeys.sport] as Map<String, dynamic>);
+    print("Sport parsed: ${sport.name}");
+
+    final List<double> calledUpPlayerIds = (json[ApiJsonKeys.calledUpPlayerIds] as List<dynamic>)
+        .map((e) => e as double)
+        .toList();
+    print("Called up player IDs parsed: ${calledUpPlayerIds.length}");
+
+    final Tournament tournament = Tournament.fromJson(json[ApiJsonKeys.tournament] as Map<String, dynamic>);
+    print("Tournament parsed: ${tournament.name}");
+
     return CallupsResponse(
-      players: List<Player>.from(
-        (json[ApiJsonKeys.players] as List<dynamic>).map(
-          (e) => Player.fromJson(e as Map<String, dynamic>),
-        ),
-      ),
-      sport: Sport.fromJson(json[ApiJsonKeys.sport] as Map<String, dynamic>),
-      calledUpPlayerIds: List<double>.from(
-        (json[ApiJsonKeys.calledUpPlayerIds] as List<dynamic>)
-            .map((e) => e as double)
-            .toList(),
-      ),
-      tournament: Tournament.fromJson(
-        json[ApiJsonKeys.tournament] as Map<String, dynamic>,
-      ),
+      players: players,
+      sport: sport,
+      calledUpPlayerIds: calledUpPlayerIds,
+      tournament: tournament,
     );
   }
 }

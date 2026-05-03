@@ -16,42 +16,50 @@ class MyGrowthResponse {
   });
 
   factory MyGrowthResponse.fromJson(Map<String, dynamic> json) {
-    final growthSteps = List<GrowthStep>.from(
-      json[ApiJsonKeys.growthSteps].map((x) => GrowthStep.fromJson(x)),
-    );
+    final growthSteps = (json[ApiJsonKeys.growthSteps] as List)
+        .map((e) => GrowthStep.fromJson(e))
+        .toList();
+    print("Growth steps parsed: ${growthSteps.length}");
+
     final level = json[ApiJsonKeys.level] as int;
+    print("Level parsed: $level");
+
     final minRefereePayPerCategoryPerLevel =
-        Map<int, Map<SportCategory, double>>.from(
-          json[ApiJsonKeys.minRefereePayPerCategoryPerLevel].map(
-            (key, value) => MapEntry(
-              int.parse(key),
-              Map<SportCategory, double>.from(
-                value.map(
+        (json[ApiJsonKeys.minRefereePayPerCategoryPerLevel]
+                as Map<String, dynamic>)
+            .map(
+              (key, value) => MapEntry(
+                int.parse(key),
+                (value as Map<String, dynamic>).map(
                   (catKey, catValue) => MapEntry(
                     SportCategory.values.firstWhere((e) => e.apiName == catKey),
-                    catValue,
+                    (catValue as num).toDouble(),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
+            );
+    print(
+      "Min referee pay per category per level parsed: ${minRefereePayPerCategoryPerLevel.length}",
+    );
+
     final maxRefereePayPerCategoryPerLevel =
-        Map<int, Map<SportCategory, double>>.from(
-          json[ApiJsonKeys.maxRefereePayPerCategoryPerLevel].map(
-            (key, value) => MapEntry(
-              int.parse(key),
-              Map<SportCategory, double>.from(
-                value.map(
+        (json[ApiJsonKeys.maxRefereePayPerCategoryPerLevel]
+                as Map<String, dynamic>)
+            .map(
+              (key, value) => MapEntry(
+                int.parse(key),
+                (value as Map<String, dynamic>).map(
                   (catKey, catValue) => MapEntry(
                     SportCategory.values.firstWhere((e) => e.apiName == catKey),
-                    catValue,
+                    (catValue as num).toDouble(),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
+            );
+    print(
+      "Max referee pay per category per level parsed: ${maxRefereePayPerCategoryPerLevel.length}",
+    );
+
     return MyGrowthResponse(
       growthSteps: growthSteps,
       level: level,

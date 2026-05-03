@@ -25,43 +25,63 @@ class JoinLobbyResponse {
   });
 
   factory JoinLobbyResponse.fromJson(Map<String, dynamic> json) {
-    return JoinLobbyResponse(
-      usernamePerBooking: Map<double, String>.from(
-        json[ApiJsonKeys.usernamePerBooking].map(
+    final Map<double, String> usernamePerBooking =
+        (json[ApiJsonKeys.usernamePerBooking] as Map<String, dynamic>).map(
           (k, v) => MapEntry(double.parse(k), v),
-        ),
-      ),
-      lobbies: List<LobbyBooking>.from(
-        json[ApiJsonKeys.lobbies].map((x) => LobbyBooking.fromJson(x)),
-      ),
-      maxPlayersPerLobby: Map<double, int>.from(
-        json[ApiJsonKeys.maxPlayersPerLobby].map(
-          (k, v) => MapEntry(double.parse(k), v),
-        ),
-      ),
-      currentPlayersPerLobby: Map<double, int>.from(
-        json[ApiJsonKeys.currentPlayersPerLobby].map(
-          (k, v) => MapEntry(double.parse(k), v),
-        ),
-      ),
-      playersPaidPerBooking: Map<double, int>.from(
-        json[ApiJsonKeys.playersPaidPerBooking].map(
-          (k, v) => MapEntry(double.parse(k), v),
-        ),
-      ),
-      fieldsCache: Map<double, Field>.from(
-        json[ApiJsonKeys.fieldsCache].map(
+        );
+    print("Username per booking parsed: ${usernamePerBooking.length}");
+
+    final List<LobbyBooking> lobbies = (json[ApiJsonKeys.lobbies] as List)
+        .map((x) => LobbyBooking.fromJson(x))
+        .toList();
+    print("Lobbies parsed: ${lobbies.length}");
+
+    final Map<double, int> maxPlayersPerLobby =
+        (json[ApiJsonKeys.maxPlayersPerLobby] as Map<String, dynamic>).map(
+          (k, v) => MapEntry(double.parse(k), (v as num).toInt()),
+        );
+    print("Max players per lobby parsed: ${maxPlayersPerLobby.length}");
+
+    final Map<double, int> currentPlayersPerLobby =
+        (json[ApiJsonKeys.currentPlayersPerLobby] as Map<String, dynamic>).map(
+          (k, v) => MapEntry(double.parse(k), (v as num).toInt()),
+        );
+    print("Current players per lobby parsed: ${currentPlayersPerLobby.length}");
+
+    final Map<double, int> playersPaidPerBooking =
+        (json[ApiJsonKeys.playersPaidPerBooking] as Map<String, dynamic>).map(
+          (k, v) => MapEntry(double.parse(k), (v as num).toInt()),
+        );
+    print("Players paid per booking parsed: ${playersPaidPerBooking.length}");
+
+    final Map<double, Field> fieldsCache =
+        (json[ApiJsonKeys.fieldsCache] as Map<String, dynamic>).map(
           (k, v) => MapEntry(double.parse(k), Field.fromJson(v)),
-        ),
-      ),
-      completeAddressPerField: Map<double, String>.from(
-        json[ApiJsonKeys.completeAddressPerField].map(
+        );
+    print("Fields cache parsed: ${fieldsCache.length}");
+
+    final Map<double, String> completeAddressPerField =
+        (json[ApiJsonKeys.completeAddressPerField] as Map<String, dynamic>).map(
           (k, v) => MapEntry(double.parse(k), v),
-        ),
-      ),
-      cities: List<City>.from(
-        json[ApiJsonKeys.cities].map((x) => City.fromJson(x)),
-      ),
+        );
+    print(
+      "Complete addresses per field parsed: ${completeAddressPerField.length}",
+    );
+
+    final List<City> cities = (json[ApiJsonKeys.cities] as List)
+        .map((x) => City.fromJson(x))
+        .toList();
+    print("Cities parsed: ${cities.length}");
+
+    return JoinLobbyResponse(
+      usernamePerBooking: usernamePerBooking,
+      lobbies: lobbies,
+      maxPlayersPerLobby: maxPlayersPerLobby,
+      currentPlayersPerLobby: currentPlayersPerLobby,
+      playersPaidPerBooking: playersPaidPerBooking,
+      fieldsCache: fieldsCache,
+      completeAddressPerField: completeAddressPerField,
+      cities: cities,
     );
   }
 }

@@ -43,39 +43,94 @@ class FootballMatchResponse {
   });
 
   factory FootballMatchResponse.fromJson(Map<String, dynamic> json) {
-    return FootballMatchResponse(
-      match: FootballMatch.fromJson(json[ApiJsonKeys.match]),
-      homeTeam: json[ApiJsonKeys.homeTeam] != null
-          ? Team.fromJson(json[ApiJsonKeys.homeTeam])
-          : null,
-      awayTeam: json[ApiJsonKeys.awayTeam] != null
-          ? Team.fromJson(json[ApiJsonKeys.awayTeam])
-          : null,
-      events: (json[ApiJsonKeys.events] as List)
-          .map((e) => FootballMatchEvent.fromJson(e))
-          .toList(),
-      minutesPerRound: json[ApiJsonKeys.minutesPerRound],
-      minutesPerPause: json[ApiJsonKeys.minutesPerPause],
-      availableRefereeRoles: List<String>.from(
-        json[ApiJsonKeys.availableRefereeRoles] as List,
-      ),
-      playersPerTeam: (json[ApiJsonKeys.playersPerTeam] as Map<String, dynamic>)
-          .map(
-            (key, value) => MapEntry(
-              double.parse(key),
-              (value as List).map((e) => Player.fromJson(e)).toList(),
-            ),
+    final FootballMatch match = FootballMatch.fromJson(json[ApiJsonKeys.match]);
+    print("Match parsed: ${match.id}");
+
+    final Team? homeTeam = json[ApiJsonKeys.homeTeam] != null
+        ? Team.fromJson(json[ApiJsonKeys.homeTeam])
+        : null;
+    print("Home team parsed: ${homeTeam?.name}");
+
+    final Team? awayTeam = json[ApiJsonKeys.awayTeam] != null
+        ? Team.fromJson(json[ApiJsonKeys.awayTeam])
+        : null;
+    print("Away team parsed: ${awayTeam?.name}");
+
+    final List<FootballMatchEvent> events = (json[ApiJsonKeys.events] as List)
+        .map((e) => FootballMatchEvent.fromJson(e))
+        .toList();
+    print("Events parsed: ${events.length}");
+
+    final int minutesPerRound = (json[ApiJsonKeys.minutesPerRound] as num)
+        .toInt();
+    print("Minutes per round parsed: $minutesPerRound");
+
+    final int minutesPerPause = (json[ApiJsonKeys.minutesPerPause] as num)
+        .toInt();
+    print("Minutes per pause parsed: $minutesPerPause");
+
+    final List<String> availableRefereeRoles = List<String>.from(
+      json[ApiJsonKeys.availableRefereeRoles] as List,
+    );
+    print("Available referee roles parsed: ${availableRefereeRoles.length}");
+
+    final Map<double, List<Player>> playersPerTeam =
+        (json[ApiJsonKeys.playersPerTeam] as Map<String, dynamic>).map(
+          (key, value) => MapEntry(
+            double.parse(key),
+            (value as List).map((e) => Player.fromJson(e)).toList(),
           ),
-      assignmentPerRefereeNameSurname: Map<String, String>.from(
-        json[ApiJsonKeys.assignmentPerRefereeNameSurname],
-      ),
-      field: Field.fromJson(json[ApiJsonKeys.field]),
-      cityName: json[ApiJsonKeys.cityName],
-      coordinatorId: json[ApiJsonKeys.coordinatorId],
-      refereeCheck: json[ApiJsonKeys.refereeCheck],
-      canMatchFinish: json[ApiJsonKeys.canMatchFinish],
-      hasRefereeLicense: json[ApiJsonKeys.hasRefereeLicense],
-      payPerRole: Map<String, double>.from(json[ApiJsonKeys.payPerRole]),
+        );
+    print("Players per team parsed: ${playersPerTeam.length}");
+
+    final Map<String, String> assignmentPerRefereeNameSurname =
+        Map<String, String>.from(
+          json[ApiJsonKeys.assignmentPerRefereeNameSurname],
+        );
+    print(
+      "Assignment per referee parsed: ${assignmentPerRefereeNameSurname.length}",
+    );
+
+    final Field field = Field.fromJson(json[ApiJsonKeys.field]);
+    print("Field parsed: ${field.name}");
+
+    final String cityName = json[ApiJsonKeys.cityName];
+    print("City name parsed: $cityName");
+
+    final double coordinatorId = (json[ApiJsonKeys.coordinatorId] as num).toDouble();
+    print("Coordinator ID parsed: $coordinatorId");
+
+    final bool refereeCheck = json[ApiJsonKeys.refereeCheck];
+    print("Referee check parsed: $refereeCheck");
+
+    final bool canMatchFinish = json[ApiJsonKeys.canMatchFinish];
+    print("Can match finish parsed: $canMatchFinish");
+
+    final bool hasRefereeLicense = json[ApiJsonKeys.hasRefereeLicense];
+    print("Has referee license parsed: $hasRefereeLicense");
+
+    final Map<String, double> payPerRole = Map<String, double>.from(
+      json[ApiJsonKeys.payPerRole],
+    );
+    print("Pay per role parsed: ${payPerRole.length}");
+
+    return FootballMatchResponse(
+      match: match,
+      homeTeam: homeTeam,
+      awayTeam: awayTeam,
+      events: events,
+      minutesPerRound: minutesPerRound,
+      minutesPerPause: minutesPerPause,
+      availableRefereeRoles: availableRefereeRoles,
+      assignmentPerRefereeNameSurname: assignmentPerRefereeNameSurname,
+      field: field,
+      cityName: cityName,
+      coordinatorId: coordinatorId,
+      refereeCheck: refereeCheck,
+      canMatchFinish: canMatchFinish,
+      hasRefereeLicense: hasRefereeLicense,
+      payPerRole: payPerRole,
+      playersPerTeam: playersPerTeam,
     );
   }
 }

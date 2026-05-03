@@ -16,27 +16,39 @@ class RefereeHomeResponse {
   });
 
   factory RefereeHomeResponse.fromJson(Map<String, dynamic> json) {
-    return RefereeHomeResponse(
-      assignedFootballMatches: List<FootballMatch>.from(
-        json[ApiJsonKeys.assignedFootballMatches].map(
-          (m) => FootballMatch.fromJson(m),
-        ),
-      ),
-      teamsCache: Map<double, Team>.from(
-        json[ApiJsonKeys.teamsCache].map(
+    final List<FootballMatch> assignedFootballMatches =
+        (json[ApiJsonKeys.assignedFootballMatches] as List)
+            .map((m) => FootballMatch.fromJson(m))
+            .toList();
+    print(
+      "Assigned football matches deserialized: ${assignedFootballMatches.length}",
+    );
+
+    final Map<double, Team> teamsCache =
+        (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
           (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
-        ),
-      ),
-      minutesRoundPerTournament: Map<double, int>.from(
-        json[ApiJsonKeys.minutesRoundPerTournament].map(
-          (key, value) => MapEntry(double.parse(key), value),
-        ),
-      ),
-      minutesPausePerTournament: Map<double, int>.from(
-        json[ApiJsonKeys.minutesPausePerTournament].map(
-          (key, value) => MapEntry(double.parse(key), value),
-        ),
-      ),
+        );
+    print("Teams cache deserialized: ${teamsCache.length}");
+
+    final Map<double, int> minutesRoundPerTournament =
+        (json[ApiJsonKeys.minutesRoundPerTournament] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(double.parse(key), value));
+    print(
+      "Minutes round per tournament deserialized: ${minutesRoundPerTournament.length}",
+    );
+
+    final Map<double, int> minutesPausePerTournament =
+        (json[ApiJsonKeys.minutesPausePerTournament] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(double.parse(key), value));
+    print(
+      "Minutes pause per tournament deserialized: ${minutesPausePerTournament.length}",
+    );
+
+    return RefereeHomeResponse(
+      assignedFootballMatches: assignedFootballMatches,
+      teamsCache: teamsCache,
+      minutesRoundPerTournament: minutesRoundPerTournament,
+      minutesPausePerTournament: minutesPausePerTournament,
     );
   }
 }

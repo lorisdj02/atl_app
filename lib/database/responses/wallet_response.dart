@@ -9,11 +9,17 @@ class WalletResponse {
   WalletResponse({required this.wallet, required this.transactions});
 
   factory WalletResponse.fromJson(Map<String, dynamic> json) {
+      final Wallet wallet = Wallet.fromJson(json[ApiJsonKeys.wallet]);
+  print("Wallet deserialized: ${wallet.id}");
+
+  final List<Transaction> transactions = (json[ApiJsonKeys.transactionsHistory] as List)
+      .map((e) => Transaction.fromJson(e))
+      .toList();
+  print("Transactions history deserialized: ${transactions.length}");
+
     return WalletResponse(
-      wallet: Wallet.fromJson(json[ApiJsonKeys.wallet]),
-      transactions: (json[ApiJsonKeys.transactionsHistory] as List)
-          .map((e) => Transaction.fromJson(e))
-          .toList(),
+      wallet: wallet,
+      transactions: transactions,
     );
   }
 }

@@ -14,8 +14,6 @@ import '../providers/account_provider.dart';
 import '../models/enums/account_role.dart';
 import '../models/enums/vip_type.dart';
 
-// TODO: Rimuovi db_controller
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 

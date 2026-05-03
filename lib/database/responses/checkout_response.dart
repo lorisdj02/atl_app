@@ -30,38 +30,69 @@ class CheckoutResponse {
   });
 
   factory CheckoutResponse.fromJson(Map<String, dynamic> json) {
+    final CheckoutSession checkoutSession = CheckoutSession.fromJson(
+      json[ApiJsonKeys.checkoutSession] as Map<String, dynamic>,
+    );
+    print("Checkout session parsed: ${checkoutSession.id}");
+
+    final Wallet wallet = Wallet.fromJson(
+      json[ApiJsonKeys.wallet] as Map<String, dynamic>,
+    );
+    print("Wallet parsed: ${wallet.id}");
+
+    final String? tournamentName = json[ApiJsonKeys.tournamentName] != null
+        ? json[ApiJsonKeys.tournamentName] as String
+        : null;
+    print("Tournament name parsed: $tournamentName");
+
+    final String? bookingUsername = json[ApiJsonKeys.bookingUsername] != null
+        ? json[ApiJsonKeys.bookingUsername] as String
+        : null;
+    print("Booking username parsed: $bookingUsername");
+
+    final String? cityName = json[ApiJsonKeys.cityName] != null
+        ? json[ApiJsonKeys.cityName] as String
+        : null;
+    print("City name parsed: $cityName");
+
+    final String? fieldName = json[ApiJsonKeys.fieldName] != null
+        ? json[ApiJsonKeys.fieldName] as String
+        : null;
+    print("Field name parsed: $fieldName");
+
+    final String? fieldAddress = json[ApiJsonKeys.fieldAddress] != null
+        ? json[ApiJsonKeys.fieldAddress] as String
+        : null;
+    print("Field address parsed: $fieldAddress");
+
+    final DateTime? startTime = json[ApiJsonKeys.startTime] != null
+        ? DateTime.parse(json[ApiJsonKeys.startTime] as String)
+        : null;
+    print("Start time parsed: $startTime");
+
+    final DateTime? finishTime = json[ApiJsonKeys.finishTime] != null
+        ? DateTime.parse(json[ApiJsonKeys.finishTime] as String)
+        : null;
+    print("Finish time parsed: $finishTime");
+
+    final int? totalPlayers = (json[ApiJsonKeys.totalPlayers] as num?)?.toInt();
+    print("Total players parsed: $totalPlayers");
+
+    final int? playersToPay = (json[ApiJsonKeys.playersToPay] as num?)?.toInt();
+    print("Players to pay parsed: $playersToPay");
+
     return CheckoutResponse(
-      checkoutSession: CheckoutSession.fromJson(
-        json[ApiJsonKeys.checkoutSession],
-      ),
-      wallet: Wallet.fromJson(json[ApiJsonKeys.wallet]),
-      tournamentName: json[ApiJsonKeys.tournamentName] != null
-          ? json[ApiJsonKeys.tournamentName] as String
-          : null,
-      bookingUsername: json[ApiJsonKeys.bookingUsername] != null
-          ? json[ApiJsonKeys.bookingUsername] as String
-          : null,
-      cityName: json[ApiJsonKeys.cityName] != null
-          ? json[ApiJsonKeys.cityName] as String
-          : null,
-      fieldName: json[ApiJsonKeys.fieldName] != null
-          ? json[ApiJsonKeys.fieldName] as String
-          : null,
-      fieldAddress: json[ApiJsonKeys.fieldAddress] != null
-          ? json[ApiJsonKeys.fieldAddress] as String
-          : null,
-      startTime: json[ApiJsonKeys.startTime] != null
-          ? DateTime.parse(json[ApiJsonKeys.startTime] as String)
-          : null,
-      finishTime: json[ApiJsonKeys.finishTime] != null
-          ? DateTime.parse(json[ApiJsonKeys.finishTime] as String)
-          : null,
-      totalPlayers: json[ApiJsonKeys.totalPlayers] != null
-          ? json[ApiJsonKeys.totalPlayers] as int
-          : null,
-      playersToPay: json[ApiJsonKeys.playersToPay] != null
-          ? json[ApiJsonKeys.playersToPay] as int
-          : null,
+      checkoutSession: checkoutSession,
+      wallet: wallet,
+      tournamentName: tournamentName,
+      bookingUsername: bookingUsername,
+      cityName: cityName,
+      fieldName: fieldName,
+      fieldAddress: fieldAddress,
+      startTime: startTime,
+      finishTime: finishTime,
+      totalPlayers: totalPlayers,
+      playersToPay: playersToPay,
     );
   }
 }

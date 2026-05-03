@@ -9,12 +9,12 @@ class Field {
   final double locationLat;
   final double locationLng;
   final double cityId;
-  final double organizationId;
   final double hourCostTournament;
   final double hourCostPrivate;
+  final double organizationId;
+  final String closedDays; // 0000001 (Lun-Dom, 1=chiuso, 0=aperto)
   final TimeOfDay openingTime;
   final TimeOfDay closingTime;
-  final String closedDays; // 0000001 (Lun-Dom, 1=chiuso, 0=aperto)
 
   Field({
     required this.id,
@@ -32,23 +32,55 @@ class Field {
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {
+    double id = (json['id'] as num).toDouble();
+    // print("Parsing Field with id: $id");
+
+    double organizationId = (json['organizationId'] as num).toDouble();
+    // print("Organization ID: $organizationId");
+
+    String name = json['name'];
+    // print("Field name: $name");
+
+    double locationLat = (json['locationLat'] as num).toDouble();
+    double locationLng = (json['locationLng'] as num).toDouble();
+    // print("Location: ($locationLat, $locationLng)");
+
+    double hourCostTournament = (json['hourCostTournament'] as num).toDouble();
+    double hourCostPrivate = (json['hourCostPrivate'] as num).toDouble();
+    // print(
+    //   "Hour cost tournament: $hourCostTournament, private: $hourCostPrivate",
+    // );
+
+    double cityId = (json['cityId'] as num).toDouble();
+    // print("City ID: $cityId");
+
+    TimeOfDay openingTime = json['openingTime'] != null
+        ? _timeFromString(json['openingTime'])
+        : const TimeOfDay(hour: 8, minute: 0);
+
+    TimeOfDay closingTime = json['closingTime'] != null
+        ? _timeFromString(json['closingTime'])
+        : const TimeOfDay(hour: 23, minute: 0);
+
+    String closedDays = json['closedDays'];
+    // print("Closed days: $closedDays");
+
+    String address = json['address'];
+    // print("Address: $address");
+
     return Field(
-      id: (json['id'] as num).toDouble(),
-      organizationId: (json['organizationId'] as num).toDouble(),
-      name: json['name'],
-      locationLat: (json['locationLat'] as num).toDouble(),
-      locationLng: (json['locationLng'] as num).toDouble(),
-      hourCostTournament: (json['hourCostTournament'] as num).toDouble(),
-      hourCostPrivate: (json['hourCostPrivate'] as num).toDouble(),
-      cityId: (json['cityId'] as num).toDouble(),
-      openingTime: json['openingTime'] != null
-          ? _timeFromString(json['openingTime'])
-          : const TimeOfDay(hour: 8, minute: 0),
-      closingTime: json['closingTime'] != null
-          ? _timeFromString(json['closingTime'])
-          : const TimeOfDay(hour: 23, minute: 0),
-      closedDays: json['closedDays'],
-      address: json['address'],
+      id: id,
+      organizationId: organizationId,
+      name: name,
+      locationLat: locationLat,
+      locationLng: locationLng,
+      hourCostTournament: hourCostTournament,
+      hourCostPrivate: hourCostPrivate,
+      cityId: cityId,
+      openingTime: openingTime,
+      closingTime: closingTime,
+      closedDays: closedDays,
+      address: address,
     );
   }
 
@@ -77,7 +109,8 @@ class Field {
   }
 
   /// Formatta il costo torneo come stringa con valuta
-  String get formattedCostTournament => '€${hourCostTournament.toStringAsFixed(2)}';
+  String get formattedCostTournament =>
+      '€${hourCostTournament.toStringAsFixed(2)}';
 
   /// Formatta il costo privato come stringa con valuta
   String get formattedHourlyCostPrivate =>

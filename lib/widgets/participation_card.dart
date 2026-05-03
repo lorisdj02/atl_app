@@ -12,6 +12,7 @@ import '../utils/atl_colors.dart';
 import '../models/checkout_session.dart';
 import '../l10n/app_localizations.dart';
 import '../models/enums/checkout_type.dart';
+
 class ParticipationCard extends StatefulWidget {
   final TournamentParticipation participation;
   final Tournament? tournament;
@@ -305,27 +306,29 @@ class _ParticipationCardState extends State<ParticipationCard> {
       CheckoutPayload payload = CheckoutPayload(
         tournamentId: widget.participation.tournamentId,
         amount: chosenAmount,
-        type: CheckoutType.tournamentFee,
+        checkoutType: CheckoutType.tournamentFee,
       );
 
-      final CheckoutSession checkoutSession = await PaymentService.createCheckoutSession(
-        payload,
-      );
-      Navigator.of(context)
-          .push<bool>(
-            MaterialPageRoute(
-              builder: (context) => CheckoutScreen(
-                sportCategory: widget.sportCategory,
-                sessionId: checkoutSession.id,
+      final CheckoutSession checkoutSession =
+          await PaymentService.createCheckoutSession(payload);
+
+      if (mounted) {
+        Navigator.of(context)
+            .push<bool>(
+              MaterialPageRoute(
+                builder: (context) => CheckoutScreen(
+                  sportCategory: widget.sportCategory,
+                  sessionId: checkoutSession.id,
+                ),
               ),
-            ),
-          )
-          .then((result) {
-            if (result == true && mounted) {
-              // TODO: handle post-payment transition
-              widget.onPaymentCompleted();
-            }
-          });
+            )
+            .then((result) {
+              if (result == true && mounted) {
+                // TODO: handle post-payment transition
+                widget.onPaymentCompleted();
+              }
+            });
+      }
     });
   }
 }

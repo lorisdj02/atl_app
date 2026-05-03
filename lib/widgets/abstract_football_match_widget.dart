@@ -33,7 +33,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
 
   // Check if MOTM is missing
   bool get needsMotm =>
-      match.status == FootballMatchStatus.finished && match.motmPlayerId == null;
+      match.status == FootballMatchStatus.finished &&
+      match.motmPlayerId == null;
 
   // Metodi astratti da implementare nelle classi figlie
   double get statusIconSize;
@@ -51,43 +52,56 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
     switch (match.status) {
       case FootballMatchStatus.scheduled:
         if (match.scheduledStart != null) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          return Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.calendar_today,
-                size: statusIconSize,
-                color: ATLColors.darkBlue,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.calendar_today,
+                    size: statusIconSize,
+                    color: ATLColors.darkBlue,
+                  ),
+                  SizedBox(width: statusIconSize * 0.375),
+                  Text(
+                    DateFormat('dd-MM-yyyy').format(match.scheduledStart!),
+                    style: TextStyle(
+                      fontSize: statusFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: ATLColors.darkBlue,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: statusIconSize * 0.375),
-              Text(
-                DateFormat('dd-MM-yyyy').format(match.scheduledStart!),
-                style: TextStyle(
-                  fontSize: statusFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: ATLColors.darkBlue,
-                ),
-              ),
-              SizedBox(width: statusIconSize * 0.75),
-              Icon(
-                Icons.access_time,
-                size: statusIconSize,
-                color: ATLColors.darkBlue,
-              ),
-              SizedBox(width: statusIconSize * 0.375),
-              Text(
-                DateFormat('HH:mm').format(match.scheduledStart!),
-                style: TextStyle(
-                  fontSize: statusFontSize,
-                  fontWeight: FontWeight.bold,
-                  color: ATLColors.darkBlue,
-                ),
+              SizedBox(height: statusIconSize * 0.25),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: statusIconSize,
+                    color: ATLColors.darkBlue,
+                  ),
+                  SizedBox(width: statusIconSize * 0.375),
+                  Text(
+                    DateFormat('HH:mm').format(match.scheduledStart!),
+                    style: TextStyle(
+                      fontSize: statusFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: ATLColors.darkBlue,
+                    ),
+                  ),
+                ],
               ),
             ],
           );
         }
         return Text(
-          l10n.matchStatusScheduled(DateFormat('dd/MM/yy').format(match.scheduledStart!), DateFormat('HH:mm').format(match.scheduledStart!)),
+          l10n.matchStatusScheduled(
+            l10n.unknownDate,
+            l10n.unknownTime,
+          ),
           style: TextStyle(
             fontSize: statusFontSize,
             fontWeight: FontWeight.bold,
@@ -433,7 +447,8 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
   }
 
   // Build MOTM warning widget
-  Widget buildMotmWarning(BuildContext context, {
+  Widget buildMotmWarning(
+    BuildContext context, {
     required double fontSize,
     required double iconSize,
     required EdgeInsets padding,

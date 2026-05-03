@@ -9,14 +9,14 @@ class MatchServiceWrite {
 
   Future<double> retireFromMatch(double matchId) async {
     final response = await dio.patch("$apiUrl/match/${matchId.toStringAsFixed(0)}/retire");
-    return response.data;
+    return (response.data as num).toDouble();
   }
 
   Future<double> addMotmToMatch(double matchId, double playerId) async {
     final response = await dio.patch(
       "$apiUrl/match/${matchId.toStringAsFixed(0)}/add-motm/${playerId.toStringAsFixed(0)}",
     );
-    return response.data;
+    return (response.data as num).toDouble();
   }
 
   Future<double> insertRefereeAssignment(
@@ -26,7 +26,7 @@ class MatchServiceWrite {
     final response = await dio.post(
       "$apiUrl/match/${matchId.toStringAsFixed(0)}/insert-referee-assignment/${refereeRoleName}",
     );
-    return response.data;
+    return (response.data as num).toDouble();
   }
 
   Future<FootballMatchEvent> insertFootballMatchEvent(

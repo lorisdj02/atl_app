@@ -27,7 +27,7 @@ class PayParticipationScreen extends StatefulWidget {
 
 class _PayParticipationScreenState extends State<PayParticipationScreen> {
   List<TournamentParticipation> _tournamentParticipations = [];
-  Map<double, Tournament?> _tournamentsCache = {};
+  Map<double, Tournament> _tournamentsCache = {};
   Map<double, bool> _isCalledUpPerTournament = {};
   bool _isLoading = true;
 

@@ -96,13 +96,6 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userProvider = Provider.of<AccountProvider>(context, listen: false);
-      final organizationId = userProvider.activeRoleId;
-
-      if (organizationId == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
 
       final OrganizationHomeResponse organizationData =
           await HomeScreenService.getOrganizationHomeScreen(_currentSport);
@@ -209,6 +202,10 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final accountId = Provider.of<AccountProvider>(
+      context,
+      listen: false,
+    ).activeAccount?.id;
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -244,16 +241,15 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
         ],
       ),
       body: _buildOrganizationHomeContent(),
-      bottomNavigationBar: OrganizationBottomBar(
-        currentIndex: 4,
-        onTap: _onNavTap,
-        currentSport: _currentSport,
-        isHome: true,
-        accountId: Provider.of<AccountProvider>(
-          context,
-          listen: false,
-        ).activeAccount!.id,
-      ),
+      bottomNavigationBar: accountId == null
+          ? const SizedBox.shrink()
+          : OrganizationBottomBar(
+              currentIndex: 4,
+              onTap: _onNavTap,
+              currentSport: _currentSport,
+              isHome: true,
+              accountId: accountId,
+            ),
     );
   }
 
@@ -493,7 +489,7 @@ class _OrganizationHomeScreenState extends State<OrganizationHomeScreen> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
             child: Text(
-              "${field.name} (${_cityNamePerField[field.cityId] ?? l10n.unknown})",
+              "${field.name} (${_cityNamePerField[field.id] ?? l10n.unknown})",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

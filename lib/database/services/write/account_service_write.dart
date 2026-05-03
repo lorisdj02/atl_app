@@ -12,7 +12,7 @@ class AccountServiceWrite {
   AccountServiceWrite({required this.apiUrl, required this.dio});
 
   Future<Account> updateAccountInfos(UpdateAccountInfoRequest request) async {
-    final response = await dio.patch("$apiUrl/update-infos", data: request.toJson());
+    final response = await dio.patch("$apiUrl/account/update-infos", data: request.toJson());
     return Account.fromJson(response.data);
   }
 

@@ -6,7 +6,6 @@ import 'package:atl_app/models/lobby_booking.dart';
 import 'package:atl_app/models/private_booking.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/tournament.dart';
-import 'package:atl_app/utils/json_long_print.dart';
 
 class PlayerHomeResponse {
   final List<LobbyBooking> lobbies;
@@ -44,7 +43,6 @@ class PlayerHomeResponse {
   });
 
   factory PlayerHomeResponse.fromJson(Map<String, dynamic> json) {
-    //JsonLongPrint.printLongJson(json);
     final List<LobbyBooking> lobbies = (json[ApiJsonKeys.lobbies] as List)
         .map((e) => LobbyBooking.fromJson(e))
         .toList();

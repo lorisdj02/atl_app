@@ -23,49 +23,70 @@ class FootballTournamentResponse {
     required this.players,
     required this.teamsCache,
     required this.footballPlayerStatsCache,
-      required this.finalStageBrackets,
+    required this.finalStageBrackets,
     required this.minutesPerRound,
     required this.minutesPerPause,
     this.canContinue,
   });
 
   factory FootballTournamentResponse.fromJson(Map<String, dynamic> json) {
-    return FootballTournamentResponse(
-      matches: List<FootballMatch>.from(
-        (json[ApiJsonKeys.matches] as List).map(
-          (m) => FootballMatch.fromJson(m),
-        ),
-      ),
-      standings: List<FootballStanding>.from(
-        (json[ApiJsonKeys.standings] as List).map(
-          (s) => FootballStanding.fromJson(s),
-        ),
-      ),
-      players: List<Player>.from(
-        (json[ApiJsonKeys.players] as List).map(
-          (p) => Player.fromJson(p),
-        ),
-      ),
-      teamsCache: Map<double, Team>.from(
+    final List<FootballMatch> matches = (json[ApiJsonKeys.matches] as List)
+        .map((m) => FootballMatch.fromJson(m))
+        .toList();
+    print("Matches parsed: ${matches.length}");
+
+    final List<FootballStanding> standings = (json[ApiJsonKeys.standings] as List)
+        .map((s) => FootballStanding.fromJson(s))
+        .toList();
+    print("Standings parsed: ${standings.length}");
+
+    final List<Player> players = (json[ApiJsonKeys.players] as List)
+        .map((p) => Player.fromJson(p))
+        .toList();
+    print("Players parsed: ${players.length}");
+
+    final Map<double, Team> teamsCache =
         (json[ApiJsonKeys.teamsCache] as Map<String, dynamic>).map(
           (key, value) => MapEntry(double.parse(key), Team.fromJson(value)),
-        ),
-      ),
-      footballPlayerStatsCache: Map<double, FootballTeamStats>.from(
+        );
+    print("Teams cache parsed: ${teamsCache.length}");
+
+    final Map<double, FootballTeamStats> footballPlayerStatsCache =
         (json[ApiJsonKeys.footballPlayerStatsCache] as Map<String, dynamic>)
             .map(
-          (key, value) =>
-              MapEntry(double.parse(key), FootballTeamStats.fromJson(value)),
-        ),
-      ),
-      minutesPerRound: json[ApiJsonKeys.minutesPerRound] as int,
-      minutesPerPause: json[ApiJsonKeys.minutesPerPause] as int,
-      canContinue: json[ApiJsonKeys.canContinue] as bool?,
-      finalStageBrackets: List<FinalStageBracket>.from(
-        (json[ApiJsonKeys.finalStageBrackets] as List).map(
-          (b) => FinalStageBracket.fromJson(b),
-        ),
-      ),
+              (key, value) => MapEntry(
+                double.parse(key),
+                FootballTeamStats.fromJson(value),
+              ),
+            );
+    print(
+      "Football player stats cache parsed: ${footballPlayerStatsCache.length}",
+    );
+
+    final int minutesPerRound = (json[ApiJsonKeys.minutesPerRound] as num).toInt();
+    final int minutesPerPause = (json[ApiJsonKeys.minutesPerPause] as num).toInt();
+    print(
+      "Minutes per round: $minutesPerRound, minutes per pause: $minutesPerPause",
+    );
+
+    final bool? canContinue = json[ApiJsonKeys.canContinue] as bool?;
+    print("Can continue: $canContinue");
+
+    final List<FinalStageBracket> finalStageBrackets = (json[ApiJsonKeys.finalStageBrackets] as List)
+        .map((b) => FinalStageBracket.fromJson(b))
+        .toList();
+    print("Final stage brackets parsed: ${finalStageBrackets.length}");
+
+    return FootballTournamentResponse(
+      matches: matches,
+      standings: standings,
+      players: players,
+      teamsCache: teamsCache,
+      footballPlayerStatsCache: footballPlayerStatsCache,
+      minutesPerRound: minutesPerRound,
+      minutesPerPause: minutesPerPause,
+      canContinue: canContinue,
+      finalStageBrackets: finalStageBrackets,
     );
   }
 }

@@ -13,13 +13,19 @@ class PlayersInTeamResponse {
   });
 
   factory PlayersInTeamResponse.fromJson(Map<String, dynamic> json) {
+      List<Player> players = (json[ApiJsonKeys.players] as List)
+        .map((playerJson) => Player.fromJson(playerJson as Map<String, dynamic>))
+        .toList();
+    print("Players in team deserialized: ${players.length}");
+
+  List<Player> historicalPlayers  = (json[ApiJsonKeys.historicalPlayers] as List)
+        .map((playerJson) => Player.fromJson(playerJson as Map<String, dynamic>))
+        .toList();
+    print("Historical players in team deserialized: ${historicalPlayers.length}");
+
     return PlayersInTeamResponse(
-      players: (json[ApiJsonKeys.players] as List<dynamic>)
-          .map((playerJson) => Player.fromJson(playerJson as Map<String, dynamic>))
-          .toList(),
-      historicalPlayers: (json[ApiJsonKeys.historicalPlayers] as List<dynamic>)
-          .map((playerJson) => Player.fromJson(playerJson as Map<String, dynamic>))
-          .toList(),
+      players: players,
+      historicalPlayers: historicalPlayers,
     );
   }
 }

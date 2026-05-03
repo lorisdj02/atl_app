@@ -7,7 +7,7 @@ class FinalStageBracket {
   final String groupName;
   final int aggregateScoreHome;
   final int aggregateScoreAway;
-  final double nextFinalStageBracketId;
+  final double? nextFinalStageBracketId;
   final MatchSlotType? nextFinalStageBracketSlot;
 
   FinalStageBracket({
@@ -27,7 +27,7 @@ class FinalStageBracket {
       groupName: json['groupName'],
       aggregateScoreHome: (json['aggregateScoreHome'] as num).toInt(),
       aggregateScoreAway: (json['aggregateScoreAway'] as num).toInt(),
-      nextFinalStageBracketId: (json['nextFinalStageBracketId'] as num).toDouble(),
+      nextFinalStageBracketId: (json['nextFinalStageBracketId'] as num?)?.toDouble(),
       nextFinalStageBracketSlot: json['nextFinalStageBracketSlot'] != null
           ? MatchSlotTypeExtension.fromJson(json['nextFinalStageBracketSlot'])
           : null, // Valore di default

@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/football_match_response.dart';
 import 'package:atl_app/database/services/booking_service.dart';
 import 'package:atl_app/database/services/match_service.dart';
 import 'package:atl_app/database/responses/football_match_events_response.dart';
@@ -177,7 +178,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
       // Carica la partita dal database
       switch (widget.currentSport) {
         case SportCategory.football:
-          final data = await MatchService.getMatchScreen(
+          final FootballMatchResponse data = await MatchService.getMatchScreen(
             widget.matchId.toDouble(),
             widget.currentSport,
           );
@@ -355,6 +356,9 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         fieldId: _field!.id,
         currentSport: widget.currentSport,
         currentScheduledStart: _match?.scheduledStart,
+        fieldOpeningTime: _field!.openingTime,
+        fieldClosingTime: _field!.closingTime,
+        fieldClosedDays: _field!.closedDays,
       ),
     );
 
@@ -957,7 +961,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: Text(
-                          _l10n.matchIdLabel(widget.matchId),
+                          _l10n.matchIdLabel(widget.matchId.toInt()),
                           style: const TextStyle(
                             color: ATLColors.subtext,
                             fontSize: 12,

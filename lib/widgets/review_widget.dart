@@ -61,7 +61,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
       reviewerAccountId: widget.review.reviewerAccountId,
       reviewedAccountId: widget.review.reviewedAccountId,
       sportCategory: widget.review.sportCategory,
-      type: widget.review.type,
+      reviewType: widget.review.reviewType,
       rating: avgRating,
       comment: comment.isEmpty ? null : comment,
     );
@@ -94,7 +94,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
     final l10n = AppLocalizations.of(context);
     final review = widget.review;
     final sportColor = ATLColors.getPrimaryColor(review.sportCategory);
-    final fields = _getFields(context, review.type);
+    final fields = _getFields(context, review.reviewType);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -161,7 +161,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        _reviewTypeLabel(context, review.type),
+                        _reviewTypeLabel(context, review.reviewType),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,

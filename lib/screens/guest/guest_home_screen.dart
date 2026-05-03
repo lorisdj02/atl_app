@@ -187,13 +187,17 @@ class _GuestHomeScreenState extends State<GuestHomeScreen> {
               border: Border.all(color: color.withOpacity(0.4)),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.lock_open, color: color, size: 14),
                 const SizedBox(width: 6),
-                Text(
-                  l10n.browseAsGuestHint,
-                  style: TextStyle(color: color, fontSize: 11),
+                Flexible(
+                  child: Text(
+                    l10n.browseAsGuestHint,
+                    style: TextStyle(color: color, fontSize: 11),
+                    softWrap: true,
+                  ),
                 ),
               ],
             ),

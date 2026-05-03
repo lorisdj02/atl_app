@@ -663,7 +663,7 @@ abstract class AppLocalizations {
   String get secondHalfStartedEvent;
   String get fullTimeEvent;
   String get penaltyShootoutEvent;
-  String matchIdLabel(double id);
+  String matchIdLabel(int id);
   String get unknownPlayer;
   String matchActionSuccess(String action);
   String failedToMatchAction(String action);
@@ -1069,4 +1069,10 @@ abstract class AppLocalizations {
   String get issuedAtLabel;
 
   String get selectADate;
+
+  String get startDateLabel;
+
+  String get unknownDate;
+
+  String get unknownTime;
 }

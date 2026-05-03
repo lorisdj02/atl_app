@@ -511,7 +511,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         startTime: startDateTime,
         finishTime: endDateTime,
         amount: totalToPay,
-        type: CheckoutType.privateBooking,
+        checkoutType: CheckoutType.privateBooking,
       );
 
       final CheckoutSession checkoutSession =
@@ -546,7 +546,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         startTime: startDateTime,
         finishTime: endDateTime,
         amount: totalToPay,
-        type: CheckoutType.lobbyBookingCreate,
+        checkoutType: CheckoutType.lobbyBookingCreate,
       );
 
       // Ricorda che playersToPay = maxPlayers - playersToFind

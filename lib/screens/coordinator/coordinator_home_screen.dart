@@ -247,6 +247,10 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final accountId = Provider.of<AccountProvider>(
+      context,
+      listen: false,
+    ).activeAccount?.id;
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -286,16 +290,15 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         ],
       ),
       body: _buildCoordinatorHomeContent(),
-      bottomNavigationBar: PlayerCoordinatorBottomBar(
-        currentIndex: 4,
-        onTap: _onNavTap,
-        currentSport: _sportCategory,
-        isHome: true,
-        accountId: Provider.of<AccountProvider>(
-          context,
-          listen: false,
-        ).activeAccount!.id,
-      ),
+      bottomNavigationBar: accountId == null
+          ? const SizedBox.shrink()
+          : PlayerCoordinatorBottomBar(
+              currentIndex: 4,
+              onTap: _onNavTap,
+              currentSport: _sportCategory,
+              isHome: true,
+              accountId: accountId,
+            ),
     );
   }
 
@@ -542,10 +545,12 @@ class _CoordinatorHomeScreenState extends State<CoordinatorHomeScreen> {
         final matches = (_matchesPerTournament[tournament.id] ?? []).where((
           match,
         ) {
+          final scheduledStart = match.scheduledStart;
+          if (scheduledStart == null) return false;
           final matchDate = DateTime(
-            match.scheduledStart!.year,
-            match.scheduledStart!.month,
-            match.scheduledStart!.day,
+            scheduledStart.year,
+            scheduledStart.month,
+            scheduledStart.day,
           );
           final selectedDate = DateTime(
             _selectedDate.year,
