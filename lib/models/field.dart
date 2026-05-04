@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 /// Modello Field dal database
 /// OK
@@ -15,6 +16,7 @@ class Field {
   final String closedDays; // 0000001 (Lun-Dom, 1=chiuso, 0=aperto)
   final TimeOfDay openingTime;
   final TimeOfDay closingTime;
+  final String timeZone;
 
   Field({
     required this.id,
@@ -29,6 +31,7 @@ class Field {
     required this.closingTime,
     required this.closedDays,
     required this.address,
+    this.timeZone = 'Europe/Rome', // Valore di default
   });
 
   factory Field.fromJson(Map<String, dynamic> json) {
@@ -54,19 +57,24 @@ class Field {
     double cityId = (json['cityId'] as num).toDouble();
     // print("City ID: $cityId");
 
-    TimeOfDay openingTime = json['openingTime'] != null
-        ? _timeFromString(json['openingTime'])
-        : const TimeOfDay(hour: 8, minute: 0);
-
-    TimeOfDay closingTime = json['closingTime'] != null
-        ? _timeFromString(json['closingTime'])
-        : const TimeOfDay(hour: 23, minute: 0);
-
     String closedDays = json['closedDays'];
     // print("Closed days: $closedDays");
 
     String address = json['address'];
     // print("Address: $address");
+
+    String timeZone = json['timeZone'] ?? 'Europe/Rome';
+    // print("Time zone: $timeZone");
+
+    TimeOfDay openingTime =
+      _timeFromString(json['openingTime'], timeZone: timeZone);
+    // print("Opening time: $openingTime");
+
+
+    TimeOfDay closingTime =
+      _timeFromString(json['closingTime'], timeZone: timeZone);
+    // print("Closing time: $closingTime");
+
 
     return Field(
       id: id,
@@ -81,12 +89,45 @@ class Field {
       closingTime: closingTime,
       closedDays: closedDays,
       address: address,
+      timeZone: timeZone,
     );
   }
 
-  static TimeOfDay _timeFromString(String time) {
-    final parts = time.split(':');
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  static TimeOfDay _timeFromString(
+    String time, {
+    String timeZone = 'Europe/Rome',
+  }) {
+    try {
+      final parts = time.split(':');
+      if (parts.length != 2) {
+        throw FormatException('Invalid time format: $time');
+      }
+
+      final int hour = int.parse(parts[0]);
+      final int minute = int.parse(parts[1]);
+
+      final now = DateTime.now();
+      final fieldLocation = tz.getLocation(timeZone);
+      final fieldDateTime = tz.TZDateTime(
+        fieldLocation,
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+      );
+      return TimeOfDay(
+        hour: fieldDateTime.toLocal().hour,
+        minute: fieldDateTime.toLocal().minute,
+      );
+    } catch (e) {
+      // Fallback: keep the original time if timezone conversion fails.
+      final parts = time.split(':');
+      if (parts.length == 2) {
+        return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      }
+      return const TimeOfDay(hour: 0, minute: 0);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -99,13 +140,33 @@ class Field {
       'hourCostTournament': hourCostTournament,
       'hourCostPrivate': hourCostPrivate,
       'cityId': cityId,
-      'openingTime':
-          '${openingTime.hour.toString().padLeft(2, '0')}:${openingTime.minute.toString().padLeft(2, '0')}',
-      'closingTime':
-          '${closingTime.hour.toString().padLeft(2, '0')}:${closingTime.minute.toString().padLeft(2, '0')}',
+      'openingTime': _timeToStringInTimeZone(openingTime, timeZone),
+      'closingTime': _timeToStringInTimeZone(closingTime, timeZone),
       'closedDays': closedDays,
       'address': address,
+      'timeZone': timeZone,
     };
+  }
+
+  static String _timeToStringInTimeZone(TimeOfDay time, String timeZone) {
+    try {
+      final now = DateTime.now();
+      final localDateTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        time.hour,
+        time.minute,
+      );
+      final fieldLocation = tz.getLocation(timeZone);
+      final fieldDateTime = tz.TZDateTime.from(localDateTime, fieldLocation);
+
+      return '${fieldDateTime.hour.toString().padLeft(2, '0')}'
+          ':${fieldDateTime.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '${time.hour.toString().padLeft(2, '0')}'
+          ':${time.minute.toString().padLeft(2, '0')}';
+    }
   }
 
   /// Formatta il costo torneo come stringa con valuta

@@ -56,19 +56,19 @@ class FootballMatch extends Match {
       tournamentId: (json['tournamentId'] as num).toDouble(),
       groupName: json['groupName'],
       startMatch: json['startMatch'] != null
-          ? DateTime.parse(json['startMatch'])
+          ? DateTime.parse(json['startMatch']).toLocal()
           : null,
       halfTime: json['halfTime'] != null
-          ? DateTime.parse(json['halfTime'])
+          ? DateTime.parse(json['halfTime']).toLocal()
           : null,
       startHalf: json['startHalf'] != null
-          ? DateTime.parse(json['startHalf'])
+          ? DateTime.parse(json['startHalf']).toLocal()
           : null,
       status: json['status'] != null
           ? FootballMatchStatusExtension.fromJson(json['status'])
           : FootballMatchStatus.notScheduled,
       scheduledStart: json['scheduledStart'] != null
-          ? DateTime.parse(json['scheduledStart'])
+          ? DateTime.parse(json['scheduledStart']).toLocal()
           : null,
       coordinatorStatus: json['coordinatorStatus'] != null
           ? PresenceStatusExtension.fromJson(json['coordinatorStatus'])
@@ -92,7 +92,7 @@ class FootballMatch extends Match {
           ? (json['finalStageBracketId'] as num).toDouble()
           : null,
       finishMatch: json['finishMatch'] != null
-          ? DateTime.parse(json['finishMatch'])
+          ? DateTime.parse(json['finishMatch']).toLocal()
           : null,
       day: json['day'] != null ? (json['day'] as num).toInt() : null,
     );
@@ -106,11 +106,11 @@ class FootballMatch extends Match {
       'awayTeamId': awayTeamId,
       'tournamentId': tournamentId,
       'groupName': groupName,
-      'startMatch': startMatch?.toIso8601String(),
-      'halfTime': halfTime?.toIso8601String(),
-      'startHalf': startHalf?.toIso8601String(),
+      'startMatch': startMatch?.toUtc().toIso8601String(),
+      'halfTime': halfTime?.toUtc().toIso8601String(),
+      'startHalf': startHalf?.toUtc().toIso8601String(),
       'status': status.apiName,
-      'scheduledStart': scheduledStart?.toIso8601String(),
+      'scheduledStart': scheduledStart?.toUtc().toIso8601String(),
       'coordinatorStatus': coordinatorStatus.apiName,
       'motmPlayerId': motmPlayerId,
       'scoreHome': scoreHome,
@@ -122,7 +122,7 @@ class FootballMatch extends Match {
       'sportCategory': sportCategory.apiName,
       'legOrder': legOrder?.apiName,
       'finalStageBracketId': finalStageBracketId,
-      'finishMatch': finishMatch?.toIso8601String(),
+      'finishMatch': finishMatch?.toUtc().toIso8601String(),
       'day': day,
     };
   }

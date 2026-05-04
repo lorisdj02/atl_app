@@ -50,20 +50,20 @@ class Account {
       phone: json['phone'],
       name: json['name'],
       surname: json['surname'],
-      birthdate: DateTime.parse(json['birthdate']),
+      birthdate: DateTime.parse(json['birthdate']).toLocal(),
       vip: json['vip'],
       vipType: json['vipType'] != null
           ? VipTypeExtension.fromJson(json['vipType'])
           : VipType.none,
       startVip: json['startVip'] != null
-          ? DateTime.parse(json['startVip'])
+          ? DateTime.parse(json['startVip']).toLocal()
           : null,
-      endVip: json['endVip'] != null ? DateTime.parse(json['endVip']) : null,
+      endVip: json['endVip'] != null ? DateTime.parse(json['endVip']).toLocal() : null,
       preferredCityId: json['preferredCityId'] != null
           ? (json['preferredCityId'] as num).toDouble()
           : null,
       imageUrl: json['imageUrl'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
     );
   }
 
@@ -78,12 +78,12 @@ class Account {
       'imageUrl': imageUrl,
       'name': name,
       'surname': surname,
-      'birthdate': birthdate.toIso8601String(),
-      'startVip': startVip?.toIso8601String(),
-      'endVip': endVip?.toIso8601String(),
+      'birthdate': birthdate.toUtc().toIso8601String(),
+      'startVip': startVip?.toUtc().toIso8601String(),
+      'endVip': endVip?.toUtc().toIso8601String(),
       'vipType': vipType.apiName,
       'preferredCityId': preferredCityId,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
     };
   }
 

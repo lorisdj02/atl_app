@@ -27,8 +27,8 @@ class Booking {
     return Booking(
       id: (json['id'] as num).toDouble(),
       fieldId: (json['fieldId'] as num).toDouble(),
-      startTime: DateTime.parse(json['startTime']),
-      finishTime: DateTime.parse(json['finishTime']),
+      startTime: DateTime.parse(json['startTime']).toLocal(),
+      finishTime: DateTime.parse(json['finishTime']).toLocal(),
       status: json['status'] != null
           ? BookingStatusExtension.fromJson(json['status'])
           : BookingStatus.canceled,
@@ -45,8 +45,8 @@ class Booking {
     return {
       'id': id,
       'fieldId': fieldId,
-      'startTime': startTime.toIso8601String(),
-      'finishTime': finishTime.toIso8601String(),
+      'startTime': startTime.toUtc().toIso8601String(),
+      'finishTime': finishTime.toUtc().toIso8601String(),
       'status': status.apiName,
       'bookingType': bookingType.apiName,
       'sportCategory': sportCategory.apiName,

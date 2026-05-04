@@ -30,7 +30,7 @@ class Purchase {
       detail: PurchaseDetail.fromJson(json['detail']),
       status: PurchaseStatusExtension.fromJson(json['status']),
       amount: json['amount'] != null ? (json['amount'] as num).toDouble() : 0.0,
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
     );
   }
 
@@ -42,7 +42,7 @@ class Purchase {
       'detail': detail.toJson(),
       'status': status.toString().split('.').last,
       'amount': amount,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
     };
   }
 }

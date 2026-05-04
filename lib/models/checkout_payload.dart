@@ -42,10 +42,10 @@ class CheckoutPayload {
       playersPaid: (json['playersPaid'] as num?)?.toInt(),
       ownerPlayerId: (json['ownerPlayerId'] as num?)?.toDouble(),
       startTime: json['startTime'] != null
-          ? DateTime.parse(json['startTime'])
+          ? DateTime.parse(json['startTime']).toLocal()
           : null,
       finishTime: json['finishTime'] != null
-          ? DateTime.parse(json['finishTime'])
+          ? DateTime.parse(json['finishTime']).toLocal()
           : null,
       totalPlayers: (json['totalPlayers'] as num?)?.toInt(),
       playersToFind: (json['playersToFind'] as num?)?.toInt(),
@@ -70,8 +70,8 @@ class CheckoutPayload {
       'lobbyId': lobbyId,
       'playersPaid': playersPaid,
       'ownerPlayerId': ownerPlayerId,
-      'startTime': startTime?.toIso8601String(),
-      'finishTime': finishTime?.toIso8601String(),
+      'startTime': startTime?.toUtc().toIso8601String(),
+      'finishTime': finishTime?.toUtc().toIso8601String(),
       'totalPlayers': totalPlayers,
       'playersToFind': playersToFind,
       'fieldId': fieldId,

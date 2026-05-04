@@ -29,7 +29,7 @@ class FootballMatchEvent {
       playerId: json['playerId'] != null ? (json['playerId'] as num).toDouble() : null,
       minute: (json['minute'] as num).toInt(),
       matchId: (json['matchId'] as num).toDouble(),
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
       additionalMinute: (json['additionalMinute'] as num).toInt(),
       teamId: json['teamId'] != null ? (json['teamId'] as num).toDouble() : null,
     );
@@ -42,7 +42,7 @@ class FootballMatchEvent {
       'playerId': playerId,
       'minute': minute,
       'matchId': matchId,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
       'additionalMinute': additionalMinute,
       'teamId': teamId,
     };

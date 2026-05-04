@@ -23,8 +23,8 @@ class MatchBooking extends Booking {
     return MatchBooking(
       id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       fieldId: json['fieldId'] != null ? (json['fieldId'] as num).toDouble() : 0.0,
-      startTime: DateTime.parse(json['startTime']),
-      finishTime: DateTime.parse(json['finishTime']),
+      startTime: DateTime.parse(json['startTime']).toLocal(),
+      finishTime: DateTime.parse(json['finishTime']).toLocal(),
       status: BookingStatusExtension.fromJson(json['status']),
       bookingType: BookingTypeExtension.fromJson(json['bookingType']),
       sportCategory: SportCategoryExtension.fromJson(json['sportCategory']),
@@ -38,8 +38,8 @@ class MatchBooking extends Booking {
     return {
       'id': id,
       'fieldId': fieldId,
-      'startTime': startTime.toIso8601String(),
-      'finishTime': finishTime.toIso8601String(),
+      'startTime': startTime.toUtc().toIso8601String(),
+      'finishTime': finishTime.toUtc().toIso8601String(),
       'status': status.apiName,
       'bookingType': bookingType.apiName,
       'sportCategory': sportCategory.apiName,

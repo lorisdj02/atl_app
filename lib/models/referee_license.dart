@@ -29,10 +29,10 @@ class RefereeLicense {
       'sportId': sportId,
       'licenseId': licenseId,
       'status': status.apiName,
-      'createdAt': createdAt.toIso8601String(),
-      'issuedAt': issuedAt.toIso8601String(),
-      'verifiedAt': verifiedAt?.toIso8601String(),
-      'expiresAt': expiresAt?.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
+      'issuedAt': issuedAt.toUtc().toIso8601String(),
+      'verifiedAt': verifiedAt?.toUtc().toIso8601String(),
+      'expiresAt': expiresAt?.toUtc().toIso8601String(),
       'photoUrl': photoUrl,
     };
   }
@@ -43,13 +43,13 @@ class RefereeLicense {
       sportId: json['sportId'] != null ? (json['sportId'] as num).toDouble() : 0.0,
       licenseId: json['licenseId'],
       status: LicenseStatusExtension.fromJson(json['status']),
-      createdAt: DateTime.parse(json['createdAt']),
-      issuedAt: DateTime.parse(json['issuedAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
+      issuedAt: DateTime.parse(json['issuedAt']).toLocal(),
       verifiedAt: json['verifiedAt'] != null
-          ? DateTime.parse(json['verifiedAt'])
+          ? DateTime.parse(json['verifiedAt']).toLocal()
           : null,
       expiresAt: json['expiresAt'] != null
-          ? DateTime.parse(json['expiresAt'])
+          ? DateTime.parse(json['expiresAt']).toLocal()
           : null,
       photoUrl: json['photoUrl'],
     );

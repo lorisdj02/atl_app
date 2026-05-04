@@ -44,35 +44,6 @@ class FootballMatchBracket extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasAnyTeam =
-        homeTeamId != null || awayTeamId != null || homeTeam != null || awayTeam != null;
-
-    if (!hasAnyTeam) {
-      return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: ATLColors.getPrimaryColor(
-              sportCategory,
-            ).withOpacity(0.3),
-            width: 2,
-          ),
-        ),
-        child: const Center(
-          child: Text(
-            'TBD',
-            style: TextStyle(
-              color: ATLColors.subtext,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      );
-    }
-
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(

@@ -61,5 +61,5 @@ class BookingService {
       await _write.refundPrivateBooking(bookingId);
 
   static Future<void> scheduleMatch(double matchId, DateTime scheduledStart) async =>
-      await _write.scheduleMatch(matchId, scheduledStart);
+      await _write.scheduleMatch(matchId, scheduledStart.toUtc());
 }

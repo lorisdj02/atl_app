@@ -23,10 +23,10 @@ class Wallet {
       personalBalance: json['personalBalance'] != null ? (json['personalBalance'] as num).toDouble() : 0.0,
       inviteBalance: json['inviteBalance'] != null ? (json['inviteBalance'] as num).toDouble() : 0.0,
       prizeLastWithdraw: json['prizeLastWithdraw'] != null
-          ? DateTime.parse(json['prizeLastWithdraw'])
+          ? DateTime.parse(json['prizeLastWithdraw']).toLocal()
           : null,
       personalLastWithdraw: json['personalLastWithdraw'] != null
-          ? DateTime.parse(json['personalLastWithdraw'])
+          ? DateTime.parse(json['personalLastWithdraw']).toLocal()
           : null,
     );
   }
@@ -37,8 +37,8 @@ class Wallet {
       'prizeBalance': prizeBalance,
       'personalBalance': personalBalance,
       'inviteBalance': inviteBalance,
-      'prizeLastWithdraw': prizeLastWithdraw?.toIso8601String(),
-      'personalLastWithdraw': personalLastWithdraw?.toIso8601String(),
+      'prizeLastWithdraw': prizeLastWithdraw?.toUtc().toIso8601String(),
+      'personalLastWithdraw': personalLastWithdraw?.toUtc().toIso8601String(),
     };
   }
 }

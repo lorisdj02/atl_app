@@ -40,10 +40,10 @@ class Player {
       imageUrl: json['imageUrl'],
       vip: json['vip'],
       vipType: VipTypeExtension.fromJson(json['vipType']),
-      vipStart: json['vipStart'] != null ? DateTime.parse(json['vipStart']) : null,
-      vipEnd: json['vipEnd'] != null ? DateTime.parse(json['vipEnd']) : null,
+      vipStart: json['vipStart'] != null ? DateTime.parse(json['vipStart']).toLocal() : null,
+      vipEnd: json['vipEnd'] != null ? DateTime.parse(json['vipEnd']).toLocal() : null,
       prefferdCityId: json['prefferdCityId'] != null ? (json['prefferdCityId'] as num).toDouble() : 0.0,
-      birthdate: DateTime.parse(json['birthdate']),
+      birthdate: DateTime.parse(json['birthdate']).toLocal(),
     );
   }
 
@@ -57,10 +57,10 @@ class Player {
       'imageUrl': imageUrl,
       'vip': vip,
       'vipType': vipType.apiName,
-      'vipStart': vipStart?.toIso8601String(),
-      'vipEnd': vipEnd?.toIso8601String(),
+      'vipStart': vipStart?.toUtc().toIso8601String(),
+      'vipEnd': vipEnd?.toUtc().toIso8601String(),
       'prefferdCityId': prefferdCityId,
-      'birthdate': birthdate.toIso8601String(),
+      'birthdate': birthdate.toUtc().toIso8601String(),
     };
   }
 

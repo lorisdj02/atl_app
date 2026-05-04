@@ -45,7 +45,7 @@ class FootballMatchResponse {
   factory FootballMatchResponse.fromJson(Map<String, dynamic> json) {
     final FootballMatch match = FootballMatch.fromJson(json[ApiJsonKeys.match]);
     print("Match parsed: ${match.id}");
-
+    
     final Team? homeTeam = json[ApiJsonKeys.homeTeam] != null
         ? Team.fromJson(json[ApiJsonKeys.homeTeam])
         : null;

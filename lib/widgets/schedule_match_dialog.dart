@@ -40,6 +40,7 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   int _totalBookingDuration = 0;
   List<TimeOfDay> _availableSlots = [];
   List<Booking> _existingBookings = [];
+  bool _didLoad = false;
 
   bool _isClosedDay(DateTime date) {
     if (widget.fieldClosedDays.length != 7) return false;
@@ -50,6 +51,13 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoad) return;
+    _didLoad = true;
     _loadTournamentData();
   }
 
@@ -58,9 +66,10 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
     setState(() => _isLoading = true);
 
     try {
-      final ScheduleMatchResponse data = await TournamentService.getScheduleData(
-        widget.tournamentId.toDouble(),
-      );
+      final ScheduleMatchResponse data =
+          await TournamentService.getScheduleData(
+            widget.tournamentId.toDouble(),
+          );
 
       int minutesPerRound = 0;
       int minutesPerPause = 0;
@@ -101,15 +110,25 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
       }
       final List<TimeOfDay> slots = [];
       final now = DateTime.now();
+      final openingDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        widget.fieldOpeningTime.hour,
+        widget.fieldOpeningTime.minute,
+      );
+      final closingDateTime = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        widget.fieldClosingTime.hour,
+        widget.fieldClosingTime.minute,
+      );
 
       // Generate time slots from 00:00 to 23:45 in 15-minute intervals
       for (int hour = 0; hour < 24; hour++) {
         for (int minute = 0; minute < 60; minute += 15) {
           final slot = TimeOfDay(hour: hour, minute: minute);
-          if(slot.isBefore(widget.fieldOpeningTime) || slot.isAfter(widget.fieldClosingTime)) {
-            continue; // Skip slots outside of field opening hours
-          }
-          
 
           // Create DateTime for the kickoff time
           final kickoffTime = DateTime(
@@ -120,8 +139,8 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
             slot.minute,
           );
 
-          // Skip if the kickoff time is less than 1 hour from now
-          if (kickoffTime.isBefore(now.add(const Duration(hours: 1)))) {
+          // Skip if the kickoff time is less than 2 hours from now
+          if (kickoffTime.isBefore(now.add(const Duration(hours: 2)))) {
             continue;
           }
 
@@ -136,6 +155,11 @@ class _ScheduleMatchDialogState extends State<ScheduleMatchDialog> {
             final finishTime = startTime.add(
               Duration(minutes: _totalBookingDuration),
             );
+
+            if (startTime.isBefore(openingDateTime) ||
+                finishTime.isAfter(closingDateTime)) {
+              continue;
+            }
 
             // Check if this time slot conflicts with existing bookings
             bool hasConflict = false;

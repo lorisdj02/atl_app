@@ -21,7 +21,7 @@ class ScheduleMatchResponse {
         .toInt();
     print("Minutes per pause deserialized: $minutesPerPause");
 
-    final List<Booking> bookings = (json[ApiJsonKeys.generalBookings] as List)
+    final List<Booking> bookings = (json[ApiJsonKeys.bookings] as List)
         .map(
           (bookingJson) =>
               Booking.fromJson(bookingJson as Map<String, dynamic>),

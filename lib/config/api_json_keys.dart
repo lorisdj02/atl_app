@@ -15,6 +15,7 @@ class ApiJsonKeys {
 
   static const String finalStageBrackets = "finalStageBrackets"; // List<FinalStageBracket>
 
+static const String bookings = 'bookings'; // List<Booking>
 
   // PlayerHomeScreen, CoordinatorHomeScreen
   static const String activeTournaments =

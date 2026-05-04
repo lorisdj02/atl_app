@@ -38,13 +38,13 @@ class Match {
     return Match(
       id: json['id'] != null ? (json['id'] as num).toDouble() : 0.0,
       scheduledStart: json['scheduledStart'] != null
-          ? DateTime.parse(json['scheduledStart'])
+          ? DateTime.parse(json['scheduledStart']).toLocal()
           : null,
       startMatch: json['startMatch'] != null
-          ? DateTime.parse(json['startMatch'])
+          ? DateTime.parse(json['startMatch']).toLocal()
           : null,
       finishMatch: json['finishMatch'] != null
-          ? DateTime.parse(json['finishMatch'])
+          ? DateTime.parse(json['finishMatch']).toLocal()
           : null,
       tournamentId: json['tournamentId'] != null
           ? (json['tournamentId'] as num).toDouble()
@@ -68,9 +68,9 @@ class Match {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'scheduledStart': scheduledStart?.toIso8601String(),
-      'startMatch': startMatch?.toIso8601String(),
-      'finishMatch': finishMatch?.toIso8601String(),
+      'scheduledStart': scheduledStart?.toUtc().toIso8601String(),
+      'startMatch': startMatch?.toUtc().toIso8601String(),
+      'finishMatch': finishMatch?.toUtc().toIso8601String(),
       'tournamentId': tournamentId,
       'motmPlayerId': motmPlayerId,
       'groupName': groupName,
