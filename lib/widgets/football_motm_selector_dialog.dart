@@ -14,7 +14,7 @@ class FootballMotmSelectorDialog extends AbstractTeamDialog {
     required super.tournamentId,
     required super.matchId,
     required super.sportCategory,
-    required Map<double, List<Player>> playersByTeam,
+    required this.playersByTeam,
   });
 
   @override
@@ -29,7 +29,7 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
   Future<void> _loadPlayers() async {
     final l10n = AppLocalizations.of(context);
     if (selectedTeam == null) return;
-
+    print("Available teams: ${widget.playersByTeam.keys.toList()}");
     setState(() {
       isLoading = true;
     });
@@ -42,9 +42,9 @@ class _FootballMotmSelectorDialogState extends State<FootballMotmSelectorDialog>
     } catch (e) {
       if (mounted) {
         setState(() => isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.errorLoadingPlayers(e.toString()))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.errorLoadingPlayers(e.toString()))),
+        );
       }
     }
   }

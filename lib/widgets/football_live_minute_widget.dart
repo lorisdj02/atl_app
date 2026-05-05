@@ -81,8 +81,8 @@ class _FootballLiveMinuteWidgetState extends State<FootballLiveMinuteWidget> {
 
       case FootballMatchStatus.halftime:
         // Riposo - countdown da minutesPerPause a 0 con secondi
-        if (widget.match.halfTime != null) {
-          final diff = now.difference(widget.match.halfTime!);
+        if (widget.match.halftime != null) {
+          final diff = now.difference(widget.match.halftime!);
           final totalSeconds = widget.minutesPerPause * 60 - diff.inSeconds;
 
           if (totalSeconds <= 0) {

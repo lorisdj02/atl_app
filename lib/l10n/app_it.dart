@@ -1696,7 +1696,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tournamentType => 'Torneo';
 
   @override
-  String tournamentIdLabel(double id) => 'ID torneo: #$id';
+  String tournamentIdLabel(double id) => 'ID torneo: #${id.toStringAsFixed(0)}';
 
   @override
   String get startTournamentTitle => 'Inizia Torneo';
@@ -1891,10 +1891,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Impossibile iniziare i calci di rigore';
 
   @override
-  String get motmAdded => 'MDC aggiunto con successo';
+  String get motmAdded => 'MOTM aggiunto con successo';
 
   @override
-  String get failedToAddMotm => 'Impossibile aggiungere MDC';
+  String get failedToAddMotm => 'Impossibile aggiungere MOTM';
 
   @override
   String get onlyCoordinatorCanDelete =>
@@ -1921,7 +1921,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get failedToDeleteEvent => 'Impossibile eliminare l\'evento';
 
   @override
-  String get selectMotmLabel => 'Seleziona MDC';
+  String get selectMotmLabel => 'Seleziona MOTM';
 
   @override
   String get scheduleMatchLabel => 'Programma Partita';
@@ -2323,14 +2323,14 @@ class AppLocalizationsIt extends AppLocalizations {
       'Errore nel caricamento giocatori: $error';
 
   @override
-  String get selectMotmTitle => 'Seleziona Uomo della Partita';
+  String get selectMotmTitle => 'Seleziona MOTM';
 
   // Football stat card
   @override
   String get goalsLabel => 'Gol';
 
   @override
-  String get motmLabel => 'MDC';
+  String get motmLabel => 'MOTM';
 
   @override
   String get yellowCardsLabel => 'Cartellini Gialli';
@@ -2550,7 +2550,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get viceCaptainAbbr => 'VC';
 
   @override
-  String teamAliasAndId(String alias, double id) => "Alias: ${alias} - ID: ${id}";
+  String teamAliasAndId(String alias, double id) => "Alias: ${alias} - ID: ${id.toStringAsFixed(0)}";
 
   // Abstract football match widget - match statuses
   @override

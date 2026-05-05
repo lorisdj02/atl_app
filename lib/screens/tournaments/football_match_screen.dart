@@ -547,6 +547,11 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
 
     if (actions.isEmpty) return;
 
+    if (actions.contains(_menuAddPlayerEvent)) {
+      actions.remove(_menuAddPlayerEvent);
+      actions.insert(0, _menuAddPlayerEvent);
+    }
+
     final result = await showModalBottomSheet<String>(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -1019,7 +1024,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
         if (_canStartMatch) {
           return ATLFloatingButton(
             onPressed: () => _handleMatchAction('start'),
-            backgroundColor: Colors.orange,
+            backgroundColor: ATLColors.getPrimaryColor(widget.currentSport),
             icon: Icons.play_arrow,
             label: _l10n.startMatchTitle,
             heroTag: 'soccerMatchFAB',

@@ -15,7 +15,7 @@ class FootballMatch extends Match {
   int? penaltyScoreAway;
   int? missedPenaltyAway;
   FootballMatchStatus status;
-  DateTime? halfTime;
+  DateTime? halftime;
   DateTime? startHalf;
 
   FootballMatch({
@@ -25,7 +25,7 @@ class FootballMatch extends Match {
     required super.tournamentId,
     required super.groupName,
     required super.startMatch,
-    required this.halfTime,
+    required this.halftime,
     required this.startHalf,
     required this.status,
     required super.scheduledStart,
@@ -58,8 +58,8 @@ class FootballMatch extends Match {
       startMatch: json['startMatch'] != null
           ? DateTime.parse(json['startMatch']).toLocal()
           : null,
-      halfTime: json['halfTime'] != null
-          ? DateTime.parse(json['halfTime']).toLocal()
+      halftime: json['halftime'] != null
+          ? DateTime.parse(json['halftime']).toLocal()
           : null,
       startHalf: json['startHalf'] != null
           ? DateTime.parse(json['startHalf']).toLocal()
@@ -107,7 +107,7 @@ class FootballMatch extends Match {
       'tournamentId': tournamentId,
       'groupName': groupName,
       'startMatch': startMatch?.toUtc().toIso8601String(),
-      'halfTime': halfTime?.toUtc().toIso8601String(),
+      'halftime': halftime?.toUtc().toIso8601String(),
       'startHalf': startHalf?.toUtc().toIso8601String(),
       'status': status.apiName,
       'scheduledStart': scheduledStart?.toUtc().toIso8601String(),

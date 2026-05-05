@@ -1667,7 +1667,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentType => 'Tournament';
 
   @override
-  String tournamentIdLabel(double id) => 'Tournament ID: #$id';
+  String tournamentIdLabel(double id) => 'Tournament ID: #${id.toStringAsFixed(0)}';
 
   @override
   String get startTournamentTitle => 'Start Tournament';
@@ -2506,7 +2506,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String teamAliasAndId(String alias, double id) =>
-      "Alias: ${alias} - ID: ${id}";
+      "Alias: ${alias} - ID: ${id.toStringAsFixed(0)}";
 
   // Abstract football match widget - match statuses
   @override
