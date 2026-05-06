@@ -1,34 +1,62 @@
+import 'package:atl_app/models/enums/transaction_type.dart';
 import 'package:flutter/material.dart';
 import '../utils/atl_colors.dart';
-import '../l10n/app_localizations.dart';
+import '../models/transaction.dart';
 
 class TransactionCard extends StatelessWidget {
-  final String description;
-  final DateTime date;
-  final double amount;
-  final bool isExpense;
+  final Transaction transaction;
 
   const TransactionCard({
     super.key,
-    required this.description,
-    required this.date,
-    required this.amount,
-    required this.isExpense,
+    required this.transaction,
   });
 
-  String _formatDate(BuildContext context, DateTime date) {
-    final l10n = AppLocalizations.of(context);
-    final now = DateTime.now();
-    final diff = now.difference(date).inDays;
+  String _formatEnumLabel(String raw) {
+    if (raw.isEmpty) return raw;
 
-    if (diff == 0) return l10n.today;
-    if (diff == 1) return l10n.yesterday;
-    if (diff < 7) return l10n.daysAgo(diff);
-    return '${date.day}/${date.month}/${date.year}';
+    final buffer = StringBuffer();
+    for (var i = 0; i < raw.length; i++) {
+      final char = raw[i];
+      final isUpper = char.toUpperCase() == char && char.toLowerCase() != char;
+      if (i > 0 && isUpper) {
+        buffer.write(' ');
+      }
+      buffer.write(char);
+    }
+    final formatted = buffer.toString().replaceAll('_', ' ').toLowerCase();
+    return formatted.isEmpty
+        ? formatted
+        : formatted[0].toUpperCase() + formatted.substring(1);
+  }
+
+  String _formatCurrency(String currency) {
+    if (currency.toUpperCase() == 'EUR') return '€';
+    if (currency.toUpperCase() == 'USD') return '\$';
+    if (currency.toUpperCase() == 'GBP') return '£';
+    return currency;
+  }
+
+  bool _isExpense(Transaction transaction) {
+    switch (transaction.type) {
+      case TransactionType.payment:
+      case TransactionType.withdraw:
+        return true;
+      case TransactionType.deposit:
+      case TransactionType.prize:
+      case TransactionType.refund:
+      case TransactionType.fee:
+      case TransactionType.invite:
+        return false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isExpense = _isExpense(transaction);
+    final typeLabel = _formatEnumLabel(transaction.type.toString().split('.').last);
+    final statusLabel = transaction.status.displayName(context);
+    final currency = _formatCurrency(transaction.currency);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -53,18 +81,18 @@ class TransactionCard extends StatelessWidget {
           ),
         ),
         title: Text(
-          description,
+          typeLabel,
           style: const TextStyle(
             color: ATLColors.darkBlue,
             fontWeight: FontWeight.w600,
           ),
         ),
         subtitle: Text(
-          _formatDate(context, date),
+          statusLabel,
           style: const TextStyle(color: ATLColors.subtext, fontSize: 12),
         ),
         trailing: Text(
-          '${isExpense ? '-' : '+'}€${amount.abs().toStringAsFixed(2)}',
+          '${isExpense ? '-' : '+'}$currency${transaction.amount.abs().toStringAsFixed(2)}',
           style: TextStyle(
             color: isExpense ? Colors.red : Colors.green,
             fontWeight: FontWeight.bold,

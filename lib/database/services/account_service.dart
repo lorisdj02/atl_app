@@ -42,7 +42,7 @@ class AccountService {
   static Future<void> deleteRefereeLicense(double sportId) async =>
       await _write.deleteRefereeLicense(sportId);
 
-  static Future<void> commitReview(Review review) async =>
+    static Future<Review> commitReview(Review review) async =>
       await _write.commitReview(review);
 
   static Future<Account> registerAccount(

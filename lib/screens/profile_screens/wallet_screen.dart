@@ -8,6 +8,7 @@ import '../../utils/atl_colors.dart';
 import '../../models/wallet.dart';
 import '../../database/services/profile_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../../widgets/transaction_card.dart';
 
 class WalletScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -352,36 +353,48 @@ class _WalletScreenState extends State<WalletScreen> {
           ),
           // Transactions Section
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.receipt_long,
-                    size: 80,
-                    color: ATLColors.subtext.withOpacity(0.5),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.comingSoon,
-                    style: const TextStyle(
-                      color: ATLColors.darkBlue,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+            child: _transactions.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.receipt_long,
+                          size: 80,
+                          color: ATLColors.subtext.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          l10n.comingSoon,
+                          style: const TextStyle(
+                            color: ATLColors.darkBlue,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 48),
+                          child: Text(
+                            l10n.transactionHistory,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: ATLColors.subtext,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _transactions.length,
+                    itemBuilder: (context, index) {
+                      final transaction = _transactions[index];
+                      return TransactionCard(transaction: transaction);
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 48),
-                    child: Text(
-                      l10n.transactionHistory,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: ATLColors.subtext, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

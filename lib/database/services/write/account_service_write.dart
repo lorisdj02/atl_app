@@ -29,8 +29,12 @@ class AccountServiceWrite {
     await dio.delete("$apiUrl/referee/delete-referee-license/${sportId.toStringAsFixed(0)}");
   }
 
-  Future<void> commitReview(Review review) async {
-    await dio.patch("$apiUrl/reviews/commit", data: review.toJson());
+  Future<Review> commitReview(Review review) async {
+    final response = await dio.patch(
+      "$apiUrl/review/commit",
+      data: review.toJson(),
+    );
+    return Review.fromJson(response.data);
   }
 
   Future<Account> registerAccount(RegisterAccountRequest request) async {

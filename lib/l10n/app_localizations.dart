@@ -869,6 +869,7 @@ abstract class AppLocalizations {
   // Review widget
   String get rateAllFieldsMsg;
   String get reviewSubmitted;
+  String get reviewSubmittedLabel;
   String get failedToSubmitReview;
 
   // Search dialog widget
@@ -1075,4 +1076,8 @@ abstract class AppLocalizations {
   String get unknownDate;
 
   String get unknownTime;
+
+  String get transactionStatusConfirmed;
+
+  String get transactionStatusRefunded;
 }

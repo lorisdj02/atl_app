@@ -31,6 +31,9 @@ class _ReviewWidgetState extends State<ReviewWidget> {
   bool get _allRated => _ratings.every((r) => r >= 0.5);
   final TextEditingController _commentController = TextEditingController();
   bool _isCommitting = false;
+  bool _isSubmitted = false;
+
+  bool get _isBlocked => _isCommitting || _isSubmitted;
 
   @override
   void dispose() {
@@ -77,7 +80,10 @@ class _ReviewWidgetState extends State<ReviewWidget> {
           backgroundColor: Colors.green,
         ),
       );
-      widget.onCommitted();
+      setState(() {
+        _isCommitting = false;
+        _isSubmitted = true;
+      });
     } catch (e) {
       setState(() => _isCommitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -243,7 +249,9 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                         const SizedBox(height: 10),
                         StarRatingRow(
                           value: _ratings[i],
-                          onChanged: (v) => setState(() => _ratings[i] = v),
+                          onChanged: _isBlocked
+                              ? null
+                              : (v) => setState(() => _ratings[i] = v),
                         ),
                       ],
                     ),
@@ -277,6 +285,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
             ),
             child: TextField(
               controller: _commentController,
+              enabled: !_isBlocked,
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: l10n.writeACommentHint,
@@ -290,7 +299,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _isCommitting ? null : _commit,
+              onPressed: _isBlocked ? null : _commit,
               icon: _isCommitting
                   ? const SizedBox(
                       width: 20,
@@ -302,7 +311,11 @@ class _ReviewWidgetState extends State<ReviewWidget> {
                     )
                   : const Icon(Icons.check_circle_outline),
               label: Text(
-                _isCommitting ? l10n.submittingLabel : l10n.commitReviewButton,
+                _isCommitting
+                    ? l10n.submittingLabel
+                    : (_isSubmitted
+                        ? l10n.reviewSubmittedLabel
+                        : l10n.commitReviewButton),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ATLColors.darkBlue,
@@ -357,7 +370,7 @@ class _ReviewWidgetState extends State<ReviewWidget> {
 
 class StarRatingRow extends StatelessWidget {
   final double value;
-  final ValueChanged<double> onChanged;
+  final ValueChanged<double>? onChanged;
 
   const StarRatingRow({
     super.key,
@@ -400,7 +413,7 @@ class StarRatingRow extends StatelessWidget {
             bottom: 0,
             width: size / 2,
             child: GestureDetector(
-              onTap: () => onChanged(i + 0.5),
+              onTap: onChanged == null ? null : () => onChanged!(i + 0.5),
               behavior: HitTestBehavior.opaque,
             ),
           ),
@@ -410,7 +423,7 @@ class StarRatingRow extends StatelessWidget {
             bottom: 0,
             width: size / 2,
             child: GestureDetector(
-              onTap: () => onChanged(i + 1.0),
+              onTap: onChanged == null ? null : () => onChanged!(i + 1.0),
               behavior: HitTestBehavior.opaque,
             ),
           ),

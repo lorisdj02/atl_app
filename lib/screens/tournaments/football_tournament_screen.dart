@@ -58,6 +58,8 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   int? _minutesPerRound;
   int? _minutesPerPause;
 
+  bool _canContinue = false;
+
   AppLocalizations get _l10n => AppLocalizations.of(context);
 
   @override
@@ -117,6 +119,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       _minutesPerRound = data.minutesPerRound;
       _minutesPerPause = data.minutesPerPause;
       _finalStageBrackets = data.finalStageBrackets;
+      _canContinue = data.canContinue ?? false;
       _fixturesLoaded = true;
       _tablesLoaded = true;
       _statsLoaded = true;

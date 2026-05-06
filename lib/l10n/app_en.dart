@@ -1667,7 +1667,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tournamentType => 'Tournament';
 
   @override
-  String tournamentIdLabel(double id) => 'Tournament ID: #${id.toStringAsFixed(0)}';
+  String tournamentIdLabel(double id) =>
+      'Tournament ID: #${id.toStringAsFixed(0)}';
 
   @override
   String get startTournamentTitle => 'Start Tournament';
@@ -1838,7 +1839,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get penaltyShootoutEvent => 'Penalty Shootout';
 
   @override
-    String matchIdLabel(int id) => 'Match ID: #$id';
+  String matchIdLabel(int id) => 'Match ID: #$id';
 
   @override
   String get unknownPlayer => 'Unknown Player';
@@ -2398,6 +2399,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reviewSubmitted => 'Review submitted!';
 
   @override
+  String get reviewSubmittedLabel => 'Submitted';
+
+  @override
   String get failedToSubmitReview => 'Failed to submit review.';
 
   // Search dialog widget
@@ -2894,4 +2898,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unknownTime => 'Unknown time';
+
+  @override
+  String get transactionStatusRefunded => 'Refunded';
+
+  @override
+  String get transactionStatusConfirmed => 'Accredited';
 }

@@ -15,6 +15,7 @@ class MatchInfoCard extends StatefulWidget {
   final Field field;
   final String cityName;
   final Map<String, String> assignmentPerRefereeNameSurname;
+  final String? motmName;
 
   const MatchInfoCard({
     super.key,
@@ -25,6 +26,7 @@ class MatchInfoCard extends StatefulWidget {
     required this.field,
     required this.cityName,
     required this.assignmentPerRefereeNameSurname,
+    this.motmName,
   });
 
   @override
@@ -49,6 +51,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
     // Permetti di collassare solo se il match non è notScheduled o scheduled
     final bool canCollapse = !widget.isNotScheduled && !widget.isScheduled;
     final l10n = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -134,6 +137,7 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                     label: l10n.labelDate,
                     value: DateFormat(
                       'EEEE, MMMM d, y',
+                      localeName,
                     ).format(widget.match.scheduledStart!),
                     color: ATLColors.getPrimaryColor(widget.sportCategory),
                   ),
@@ -143,10 +147,20 @@ class _MatchInfoCardState extends State<MatchInfoCard> {
                     label: l10n.timeLabel,
                     value: DateFormat(
                       'HH:mm',
+                      localeName,
                     ).format(widget.match.scheduledStart!),
                     color: Colors.green,
                   ),
                   const Divider(height: 24),
+                  if (widget.motmName != null) ...[
+                    InfoRowWithIcon(
+                      icon: Icons.star,
+                      label: l10n.motmLabel,
+                      value: widget.motmName!,
+                      color: Colors.orange,
+                    ),
+                    const Divider(height: 24),
+                  ],
                   _isLoadingField
                       ? InfoRowWithIcon(
                           icon: Icons.location_on,

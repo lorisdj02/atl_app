@@ -825,6 +825,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     final accountProvider = Provider.of<AccountProvider>(context);
     final isCoordinator = accountProvider.isCoordinator;
     final isReferee = accountProvider.isReferee;
+    final motmName = _getMotmName();
 
     return Scaffold(
       backgroundColor: ATLColors.background,
@@ -876,6 +877,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
                       cityName: _cityName,
                       assignmentPerRefereeNameSurname:
                           _assignmentPerRefereeNameSurname,
+                      motmName: motmName,
                     ),
                     const SizedBox(height: 16),
                     // Sezione Eventi
@@ -1195,7 +1197,7 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     final lastName = player.surname;
 
     if (firstName.isNotEmpty && lastName.isNotEmpty) {
-      return '${firstName[0]}. $lastName';
+      return '${firstName[0].toUpperCase()}. ${lastName[0].toUpperCase()}${lastName.substring(1)}';
     } else if (lastName.isNotEmpty) {
       return lastName;
     } else if (firstName.isNotEmpty) {
@@ -1203,6 +1205,21 @@ class _FootballMatchScreenState extends State<FootballMatchScreen> {
     }
 
     return _l10n.unknownPlayer;
+  }
+
+  String? _getMotmName() {
+    final motmPlayerId = _match?.motmPlayerId;
+    if (motmPlayerId == null) return null;
+
+    for (final teamPlayers in _playersPerTeam.values) {
+      for (final player in teamPlayers) {
+        if (player.playerId == motmPlayerId) {
+          return _formatPlayerName(player);
+        }
+      }
+    }
+
+    return null;
   }
 
   Widget _buildRefereeFloatingActionButton() {

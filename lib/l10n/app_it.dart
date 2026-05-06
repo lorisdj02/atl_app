@@ -2,7 +2,6 @@ import 'app_localizations.dart';
 
 /// Localizzazioni in italiano
 class AppLocalizationsIt extends AppLocalizations {
-
   @override
   String get statusPendingPayments => 'Pagamenti in sospeso';
 
@@ -310,7 +309,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get bookingCreatedSuccessfully => 'Prenotazione creata con successo!';
 
   @override
-  String errorLoadingData(String error) => 'Errore nel caricamento dati: $error';
+  String errorLoadingData(String error) =>
+      'Errore nel caricamento dati: $error';
 
   // Registration
   @override
@@ -502,8 +502,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get costPerPlayer => 'Costo per Giocatore';
 
   @override
-  String confirmBooking(String amount) =>
-      'Conferma Prenotazione - €$amount';
+  String confirmBooking(String amount) => 'Conferma Prenotazione - €$amount';
 
   @override
   String get back => 'Indietro';
@@ -541,13 +540,15 @@ class AppLocalizationsIt extends AppLocalizations {
       'È necessario selezionare almeno un capitano o vice';
 
   @override
-  String get errorConfirmingCalups => 'Errore nella conferma delle convocazioni';
+  String get errorConfirmingCalups =>
+      'Errore nella conferma delle convocazioni';
 
   @override
   String get callupsTitle => 'Convocazioni';
 
   @override
-  String get noPlayersFoundInTeam => 'Nessun giocatore trovato in questa squadra';
+  String get noPlayersFoundInTeam =>
+      'Nessun giocatore trovato in questa squadra';
 
   @override
   String selectedCount(int count) => 'Selezionati: $count';
@@ -957,7 +958,8 @@ class AppLocalizationsIt extends AppLocalizations {
       'Registra eventi della partita in tempo reale';
 
   @override
-  String get guestRoleRefereeFeature3 => 'Tieni traccia di guadagni e calendario';
+  String get guestRoleRefereeFeature3 =>
+      'Tieni traccia di guadagni e calendario';
 
   @override
   String get guestRoleOrganizationDesc =>
@@ -1255,8 +1257,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get comingSoonText => 'In arrivo';
 
   @override
-  String get ordersComingSoon =>
-      'I tuoi ordini saranno disponibili presto!';
+  String get ordersComingSoon => 'I tuoi ordini saranno disponibili presto!';
 
   // Reviews screen
   @override
@@ -1331,7 +1332,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get privacyPolicy => 'Informativa sulla privacy';
 
   @override
-  String get privacyPolicySubtitle => 'Leggi la nostra informativa sulla privacy';
+  String get privacyPolicySubtitle =>
+      'Leggi la nostra informativa sulla privacy';
 
   @override
   String get privacyComingSoon => 'Informativa sulla privacy in arrivo';
@@ -1408,8 +1410,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Questa azione non può essere annullata. Tutti i tuoi dati verranno eliminati definitivamente.';
 
   @override
-  String get enterPasswordToConfirm =>
-      'Inserisci la password per confermare:';
+  String get enterPasswordToConfirm => 'Inserisci la password per confermare:';
 
   @override
   String get enterYourPassword => 'Inserisci la tua password';
@@ -1474,7 +1475,8 @@ class AppLocalizationsIt extends AppLocalizations {
       'Il saldo contiene rimborsi e guadagni per ogni prenotazione effettuata...';
 
   @override
-  String get walletInfoFallback => 'Nessuna informazione portafoglio disponibile.';
+  String get walletInfoFallback =>
+      'Nessuna informazione portafoglio disponibile.';
 
   @override
   String get walletInfo => 'Info portafoglio';
@@ -1495,8 +1497,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get withdrawPersonalBalance => 'Preleva solo saldo personale';
 
   @override
-  String get withdrawPersonalComingSoon =>
-      'Prelievo saldo personale in arrivo';
+  String get withdrawPersonalComingSoon => 'Prelievo saldo personale in arrivo';
 
   @override
   String get withdrawPrizeBalance => 'Preleva solo saldo premi';
@@ -1543,8 +1544,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get loginToPurchase => 'Accedi per acquistare';
 
   @override
-  String get guestLoginRequired =>
-      'Modalità ospite: accedi per acquistare';
+  String get guestLoginRequired => 'Modalità ospite: accedi per acquistare';
 
   // Checkout screen
   @override
@@ -1758,8 +1758,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get callUpsDeleted => 'Convocazioni eliminate con successo';
 
   @override
-  String get failedToDeleteCallUps =>
-      'Impossibile eliminare le convocazioni';
+  String get failedToDeleteCallUps => 'Impossibile eliminare le convocazioni';
 
   // Football match screen
   @override
@@ -1821,7 +1820,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get matchScheduledSuccessfully => 'Partita programmata con successo';
 
   @override
-  String get matchRescheduledSuccessfully => 'Partita riprogrammata con successo';
+  String get matchRescheduledSuccessfully =>
+      'Partita riprogrammata con successo';
 
   @override
   String get failedToScheduleFieldUnavailable =>
@@ -1871,7 +1871,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get penaltyShootoutEvent => 'Calci di rigore';
 
   @override
-    String matchIdLabel(int id) => 'ID partita: #$id';
+  String matchIdLabel(int id) => 'ID partita: #$id';
 
   @override
   String get unknownPlayer => 'Giocatore sconosciuto';
@@ -1880,15 +1880,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String matchActionSuccess(String action) => 'Partita $action con successo';
 
   @override
-  String failedToMatchAction(String action) =>
-      'Impossibile $action la partita';
+  String failedToMatchAction(String action) => 'Impossibile $action la partita';
 
   @override
   String get penaltyShootoutStarted => 'Calci di rigore iniziati';
 
   @override
-  String get failedToStartPenalty =>
-      'Impossibile iniziare i calci di rigore';
+  String get failedToStartPenalty => 'Impossibile iniziare i calci di rigore';
 
   @override
   String get motmAdded => 'MOTM aggiunto con successo';
@@ -2073,8 +2071,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get leaveTeamTitle => 'Lascia squadra';
 
   @override
-  String get leaveTeamConfirm =>
-      'Sei sicuro di voler lasciare questa squadra?';
+  String get leaveTeamConfirm => 'Sei sicuro di voler lasciare questa squadra?';
 
   @override
   String get leaveButton => 'Lascia';
@@ -2089,7 +2086,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get expelButton => 'Espelli';
 
   // Team screen
-   @override
+  @override
   String get footballTeamsTitle => 'Squadre di calcio';
 
   @override
@@ -2146,7 +2143,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get noTeamsFound => 'Nessuna squadra trovata';
 
   @override
-  String get guestModeLoginTeams => 'Modalità ospite: Accedi per creare/unirsi a squadre';
+  String get guestModeLoginTeams =>
+      'Modalità ospite: Accedi per creare/unirsi a squadre';
 
   @override
   String get numberOfPlayersLabel => 'Numero Giocatori';
@@ -2272,8 +2270,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get fullLobby => 'Lobby Piena';
 
   @override
-  String youPaidForPlayers(int count) =>
-      count == 1 ? 'Hai pagato per 1 giocatore' : 'Hai pagato per $count giocatori';
+  String youPaidForPlayers(int count) => count == 1
+      ? 'Hai pagato per 1 giocatore'
+      : 'Hai pagato per $count giocatori';
 
   @override
   String get openChat => 'Apri Chat';
@@ -2441,6 +2440,9 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get reviewSubmitted => 'Recensione inviata!';
 
+    @override
+    String get reviewSubmittedLabel => 'Inviata';
+
   @override
   String get failedToSubmitReview => 'Impossibile inviare la recensione.';
 
@@ -2550,7 +2552,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get viceCaptainAbbr => 'VC';
 
   @override
-  String teamAliasAndId(String alias, double id) => "Alias: ${alias} - ID: ${id.toStringAsFixed(0)}";
+  String teamAliasAndId(String alias, double id) =>
+      "Alias: ${alias} - ID: ${id.toStringAsFixed(0)}";
 
   // Abstract football match widget - match statuses
   @override
@@ -2656,16 +2659,14 @@ class AppLocalizationsIt extends AppLocalizations {
   String get selectDateButton => 'Seleziona Data';
 
   @override
-  String get availableTimeSlotsLabel =>
-      'Orari Disponibili (Calcio d\'inizio):';
+  String get availableTimeSlotsLabel => 'Orari Disponibili (Calcio d\'inizio):';
 
   @override
   String get noAvailableTimeSlotsForDate =>
       'Nessun orario disponibile per questa data';
 
   @override
-  String fieldBookedInfo(
-          String from, String to, String date, String kickoff) =>
+  String fieldBookedInfo(String from, String to, String date, String kickoff) =>
       'Campo prenotato dalle $from alle $to il $date con calcio d\'inizio alle $kickoff';
 
   // Search dialog widget
@@ -2867,7 +2868,7 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get amountToPayLabel => 'Importo da pagare';
 
-  @override 
+  @override
   String get january => 'Gennaio';
 
   @override
@@ -2903,15 +2904,16 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get december => 'Dicembre';
 
-  
   @override
   String get round2Label => 'Andata e ritorno';
 
   @override
-  String get specifyTeamOrTournament => 'Devi specificare la ricerca per squadra o torneo.';
+  String get specifyTeamOrTournament =>
+      'Devi specificare la ricerca per squadra o torneo.';
 
   @override
-  String get failedToLoadTimeData => 'Impossibile caricare i dati temporali. Riprova.';
+  String get failedToLoadTimeData =>
+      'Impossibile caricare i dati temporali. Riprova.';
 
   @override
   String get tournamentLabel => 'Torneo';
@@ -2934,9 +2936,15 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get startDateLabel => 'Data di inizio';
 
-    @override
+  @override
   String get unknownDate => 'Data sconosciuta';
 
   @override
   String get unknownTime => 'Orario sconosciuto';
+
+  @override
+  String get transactionStatusRefunded => 'Rimborso';
+
+  @override
+  String get transactionStatusConfirmed => 'Accredito';
 }

@@ -1,3 +1,4 @@
+
 enum TransactionType {
     deposit, // NOT USED
     payment, // OUT PERSONAL, PRIZE, INVITE WALLET
