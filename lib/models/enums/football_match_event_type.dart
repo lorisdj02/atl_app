@@ -9,7 +9,7 @@ enum FootballMatchEventType {
   start,
   halftime,
   startHalf,
-  penaltyShootOut,
+  penaltyShootout,
   finish;
 
   String get apiName {
@@ -34,7 +34,7 @@ enum FootballMatchEventType {
         return 'HALFTIME';
       case FootballMatchEventType.startHalf:
         return 'START_HALF';
-      case FootballMatchEventType.penaltyShootOut:
+      case FootballMatchEventType.penaltyShootout:
         return 'PENALTY_SHOOTOUT';
       case FootballMatchEventType.finish:
         return 'FINISH';

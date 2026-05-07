@@ -42,11 +42,72 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
     }
 
     for (final bracket in widget.finalStageBrackets) {
-      final matches = List<FootballMatch>.from(
-        matchesByBracketId[bracket.id] ?? const [],
-      )..sort((a, b) {
-          final orderCompare =
-              _legOrderRank(a.legOrder).compareTo(_legOrderRank(b.legOrder));
+      final matches =
+          List<FootballMatch>.from(matchesByBracketId[bracket.id] ?? const [])
+            ..sort((a, b) {
+              final orderCompare = _legOrderRank(
+                a.legOrder,
+              ).compareTo(_legOrderRank(b.legOrder));
+              if (orderCompare != 0) return orderCompare;
+              return a.id.compareTo(b.id);
+            });
+
+      FootballMatch? firstLeg;
+      FootballMatch? secondLeg;
+      for (final match in matches) {
+        if (match.legOrder == LegOrderType.firstLeg && firstLeg == null) {
+          firstLeg = match;
+        } else if (match.legOrder == LegOrderType.secondLeg &&
+            secondLeg == null) {
+          secondLeg = match;
+        }
+      }
+
+      final baseMatch =
+          firstLeg ?? secondLeg ?? (matches.isNotEmpty ? matches.first : null);
+      final homeTeamId = baseMatch?.homeTeamId;
+      final awayTeamId = baseMatch?.awayTeamId;
+
+      final homeTeam = homeTeamId != null
+          ? widget.teamsCache[homeTeamId]
+          : null;
+      final awayTeam = awayTeamId != null
+          ? widget.teamsCache[awayTeamId]
+          : null;
+      final winnerTeamId = _getWinnerTeamId(bracket, homeTeamId, awayTeamId);
+
+      dataByGroup[bracket.groupName] = _BracketDisplayData(
+        homeTeamId: homeTeamId,
+        awayTeamId: awayTeamId,
+        homeTeam: homeTeam,
+        awayTeam: awayTeam,
+        winnerTeamId: winnerTeamId,
+      );
+    }
+
+    final fallbackData = _buildFallbackDataFromMatches();
+    fallbackData.forEach((group, data) {
+      dataByGroup.putIfAbsent(group, () => data);
+    });
+
+    return dataByGroup;
+  }
+
+  Map<String, _BracketDisplayData> _buildFallbackDataFromMatches() {
+    final dataByGroup = <String, _BracketDisplayData>{};
+    final matchesByGroup = <String, List<FootballMatch>>{};
+
+    for (final match in widget.matches) {
+      if (!_isPlayoffGroup(match.groupName)) continue;
+      matchesByGroup.putIfAbsent(match.groupName, () => []).add(match);
+    }
+
+    for (final entry in matchesByGroup.entries) {
+      final matches = List<FootballMatch>.from(entry.value)
+        ..sort((a, b) {
+          final orderCompare = _legOrderRank(
+            a.legOrder,
+          ).compareTo(_legOrderRank(b.legOrder));
           if (orderCompare != 0) return orderCompare;
           return a.id.compareTo(b.id);
         });
@@ -67,23 +128,30 @@ class _RoadToVictoryWidgetState extends State<RoadToVictoryWidget> {
       final homeTeamId = baseMatch?.homeTeamId;
       final awayTeamId = baseMatch?.awayTeamId;
 
-      final homeTeam =
-          homeTeamId != null ? widget.teamsCache[homeTeamId] : null;
-      final awayTeam =
-          awayTeamId != null ? widget.teamsCache[awayTeamId] : null;
-      final winnerTeamId =
-          _getWinnerTeamId(bracket, homeTeamId, awayTeamId);
+      final homeTeam = homeTeamId != null
+          ? widget.teamsCache[homeTeamId]
+          : null;
+      final awayTeam = awayTeamId != null
+          ? widget.teamsCache[awayTeamId]
+          : null;
 
-      dataByGroup[bracket.groupName] = _BracketDisplayData(
+      dataByGroup[entry.key] = _BracketDisplayData(
         homeTeamId: homeTeamId,
         awayTeamId: awayTeamId,
         homeTeam: homeTeam,
         awayTeam: awayTeam,
-        winnerTeamId: winnerTeamId,
+        winnerTeamId: null,
       );
     }
 
     return dataByGroup;
+  }
+
+  bool _isPlayoffGroup(String groupName) {
+    return groupName.startsWith('OF') ||
+        groupName.startsWith('QF') ||
+        groupName.startsWith('SF') ||
+        groupName == 'FI';
   }
 
   int _legOrderRank(LegOrderType? legOrder) {

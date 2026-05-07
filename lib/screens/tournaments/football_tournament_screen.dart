@@ -10,6 +10,7 @@ import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../models/player.dart';
 import '../../models/football_team_stats.dart';
+import '../../models/enums/tournament_phase.dart';
 import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
@@ -65,11 +66,26 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
   AppLocalizations get _l10n => AppLocalizations.of(context);
 
+  String _getCoordinatorActionLabel() {
+    if (widget.tournament.phase == TournamentPhase.final_) {
+      return _l10n.closeTournamentLabel;
+    }
+
+    if (widget.tournament.isGroupStage) {
+      return _l10n.goToFinalStageLabel;
+    }
+
+    return _l10n.goToNextPhaseLabel;
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _selectedTableView = widget.tournament.isGroupStage
+        ? 'group_stage'
+        : 'road_to_victory';
     _loadData();
   }
 
@@ -107,34 +123,46 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       _statsLoaded = false;
     });
 
-    try{
-    final FootballTournamentResponse data = await TournamentService.getTournamentScreen(
-      widget.tournament.id.toDouble(),
-      widget.sportCategory,
-    );
+    try {
+      final FootballTournamentResponse data =
+          await TournamentService.getTournamentScreen(
+            widget.tournament.id.toDouble(),
+            widget.sportCategory,
+          );
+      List<FootballMatch> matches = data.matches;
 
-    setState(() {
-      _matches = data.matches;
-      _standings = data.standings;
-      _players = data.players;
-      _teamsCache = data.teamsCache;
-      _playerStatsCache = data.footballPlayerStatsCache;
-      _minutesPerRound = data.minutesPerRound;
-      _minutesPerPause = data.minutesPerPause;
-      _finalStageBrackets = data.finalStageBrackets;
-      _canContinue = data.canContinue ?? false;
-      _fixturesLoaded = true;
-      _tablesLoaded = true;
-      _statsLoaded = true;
-      _isInitialized = true;
-    });
+      matches.sort((a, b) {
+        if (a.day != null && b.day != null && a.day != b.day) {
+          return a.day!.compareTo(b.day!);
+        }
+        // Ordina per gruppo (A, B, C...)
+        if (a.groupName != b.groupName) {
+          return a.groupName.compareTo(b.groupName);
+        }
+        // Ordina per id
+        return a.id.compareTo(b.id);
+      });
+
+      setState(() {
+        _matches = matches;
+        _standings = data.standings;
+        _players = data.players;
+        _teamsCache = data.teamsCache;
+        _playerStatsCache = data.footballPlayerStatsCache;
+        _minutesPerRound = data.minutesPerRound;
+        _minutesPerPause = data.minutesPerPause;
+        _finalStageBrackets = data.finalStageBrackets;
+        _canContinue = data.canContinue ?? false;
+        _fixturesLoaded = true;
+        _tablesLoaded = true;
+        _statsLoaded = true;
+        _isInitialized = true;
+      });
     } catch (e) {
       // Handle error (e.g., show a snackbar)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_l10n.errorLoadingDataGeneric(e.toString())),
-          ),
+          SnackBar(content: Text(_l10n.errorLoadingDataGeneric(e.toString()))),
         );
       }
       setState(() {
@@ -173,9 +201,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         widget.tournament.id.toDouble(),
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_l10n.goToNextPhaseSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_l10n.goToNextPhaseSuccess)));
       _loadData();
     } catch (e) {
       if (!mounted) return;
@@ -197,15 +225,19 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
 
     if (!mounted) return;
     if (result == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_l10n.prizeAssignedSuccess)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_l10n.prizeAssignedSuccess)));
+      setState(() {
+        _canContinue = false;
+      });
       _loadData();
     }
   }
 
   Widget? _buildFloatingActionButton(AccountProvider accountProvider) {
-    final isCoordinatorOwner = accountProvider.isCoordinator &&
+    final isCoordinatorOwner =
+        accountProvider.isCoordinator &&
         accountProvider.activeRoleId == widget.tournament.coordinatorId;
 
     if (_canContinue && isCoordinatorOwner) {
@@ -214,7 +246,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
         icon: const Icon(Icons.skip_next, color: Colors.white),
         label: Text(
-          _l10n.goToNextPhaseLabel,
+          _getCoordinatorActionLabel(),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -242,9 +274,9 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       return FloatingActionButton.extended(
         onPressed: () {
           // TODO: Navigate to chat
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_l10n.chatComingSoon)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(_l10n.chatComingSoon)));
         },
         backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
         icon: const Icon(Icons.chat_bubble, color: Colors.white),
@@ -322,7 +354,6 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         setState(() {
           _currentIndex = index;
         });
-        _loadData();
       },
       child: Container(
         decoration: BoxDecoration(
@@ -561,7 +592,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
       itemBuilder: (context, index) {
         final group = groups[index];
         final groupMatches = _matches
-          .where((m) => m.groupName == group && m.day == day)
+            .where((m) => m.groupName == group && m.day == day)
             .toList();
 
         if (groupMatches.isEmpty) return const SizedBox.shrink();

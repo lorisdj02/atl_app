@@ -45,7 +45,7 @@ class MatchEventCard extends StatelessWidget {
         return Icons.play_circle_filled;
       case FootballMatchEventType.finish:
         return Icons.stop_circle;
-      case FootballMatchEventType.penaltyShootOut:
+      case FootballMatchEventType.penaltyShootout:
         return Icons.sports_score;
     }
   }
@@ -68,7 +68,7 @@ class MatchEventCard extends StatelessWidget {
       case FootballMatchEventType.startHalf:
       case FootballMatchEventType.halftime:
       case FootballMatchEventType.finish:
-      case FootballMatchEventType.penaltyShootOut:
+      case FootballMatchEventType.penaltyShootout:
         return ATLColors.darkBlue;
     }
   }

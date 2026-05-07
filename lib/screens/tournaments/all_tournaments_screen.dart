@@ -868,7 +868,9 @@ class _AllTournamentsScreenState extends State<AllTournamentsScreen>
                                   ),
                                 );
                               } else if (tournament.status ==
-                                  TournamentStatus.scheduled) {
+                                      TournamentStatus.scheduled ||
+                                  tournament.status ==
+                                      TournamentStatus.pendingPayments) {
                                 //TODO: Navigare alla schermata del torneo in corso
                                 if (widget.currentSport ==
                                     SportCategory.football) {

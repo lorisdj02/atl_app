@@ -189,7 +189,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             ],
           ),
         );
-      case FootballMatchStatus.penaltyShootOut:
+      case FootballMatchStatus.penaltyShootout:
         return Container(
           padding: statusPadding,
           decoration: BoxDecoration(
@@ -346,12 +346,13 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
     );
   }
 
-  Widget buildScore() {
+  Widget buildScore(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (match.status == FootballMatchStatus.finished ||
         match.status == FootballMatchStatus.started ||
         match.status == FootballMatchStatus.halftime ||
         match.status == FootballMatchStatus.startHalf ||
-        match.status == FootballMatchStatus.penaltyShootOut) {
+        match.status == FootballMatchStatus.penaltyShootout) {
       return Padding(
         padding: scoreHorizontalPadding,
         child: Column(
@@ -386,13 +387,12 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
                 ),
               ],
             ),
-            if (match.status == FootballMatchStatus.penaltyShootOut &&
-                (match.penaltyScoreHome != null ||
-                    match.penaltyScoreAway != null))
+            if (match.penaltyScoreHome != null ||
+                match.penaltyScoreAway != null)
               Padding(
                 padding: EdgeInsets.only(top: scoreFontSize * 0.167),
                 child: Text(
-                  '(${(match.scoreHome ?? 0) + (match.penaltyScoreHome ?? 0)}-${(match.scoreAway ?? 0) + (match.penaltyScoreAway ?? 0)} PSO)',
+                  '(${match.penaltyScoreHome ?? 0}-${match.penaltyScoreAway ?? 0} ${l10n.penaltyShootoutAbbrev})',
                   style: TextStyle(
                     fontSize: scoreFontSize * 0.67,
                     fontWeight: FontWeight.w600,
@@ -403,7 +403,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             if (match.status == FootballMatchStatus.started ||
                 match.status == FootballMatchStatus.halftime ||
                 match.status == FootballMatchStatus.startHalf ||
-                match.status == FootballMatchStatus.penaltyShootOut)
+                match.status == FootballMatchStatus.penaltyShootout)
               FootballLiveMinuteWidget(
                 minutesPerPause: minutesPerPause,
                 minutesPerRound: minutesPerRound,
@@ -493,7 +493,7 @@ abstract class AbstractFootballMatchWidget extends StatelessWidget {
             // Home team
             Expanded(child: buildTeam(homeTeam, isHome: true)),
             // Score or dash
-            buildScore(),
+            buildScore(context),
             // Away team
             Expanded(child: buildTeam(awayTeam, isHome: false)),
           ],

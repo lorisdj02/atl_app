@@ -549,6 +549,9 @@ abstract class AppLocalizations {
   String get withdraw;
   String get comingSoonText2;
   String get transactionHistory;
+  String get noTransactionsTitle;
+  String get noTransactionsSubtitle;
+  String get possibleNewPaymentsTitle;
 
   // Shop screen
   String get shopTitle;
@@ -687,8 +690,11 @@ abstract class AppLocalizations {
   String get addPlayerEventLabel;
   String get insertPenalty;
   String get refereeTheMatch;
+  String get penaltyShootoutInfo;
+  String get penaltyShootoutAbbrev;
   String get cancelButton;
   String get confirmButton;
+  String get closeButton;
 
   // Football tournament screen
   String errorLoadingDataGeneric(String error);
@@ -714,6 +720,8 @@ abstract class AppLocalizations {
   String get groupStageTab;
   String get roadToVictoryTab;
   String get goToNextPhaseLabel;
+  String get goToFinalStageLabel;
+  String get closeTournamentLabel;
   String get goToNextPhaseSuccess;
   String goToNextPhaseError(String error);
   String get assignPrizesLabel;

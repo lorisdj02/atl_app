@@ -3,7 +3,6 @@ import 'package:atl_app/database/responses/assign_football_prizes_response.dart'
 import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:atl_app/l10n/app_localizations.dart';
 import 'package:atl_app/models/enums/sport_category.dart';
-import 'package:atl_app/models/football_standing.dart';
 import 'package:atl_app/models/football_team_stats.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/utils/atl_colors.dart';
@@ -61,6 +60,7 @@ class _AssignFootballPrizesScreenState extends State<AssignFootballPrizesScreen>
         _data = data;
         _isLoading = false;
       });
+      _ensurePlayerStats();
       _initializePrizes();
     } catch (e) {
       if (!mounted) return;
@@ -71,6 +71,23 @@ class _AssignFootballPrizesScreenState extends State<AssignFootballPrizesScreen>
         ),
       );
     }
+  }
+
+  void _ensurePlayerStats() {
+    final data = _data;
+    if (data == null) return;
+
+    data.playersCache.forEach((playerId, player) {
+      if (data.footballPlayerStatsCache.containsKey(playerId)) return;
+      data.footballPlayerStatsCache[playerId] = FootballTeamStats(
+        teamId: data.team.id,
+        playerId: player.playerId,
+        goals: 0,
+        motm: 0,
+        yellowCards: 0,
+        redCards: 0,
+      );
+    });
   }
 
   List<Player> _getSortedPlayers() {
@@ -175,6 +192,7 @@ class _AssignFootballPrizesScreenState extends State<AssignFootballPrizesScreen>
       return _l10n.contributionUnavailable;
     }
 
+    // TODO: Use proper localization for the stats format
     final stats =
         '${stat.goals} - ${stat.motm} - ${stat.yellowCards} - ${stat.redCards}';
     return _l10n.contributionLabel(stats);

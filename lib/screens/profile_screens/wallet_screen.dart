@@ -365,18 +365,19 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          l10n.comingSoon,
+                          l10n.noTransactionsTitle,
                           style: const TextStyle(
                             color: ATLColors.darkBlue,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 48),
                           child: Text(
-                            l10n.transactionHistory,
+                            l10n.noTransactionsSubtitle,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: ATLColors.subtext,
@@ -389,9 +390,38 @@ class _WalletScreenState extends State<WalletScreen> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: _transactions.length,
+                    itemCount: _transactions.length + 1,
                     itemBuilder: (context, index) {
-                      final transaction = _transactions[index];
+                      if (index == 0) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                l10n.possibleNewPaymentsTitle,
+                                style: const TextStyle(
+                                  color: ATLColors.darkBlue,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                l10n.noTransactionsSubtitle,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: ATLColors.subtext,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      final transaction = _transactions[index - 1];
                       return TransactionCard(transaction: transaction);
                     },
                   ),

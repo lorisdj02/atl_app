@@ -11,12 +11,14 @@ class AssignTournamentPrizesRequest {
     required this.prizePerPlayer,
   });
 
-
   Map<String, dynamic> toJson() {
     return {
       ApiJsonKeys.tournamentId: tournamentId,
       ApiJsonKeys.teamId: teamId,
-      ApiJsonKeys.prizePerPlayer: prizePerPlayer.map((key, value) => MapEntry(key.toString(), value)),
+      ApiJsonKeys.prizePerPlayer: prizePerPlayer.map(
+        (key, value) =>
+            MapEntry(key.toStringAsFixed(0), value.toStringAsFixed(2)),
+      ),
     };
   }
 }

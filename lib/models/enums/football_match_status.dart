@@ -8,7 +8,7 @@ enum FootballMatchStatus {
   homeRetired,
   awayRetired,
   canceled,
-  penaltyShootOut;
+  penaltyShootout;
 
   String get apiName {
     switch (this) {
@@ -30,7 +30,7 @@ enum FootballMatchStatus {
         return 'AWAY_RETIRED';
       case FootballMatchStatus.canceled:
         return 'CANCELED';
-      case FootballMatchStatus.penaltyShootOut:
+      case FootballMatchStatus.penaltyShootout:
         return 'PENALTY_SHOOTOUT';
     }
   }

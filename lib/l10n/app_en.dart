@@ -1504,6 +1504,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionHistory =>
       'Transaction history will be available soon!';
 
+    @override
+    String get noTransactionsTitle => 'You have no transactions!';
+
+    @override
+    String get noTransactionsSubtitle => 'Try leaving reviews.';
+
+    @override
+    String get possibleNewPaymentsTitle => 'You may have new payments!';
+
   // Shop screen
   @override
   String get shopTitle => 'SHOP';
@@ -1913,11 +1922,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get refereeTheMatch => 'Referee the Match';
 
+    @override
+    String get penaltyShootoutInfo =>
+            'Each team takes 5 penalties, then it goes to sudden death.';
+
+    @override
+    String get penaltyShootoutAbbrev => 'PSO';
+
   @override
   String get cancelButton => 'CANCEL';
 
   @override
   String get confirmButton => 'CONFIRM';
+
+    @override
+    String get closeButton => 'CLOSE';
 
   // Football tournament screen
   @override
@@ -1992,6 +2011,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goToNextPhaseLabel => 'Go To Next Phase';
+
+    @override
+    String get goToFinalStageLabel => 'Go To Final Stage';
+
+    @override
+    String get closeTournamentLabel => 'Close Tournament';
 
   @override
   String get goToNextPhaseSuccess => 'Next phase started';
