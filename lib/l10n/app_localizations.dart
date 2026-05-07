@@ -713,6 +713,22 @@ abstract class AppLocalizations {
   String get noStatsAvailable;
   String get groupStageTab;
   String get roadToVictoryTab;
+  String get goToNextPhaseLabel;
+  String get goToNextPhaseSuccess;
+  String goToNextPhaseError(String error);
+  String get assignPrizesLabel;
+  String get assignPrizesTitle;
+  String errorLoadingAssignPrizes(String error);
+  String errorAssigningPrizes(String error);
+  String get prizeAssignedSuccess;
+  String totalPrizeLabel(String amount);
+  String totalAssignedLabel(String amount);
+  String remainingPrizeLabel(String amount);
+  String get prizeTotalExceeded;
+  String percentOfTotal(double percent);
+  String get prizeAmountLabel;
+  String contributionLabel(String stats);
+  String get contributionUnavailable;
 
   // My team screen
   String get promoteToBViceCaptain;

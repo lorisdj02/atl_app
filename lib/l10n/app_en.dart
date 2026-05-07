@@ -1990,6 +1990,59 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get roadToVictoryTab => 'Road to Victory';
 
+  @override
+  String get goToNextPhaseLabel => 'Go To Next Phase';
+
+  @override
+  String get goToNextPhaseSuccess => 'Next phase started';
+
+  @override
+  String goToNextPhaseError(String error) =>
+      'Failed to go to next phase: $error';
+
+  @override
+  String get assignPrizesLabel => 'Assign Prizes';
+
+  @override
+  String get assignPrizesTitle => 'Assign Prizes';
+
+  @override
+  String errorLoadingAssignPrizes(String error) =>
+      'Error loading prizes data: $error';
+
+  @override
+  String errorAssigningPrizes(String error) =>
+      'Error assigning prizes: $error';
+
+  @override
+  String get prizeAssignedSuccess => 'Prize assigned successfully';
+
+  @override
+  String totalPrizeLabel(String amount) => 'Total prize: $amount';
+
+  @override
+  String totalAssignedLabel(String amount) => 'Assigned: $amount';
+
+  @override
+  String remainingPrizeLabel(String amount) => 'Remaining: $amount';
+
+  @override
+  String get prizeTotalExceeded =>
+      'Total assigned exceeds the available prize';
+
+  @override
+  String percentOfTotal(double percent) =>
+      '${percent.toStringAsFixed(1)}% of total';
+
+  @override
+  String get prizeAmountLabel => 'Prize';
+
+  @override
+  String contributionLabel(String stats) => 'Contribution: $stats';
+
+  @override
+  String get contributionUnavailable => 'Contribution not available';
+
   // My team screen
   @override
   String get promoteToBViceCaptain => 'Promote to Vice Captain';

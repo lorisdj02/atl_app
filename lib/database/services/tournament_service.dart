@@ -1,7 +1,9 @@
 import 'package:atl_app/database/api_client.dart';
+import 'package:atl_app/database/requests/assign_tournament_prizes_request.dart';
 import 'package:atl_app/database/requests/confirm_callups_request.dart';
 import 'package:atl_app/database/responses/all_tournaments_response.dart';
 import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
+import 'package:atl_app/database/responses/assign_football_prizes_response.dart';
 import 'package:atl_app/database/responses/callups_response.dart';
 import 'package:atl_app/database/responses/schedule_match_response.dart';
 import 'package:atl_app/database/responses/tournament_details_response.dart';
@@ -84,6 +86,10 @@ class TournamentService {
     double tournamentId,
   ) async => await _read.getTournamentSummary(tournamentId);
 
+  static Future<AssignFootballPrizesResponse> getAssignFootballPrizesScreen(
+    double tournamentId,
+  ) async => await _read.getAssignFootballPrizesScreen(tournamentId);
+
   static Future<Tournament> createTournament(Tournament tournament) async =>
       await _write.createTournament(tournament);
 
@@ -103,4 +109,9 @@ class TournamentService {
 
   static Future<void> toggleFavoriteStatus(double tournamentId) async =>
       await _write.toggleFavoriteStatus(tournamentId);
+
+  static Future<void> assignTournamentPrizes(
+    double tournamentId,
+    AssignTournamentPrizesRequest request,
+  ) async => await _write.assignTournamentPrizes(tournamentId, request);
 }

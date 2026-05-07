@@ -1,5 +1,6 @@
 import 'package:atl_app/database/responses/all_tournaments_response.dart';
 import 'package:atl_app/database/responses/apply_tournament_filters_response.dart';
+import 'package:atl_app/database/responses/assign_football_prizes_response.dart';
 import 'package:atl_app/database/responses/callups_response.dart';
 import 'package:atl_app/database/responses/football_tournament_response.dart';
 import 'package:atl_app/database/responses/schedule_match_response.dart';
@@ -109,5 +110,14 @@ class TournamentServiceRead {
   Future<TournamentSummaryResponse> getTournamentSummary(double tournamentId) async {
     final response = await dio.get("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/summary");
     return TournamentSummaryResponse.fromJson(response.data);
+  }
+
+  Future<AssignFootballPrizesResponse> getAssignFootballPrizesScreen(
+    double tournamentId,
+  ) async {
+    final response = await dio.get(
+      "$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/assign-football-prizes-screen",
+    );
+    return AssignFootballPrizesResponse.fromJson(response.data);
   }
 }

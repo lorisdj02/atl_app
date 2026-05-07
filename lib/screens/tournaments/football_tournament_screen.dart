@@ -2,6 +2,7 @@ import 'package:atl_app/database/responses/football_tournament_response.dart';
 import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:atl_app/models/final_stage_bracket.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models/tournament.dart';
 import '../../models/enums/sport_category.dart';
 import '../../models/football_match.dart';
@@ -9,6 +10,7 @@ import '../../models/football_standing.dart';
 import '../../models/team.dart';
 import '../../models/player.dart';
 import '../../models/football_team_stats.dart';
+import '../../providers/account_provider.dart';
 import '../../utils/atl_colors.dart';
 import '../../widgets/loading_atl.dart';
 import '../../widgets/small_football_match_widget.dart';
@@ -16,6 +18,7 @@ import '../../widgets/football_standings_team_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../widgets/road_to_victory_widget.dart';
 import '../../widgets/tournament_info_dialog.dart';
+import 'assign_football_prizes_screen.dart';
 import '../../l10n/app_localizations.dart';
 
 class FootballTournamentScreen extends StatefulWidget {
@@ -164,8 +167,104 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
     );
   }
 
+  Future<void> _goToNextPhase() async {
+    try {
+      await TournamentService.goToCoordinatorNextPhase(
+        widget.tournament.id.toDouble(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_l10n.goToNextPhaseSuccess)),
+      );
+      _loadData();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_l10n.goToNextPhaseError(e.toString()))),
+      );
+    }
+  }
+
+  Future<void> _openAssignPrizesScreen() async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => AssignFootballPrizesScreen(
+          tournamentId: widget.tournament.id.toDouble(),
+          sportCategory: widget.sportCategory,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    if (result == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_l10n.prizeAssignedSuccess)),
+      );
+      _loadData();
+    }
+  }
+
+  Widget? _buildFloatingActionButton(AccountProvider accountProvider) {
+    final isCoordinatorOwner = accountProvider.isCoordinator &&
+        accountProvider.activeRoleId == widget.tournament.coordinatorId;
+
+    if (_canContinue && isCoordinatorOwner) {
+      return FloatingActionButton.extended(
+        onPressed: _goToNextPhase,
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+        icon: const Icon(Icons.skip_next, color: Colors.white),
+        label: Text(
+          _l10n.goToNextPhaseLabel,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    if (_canContinue && accountProvider.isPlayer) {
+      return FloatingActionButton.extended(
+        onPressed: _openAssignPrizesScreen,
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+        icon: const Icon(Icons.emoji_events, color: Colors.white),
+        label: Text(
+          _l10n.assignPrizesLabel,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    if (_currentIndex == 0) {
+      return FloatingActionButton.extended(
+        onPressed: () {
+          // TODO: Navigate to chat
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_l10n.chatComingSoon)),
+          );
+        },
+        backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
+        icon: const Icon(Icons.chat_bubble, color: Colors.white),
+        label: Text(
+          _l10n.chatLabel,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final accountProvider = Provider.of<AccountProvider>(context);
+
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -211,25 +310,7 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
         physics: const AlwaysScrollableScrollPhysics(),
         children: [_buildFixturesTab(), _buildTablesTab(), _buildStatsTab()],
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                // TODO: Navigate to chat
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(_l10n.chatComingSoon)),
-                );
-              },
-              backgroundColor: ATLColors.getPrimaryColor(widget.sportCategory),
-              icon: const Icon(Icons.chat_bubble, color: Colors.white),
-              label: Text(
-                _l10n.chatLabel,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          : null,
+      floatingActionButton: _buildFloatingActionButton(accountProvider),
     );
   }
 

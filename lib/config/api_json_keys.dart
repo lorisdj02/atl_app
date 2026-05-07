@@ -3,19 +3,23 @@ class ApiJsonKeys {
   static const String error = 'error'; // String
 
   // OrganizationHomeScreen
-  static const String matchBookingsCache = 'matchBookingsCache'; // Map<int, MatchBooking>
+  static const String matchBookingsCache =
+      'matchBookingsCache'; // Map<int, MatchBooking>
   // OrganizationHomeScreen
-  static const String lobbyBookingsCache = 'lobbyBookingsCache'; // Map<int, LobbyBooking>
+  static const String lobbyBookingsCache =
+      'lobbyBookingsCache'; // Map<int, LobbyBooking>
   // OrganizationHomeScreen
-  static const String privateBookingsCache = 'privateBookingsCache'; // Map<int, PrivateBooking>
+  static const String privateBookingsCache =
+      'privateBookingsCache'; // Map<int, PrivateBooking>
 
   static const String lobbyBooking = 'lobbyBooking'; // LobbyBooking
 
   static const String numMatches = 'numMatches'; // int
 
-  static const String finalStageBrackets = "finalStageBrackets"; // List<FinalStageBracket>
+  static const String finalStageBrackets =
+      "finalStageBrackets"; // List<FinalStageBracket>
 
-static const String bookings = 'bookings'; // List<Booking>
+  static const String bookings = 'bookings'; // List<Booking>
 
   // PlayerHomeScreen, CoordinatorHomeScreen
   static const String activeTournaments =
@@ -101,8 +105,8 @@ static const String bookings = 'bookings'; // List<Booking>
   static const String lobbies = 'lobbies'; // List<LobbyBooking>
 
   // PlayerHomeScreen
-  static const String privateBookings = 'privateBookings'; // List<PrivateBooking>
-
+  static const String privateBookings =
+      'privateBookings'; // List<PrivateBooking>
 
   // AllTournamentsScreen
   static const String myTournaments = 'myTournaments'; // List<Tournament>
@@ -135,7 +139,8 @@ static const String bookings = 'bookings'; // List<Booking>
   // TournamentDetailScreen
   static const String coordinator = 'coordinator'; // Coordinator?
   // TournamentDetailScreen
-  static const String teamParticipation = 'teamParticipation'; // TournamentParticipation?
+  static const String teamParticipation =
+      'teamParticipation'; // TournamentParticipation?
 
   // CallUpsScreen
   static const String sport = 'sport'; // Sport
@@ -162,11 +167,14 @@ static const String bookings = 'bookings'; // List<Booking>
   // FootballMatchScreen, MatchBracket
   static const String awayTeam = 'awayTeam'; // Team?
   // FootballMatchScreen
-  static const String availableRefereeRoles = 'availableRefereeRoles'; // List<RefereeRole>
+  static const String availableRefereeRoles =
+      'availableRefereeRoles'; // List<RefereeRole>
   // FootballMatchScreen
-  static const String playersPerTeam = 'playersPerTeam'; // Map<int, List<Player>>
+  static const String playersPerTeam =
+      'playersPerTeam'; // Map<int, List<Player>>
   // FootballMatchScreen
-  static const String assignmentPerRefereeNameSurname = 'assignmentPerRefereeNameSurname'; // Map<int, List<RefereeAssignment>> // key: Name+Surname, value: Role
+  static const String assignmentPerRefereeNameSurname =
+      'assignmentPerRefereeNameSurname'; // Map<int, List<RefereeAssignment>> // key: Name+Surname, value: Role
   // FootballMatchScreen
   static const String coordinatorId = 'coordinatorId'; // int
   // FootballMatchScreen
@@ -178,14 +186,18 @@ static const String bookings = 'bookings'; // List<Booking>
   // FootballMatchScreen
   static const String payPerRole = 'payPerRole'; // Map<String, double>
   // FootballMatchScreen
-  static const String finalStageBracket = 'finalStageBracket'; // FinalStageBracket?
+  static const String finalStageBracket =
+      'finalStageBracket'; // FinalStageBracket?
 
   // PayParticipationScreen
-  static const String tournamentsCache = 'tournamentsCache'; // Map<int, Tournament>
+  static const String tournamentsCache =
+      'tournamentsCache'; // Map<int, Tournament>
   // PayParticipationScreen
-  static const String tournamentParticipations = 'tournamentParticipations'; // List<TournamentParticipation>
+  static const String tournamentParticipations =
+      'tournamentParticipations'; // List<TournamentParticipation>
   // PayParticipationScreen
-  static const String isCalledUpPerTournament = 'isCalledUpPerTournament'; // Map<int, bool>
+  static const String isCalledUpPerTournament =
+      'isCalledUpPerTournament'; // Map<int, bool>
 
   // LoginScreen
   static const String account = 'account'; // Account?
@@ -206,8 +218,9 @@ static const String bookings = 'bookings'; // List<Booking>
   // CreateTournamentScreen
   static const String prize2 = 'prize2'; // double
   // CreateTournamentScreen
-  static const String maxPlayersPerField = 'maxPlayersPerField'; // Map<int, int>
-  
+  static const String maxPlayersPerField =
+      'maxPlayersPerField'; // Map<int, int>
+
   // PlayerRequestsScreen
   static const String teamRequests = 'teamRequests'; // List<TeamRequest>
   // PlayerRequestsScreen
@@ -219,7 +232,8 @@ static const String bookings = 'bookings'; // List<Booking>
   // WalletScreen
   static const String wallet = 'wallet'; // Wallet
   // WalletScreen
-  static const String transactionsHistory = 'transactionsHistory'; // List<Transaction>
+  static const String transactionsHistory =
+      'transactionsHistory'; // List<Transaction>
 
   // TeamDetailScreen
   static const String isPlayerInTeam = 'isPlayerInTeam'; // bool
@@ -233,21 +247,27 @@ static const String bookings = 'bookings'; // List<Booking>
   static const String sports = 'sports'; // List<Sport>
 
   // RefereeLicensesScreen
-  static const String refereeLicenses = 'refereeLicenses'; // List<RefereeLicense>
+  static const String refereeLicenses =
+      'refereeLicenses'; // List<RefereeLicense>
 
   // AvailableMatchesScreen
-  static const String footballMatchesPerSport = 'footballMatchesPerSport'; // Map<int, List<FootballMatch>>
+  static const String footballMatchesPerSport =
+      'footballMatchesPerSport'; // Map<int, List<FootballMatch>>
   // AvailableMatchesScreen
   static const String sportNames = 'sportNames'; // Map<int, String>
 
   // StatsScreen
-  static const String statsPerCategory = 'statsPerCategory'; // Map<SportCategory, dynamic>
+  static const String statsPerCategory =
+      'statsPerCategory'; // Map<SportCategory, dynamic>
   // StatsScreen
-  static const String numTournamentPerCategory = 'numTournamentPerCategory'; // Map<SportCategory, int>
+  static const String numTournamentPerCategory =
+      'numTournamentPerCategory'; // Map<SportCategory, int>
   // StatsScreen
-  static const String numLobbyJoinedPerCategory = 'numLobbyJoinedPerCategory'; // Map<SportCategory, int>
+  static const String numLobbyJoinedPerCategory =
+      'numLobbyJoinedPerCategory'; // Map<SportCategory, int>
   // StatsScreen
-  static const String numPrivateBookingPerCategory = 'numPrivateBookingPerCategory'; // Map<SportCategory, int>
+  static const String numPrivateBookingPerCategory =
+      'numPrivateBookingPerCategory'; // Map<SportCategory, int>
 
   // Bottom bars
   static const String hasUnreadNotifications = 'hasUnreadNotifications'; // bool
@@ -255,9 +275,11 @@ static const String bookings = 'bookings'; // List<Booking>
   // ReviewsScreen
   static const String reviews = 'reviews'; // List<Review>
   // ReviewsScreen
-  static const String accountPerReview = 'accountPerReview'; // Map<int, Account>
+  static const String accountPerReview =
+      'accountPerReview'; // Map<int, Account>
   // ReviewsScreen
-  static const String matchTeamsStringPerReview = 'matchTeamsStringPerReview'; // Map<int, String>
+  static const String matchTeamsStringPerReview =
+      'matchTeamsStringPerReview'; // Map<int, String>
 
   // InviteFriendsScreen
   static const String referralCode = 'referralCode'; // String
@@ -288,28 +310,34 @@ static const String bookings = 'bookings'; // List<Booking>
   static const String totalPlayers = 'totalPlayers'; // int
 
   // BookFieldScreen
-  static const String minOpeningTimePerCity = 'minOpeningTimePerCity'; // Map<int, TimeOfDay>
+  static const String minOpeningTimePerCity =
+      'minOpeningTimePerCity'; // Map<int, TimeOfDay>
   // BookFieldScreen
-  static const String maxClosingTimePerCity = 'maxClosingTimePerCity'; // Map<int, TimeOfDay>
+  static const String maxClosingTimePerCity =
+      'maxClosingTimePerCity'; // Map<int, TimeOfDay>
 
   // GrowthScreen
   static const String growthSteps = 'growthSteps'; // List<GrowthStep>
   // GrowthScreen
-  static const String minRefereePayPerCategoryPerLevel = 'minRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
+  static const String minRefereePayPerCategoryPerLevel =
+      'minRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
   // Growth Screen
-  static const String maxRefereePayPerCategoryPerLevel = 'maxRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
+  static const String maxRefereePayPerCategoryPerLevel =
+      'maxRefereePayPerCategoryPerLevel'; // Map<int, Map<SportCategory, double>>
 
   // Login Screen
   static const String teamId = 'teamId'; // int?
 
   // AvailableMatchesScreen
-  static const String footballMatches = 'footballMatches'; // List<FootballMatch>
+  static const String footballMatches =
+      'footballMatches'; // List<FootballMatch>
 
   // MatchBracket -> inneficiente
   static const String footballMatch = 'footballMatch'; // FootballMatch
 
   // StatsScreen
-  static const String footballStats = 'footballStats'; // List<FootballTeamStats>
+  static const String footballStats =
+      'footballStats'; // List<FootballTeamStats>
 
   // REQUESTS
   // UpdateAccountInfoRequest
@@ -343,5 +371,11 @@ static const String bookings = 'bookings'; // List<Booking>
   // RegisterAccountRequest
   static const String profilePictureUrl = 'profilePictureUrl'; // String?
 
-  
+  // AssignPrizesTournamentRequest
+  static const String prizePerPlayer =
+      "prizePerPlayer"; // Map<Integer, BigDecimal>
+  // AssignFootballPrizesTournamentResponse
+  static const String standingPerPlayer = "standingPerPlayer"; // int
+  // AssignFootballPrizesTournamentResponse
+  static const String isWinner = "isWinner"; // boolean
 }

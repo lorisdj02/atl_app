@@ -1,3 +1,4 @@
+import 'package:atl_app/database/requests/assign_tournament_prizes_request.dart';
 import 'package:atl_app/database/requests/confirm_callups_request.dart';
 import 'package:atl_app/models/tournament.dart';
 import 'package:atl_app/models/tournament_participation.dart';
@@ -42,5 +43,15 @@ class TournamentServiceWrite {
 
   Future<void> toggleFavoriteStatus(double tournamentId) async {
     await dio.patch("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/toggle-favorite-status");
+  }
+
+  Future<void> assignTournamentPrizes(
+    double tournamentId,
+    AssignTournamentPrizesRequest request,
+  ) async {
+    await dio.patch(
+      "$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/assign-prizes",
+      data: request.toJson(),
+    );
   }
 }
