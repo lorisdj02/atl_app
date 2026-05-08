@@ -1428,6 +1428,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tournamentsPlayed => 'Tournaments played';
 
+    @override
+    String get privateBookingsCount => 'Private bookings';
+
+    @override
+    String get lobbiesJoinedCount => 'Lobbies joined';
+
   @override
   String get careerStats => 'Career Stats';
 
@@ -2020,6 +2026,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goToNextPhaseSuccess => 'Next phase started';
+
+    @override
+    String get finalStageStarted => 'Final stage started';
+
+    @override
+    String get tournamentClosed => 'Tournament closed';
 
   @override
   String goToNextPhaseError(String error) =>

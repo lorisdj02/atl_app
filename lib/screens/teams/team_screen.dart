@@ -347,7 +347,7 @@ class _TeamScreenState extends State<TeamScreen>
       }
 
       // Filtro VIP
-      if (_vipFilter != null && t.vip != _vipFilter) {
+      if (_vipFilter != null && t.isVip != _vipFilter) {
         return false;
       }
 

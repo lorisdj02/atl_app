@@ -74,7 +74,7 @@ class PlayersWidget extends StatelessWidget {
                       ],
                     ),
                   ),
-                  if (team?.vip == true)
+                  if (team?.isVip == true)
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,

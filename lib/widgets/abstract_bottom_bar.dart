@@ -1,5 +1,8 @@
+import 'package:atl_app/database/responses/has_notifications_response.dart';
 import 'package:atl_app/database/services/account_service.dart';
+import 'package:atl_app/providers/account_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/enums/sport_category.dart';
 import '../utils/atl_colors.dart';
@@ -60,11 +63,17 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
 
   Future<void> _checkNotifications() async {
     if (widget.accountId == null) return;
+    final AccountProvider accountProvider = Provider.of<AccountProvider>(
+      context,
+      listen: false,
+    );
     try {
-      final bool result = await AccountService.hasNotifications();
+      final HasNotificationsResponse result =
+          await AccountService.hasNotifications();
       if (mounted) {
         setState(() {
-          _hasUnreadNotifications = result;
+          _hasUnreadNotifications = result.hasUnreadNotifications;
+          accountProvider.setVipStatus(result.isVip);
         });
       }
     } catch (_) {}
@@ -128,9 +137,7 @@ class _ATLBottomBarState extends State<ATLBottomBar> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        widget.isHome
-                            ? widget.currentSport.icon
-                            : Icons.home,
+                        widget.isHome ? widget.currentSport.icon : Icons.home,
                         color: ATLColors.getPrimaryColor(widget.currentSport),
                         size: 32,
                       ),

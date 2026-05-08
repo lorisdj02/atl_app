@@ -111,7 +111,7 @@ class SearchTeamWidget extends AbstractTeamWidget {
                     ],
                   ),
                 ),
-                if (team.vip) ...[
+                if (team.isVip) ...[
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(

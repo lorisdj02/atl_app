@@ -1454,6 +1454,12 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get tournamentsPlayed => 'Tornei giocati';
 
+    @override
+    String get privateBookingsCount => 'Prenotazioni private';
+
+    @override
+    String get lobbiesJoinedCount => 'Lobby partecipate';
+
   @override
   String get careerStats => 'Statistiche carriera';
 
@@ -2054,6 +2060,12 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get goToNextPhaseSuccess => 'Fase successiva avviata';
+
+    @override
+    String get finalStageStarted => 'Inizio della fase finale';
+
+    @override
+    String get tournamentClosed => 'Torneo concluso';
 
   @override
   String goToNextPhaseError(String error) =>

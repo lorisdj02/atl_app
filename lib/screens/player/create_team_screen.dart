@@ -149,7 +149,7 @@ class _CreateTeamScreenState extends State<CreateTeamScreen> {
         cityId: _selectedCity!,
         sportCategory: widget.currentSport,
         logoUrl: imageUrl,
-        vip: false,
+        isVip: false,
         visible: _visibility,
         numPlayers: 1,
         captainPlayerId: captainId,

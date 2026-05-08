@@ -8,7 +8,7 @@ class Player {
   final String name;
   final String surname;
   final String? imageUrl;
-  final bool vip;
+  final bool isVip;
   final VipType vipType;
   final DateTime? vipStart;
   final DateTime? vipEnd;
@@ -22,7 +22,7 @@ class Player {
     required this.surname,
     required this.username,
     required this.imageUrl,
-    required this.vip,
+    required this.isVip,
     required this.vipType,
     required this.vipStart,
     required this.vipEnd,
@@ -38,7 +38,7 @@ class Player {
       surname: json['surname'],
       username: json['username'],
       imageUrl: json['imageUrl'],
-      vip: json['vip'],
+      isVip: json['isVip'],
       vipType: VipTypeExtension.fromJson(json['vipType']),
       vipStart: json['vipStart'] != null ? DateTime.parse(json['vipStart']).toLocal() : null,
       vipEnd: json['vipEnd'] != null ? DateTime.parse(json['vipEnd']).toLocal() : null,
@@ -55,7 +55,7 @@ class Player {
       'surname': surname,
       'username': username,
       'imageUrl': imageUrl,
-      'vip': vip,
+      'isVip': isVip,
       'vipType': vipType.apiName,
       'vipStart': vipStart?.toUtc().toIso8601String(),
       'vipEnd': vipEnd?.toUtc().toIso8601String(),

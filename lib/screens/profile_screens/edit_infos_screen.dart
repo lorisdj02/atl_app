@@ -462,7 +462,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               ),
               InfoRowWidget(
                 label: l10n.vipStatusLabel,
-                value: account?.vip == true ? l10n.active : l10n.inactive,
+                value: account?.isVip == true ? l10n.active : l10n.inactive,
               ),
 
               const SizedBox(height: 32),

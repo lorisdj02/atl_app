@@ -1,6 +1,7 @@
 import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/requests/register_account_request.dart';
 import 'package:atl_app/database/requests/update_account_info_request.dart';
+import 'package:atl_app/database/responses/has_notifications_response.dart';
 import 'package:atl_app/database/responses/login_response.dart';
 import 'package:atl_app/database/services/read/account_service_read.dart';
 import 'package:atl_app/database/services/write/account_service_write.dart';
@@ -24,7 +25,7 @@ class AccountService {
 
   static Future<int> getAccountLevel() async => await _read.getAccountLevel();
 
-  static Future<bool> hasNotifications() async =>
+  static Future<HasNotificationsResponse> hasNotifications() async =>
       await _read.hasNotifications();
 
   static Future<LoginResponse> handleLogin() async => await _read.handleLogin();

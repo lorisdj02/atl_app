@@ -196,14 +196,33 @@ class _FootballTournamentScreenState extends State<FootballTournamentScreen>
   }
 
   Future<void> _goToNextPhase() async {
+    final isClosingTournament =
+        widget.tournament.phase == TournamentPhase.final_;
+    final isStartingFinalStage = widget.tournament.isGroupStage;
+
     try {
-      await TournamentService.goToCoordinatorNextPhase(
-        widget.tournament.id.toDouble(),
-      );
+      if (!isClosingTournament) {
+        await TournamentService.goToCoordinatorNextPhase(
+          widget.tournament.id.toDouble(),
+        );
+      } else {
+        await TournamentService.finishTournament(
+          widget.tournament.id.toDouble(),
+        );
+      }
       if (!mounted) return;
+      final successMessage = isClosingTournament
+          ? _l10n.tournamentClosed
+          : (isStartingFinalStage
+                ? _l10n.finalStageStarted
+                : _l10n.goToNextPhaseSuccess);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(_l10n.goToNextPhaseSuccess)));
+      ).showSnackBar(SnackBar(content: Text(successMessage)));
+      if (isClosingTournament) {
+        Navigator.of(context).pop();
+        return;
+      }
       _loadData();
     } catch (e) {
       if (!mounted) return;

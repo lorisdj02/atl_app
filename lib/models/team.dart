@@ -12,7 +12,7 @@ class Team {
   final String name;
   final String alias;
   final String? description;
-  bool vip;
+  bool isVip;
   final int maxPlayers;
   final int numPlayers;
   final SportCategory sportCategory;
@@ -31,7 +31,7 @@ class Team {
     required this.logoUrl,
     required this.rankPts,
     required this.description,
-    required this.vip,
+    required this.isVip,
     required this.maxPlayers,
     required this.numPlayers,
   });
@@ -48,7 +48,7 @@ class Team {
       'name': name,
       'alias': alias,
       'description': description,
-      'vip': vip,
+      'isVip': isVip,
       'maxPlayers': maxPlayers,
       'numPlayers': numPlayers,
       'sportCategory': sportCategory.apiName,
@@ -68,7 +68,7 @@ class Team {
       name: json['name'],
       alias: json['alias'],
       description: json['description'],
-      vip: json['vip'] != null ? json['vip'] as bool : false,
+      isVip: json['isVip'] != null ? json['isVip'] as bool : false,
       maxPlayers: json['maxPlayers'] != null
           ? (json['maxPlayers'] as num).toInt()
           : 0,

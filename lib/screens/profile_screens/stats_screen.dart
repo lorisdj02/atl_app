@@ -25,7 +25,6 @@ class _StatsScreenState extends State<StatsScreen> {
 
   FootballTeamStats? _footballTeamStats;
   Map<SportCategory, int> _numTournamentPerCategory = {};
-  //TODO: questi NON li uso ancora!
   Map<SportCategory, int> _numPrivateBookingPerCategory = {};
   Map<SportCategory, int> _numLobbyJoinedPerCategory = {};
 
@@ -38,7 +37,7 @@ class _StatsScreenState extends State<StatsScreen> {
   void initState() {
     super.initState();
     final accountProvider = Provider.of<AccountProvider>(context, listen: false);
-    if (accountProvider.isPlayer && (accountProvider.activeAccount?.vip ?? false)) {
+    if (accountProvider.isPlayer && (accountProvider.activeAccount?.isVip ?? false)) {
       _loadStats(accountProvider);
     }
   }
@@ -70,7 +69,7 @@ class _StatsScreenState extends State<StatsScreen> {
     final l10n = AppLocalizations.of(context);
     final accountProvider = Provider.of<AccountProvider>(context, listen: false);
     final user = accountProvider.activeAccount;
-    final isVip = user?.vip ?? false;
+    final isVip = user?.isVip ?? false;
 
     if (!isVip) {
       return Scaffold(
@@ -231,11 +230,16 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildCategoryContent() {
     final numTournaments = _numTournamentPerCategory[_selectedCategory] ?? 0;
+    final numPrivateBookings =
+        _numPrivateBookingPerCategory[_selectedCategory] ?? 0;
+    final numLobbiesJoined = _numLobbyJoinedPerCategory[_selectedCategory] ?? 0;
 
     switch (_selectedCategory) {
       case SportCategory.football:
         return _buildFootballStats(
           numTournaments,
+          numPrivateBookings,
+          numLobbiesJoined,
           _footballTeamStats != null ? _footballTeamStats : null,
         );
     }
@@ -243,6 +247,8 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Widget _buildFootballStats(
     int numTournaments,
+    int numPrivateBookings,
+    int numLobbiesJoined,
     FootballTeamStats? footballStats,
   ) {
     final l10n = AppLocalizations.of(context);
@@ -297,6 +303,94 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ATLColors.subtext.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock, color: ATLColors.darkBlue),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$numPrivateBookings',
+                            style: const TextStyle(
+                              color: ATLColors.darkBlue,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            l10n.privateBookingsCount,
+                            style: TextStyle(
+                              color: ATLColors.subtext,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ATLColors.subtext.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.group, color: ATLColors.darkBlue),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$numLobbiesJoined',
+                            style: const TextStyle(
+                              color: ATLColors.darkBlue,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            l10n.lobbiesJoinedCount,
+                            style: TextStyle(
+                              color: ATLColors.subtext,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Text(

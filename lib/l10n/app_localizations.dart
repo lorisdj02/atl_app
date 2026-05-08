@@ -524,6 +524,8 @@ abstract class AppLocalizations {
   String get statsTitle;
   String get vipBadge;
   String get tournamentsPlayed;
+  String get privateBookingsCount;
+  String get lobbiesJoinedCount;
   String get careerStats;
 
   // Wallet screen
@@ -723,6 +725,8 @@ abstract class AppLocalizations {
   String get goToFinalStageLabel;
   String get closeTournamentLabel;
   String get goToNextPhaseSuccess;
+  String get finalStageStarted;
+  String get tournamentClosed;
   String goToNextPhaseError(String error);
   String get assignPrizesLabel;
   String get assignPrizesTitle;

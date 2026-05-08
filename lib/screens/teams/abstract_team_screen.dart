@@ -18,6 +18,9 @@ import '../../widgets/palmares_widget.dart';
 import '../../widgets/players_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../l10n/app_localizations.dart';
+import '../tournaments/tournament_details_screen.dart';
+import '../tournaments/football_tournament_screen.dart';
+import '../../models/enums/tournament_status.dart';
 
 abstract class AbstractTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -81,7 +84,6 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
       );
 
       if (mounted) {
-
         List<Player> loadedPlayers = data.players;
         // Sort players: Captain, Vice1, Vice2, then others
         loadedPlayers.sort((a, b) {
@@ -93,7 +95,6 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
           if (b.playerId == data.team.vice2PlayerId) return 1;
           return 0;
         });
-
 
         setState(() {
           team = data.team;
@@ -290,7 +291,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     }
 
     // Only VIP teams can see palmares
-    if (team == null || (team!.vip != true && team!.numPlayers > 0)) {
+    if (team == null || (team!.isVip != true && team!.numPlayers > 0)) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -388,6 +389,18 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                 coordinator: coordinatorsCache[tournament.coordinatorId],
                 field: fieldsCache[tournament.fieldId],
                 cityName: cityNamePerField[tournament.fieldId],
+                onTap: () async {
+                  if (widget.currentSport == SportCategory.football) {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => FootballTournamentScreen(
+                          tournament: tournament,
+                          sportCategory: widget.currentSport,
+                        ),
+                      ),
+                    );
+                  }
+                },
               );
             },
           ),
@@ -403,7 +416,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
     }
 
     // Non-VIP teams default to players-only view
-    if (team == null || (team!.vip == false && team!.numPlayers > 0)) {
+    if (team == null || (team!.isVip == false && team!.numPlayers > 0)) {
       statsShowAll = false;
     }
 
@@ -430,7 +443,7 @@ abstract class AbstractTeamScreenState<T extends AbstractTeamScreen>
                   vertical: 8,
                 ),
                 child: Center(
-                  child: team != null && team!.vip == true
+                  child: team != null && team!.isVip == true
                       ? buildStatsToggle()
                       : const SizedBox.shrink(),
                 ),

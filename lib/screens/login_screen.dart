@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
         name: AppLocalizations.of(context).guestUserLabel,
         surname: '',
         birthdate: DateTime.now(),
-        vip: false,
+        isVip: false,
         vipType: VipType.none,
         startVip: null,
         endVip: null,

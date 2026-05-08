@@ -378,4 +378,7 @@ class ApiJsonKeys {
   static const String standingPerPlayer = "standingPerPlayer"; // int
   // AssignFootballPrizesTournamentResponse
   static const String isWinner = "isWinner"; // boolean
+
+  // HasUnreadNotificationsResponse
+  static const String isVip = "isVip"; // bool
 }

@@ -15,6 +15,7 @@ class PalmaresWidget extends StatelessWidget {
   final Coordinator? coordinator;
   final Field? field;
   final String? cityName;
+  final VoidCallback? onTap;
 
   const PalmaresWidget({
     super.key,
@@ -24,6 +25,7 @@ class PalmaresWidget extends StatelessWidget {
     this.coordinator,
     this.field,
     this.cityName,
+    this.onTap,
   });
 
   @override
@@ -34,22 +36,27 @@ class PalmaresWidget extends StatelessWidget {
         ? ATLColors.getPrimaryColor(sportCategory).withOpacity(0.2)
         : Colors.white;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
+          child: Row(
+            children: [
           // Icona torneo
           Container(
             width: 50,
@@ -156,7 +163,9 @@ class PalmaresWidget extends StatelessWidget {
               ],
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

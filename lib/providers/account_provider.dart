@@ -33,6 +33,20 @@ class AccountProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clearToken() async {
+    _token = null;
+    notifyListeners();
+  }
+
+  Future<void> setVipStatus(bool isVip) async {
+    if (_activeAccount != null) {
+      _activeAccount = _activeAccount!.copyWith(
+        isVip: isVip,
+      );
+      notifyListeners();
+    }
+  }
+
   Future<void> clearActiveAccount() async {
     _activeAccount = null;
     _roleId = null;
@@ -60,6 +74,7 @@ class AccountProvider with ChangeNotifier {
   Future<void> logout() async {
     await clearCurrentTeamId();
     await clearActiveAccount();
+    await clearToken();
   }
 
   void bindApiClientToken() {

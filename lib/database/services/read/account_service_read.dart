@@ -1,3 +1,4 @@
+import 'package:atl_app/database/responses/has_notifications_response.dart';
 import 'package:atl_app/database/responses/login_response.dart';
 import 'package:dio/dio.dart';
 
@@ -12,9 +13,9 @@ class AccountServiceRead {
     return (response.data as num).toInt();
   }
 
-  Future<bool> hasNotifications() async {
+  Future<HasNotificationsResponse> hasNotifications() async {
     final response = await dio.get("$apiUrl/account/has-notifications");
-    return (response.data as bool);
+    return HasNotificationsResponse.fromJson(response.data);
   }
 
   Future<LoginResponse> handleLogin() async {

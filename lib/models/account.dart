@@ -13,7 +13,7 @@ class Account {
   final String? imageUrl;
   final AccountRole role;
   final DateTime birthdate;
-  final bool vip;
+  final bool isVip;
   final VipType vipType;
   final DateTime? startVip;
   final DateTime? endVip;
@@ -29,7 +29,7 @@ class Account {
     required this.name,
     required this.surname,
     required this.birthdate,
-    required this.vip,
+    required this.isVip,
     required this.vipType,
     required this.startVip,
     required this.endVip,
@@ -51,7 +51,7 @@ class Account {
       name: json['name'],
       surname: json['surname'],
       birthdate: DateTime.parse(json['birthdate']).toLocal(),
-      vip: json['vip'],
+      isVip: json['isVip'],
       vipType: json['vipType'] != null
           ? VipTypeExtension.fromJson(json['vipType'])
           : VipType.none,
@@ -73,7 +73,7 @@ class Account {
       'username': username,
       'email': email,
       'role': role.apiValue,
-      'vip': vip,
+      'isVip': isVip,
       'phone': phone,
       'imageUrl': imageUrl,
       'name': name,
@@ -85,6 +85,42 @@ class Account {
       'preferredCityId': preferredCityId,
       'createdAt': createdAt.toUtc().toIso8601String(),
     };
+  }
+
+  Account copyWith({
+    double? id,
+    String? username,
+    String? email,
+    AccountRole? role,
+    String? phone,
+    String? name,
+    String? surname,
+    DateTime? birthdate,
+    bool? isVip,
+    VipType? vipType,
+    DateTime? startVip,
+    DateTime? endVip,
+    double? preferredCityId,
+    String? imageUrl,
+    DateTime? createdAt,
+  }) {
+    return Account(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      phone: phone ?? this.phone,
+      name: name ?? this.name,
+      surname: surname ?? this.surname,
+      birthdate: birthdate ?? this.birthdate,
+      isVip: isVip ?? this.isVip,
+      vipType: vipType ?? this.vipType,
+      startVip: startVip ?? this.startVip,
+      endVip: endVip ?? this.endVip,
+      preferredCityId: preferredCityId ?? this.preferredCityId,
+      imageUrl: imageUrl ?? this.imageUrl,
+      createdAt: createdAt ?? this.createdAt,
+    );
   }
 
   /// Nome visualizzato del ruolo

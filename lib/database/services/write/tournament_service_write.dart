@@ -41,6 +41,10 @@ class TournamentServiceWrite {
     await dio.patch("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/start");
   }
 
+  Future<void> finishTournament(double tournamentId) async {
+    await dio.patch("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/finish");
+  }
+
   Future<void> toggleFavoriteStatus(double tournamentId) async {
     await dio.patch("$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/toggle-favorite-status");
   }

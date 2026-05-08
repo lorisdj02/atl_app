@@ -107,6 +107,9 @@ class TournamentService {
   static Future<void> startTournament(double tournamentId) async =>
       await _write.startTournament(tournamentId);
 
+    static Future<void> finishTournament(double tournamentId) async =>
+      await _write.finishTournament(tournamentId);
+
   static Future<void> toggleFavoriteStatus(double tournamentId) async =>
       await _write.toggleFavoriteStatus(tournamentId);
 
