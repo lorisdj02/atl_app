@@ -13,7 +13,7 @@ class BookingServiceRead {
   Future<BookFieldResponse> getBookFieldScreen(
     SportCategory sportCategory,
   ) async {
-    final response = await dio.get("/book-a-field/${sportCategory.apiName}");
+    final response = await dio.get("${apiUrl}/book-a-field/${sportCategory.apiName}");
     return BookFieldResponse.fromJson(response.data);
   }
 
@@ -25,7 +25,7 @@ class BookingServiceRead {
     DateTime? finishTime,
   }) async {
     final response = await dio.get(
-      "/join-lobby-screen/${sportCategory.apiName}",
+      "${apiUrl}/join-lobby-screen/${sportCategory.apiName}",
       queryParameters: {
         "totalPlayers": totalPlayers,
         "selectedCityId": selectedCityId,
@@ -45,7 +45,7 @@ class BookingServiceRead {
     required DateTime finishTime,
   }) async {
     final response = await dio.get(
-      "/free-fields/${sportCategory.apiName}/max-players/${maxPlayers.toString()}/city/${cityId.toStringAsFixed(0)}/start-time/${startTime.toIso8601String()}/finish-time/${finishTime.toIso8601String()}",
+      "${apiUrl}/free-fields/${sportCategory.apiName}/max-players/${maxPlayers.toString()}/city/${cityId.toStringAsFixed(0)}/start-time/${startTime.toIso8601String()}/finish-time/${finishTime.toIso8601String()}",
     );
     return FieldsAndMaxPlayersPerFieldResponse.fromJson(response.data);
   }

@@ -1,5 +1,6 @@
 import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/database/responses/checkout_response.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter/material.dart';
 import '../../models/checkout_session.dart';
 import '../../models/enums/sport_category.dart';
@@ -147,13 +148,47 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   // ── Payment ───────────────────────────────────────────────────────────────
 
+  Future<void> _payWithStripe() async {
+    final sheetData = await PaymentService.createStripePaymentSheet(
+      widget.sessionId.toDouble(),
+      _useWallet,
+    );
+
+    Stripe.publishableKey = sheetData.publishableKey;
+    await Stripe.instance.applySettings();
+
+    await Stripe.instance.initPaymentSheet(
+      paymentSheetParameters: SetupPaymentSheetParameters(
+        merchantDisplayName: 'ATL',
+        paymentIntentClientSecret: sheetData.clientSecret,
+        customerId: sheetData.customerId,
+        customerEphemeralKeySecret: sheetData.ephemeralKey,
+      ),
+    );
+
+    await Stripe.instance.presentPaymentSheet();
+
+    await PaymentService.payCheckoutSession(
+      widget.sessionId.toDouble(),
+      _useWallet,
+      paymentIntentId: sheetData.paymentIntentId,
+    );
+  }
+
   Future<void> _onPay() async {
     setState(() => _isProcessing = true);
     try {
-      await PaymentService.payCheckoutSession(
-        widget.sessionId.toDouble(),
-        _useWallet,
-      );
+      if (_session == null) return;
+
+      final finalPrice = _finalPrice();
+      if (finalPrice == 0) {
+        await PaymentService.payCheckoutSession(
+          widget.sessionId.toDouble(),
+          _useWallet,
+        );
+      } else {
+        await _payWithStripe();
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -162,6 +197,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       );
       Navigator.of(context).pop(true);
+    } on StripeException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_l10n.paymentFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

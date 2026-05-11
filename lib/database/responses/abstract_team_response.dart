@@ -6,7 +6,6 @@ import 'package:atl_app/models/palmares.dart';
 import 'package:atl_app/models/player.dart';
 import 'package:atl_app/models/team.dart';
 import 'package:atl_app/models/tournament.dart';
-import 'package:atl_app/utils/json_long_print.dart';
 
 class AbstractTeamResponse {
   final Team team;

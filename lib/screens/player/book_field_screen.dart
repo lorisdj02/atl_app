@@ -4,6 +4,7 @@ import 'package:atl_app/database/responses/fields_and_max_players_per_field_resp
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../../l10n/app_localizations.dart';
 import '../../models/field.dart';
 import '../../models/city.dart';
@@ -235,8 +236,8 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
           await BookingService.getFreeFieldsByPlayerAndCityAndDate(
             maxPlayers: _maxPlayers,
             cityId: _selectedCity!.toDouble(),
-            startTime: startDateTime,
-            finishTime: endDateTime,
+            startTime: startDateTime.toUtc(),
+            finishTime: endDateTime.toUtc(),
             sportCategory: widget.sportCategory,
           );
 
@@ -325,8 +326,231 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
+        _startTime = null;
+        _endTime = null;
       });
     }
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  String _getCityTimeZone(double cityId) {
+    for (final city in _cities) {
+      if (city.id == cityId) return city.timeZone;
+    }
+    return 'Europe/Rome';
+  }
+
+  TimeOfDay _cityTimeToLocal(
+    TimeOfDay time,
+    DateTime date,
+    String timeZone,
+  ) {
+    try {
+      final location = tz.getLocation(timeZone);
+      final cityDateTime = tz.TZDateTime(
+        location,
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+      final localDateTime = cityDateTime.toLocal();
+      return TimeOfDay(
+        hour: localDateTime.hour,
+        minute: localDateTime.minute,
+      );
+    } catch (_) {
+      return time;
+    }
+  }
+
+  List<TimeOfDay> _buildTimeSlots(bool isStartTime, double cityId) {
+    if (_selectedDate == null) return [];
+
+    final String cityTimeZone = _getCityTimeZone(cityId);
+    final TimeOfDay rawMinTime =
+        _minOpeningTimePerCity[cityId] ?? const TimeOfDay(hour: 0, minute: 0);
+    final TimeOfDay rawMaxTime =
+        _maxClosingTimePerCity[cityId] ?? const TimeOfDay(hour: 23, minute: 59);
+    final TimeOfDay minTime = _cityTimeToLocal(
+      rawMinTime,
+      _selectedDate!,
+      cityTimeZone,
+    );
+    final TimeOfDay maxTime = _cityTimeToLocal(
+      rawMaxTime,
+      _selectedDate!,
+      cityTimeZone,
+    );
+
+    final List<TimeOfDay> timeSlots = [];
+    final now = DateTime.now();
+    final isToday =
+        _selectedDate!.year == now.year &&
+        _selectedDate!.month == now.month &&
+        _selectedDate!.day == now.day;
+
+    final int minHour = minTime.hour;
+    final int maxHour = maxTime.hour;
+    final int minMinute = minTime.minute;
+    final int maxMinute = maxTime.minute;
+
+    for (
+      int hour = (isStartTime ? minHour : minHour + 1);
+      hour <= (isStartTime ? maxHour - 1 : maxHour);
+      hour++
+    ) {
+      for (int minute in [0, 15, 30, 45]) {
+        if ((hour == maxHour - 1 && minute > maxMinute) ||
+            (hour == minHour && minute < minMinute)) {
+          continue;
+        }
+
+        if (hour >= 24) continue;
+
+        final time = TimeOfDay(hour: hour, minute: minute);
+
+        if (isStartTime && isToday) {
+          final currentMinutes = now.hour * 60 + now.minute;
+          final timeMinutes = time.hour * 60 + time.minute;
+          if (timeMinutes <= currentMinutes) {
+            continue;
+          }
+        }
+
+        if (!isStartTime && _startTime != null) {
+          final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
+          final timeMinutes = time.hour * 60 + time.minute;
+
+          if (timeMinutes - startMinutes < 60) {
+            continue;
+          }
+
+          if (isToday) {
+            final currentMinutes = now.hour * 60 + now.minute;
+            if (timeMinutes <= currentMinutes) {
+              continue;
+            }
+          }
+        }
+
+        timeSlots.add(time);
+      }
+    }
+
+    return timeSlots;
+  }
+
+  Future<TimeOfDay?> _showTimeSlotDialog({
+    required String title,
+    required List<TimeOfDay> slots,
+    required TimeOfDay? initialSelection,
+  }) async {
+    TimeOfDay? selected = initialSelection;
+    final l10n = AppLocalizations.of(context);
+
+    return showDialog<TimeOfDay>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(
+                title,
+                style: TextStyle(
+                  color: ATLColors.getPrimaryColor(widget.sportCategory),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: slots.isEmpty
+                    ? Center(
+                        child: Text(
+                          l10n.noTimeSlotsAvailable,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: slots.length,
+                        itemBuilder: (context, index) {
+                          final slot = slots[index];
+                          final isSelected = selected == slot;
+
+                          return ListTile(
+                            selected: isSelected,
+                            selectedTileColor: ATLColors.getPrimaryColor(
+                              widget.sportCategory,
+                            ).withOpacity(0.1),
+                            leading: Icon(
+                              Icons.access_time,
+                              color: isSelected
+                                  ? ATLColors.getPrimaryColor(
+                                      widget.sportCategory,
+                                    )
+                                  : Colors.grey,
+                            ),
+                            title: Text(
+                              _formatTime(slot),
+                              style: TextStyle(
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? ATLColors.getPrimaryColor(
+                                        widget.sportCategory,
+                                      )
+                                    : Colors.black,
+                              ),
+                            ),
+                            onTap: () {
+                              setDialogState(() {
+                                selected = slot;
+                              });
+                            },
+                          );
+                        },
+                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    l10n.cancelText,
+                    style: TextStyle(
+                      color: ATLColors.getPrimaryColor(widget.sportCategory),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: selected != null
+                      ? () => Navigator.of(context).pop(selected)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ATLColors.getPrimaryColor(
+                      widget.sportCategory,
+                    ),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(l10n.confirmButton),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _selectTime(bool isStartTime, double cityId) async {
@@ -341,122 +565,13 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
       return;
     }
 
-    // Generate available time slots (every 15 minutes)
-    final List<TimeOfDay> timeSlots = [];
-    final now = DateTime.now();
-    final isToday =
-        _selectedDate != null &&
-        _selectedDate!.year == now.year &&
-        _selectedDate!.month == now.month &&
-        _selectedDate!.day == now.day;
-
-    final int minHour = _minOpeningTimePerCity[cityId]?.hour ?? 0;
-    final int maxHour = _maxClosingTimePerCity[cityId]?.hour ?? 24;
-
-    final int minMinute = _minOpeningTimePerCity[cityId]?.minute ?? 0;
-    final int maxMinute = _maxClosingTimePerCity[cityId]?.minute ?? 0;
-
-    for (
-      int hour = (isStartTime ? minHour : minHour + 1);
-      hour <= (isStartTime ? maxHour - 1 : maxHour);
-      hour++
-    ) {
-      // -1 to ensure at least 1 hour booking
-      for (int minute in [0, 15, 30, 45]) {
-        if ((hour == maxHour - 1 && minute > maxMinute) ||
-            (hour == minHour && minute < minMinute)) {
-          continue; // Skip time slots that would end after closing time
-        }
-        final time = TimeOfDay(hour: hour, minute: minute);
-
-        // Skip past times if selecting for today
-        if (isStartTime && isToday) {
-          final currentMinutes = now.hour * 60 + now.minute;
-          final timeMinutes = time.hour * 60 + time.minute;
-          if (timeMinutes <= currentMinutes) {
-            continue; // Skip this time slot
-          }
-        }
-
-        // Skip invalid end times (less than 1 hour from start or in the past)
-        if (!isStartTime && _startTime != null) {
-          final startMinutes = _startTime!.hour * 60 + _startTime!.minute;
-          final timeMinutes = time.hour * 60 + time.minute;
-
-          // Must be at least 1 hour after start
-          if (timeMinutes - startMinutes < 60) {
-            continue;
-          }
-
-          // Skip past times if today
-          if (isToday) {
-            final currentMinutes = now.hour * 60 + now.minute;
-            if (timeMinutes <= currentMinutes) {
-              continue;
-            }
-          }
-        }
-
-        timeSlots.add(time);
-      }
-    }
-
-    final TimeOfDay? picked = await showDialog<TimeOfDay>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            isStartTime
-                ? AppLocalizations.of(context).startTimeLabel
-                : AppLocalizations.of(context).endTimeLabel,
-            style: TextStyle(
-              color: ATLColors.getPrimaryColor(widget.sportCategory),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: timeSlots.isEmpty
-                ? Center(
-                    child: Text(
-                      AppLocalizations.of(context).noTimeSlotsAvailable,
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: timeSlots.length,
-                    itemBuilder: (context, index) {
-                      final time = timeSlots[index];
-                      final timeString =
-                          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-
-                      return ListTile(
-                        title: Text(
-                          timeString,
-                          style: const TextStyle(fontSize: 18),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop(time);
-                        },
-                      );
-                    },
-                  ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                AppLocalizations.of(context).cancelText,
-                style: TextStyle(
-                  color: ATLColors.getPrimaryColor(widget.sportCategory),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+    final List<TimeOfDay> timeSlots = _buildTimeSlots(isStartTime, cityId);
+    final TimeOfDay? picked = await _showTimeSlotDialog(
+      title: isStartTime
+          ? AppLocalizations.of(context).startTimeLabel
+          : AppLocalizations.of(context).endTimeLabel,
+      slots: timeSlots,
+      initialSelection: isStartTime ? _startTime : _endTime,
     );
 
     if (picked != null) {
@@ -786,7 +901,20 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // Start Time Picker
         GestureDetector(
-          onTap: () => _selectTime(true, _selectedCity!),
+          onTap: () {
+            if (_selectedCity == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    AppLocalizations.of(context).selectCityRequired,
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
+            _selectTime(true, _selectedCity!);
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -819,7 +947,20 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
         // End Time Picker
         GestureDetector(
-          onTap: () => _selectTime(false, _selectedCity!),
+          onTap: () {
+            if (_selectedCity == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    AppLocalizations.of(context).selectCityRequired,
+                  ),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
+            _selectTime(false, _selectedCity!);
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

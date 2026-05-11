@@ -18,9 +18,7 @@ import '../../widgets/palmares_widget.dart';
 import '../../widgets/players_widget.dart';
 import '../../widgets/players_stats_widget.dart';
 import '../../l10n/app_localizations.dart';
-import '../tournaments/tournament_details_screen.dart';
 import '../tournaments/football_tournament_screen.dart';
-import '../../models/enums/tournament_status.dart';
 
 abstract class AbstractTeamScreen extends StatefulWidget {
   final SportCategory currentSport;
