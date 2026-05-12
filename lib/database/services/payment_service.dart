@@ -1,4 +1,5 @@
 import 'package:atl_app/database/api_client.dart';
+import 'package:atl_app/database/requests/payment_intent_request.dart';
 import 'package:atl_app/database/responses/checkout_response.dart';
 import 'package:atl_app/database/services/read/payment_service_read.dart';
 import 'package:atl_app/database/services/write/payment_service_write.dart';
@@ -22,15 +23,15 @@ class PaymentService {
     CheckoutPayload payload,
   ) async => await _write.createCheckoutSession(payload);
 
-  static Future<Purchase> payCheckoutSession(
+  static Future<Purchase?> payCheckoutSession(
     double sessionId,
     bool? useWallet,
     {
-    String? paymentIntentId,
+    PaymentIntentRequest? paymentIntentRequest,
   }) async => await _write.payCheckoutSession(
     sessionId,
     useWallet,
-    paymentIntentId: paymentIntentId,
+    paymentIntentRequest: paymentIntentRequest,
   );
 
   static Future<StripePaymentSheetData> createStripePaymentSheet(

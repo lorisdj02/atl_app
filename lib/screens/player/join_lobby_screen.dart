@@ -435,6 +435,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       playersPaid: playersPaid,
       amount: lobby.feePerPlayer * playersPaid,
       checkoutType: CheckoutType.lobbyBookingParticipate,
+      sportCategory: widget.sportCategory,
     );
 
     final CheckoutSession checkoutSession =

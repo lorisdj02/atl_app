@@ -3,7 +3,7 @@ enum BookingStatus {
   full,
   inProgress,
   finished,
-  refund,
+  refunded,
   canceled;
 
   String get apiName {
@@ -16,8 +16,8 @@ enum BookingStatus {
         return 'IN_PROGRESS';
       case BookingStatus.finished:
         return 'FINISHED';
-      case BookingStatus.refund:
-        return 'REFUND';
+      case BookingStatus.refunded:
+        return 'REFUNDED';
       case BookingStatus.canceled:
         return 'CANCELED';
     }
@@ -43,8 +43,8 @@ extension BookingStatusExtension on BookingStatus {
         return 'In Progress';
       case BookingStatus.finished:
         return 'Finished';
-      case BookingStatus.refund:
-        return 'Refund';
+      case BookingStatus.refunded:
+        return 'Refunded';
       case BookingStatus.canceled: // Aggiunto per i match cancellati
         return 'Canceled';
     }

@@ -1,5 +1,7 @@
+import 'package:atl_app/database/requests/payment_intent_request.dart';
 import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/database/responses/checkout_response.dart';
+import 'package:atl_app/models/purchase.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:flutter/material.dart';
 import '../../models/checkout_session.dart';
@@ -157,6 +159,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     Stripe.publishableKey = sheetData.publishableKey;
     await Stripe.instance.applySettings();
 
+    debugPrint('[Stripe] initPaymentSheet start');
     await Stripe.instance.initPaymentSheet(
       paymentSheetParameters: SetupPaymentSheetParameters(
         merchantDisplayName: 'ATL',
@@ -166,13 +169,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
 
+    debugPrint('[Stripe] presentPaymentSheet start');
     await Stripe.instance.presentPaymentSheet();
+    debugPrint('[Stripe] presentPaymentSheet success');
 
-    await PaymentService.payCheckoutSession(
+    Purchase? purchase = await PaymentService.payCheckoutSession(
       widget.sessionId.toDouble(),
       _useWallet,
-      paymentIntentId: sheetData.paymentIntentId,
+      paymentIntentRequest: PaymentIntentRequest(paymentIntentId: sheetData.paymentIntentId),
     );
+    if (purchase == null) {
+      throw Exception('purchase_null');
+    }
   }
 
   Future<void> _onPay() async {
@@ -182,10 +190,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       final finalPrice = _finalPrice();
       if (finalPrice == 0) {
-        await PaymentService.payCheckoutSession(
+        final purchase = await PaymentService.payCheckoutSession(
           widget.sessionId.toDouble(),
           _useWallet,
         );
+        if (purchase == null) throw Exception('purchase_null');
       } else {
         await _payWithStripe();
       }
@@ -198,6 +207,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
       Navigator.of(context).pop(true);
     } on StripeException {
+      debugPrint('[Stripe] payment failed (StripeException)');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -206,6 +216,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       );
     } catch (e) {
+      debugPrint('[Stripe] payment failed (Exception): $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -585,7 +596,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 8),
             Text(
               _l10n.walletDeduction(
-                '€${_walletDeduction().toStringAsFixed(2)}',
+                '${_walletDeduction().toStringAsFixed(2)}',
               ),
               style: TextStyle(
                 fontSize: 13,

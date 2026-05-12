@@ -307,6 +307,7 @@ class _ParticipationCardState extends State<ParticipationCard> {
         tournamentId: widget.participation.tournamentId,
         amount: chosenAmount,
         checkoutType: CheckoutType.tournamentFee,
+        sportCategory: widget.sportCategory,
       );
 
       final CheckoutSession checkoutSession =

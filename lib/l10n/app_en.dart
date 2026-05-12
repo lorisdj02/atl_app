@@ -2993,5 +2993,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionStatusRefunded => 'Refunded';
 
   @override
-  String get transactionStatusConfirmed => 'Accredited';
+  String get transactionStatusConfirmed => 'Confirmed';
 }

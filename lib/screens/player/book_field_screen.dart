@@ -626,6 +626,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         startTime: startDateTime,
         finishTime: endDateTime,
         amount: totalToPay,
+        sportCategory: widget.sportCategory,
         checkoutType: CheckoutType.privateBooking,
       );
 
@@ -662,6 +663,7 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
         finishTime: endDateTime,
         amount: totalToPay,
         checkoutType: CheckoutType.lobbyBookingCreate,
+        sportCategory: widget.sportCategory,
       );
 
       // Ricorda che playersToPay = maxPlayers - playersToFind

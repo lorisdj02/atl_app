@@ -381,4 +381,7 @@ class ApiJsonKeys {
 
   // HasUnreadNotificationsResponse
   static const String isVip = "isVip"; // bool
+
+  // PaymentIntentRequest
+  static const String paymentIntentId = "paymentIntentId"; // String
 }

@@ -55,6 +55,7 @@ class TransactionCard extends StatelessWidget {
     final isExpense = _isExpense(transaction);
     final typeLabel = _formatEnumLabel(transaction.type.toString().split('.').last);
     final statusLabel = transaction.status.displayName(context);
+    final sourceLabel = _formatEnumLabel(transaction.source.toString().split('.').last);
     final currency = _formatCurrency(transaction.currency);
 
     return Container(
@@ -88,7 +89,7 @@ class TransactionCard extends StatelessWidget {
           ),
         ),
         subtitle: Text(
-          statusLabel,
+          '$statusLabel • $sourceLabel',
           style: const TextStyle(color: ATLColors.subtext, fontSize: 12),
         ),
         trailing: Text(

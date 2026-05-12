@@ -40,6 +40,8 @@ class _WalletScreenState extends State<WalletScreen> {
         setState(() {
           _wallet = data.wallet;
           _transactions = data.transactions;
+          // Order transactions by createdAt descending (newest first)
+          _transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
           _isLoading = false;
         });
       }

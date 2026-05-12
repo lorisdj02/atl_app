@@ -3033,8 +3033,8 @@ class AppLocalizationsIt extends AppLocalizations {
   String get unknownTime => 'Orario sconosciuto';
 
   @override
-  String get transactionStatusRefunded => 'Rimborso';
+  String get transactionStatusRefunded => 'Rimborsato';
 
   @override
-  String get transactionStatusConfirmed => 'Accredito';
+  String get transactionStatusConfirmed => 'Confermato';
 }

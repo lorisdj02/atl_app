@@ -1,3 +1,4 @@
+import 'package:atl_app/database/requests/payment_intent_request.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:atl_app/models/checkout_session.dart';
 import 'package:atl_app/models/purchase.dart';
@@ -12,7 +13,7 @@ class PaymentServiceWrite {
 
   Future<CheckoutSession> createCheckoutSession(CheckoutPayload payload) async {
     final response = await dio.post(
-      "$apiUrl/create-checkout-session",
+      "$apiUrl/checkout-session/create",
       data: payload.toJson(),
     );
     return CheckoutSession.fromJson(response.data);
@@ -21,14 +22,12 @@ class PaymentServiceWrite {
   Future<Purchase> payCheckoutSession(
     double sessionId,
     bool? useWallet, {
-    String? paymentIntentId,
+    PaymentIntentRequest? paymentIntentRequest,
   }) async {
     final response = await dio.patch(
-      "$apiUrl/pay-checkout-session/${sessionId.toStringAsFixed(0)}",
+      "$apiUrl/checkout-session/${sessionId.toStringAsFixed(0)}/pay",
       queryParameters: {"useWallet": useWallet},
-      data: paymentIntentId != null
-          ? {"paymentIntentId": paymentIntentId}
-          : null,
+      data: paymentIntentRequest?.toJson(),
     );
     return Purchase.fromJson(response.data);
   }
@@ -38,7 +37,7 @@ class PaymentServiceWrite {
     bool? useWallet,
   ) async {
     final response = await dio.post(
-      "$apiUrl/create-payment-intent/${sessionId.toStringAsFixed(0)}",
+      "$apiUrl/checkout-session/${sessionId.toStringAsFixed(0)}/create-payment-intent",
       queryParameters: {"useWallet": useWallet},
     );
     return StripePaymentSheetData.fromJson(response.data);
