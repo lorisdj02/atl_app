@@ -1,9 +1,28 @@
+import 'package:atl_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+
 enum PurchaseStatus {
   confirmed,
   redeemed,
   refunded,
   partialRefund,
   canceled;
+
+  String displayName(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (this) {
+      case PurchaseStatus.confirmed:
+        return l10n.purchaseStatusConfirmed;
+      case PurchaseStatus.redeemed:
+        return l10n.purchaseStatusRedeemed;
+      case PurchaseStatus.refunded:
+        return l10n.purchaseStatusRefunded;
+      case PurchaseStatus.partialRefund:
+        return l10n.purchaseStatusPartialRefund;
+      case PurchaseStatus.canceled:
+        return l10n.purchaseStatusCanceled;
+    }
+  }
 
   String get apiName {
     switch (this) {

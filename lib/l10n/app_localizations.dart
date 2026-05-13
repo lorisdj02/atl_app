@@ -155,7 +155,7 @@ abstract class AppLocalizations {
   String get reviews;
   String get licenses;
   String get myGrowth;
-  String get orders;
+  String get purchases;
   String get stats;
   String get inviteAFriend;
   String get editInfos;
@@ -453,10 +453,20 @@ abstract class AppLocalizations {
   String get noDataAvailable;
   String get growthPath;
 
-  // Orders screen
-  String get ordersTitle;
+  // Purchases screen
+  String get purchasesTitle;
   String get comingSoonText;
-  String get ordersComingSoon;
+  String get purchasesComingSoon;
+  String get purchaseTypeTournamentFee;
+  String get purchaseTypeLobbyBookingCreate;
+  String get purchaseTypeLobbyBookingParticipate;
+  String get purchaseTypeShop;
+  String get purchaseTypePrivateBooking;
+  String get purchaseStatusConfirmed;
+  String get purchaseStatusRedeemed;
+  String get purchaseStatusRefunded;
+  String get purchaseStatusPartialRefund;
+  String get purchaseStatusCanceled;
 
   // Reviews screen
   String failedToLoadReviews(String error);
@@ -566,7 +576,7 @@ abstract class AppLocalizations {
   String errorLoadingCheckout(String error);
   String get paymentCompletedSuccessfully;
   String get paymentFailed;
-  String get orderSummary;
+  String get purchaseSummary;
   String get lobbyBookingType;
   String playersDetail(int paid, int total);
   String ownerDetail(String owner);
@@ -591,6 +601,7 @@ abstract class AppLocalizations {
   String get totalToPay;
   String get checkoutTitle;
   String get confirmFree;
+  String get payWithWalletOnly;
   String payAmount(String amount);
   String discountApplied(String code, String amount);
   String get feeLabel;

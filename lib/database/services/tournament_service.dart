@@ -38,7 +38,7 @@ class TournamentService {
     double tournamentId,
   ) async => await _read.getTournamentDetailsScreen(tournamentId);
 
-  static Future<List<Player>> getViewCallupsScreen(double tournamentId) async =>
+  static Future<CallupsResponse> getViewCallupsScreen(double tournamentId) async =>
       await _read.getViewCallupsScreen(tournamentId);
 
   static Future<CallupsResponse> getCallupsScreen(double tournamentId) async =>

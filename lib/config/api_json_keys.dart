@@ -384,4 +384,7 @@ class ApiJsonKeys {
 
   // PaymentIntentRequest
   static const String paymentIntentId = "paymentIntentId"; // String
+
+  // PurchasesResponse
+  static const String purchases = "purchases"; // List<Purchase>
 }

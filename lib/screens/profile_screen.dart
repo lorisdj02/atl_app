@@ -12,7 +12,7 @@ import 'login_screen.dart';
 import 'profile_screens/wallet_screen.dart';
 import 'profile_screens/achievement_screen.dart';
 import 'profile_screens/edit_infos_screen.dart';
-import 'profile_screens/orders_screen.dart';
+import 'profile_screens/purchases_screen.dart';
 import 'profile_screens/stats_screen.dart';
 import 'profile_screens/settings_screen.dart';
 import 'profile_screens/contact_us_screen.dart';
@@ -270,13 +270,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                     ProfileMenuItem(
                       icon: Icons.local_shipping,
-                      text: l10n.orders,
+                      text: l10n.purchases,
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                OrdersScreen(currentSport: widget.currentSport),
+                                PurchasesScreen(currentSport: widget.currentSport),
                           ),
                         );
                       },

@@ -32,15 +32,11 @@ class TournamentServiceRead {
     return TournamentDetailsResponse.fromJson(response.data);
   }
 
-  Future<List<Player>> getViewCallupsScreen(double tournamentId) async {
+  Future<CallupsResponse> getViewCallupsScreen(double tournamentId) async {
     final response = await dio.get(
       "$apiUrl/tournament/${tournamentId.toStringAsFixed(0)}/view-callups",
     );
-    return (response.data as List<dynamic>)
-        .map(
-          (playerJson) => Player.fromJson(playerJson as Map<String, dynamic>),
-        )
-        .toList();
+    return CallupsResponse.fromViewJson(response.data);
   }
 
   Future<CallupsResponse> getCallupsScreen(double tournamentId) async {

@@ -6,9 +6,9 @@ import '../../config/api_json_keys.dart';
 
 class CallupsResponse {
   final List<Player> players;
-  final Sport sport;
+  final Sport? sport;
   final List<double> calledUpPlayerIds;
-  final Tournament tournament;
+  final Tournament? tournament;
 
   CallupsResponse({
     required this.players,
@@ -39,6 +39,20 @@ class CallupsResponse {
       sport: sport,
       calledUpPlayerIds: calledUpPlayerIds,
       tournament: tournament,
+    );
+  }
+
+  factory CallupsResponse.fromViewJson(Map<String, dynamic> json) {
+    final List<Player> players = (json[ApiJsonKeys.players] as List<dynamic>)
+        .map((e) => Player.fromJson(e as Map<String, dynamic>))
+        .toList();
+    print("Players parsed: ${players.length}");
+
+    return CallupsResponse(
+      players: players,
+      sport: null,
+      calledUpPlayerIds: [],
+      tournament: null,
     );
   }
 }

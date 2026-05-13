@@ -1,4 +1,5 @@
 
+import 'package:atl_app/database/responses/callups_response.dart';
 import 'package:atl_app/database/services/tournament_service.dart';
 import 'package:atl_app/utils/atl_colors.dart';
 import 'package:flutter/material.dart';
@@ -26,41 +27,47 @@ class ViewCallupsScreen extends StatefulWidget {
 class _ViewCallupsScreenState extends State<ViewCallupsScreen> {
   List<Player> _calledUpPlayers = [];
   bool _isLoading = true;
+  bool _hasLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadCallUps();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasLoaded) {
+      _hasLoaded = true;
+      _loadCallUps();
+    }
   }
 
   Future<void> _loadCallUps() async {
-    final l10n = AppLocalizations.of(context);
     setState(() => _isLoading = true);
 
     try {
-      final List<Player> players = await TournamentService.getViewCallupsScreen(
+      final CallupsResponse response = await TournamentService.getViewCallupsScreen(
         widget.tournament.id.toDouble(),
       );
       
       if (mounted) {
         setState(() {
-          _calledUpPlayers = players;
+          _calledUpPlayers = response.players;
           _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.errorLoadingCallups(e.toString()),
-            ),
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.errorLoadingCallups(e.toString()),
           ),
-        );
-      }
+        ),
+      );
     }
   }
 

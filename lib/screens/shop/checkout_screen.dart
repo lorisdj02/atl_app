@@ -288,7 +288,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildOrderSummary() {
     if (_session == null) return const SizedBox();
     return _SectionCard(
-      title: _l10n.orderSummary,
+      title: _l10n.purchaseSummary,
       child: switch (_session!.type) {
         CheckoutType.tournamentFee => _buildTournamentDetails(),
         CheckoutType.lobbyBookingCreate ||
@@ -773,8 +773,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               )
             : Text(
                 finalPrice == 0
-                    ? _l10n.confirmFree
-                    : _l10n.payAmount('€${finalPrice.toStringAsFixed(2)}'),
+                  ? _l10n.payWithWalletOnly
+                  : _l10n.payAmount('€${finalPrice.toStringAsFixed(2)}'),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

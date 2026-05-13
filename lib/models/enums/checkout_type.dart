@@ -1,9 +1,28 @@
+import 'package:atl_app/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+
 enum CheckoutType {
   tournamentFee,
   lobbyBookingCreate,
   lobbyBookingParticipate,
   shop,
   privateBooking;
+
+  String displayName(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (this) {
+      case CheckoutType.tournamentFee:
+        return l10n.purchaseTypeTournamentFee;
+      case CheckoutType.lobbyBookingCreate:
+        return l10n.purchaseTypeLobbyBookingCreate;
+      case CheckoutType.lobbyBookingParticipate:
+        return l10n.purchaseTypeLobbyBookingParticipate;
+      case CheckoutType.shop:
+        return l10n.purchaseTypeShop;
+      case CheckoutType.privateBooking:
+        return l10n.purchaseTypePrivateBooking;
+    }
+  }
 
   String get apiName{
     switch (this) {

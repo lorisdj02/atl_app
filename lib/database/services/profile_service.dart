@@ -2,6 +2,7 @@ import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/responses/invite_friends_response.dart';
 import 'package:atl_app/database/responses/my_growth_response.dart';
 import 'package:atl_app/database/responses/personal_player_stats_response.dart';
+import 'package:atl_app/database/responses/purchases_response.dart';
 import 'package:atl_app/database/responses/referee_licenses_response.dart';
 import 'package:atl_app/database/responses/reviews_response.dart';
 import 'package:atl_app/database/responses/wallet_response.dart';
@@ -40,5 +41,10 @@ class ProfileService {
   static Future<InviteFriendsResponse> getInviteFriendsScreen() async {
     final response = await dio.get("$apiUrl/friend-invites");
     return InviteFriendsResponse.fromJson(response.data);
+  }
+
+  static Future<PurchasesResponse> getPurchasesScreen() async {
+    final response = await dio.get("$apiUrl/purchases");
+    return PurchasesResponse.fromJson(response.data);
   }
 }

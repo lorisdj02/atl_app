@@ -325,8 +325,8 @@ class _ParticipationCardState extends State<ParticipationCard> {
             )
             .then((result) {
               if (result == true && mounted) {
-                // TODO: handle post-payment transition
                 widget.onPaymentCompleted();
+                Navigator.of(context).pop(true);
               }
             });
       }

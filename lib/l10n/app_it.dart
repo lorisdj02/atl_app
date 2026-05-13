@@ -383,7 +383,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get myGrowth => 'La Mia Crescita';
 
   @override
-  String get orders => 'Ordini';
+  String get purchases => 'Acquisti';
 
   @override
   String get stats => 'Statistiche';
@@ -1249,15 +1249,45 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get growthPath => 'PERCORSO DI CRESCITA';
 
-  // Orders screen
+  // Purchases screen
   @override
-  String get ordersTitle => 'ORDINI';
+  String get purchasesTitle => 'ACQUISTI';
 
   @override
   String get comingSoonText => 'In arrivo';
 
   @override
-  String get ordersComingSoon => 'I tuoi ordini saranno disponibili presto!';
+  String get purchasesComingSoon => 'I tuoi acquisti saranno disponibili presto!';
+
+    @override
+    String get purchaseTypeTournamentFee => 'Quota torneo';
+
+    @override
+    String get purchaseTypeLobbyBookingCreate => 'Prenotazione lobby (creata)';
+
+    @override
+    String get purchaseTypeLobbyBookingParticipate => 'Prenotazione lobby';
+
+    @override
+    String get purchaseTypeShop => 'Negozio';
+
+    @override
+    String get purchaseTypePrivateBooking => 'Prenotazione privata';
+
+    @override
+    String get purchaseStatusConfirmed => 'Confermato';
+
+    @override
+    String get purchaseStatusRedeemed => 'Riscattato';
+
+    @override
+    String get purchaseStatusRefunded => 'Rimborsato';
+
+    @override
+    String get purchaseStatusPartialRefund => 'Rimborso parziale';
+
+    @override
+    String get purchaseStatusCanceled => 'Annullato';
 
   // Reviews screen
   @override
@@ -1574,7 +1604,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get paymentFailed => 'Pagamento fallito. Riprova.';
 
   @override
-  String get orderSummary => 'Riepilogo ordine';
+  String get purchaseSummary => 'Riepilogo acquisto';
 
   @override
   String get lobbyBookingType => 'Prenotazione Lobby';
@@ -1650,6 +1680,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get confirmFree => 'Conferma (Gratis)';
+
+    @override
+    String get payWithWalletOnly => 'Paga solo con Wallet';
 
   @override
   String payAmount(String amount) => 'Paga $amount';

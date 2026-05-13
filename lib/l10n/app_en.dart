@@ -381,7 +381,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myGrowth => 'My Growth';
 
   @override
-  String get orders => 'Orders';
+  String get purchases => 'Purchases';
 
   @override
   String get stats => 'Stats';
@@ -1225,15 +1225,45 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get growthPath => 'GROWTH PATH';
 
-  // Orders screen
+  // Purchases screen
   @override
-  String get ordersTitle => 'ORDERS';
+  String get purchasesTitle => 'PURCHASES';
 
   @override
   String get comingSoonText => 'Coming Soon';
 
   @override
-  String get ordersComingSoon => 'Your orders will be displayed here soon!';
+  String get purchasesComingSoon => 'Your purchases will be displayed here soon!';
+
+    @override
+    String get purchaseTypeTournamentFee => 'Tournament fee';
+
+    @override
+    String get purchaseTypeLobbyBookingCreate => 'Lobby booking (created)';
+
+    @override
+    String get purchaseTypeLobbyBookingParticipate => 'Lobby booking';
+
+    @override
+    String get purchaseTypeShop => 'Shop';
+
+    @override
+    String get purchaseTypePrivateBooking => 'Private booking';
+
+    @override
+    String get purchaseStatusConfirmed => 'Confirmed';
+
+    @override
+    String get purchaseStatusRedeemed => 'Redeemed';
+
+    @override
+    String get purchaseStatusRefunded => 'Refunded';
+
+    @override
+    String get purchaseStatusPartialRefund => 'Partial refund';
+
+    @override
+    String get purchaseStatusCanceled => 'Canceled';
 
   // Reviews screen
   @override
@@ -1546,7 +1576,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentFailed => 'Payment failed. Please try again.';
 
   @override
-  String get orderSummary => 'Order Summary';
+  String get purchaseSummary => 'Purchase Summary';
 
   @override
   String get lobbyBookingType => 'Lobby Booking';
@@ -1622,6 +1652,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmFree => 'Confirm (Free)';
+
+    @override
+    String get payWithWalletOnly => 'Pay with wallet only';
 
   @override
   String payAmount(String amount) => 'Pay $amount';
