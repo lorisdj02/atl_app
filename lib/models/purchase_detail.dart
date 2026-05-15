@@ -10,8 +10,8 @@ class PurchaseDetail{
 
   factory PurchaseDetail.fromJson(Map<String, dynamic> json) {
     return PurchaseDetail(
-      title: json['title'],
-      description: json['description'],
+      title: (json['title'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
     );
   }
 

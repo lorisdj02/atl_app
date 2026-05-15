@@ -7,9 +7,9 @@ class PurchasesResponse {
   PurchasesResponse({required this.purchases});
 
   factory PurchasesResponse.fromJson(Map<String, dynamic> json) {
-    var purchasesJson = json[ApiJsonKeys.purchases] as List;
-    List<Purchase> purchasesList =
-        purchasesJson.map((e) => Purchase.fromJson(e)).toList();
-    return PurchasesResponse(purchases: purchasesList);
+    final List<Purchase> purchases = (json[ApiJsonKeys.purchases] as List<dynamic>)
+        .map((e) => Purchase.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return PurchasesResponse(purchases: purchases);
   }
 }

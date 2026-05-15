@@ -296,7 +296,10 @@ class _BookFieldScreenState extends State<BookFieldScreen> {
 
     if (_selectedBookingType == BookingType.lobby) {
       // Costo per giocatore * numero di giocatori che pago
-      return (baseCost / _maxPlayers) * _ownerPaysFor;
+      double rawCost = (baseCost / _maxPlayers);
+      double costPerPlayer = double.parse(rawCost.toStringAsFixed(2));
+      double value = costPerPlayer * _ownerPaysFor;
+      return value;
     }
 
     return baseCost;
