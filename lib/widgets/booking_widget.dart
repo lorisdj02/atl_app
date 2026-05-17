@@ -94,6 +94,8 @@ class _BookingWidgetState extends State<BookingWidget> {
                               fontWeight: FontWeight.bold,
                               color: ATLColors.title,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             widget.completeAddress.isNotEmpty
@@ -103,6 +105,8 @@ class _BookingWidgetState extends State<BookingWidget> {
                               fontSize: 14,
                               color: ATLColors.subtext,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -123,12 +127,16 @@ class _BookingWidgetState extends State<BookingWidget> {
                       size: 20,
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      dateFormat.format(widget.startTime),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: ATLColors.title,
+                    Expanded(
+                      child: Text(
+                        dateFormat.format(widget.startTime),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ATLColors.title,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -144,12 +152,16 @@ class _BookingWidgetState extends State<BookingWidget> {
                       size: 20,
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      '${timeFormat.format(widget.startTime)} - ${timeFormat.format(widget.finishTime)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: ATLColors.title,
+                    Expanded(
+                      child: Text(
+                        '${timeFormat.format(widget.startTime)} - ${timeFormat.format(widget.finishTime)}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ATLColors.title,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -162,12 +174,18 @@ class _BookingWidgetState extends State<BookingWidget> {
                     children: [
                       Icon(Icons.person, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
-                      Text(
-                        l10n.ownerDetail(widget.ownerUsername ?? l10n.unknown),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: ATLColors.title,
+                      Expanded(
+                        child: Text(
+                          l10n.ownerDetail(
+                            widget.ownerUsername ?? l10n.unknown,
+                          ),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: ATLColors.title,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -181,12 +199,16 @@ class _BookingWidgetState extends State<BookingWidget> {
                     children: [
                       Icon(Icons.group, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
-                      Text(
-                        '${_lobbyBooking.totalPlayers - _lobbyBooking.playersToFind}/${_lobbyBooking.totalPlayers} ${l10n.players}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isFull ? Colors.red : ATLColors.title,
+                      Expanded(
+                        child: Text(
+                          '${_lobbyBooking.totalPlayers - _lobbyBooking.playersToFind}/${_lobbyBooking.totalPlayers} ${l10n.players}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isFull ? Colors.red : ATLColors.title,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (isFull) ...[
@@ -221,12 +243,16 @@ class _BookingWidgetState extends State<BookingWidget> {
                     children: [
                       Icon(Icons.payment, color: ATLColors.darkBlue, size: 20),
                       const SizedBox(width: 12),
-                      Text(
-                        l10n.youPaidForPlayers(widget.playersPaid!),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: ATLColors.title,
+                      Expanded(
+                        child: Text(
+                          l10n.youPaidForPlayers(widget.playersPaid!),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: ATLColors.title,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

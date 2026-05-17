@@ -233,6 +233,7 @@ abstract class AppLocalizations {
   String get maxPay;
   String get cancelText;
   String get noLobbiesAvailable;
+  String get insertFiltersForLobby;
 
   // Create Team screen
   String get footballTeamsTitle;

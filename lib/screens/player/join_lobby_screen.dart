@@ -1,6 +1,7 @@
 import 'package:atl_app/database/services/booking_service.dart';
-import 'package:atl_app/database/services/payment_service.dart';
+import 'package:atl_app/database/services/field_service.dart';
 import 'package:atl_app/database/responses/join_lobby_response.dart';
+import 'package:atl_app/database/services/payment_service.dart';
 import 'package:atl_app/models/checkout_payload.dart';
 import 'package:flutter/material.dart';
 import '../shop/checkout_screen.dart';
@@ -36,6 +37,10 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
   List<LobbyBooking> _availableLobbies = [];
   bool _isLoading = false;
+  bool _isLoadingCities = false;
+  bool _citiesLoaded = false;
+  bool _hasSearched = false;
+  bool _didLoadCities = false;
 
   Map<double, Field> _fieldsCache = {};
   Map<double, String> _completeAddressPerField = {};
@@ -48,11 +53,71 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLobbies();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoadCities) return;
+    _didLoadCities = true;
+    _loadCities();
+  }
+
+  bool _hasAnyFilter() {
+    return _selectedTotalPlayers != null ||
+        _selectedCity != null ||
+        _selectedDay != null ||
+        _startTime != null ||
+        _endTime != null ||
+        _maxPlayersToPay != null;
+  }
+
+  void _clearLobbyData() {
+    _availableLobbies = [];
+    _fieldsCache = {};
+    _completeAddressPerField = {};
+    _usernamePerBooking = {};
+    _playersPaidPerBooking = {};
+  }
+
+  Future<void> _loadCities() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _isLoadingCities = true);
+
+    try {
+      final cities = await FieldService.getAllCities();
+      if (!mounted) return;
+      setState(() {
+        _availableCities = cities;
+        _isLoadingCities = false;
+        _citiesLoaded = true;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingCities = false;
+        _citiesLoaded = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.errorLoadingCities(e.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Future<void> _loadLobbies() async {
     final l10n = AppLocalizations.of(context);
+
+    if (!_citiesLoaded || _selectedCity == null) {
+      setState(() {
+        _isLoading = false;
+        _clearLobbyData();
+      });
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -99,8 +164,9 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
 
       final JoinLobbyResponse data = await BookingService.getJoinLobbyScreen(
         sportCategory: widget.sportCategory,
-        totalPlayers: _selectedTotalPlayers,
-        selectedCityId: _selectedCity?.toDouble(),
+        // TODO: re-enable players filter and pass selected value.
+        totalPlayers: null,
+        selectedCityId: _selectedCity!.toDouble(),
         startTime: startDateTime,
         finishTime: endDateTime,
       );
@@ -112,12 +178,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
           .where((lobby) => lobby.ownerPlayerId != playerId)
           .toList();
 
-      // Additional filter for playersToPay
-      if (_maxPlayersToPay != null) {
-        lobbies = lobbies
-            .where((lobby) => lobby.playersToFind <= _maxPlayersToPay!)
-            .toList();
-      }
+      // TODO: re-enable payment/players filter when UI is back.
 
       setState(() {
         _availableLobbies = lobbies;
@@ -125,7 +186,6 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         _completeAddressPerField = data.completeAddressPerField;
         _usernamePerBooking = data.usernamePerBooking;
         _playersPaidPerBooking = data.playersPaidPerBooking;
-        _availableCities = data.cities;
         _isLoading = false;
       });
     } catch (e) {
@@ -139,6 +199,22 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         );
       }
     }
+  }
+
+  void _onSearch() {
+    final l10n = AppLocalizations.of(context);
+    if (_selectedCity == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.selectCityRequired),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _hasSearched = true);
+    _loadLobbies();
   }
 
   Future<void> _selectDay() async {
@@ -164,7 +240,6 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
         _startTime = null;
         _endTime = null;
       });
-      _loadLobbies();
     }
   }
 
@@ -232,7 +307,6 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
           _endTime = picked;
         }
       });
-      _loadLobbies();
     }
   }
 
@@ -466,13 +540,15 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
       _startTime = null;
       _endTime = null;
       _maxPlayersToPay = null;
+      _clearLobbyData();
+      _hasSearched = false;
     });
-    _loadLobbies();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final citySelected = _selectedCity != null;
     return Scaffold(
       backgroundColor: ATLColors.background,
       appBar: AppBar(
@@ -503,27 +579,15 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildFilterDropdown(
-                        hint: l10n.players,
-                        value: _selectedTotalPlayers,
-                        items: _availablePlayerCounts,
-                        onChanged: (value) {
-                          setState(() => _selectedTotalPlayers = value);
-                          _loadLobbies();
-                        },
-                        displayText: (val) => '$val',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
                       child: _buildFilterDropdown<double>(
                         hint: l10n.cityHint,
                         value: _selectedCity,
                         items: _availableCities.map((c) => c.id).toList(),
-                        onChanged: (value) {
-                          setState(() => _selectedCity = value);
-                          _loadLobbies();
-                        },
+                        onChanged: _isLoadingCities
+                            ? null
+                            : (value) {
+                                setState(() => _selectedCity = value);
+                              },
                         displayText: (val) {
                           final city = _availableCities.firstWhere(
                             (c) => c.id == val,
@@ -540,7 +604,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: _selectDay,
+                        onTap: citySelected ? _selectDay : null,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -576,27 +640,18 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildFilterDropdown(
-                        hint: l10n.maxPay,
-                        value: _maxPlayersToPay,
-                        items: List.generate(21, (i) => i + 1),
-                        onChanged: (value) {
-                          setState(() => _maxPlayersToPay = value);
-                          _loadLobbies();
-                        },
-                        displayText: (val) => '$val',
-                      ),
-                    ),
                   ],
                 ),
+                if (_isLoadingCities) ...[
+                  const SizedBox(height: 8),
+                  const LinearProgressIndicator(),
+                ],
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => _selectTime(true),
+                        onTap: citySelected ? () => _selectTime(true) : null,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -635,7 +690,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () => _selectTime(false),
+                        onTap: citySelected ? () => _selectTime(false) : null,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -684,6 +739,27 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: (_isLoading || _isLoadingCities)
+                        ? null
+                        : _onSearch,
+                    icon: const Icon(Icons.search),
+                    label: Text(l10n.searchButton),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ATLColors.getPrimaryColor(
+                        widget.sportCategory,
+                      ),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -692,6 +768,13 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
+                : !_hasSearched
+                ? Center(
+                    child: Text(
+                      l10n.insertFiltersForLobby,
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
                 : _availableLobbies.isEmpty
                 ? Center(
                     child: Text(
@@ -706,20 +789,27 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final lobby = _availableLobbies[index];
+                        final field =
+                          _fieldsCache[lobby.fieldId] ?? _fieldsCache[lobby.id];
+                        final address = _completeAddressPerField[lobby.fieldId] ??
+                          _completeAddressPerField[lobby.id];
+
+                      if (field == null || address == null) {
+                        return const SizedBox.shrink();
+                      }
 
                       return Column(
                         children: [
                           BookingWidget(
                             playersPaid: _playersPaidPerBooking[lobby.id] ?? 0,
-                            field: _fieldsCache[lobby.fieldId]!,
+                            field: field,
                             startTime: lobby.startTime,
                             finishTime: lobby.finishTime,
                             ownerUsername: _usernamePerBooking[lobby.id],
                             currentSport: widget.sportCategory,
                             booking: lobby,
                             isDeletable: false,
-                            completeAddress:
-                                _completeAddressPerField[lobby.fieldId]!,
+                            completeAddress: address,
                           ),
                           const SizedBox(height: 12),
                           if (_playersPaidPerBooking[lobby.id] == 0)
@@ -759,7 +849,7 @@ class _JoinLobbyScreenState extends State<JoinLobbyScreen> {
     required String hint,
     required T? value,
     required List<T> items,
-    required ValueChanged<T?> onChanged,
+    ValueChanged<T?>? onChanged,
     required String Function(T) displayText,
   }) {
     return Container(

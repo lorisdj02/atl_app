@@ -28,7 +28,7 @@ class BookingService {
   static Future<JoinLobbyResponse> getJoinLobbyScreen({
     required SportCategory sportCategory,
     int? totalPlayers,
-    double? selectedCityId,
+    required double selectedCityId,
     DateTime? startTime,
     DateTime? finishTime,
   }) async => await _read.getJoinLobbyScreen(

@@ -604,6 +604,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noLobbiesAvailable => 'No lobbies available';
 
+    @override
+    String get insertFiltersForLobby => 'Add filters to find a lobby';
+
   // Create Team screen
   @override
   String errorLoadingCitiesShort(String error) =>

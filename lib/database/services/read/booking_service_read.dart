@@ -20,17 +20,16 @@ class BookingServiceRead {
   Future<JoinLobbyResponse> getJoinLobbyScreen({
     required SportCategory sportCategory,
     int? totalPlayers,
-    double? selectedCityId,
+    required double selectedCityId,
     DateTime? startTime,
     DateTime? finishTime,
   }) async {
     final response = await dio.get(
-      "${apiUrl}/join-lobby-screen/${sportCategory.apiName}",
+      "${apiUrl}/join-lobby-screen/${sportCategory.apiName}/city/${selectedCityId.toStringAsFixed(0)}",
       queryParameters: {
         "totalPlayers": totalPlayers,
-        "selectedCityId": selectedCityId,
-        "startTime": startTime?.toIso8601String(),
-        "finishTime": finishTime?.toIso8601String(),
+        "startTime": startTime?.toUtc().toIso8601String(),
+        "finishTime": finishTime?.toUtc().toIso8601String(),
       },
     );
     return JoinLobbyResponse.fromJson(response.data);
