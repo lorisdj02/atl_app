@@ -3,6 +3,8 @@ class AppConfig {
   static const bool isDebug = true; // TODO: Cambia a false in produzione
   static const String apiBaseUrl =
       'http://10.0.2.2:8081/api/v1'; // TODO: URL API reale
+  // Base URL per le risorse statiche (es. immagini). Non includere il path '/api'.
+  static const String storageBaseUrl = 'http://10.0.2.2:8081';
   static const String apiKey = 'YOUR_API_KEY_HERE'; // TODO: Chiave API reale
 
   // Timeout configuration

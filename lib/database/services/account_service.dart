@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:atl_app/database/api_client.dart';
 import 'package:atl_app/database/requests/register_account_request.dart';
 import 'package:atl_app/database/requests/update_account_info_request.dart';
@@ -31,8 +33,12 @@ class AccountService {
   static Future<LoginResponse> handleLogin() async => await _read.handleLogin();
 
   static Future<Account> updateAccountInfos(
-    UpdateAccountInfoRequest request,
-  ) async => await _write.updateAccountInfos(request);
+    UpdateAccountInfoRequest request, {
+    File? profileImage,
+  }) async => await _write.updateAccountInfos(
+        request,
+        profileImage: profileImage,
+      );
 
   static Future<void> deleteAccount() async => await _write.deleteAccount();
 
@@ -49,4 +55,7 @@ class AccountService {
   static Future<Account> registerAccount(
     RegisterAccountRequest request,
   ) async => await _write.registerAccount(request);
+
+    static Future<String> uploadProfilePicture(File imageFile) async =>
+      await _write.uploadProfilePicture(imageFile);
 }

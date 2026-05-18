@@ -23,6 +23,7 @@ import 'profile_screens/reviews_screen.dart';
 import 'profile_screens/invite_friends_screen.dart';
 import 'profile_screens/my_growth_screen.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/profile_image.dart';
 
 class ProfileScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -147,18 +148,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    CircleAvatar(
+                    ProfileImage(
+                      account: account,
+                      currentSport: widget.currentSport,
                       radius: 60,
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      child: CircleAvatar(
-                        radius: 55,
-                        backgroundColor: Colors.white.withOpacity(0.5),
-                        child: const Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 70,
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 24),
                     Text(

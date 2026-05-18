@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:atl_app/database/services/account_service.dart';
 import 'package:atl_app/database/services/field_service.dart';
 import 'package:atl_app/database/requests/update_account_info_request.dart';
 import 'package:atl_app/models/account.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../providers/account_provider.dart';
 import '../../models/city.dart';
@@ -13,6 +16,7 @@ import '../../widgets/atl_textfield.dart';
 import '../../widgets/atl_button.dart';
 import '../../widgets/info_row_widget.dart';
 import '../../l10n/app_localizations.dart';
+import '../../widgets/profile_image.dart';
 
 class EditInfosScreen extends StatefulWidget {
   final SportCategory currentSport;
@@ -34,6 +38,9 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   bool _isLoading = false;
   bool _hasChanges = false;
   bool _showPasswordFields = false;
+
+  File? _selectedProfileImage;
+  bool _preferredCityTouched = false;
 
   List<City> _cities = [];
   City? _selectedCity;
@@ -99,6 +106,47 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
     if (!_hasChanges) {
       setState(() => _hasChanges = true);
     }
+  }
+
+  Future<void> _pickProfileImage() async {
+    final l10n = AppLocalizations.of(context);
+    final ImageSource? source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectImageSource),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(l10n.gallery),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(l10n.camera),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final XFile? image = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 75,
+    );
+
+    if (image == null) return;
+
+    setState(() {
+      _selectedProfileImage = File(image.path);
+      _hasChanges = true;
+    });
   }
 
   @override
@@ -177,15 +225,17 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
         phone: _phoneController.text != account.phone
             ? _phoneController.text
             : null,
-        preferredCityId: _selectedCity?.id != account.preferredCityId
-            ? _selectedCity?.id
-            : null,
+        // If the dropdown shows the hint ('Seleziona città'), _selectedCity is null
+        // and we send null to clear the preferred city. Otherwise send the selected id.
+        preferredCityId: _selectedCity?.id,
+        preferredCityTouched: _preferredCityTouched,
         birthdate: null, // Non modificabile in questa schermata
-        imageUrl: null, // TODO: Implement image upload
+        imageUrl: null,
       );
       // Update account info through repository
       final Account? data = await AccountService.updateAccountInfos(
         request,
+        profileImage: _selectedProfileImage,
       );
 
       if (data == null) {
@@ -212,6 +262,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
           _oldPasswordController.clear();
           _newPasswordController.clear();
           _showPasswordFields = false;
+          _selectedProfileImage = null;
         });
       }
     } catch (e) {
@@ -268,34 +319,17 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
               Center(
                 child: Stack(
                   children: [
-                    CircleAvatar(
+                    ProfileImage(
+                      account: account,
+                      currentSport: widget.currentSport,
                       radius: 60,
-                      backgroundColor: ATLColors.getPrimaryColor(
-                        widget.currentSport,
-                      ).withOpacity(0.2),
-                      backgroundImage: account?.imageUrl != null
-                          ? NetworkImage(account!.imageUrl!)
-                          : null,
-                      child: account?.imageUrl == null
-                          ? Icon(
-                              Icons.person,
-                              color: ATLColors.getPrimaryColor(
-                                widget.currentSport,
-                              ),
-                              size: 60,
-                            )
-                          : null,
+                      localFile: _selectedProfileImage,
                     ),
                     Positioned(
                       bottom: 0,
                       right: 0,
                       child: GestureDetector(
-                        onTap: () {
-                          // TODO: Implement image picker
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.photoUploadComingSoon)),
-                          );
-                        },
+                        onTap: _pickProfileImage,
                         child: CircleAvatar(
                           radius: 18,
                           backgroundColor: ATLColors.getPrimaryColor(
@@ -369,6 +403,7 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
                     onChanged: (value) {
                       setState(() {
                         _selectedCity = value;
+                        _preferredCityTouched = true;
                         _hasChanges = true;
                       });
                     },
@@ -500,5 +535,55 @@ class _EditInfosScreenState extends State<EditInfosScreen> {
   String _formatDate(AppLocalizations l10n, DateTime? date) {
     if (date == null) return l10n.notAvailable;
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Widget _buildPlaceholder(Account? account) {
+    final color = ATLColors.getPrimaryColor(widget.currentSport);
+    String? initials;
+    if (account != null) {
+      final parts = '${account.name ?? ''} ${account.surname ?? ''}'
+          .trim()
+          .split(RegExp(r"\s+"));
+      if (parts.isNotEmpty && parts[0].isNotEmpty) {
+        initials = parts.length == 1
+            ? parts[0][0].toUpperCase()
+            : '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      }
+      if (initials == null || initials.isEmpty) {
+        initials = (account.username ?? '')
+            .trim()
+            .split(RegExp(r"\s+"))
+            .where((s) => s.isNotEmpty)
+            .map((s) => s[0])
+            .take(2)
+            .join()
+            .toUpperCase();
+      }
+    }
+
+    if (initials != null && initials.isNotEmpty) {
+      return CircleAvatar(
+        radius: 52,
+        backgroundColor: color,
+        child: Text(
+          initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return Icon(
+      Icons.person,
+      color: color,
+      size: 60,
+    );
+  }
+
+  ImageProvider<Object>? _getProfileImageProvider(Account? account) {
+    return null;
   }
 }

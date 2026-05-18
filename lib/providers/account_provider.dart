@@ -92,4 +92,6 @@ class AccountProvider with ChangeNotifier {
   bool get isReferee => _activeAccount?.role == AccountRole.referee;
 
   double? get cityId => _activeAccount?.preferredCityId;
+
+  String? get profilePicture => _activeAccount?.imageUrl;
 }
