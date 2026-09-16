@@ -33,7 +33,7 @@
 <summary><strong>💳 Hero Flow — End-to-End Stripe Checkout</strong></summary>
 <br/>
 <p align="center">
-  <img src="[INSERT_LINK_TO_STRIPE_GIF_HERE]" alt="Stripe Checkout Flow" width="300"/>
+  <img src="gif/player_payment_compressed.gif" alt="Stripe Checkout Flow" width="300"/>
 </p>
 
 **What you're seeing:**
@@ -52,7 +52,7 @@
 <summary><strong>🏠 Player Home & Promotion System</strong></summary>
 <br/>
 <p align="center">
-  <img src="[INSERT_LINK_TO_PLAYER_HOME_GIF_HERE]" alt="Player Home & Promotion" width="300"/>
+  <img src="gif/player_compressed.gif" alt="Player Home & Promotion" width="300"/>
 </p>
 
 **What you're seeing:**
@@ -66,7 +66,7 @@
 <summary><strong>✏️ Player Profile Update</strong></summary>
 <br/>
 <p align="center">
-  <img src="[INSERT_LINK_TO_PLAYER_PROFILE_GIF_HERE]" alt="Player Profile Update" width="300"/>
+  <img src="gif/player_image_change_compressed.gif" alt="Player Profile Update" width="300"/>
 </p>
 
 **What you're seeing:**
@@ -84,7 +84,7 @@
 <summary><strong>📋 Coordinator Dashboard & Booking</strong></summary>
 <br/>
 <p align="center">
-  <img src="[INSERT_LINK_TO_COORDINATOR_GIF_HERE]" alt="Coordinator Dashboard" width="300"/>
+  <img src="gif/coordinator_compressed.gif" alt="Coordinator Dashboard" width="300"/>
 </p>
 
 **What you're seeing:**
@@ -98,7 +98,7 @@
 <summary><strong>🏢 Organization Real-time Bookings</strong></summary>
 <br/>
 <p align="center">
-  <img src="[INSERT_LINK_TO_ORGANIZATION_GIF_HERE]" alt="Organization Bookings" width="300"/>
+  <img src="gif/organization_compressed.gif" alt="Organization Bookings" width="300"/>
 </p>
 
 **What you're seeing:**
@@ -116,7 +116,7 @@
 <summary><strong>🪪 Referee License & Match Assignment</strong></summary>
 <br/>
 <p align="center">
-  <img src="[INSERT_LINK_TO_REFEREE_GIF_HERE]" alt="Referee License & Match Flow" width="300"/>
+  <img src="gif/referee_compressed.gif" alt="Referee License & Match Flow" width="300"/>
 </p>
 
 **What you're seeing:**
